@@ -1,11 +1,8 @@
 'use client';
 
 import { PageContainer } from '@/components/page-container';
-import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Flame, MapPin, Users, Star } from 'lucide-react';
 
 interface Member {
   id: string;
@@ -14,10 +11,7 @@ interface Member {
   avatar: string;
   tags: string[];
   need: string;
-  highlight: {
-    icon: React.ReactNode;
-    text: string;
-  };
+  location: string;
 }
 
 const mockMembers: Member[] = [
@@ -27,11 +21,8 @@ const mockMembers: Member[] = [
     age: 48,
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=Felix',
     tags: ['供应链专家', '数字化转型', '项目管理'],
-    need: '想帮传统制造企业做数字化升级',
-    highlight: {
-      icon: <MapPin className="w-4 h-4" />,
-      text: '可对接长三角制造业资源',
-    },
+    need: '希望找到传统制造业的数字化项目机会',
+    location: '上海',
   },
   {
     id: '2',
@@ -39,11 +30,8 @@ const mockMembers: Member[] = [
     age: 52,
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=John',
     tags: ['投融资', '战略规划', '并购整合'],
-    need: '寻找优质项目对接投资机构',
-    highlight: {
-      icon: <Flame className="w-4 h-4" />,
-      text: '拥有50+投资机构资源',
-    },
+    need: '想寻找优质项目对接投资机构',
+    location: '北京',
   },
   {
     id: '3',
@@ -51,11 +39,8 @@ const mockMembers: Member[] = [
     age: 45,
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=Robert',
     tags: ['智能制造', '工业互联网', '生产运营'],
-    need: '希望帮助传统工厂实现智能化改造',
-    highlight: {
-      icon: <Star className="w-4 h-4" />,
-      text: '服务过30+制造企业',
-    },
+    need: '希望找到愿意尝试智能化改造的工厂',
+    location: '深圳',
   },
   {
     id: '4',
@@ -64,89 +49,85 @@ const mockMembers: Member[] = [
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=William',
     tags: ['组织发展', '人才梯队', '教练式辅导'],
     need: '想为成长型企业提供组织能力诊断',
-    highlight: {
-      icon: <Users className="w-4 h-4" />,
-      text: '培养过100+企业高管',
-    },
+    location: '杭州',
   },
 ];
 
 export default function HomePage() {
   return (
     <PageContainer>
-      <div className="space-y-6">
-        {/* 头部标题 */}
-        <div>
-          <h2 className="text-3xl font-bold font-serif text-foreground mb-2">
+      <div className="space-y-8">
+        {/* 头部 */}
+        <div className="pt-2">
+          <h2 className="text-3xl font-bold text-foreground mb-2 tracking-tight">
             燃场
           </h2>
-          <p className="text-muted-foreground text-base">
+          <p className="text-muted-foreground text-base font-normal">
             让经验被复用，让困境有回响
           </p>
         </div>
 
         {/* 会员展示墙 */}
         <div>
-          <h3 className="text-lg font-semibold mb-4 text-foreground font-serif">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">
             能力连接
           </h3>
-          <ScrollArea className="w-full">
-            <div className="flex space-x-4 pb-4">
+          <ScrollArea className="w-full pb-2">
+            <div className="flex space-x-4">
               {mockMembers.map((member) => (
-                <Card
+                <div
                   key={member.id}
-                  className="flex-shrink-0 w-[280px] hover:shadow-lg transition-shadow"
+                  className="flex-shrink-0 w-72 space-y-4"
                 >
-                  <CardContent className="p-5 space-y-4">
-                    {/* 头像和基本信息 */}
-                    <div className="flex items-start space-x-3">
-                      <Avatar className="w-14 h-14 border-2 border-primary">
-                        <AvatarImage src={member.avatar} alt={member.name} />
-                        <AvatarFallback>
-                          {member.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="font-semibold text-lg text-foreground">
-                          {member.name}·{member.age}岁
-                        </div>
+                  {/* 头像和基本信息 */}
+                  <div className="flex items-start space-x-3">
+                    <Avatar className="w-16 h-16">
+                      <AvatarImage src={member.avatar} alt={member.name} />
+                      <AvatarFallback>
+                        {member.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold text-lg text-foreground mb-1">
+                        {member.name} <span className="text-muted-foreground font-normal">{member.age}岁</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {member.location}
                       </div>
                     </div>
+                  </div>
 
-                    {/* 能力标签 */}
-                    <div className="flex flex-wrap gap-2">
-                      {member.tags.slice(0, 3).map((tag, index) => (
-                        <Badge
-                          key={index}
-                          variant="secondary"
-                          className="text-xs font-normal"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
+                  {/* 能力标签 */}
+                  <div className="flex flex-wrap gap-2">
+                    {member.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="inline-block px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* 需求（希望别人带给我什么） */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      期望
                     </div>
-
-                    {/* 一句话需求 */}
-                    <p className="text-sm text-muted-foreground leading-relaxed">
+                    <p className="text-sm text-foreground leading-relaxed">
                       {member.need}
                     </p>
-
-                    {/* 核心吸引力 */}
-                    <div className="flex items-center space-x-2 text-xs text-primary font-medium">
-                      {member.highlight.icon}
-                      <span>{member.highlight.text}</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           </ScrollArea>
         </div>
 
         {/* 温暖文案 */}
-        <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4 border border-orange-100">
-          <p className="text-sm text-orange-900 text-center font-serif">
-            ✨ 每个人都是一座孤岛，直到有人愿意渡海而来
+        <div className="text-center py-6">
+          <p className="text-base text-muted-foreground">
+            每个人都是一座孤岛，直到有人愿意渡海而来
           </p>
         </div>
       </div>

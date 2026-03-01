@@ -1,8 +1,6 @@
 'use client';
 
 import { PageContainer } from '@/components/page-container';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { useState } from 'react';
@@ -69,7 +67,7 @@ export default function ActivitiesPage() {
 
   return (
     <PageContainer title="让不同的人，碰撞出可能的火花">
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* 筛选栏 */}
         <ScrollableTabs
           tabs={filters}
@@ -78,41 +76,51 @@ export default function ActivitiesPage() {
         />
 
         {/* 活动列表 */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {filteredActivities.map((activity) => (
-            <Card key={activity.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {activity.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-                <h3 className="text-lg font-semibold font-serif">
+            <div key={activity.id} className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold text-foreground mb-3">
                   {activity.title}
                 </h3>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Calendar className="w-4 h-4 mr-2" />
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {activity.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-block px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 flex-shrink-0" />
                   <span>{activity.date}</span>
-                  <Clock className="w-4 h-4 ml-4 mr-2" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-4 h-4 flex-shrink-0" />
                   <span>{activity.time}</span>
                 </div>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <MapPin className="w-4 h-4 mr-2" />
+                <div className="flex items-center space-x-2">
+                  <MapPin className="w-4 h-4 flex-shrink-0" />
                   <span>{activity.location}</span>
-                  <Users className="w-4 h-4 ml-4 mr-2" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Users className="w-4 h-4 flex-shrink-0" />
                   <span>
                     {activity.enrolled}/{activity.max}
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {activity.description}
-                </p>
-              </CardContent>
-              <CardFooter className="flex gap-2">
+              </div>
+
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {activity.description}
+              </p>
+
+              <div className="flex gap-3">
                 <Button variant="outline" className="flex-1">
                   查看详情
                 </Button>
@@ -120,7 +128,9 @@ export default function ActivitiesPage() {
                 {activity.type === 'private' && (
                   <Dialog open={isApplyOpen} onOpenChange={setIsApplyOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="secondary">申请成为案主</Button>
+                      <Button variant="ghost" className="flex-1">
+                        申请成为案主
+                      </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-md">
                       <DialogHeader>
@@ -130,8 +140,10 @@ export default function ActivitiesPage() {
                     </DialogContent>
                   </Dialog>
                 )}
-              </CardFooter>
-            </Card>
+              </div>
+
+              <div className="border-t border-border" />
+            </div>
           ))}
         </div>
       </div>
@@ -156,7 +168,7 @@ function ScrollableTabs({
           onClick={() => onSelect(tab.id)}
           className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
             selected === tab.id
-              ? 'bg-primary text-primary-foreground'
+              ? 'bg-primary text-primary-foreground font-medium'
               : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
           }`}
         >
