@@ -300,14 +300,14 @@ export default function DiscoveryPage() {
                               </Avatar>
                             ))}
                           </div>
-                          <span className="text-xs text-[rgba(0,0,0,0.25)]">
-                            {item.enrolledCount}人报名
+                          <span className="text-[10px] text-[rgba(0,0,0,0.25)]">
+                            {item.enrolledCount}人
                           </span>
                         </div>
-                        <div className="flex items-center space-x-2 text-xs text-[rgba(0,0,0,0.25)]">
-                          <span className="line-clamp-1">{item.address}</span>
+                        <div className="flex items-center space-x-2 text-[10px] text-[rgba(0,0,0,0.25)]">
+                          <span className="line-clamp-1">{item.address.substring(0, 6)}</span>
                           <span>·</span>
-                          <span>{item.teaFee}</span>
+                          <span>{item.teaFee.substring(0, 5)}</span>
                         </div>
                       </div>
                     </div>

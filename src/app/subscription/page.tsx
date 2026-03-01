@@ -195,9 +195,8 @@ export default function SubscriptionPage() {
                             ¥{training.originalPrice}
                           </span>
                         </div>
-                        <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.25)]">
+                        <div className="flex items-center space-x-1 text-[10px] text-[rgba(0,0,0,0.25)]">
                           <span>{training.students}</span>
-                          <span>人已学</span>
                         </div>
                       </div>
                       {/* 纯方形按钮 */}
@@ -271,9 +270,8 @@ export default function SubscriptionPage() {
                         <div>
                           <span className="text-lg font-semibold text-gray-900">¥{consultation.price}</span>
                         </div>
-                        <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.25)]">
+                        <div className="flex items-center space-x-1 text-[10px] text-[rgba(0,0,0,0.25)]">
                           <span>{consultation.reviews}</span>
-                          <span>条评价</span>
                         </div>
                       </div>
                       {/* 纯方形按钮 */}

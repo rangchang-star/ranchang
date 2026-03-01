@@ -94,8 +94,8 @@ export default function ProfilePage() {
             <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-[rgba(0,0,0,0.05)]">
               {stats.map((stat) => (
                 <div key={stat.label} className="text-center">
-                  <div className="text-lg font-semibold text-gray-900">{stat.value}</div>
-                  <div className="text-xs text-[rgba(0,0,0,0.25)] mt-1 line-clamp-1">{stat.label}</div>
+                  <div className="text-base font-semibold text-gray-900">{stat.value}</div>
+                  <div className="text-[10px] text-[rgba(0,0,0,0.25)] mt-1 line-clamp-1">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -151,9 +151,9 @@ export default function ProfilePage() {
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex items-center justify-between text-xs text-[rgba(0,0,0,0.25)]">
+              <div className="mt-4 flex items-center justify-between text-[10px] text-[rgba(0,0,0,0.25)]">
                 <span>2024年2月28日</span>
-                <span>1,234次播放</span>
+                <span>1,234次</span>
               </div>
             </div>
           </div>
@@ -176,8 +176,8 @@ export default function ProfilePage() {
                     <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-1">
                       AI实战赋能营
                     </h3>
-                    <p className="text-sm text-[rgba(0,0,0,0.25)] line-clamp-2">
-                      上海市浦东新区张江高科 | 3月15日 14:00
+                    <p className="text-[11px] text-[rgba(0,0,0,0.25)] line-clamp-2">
+                      上海市浦东 | 3月15日
                     </p>
                   </div>
                   {/* 纯方形按钮 */}
