@@ -150,7 +150,7 @@ export default function DiscoveryPage() {
       {/* 可滚动内容区 - 手机H5宽度 */}
       <div className="w-full max-w-md mx-auto">
         {/* 顶部导航 - 标题上方留出两个字高度 */}
-        <div className="sticky top-0 bg-white z-50 border-b border-gray-100 pt-[60px]">
+        <div className="sticky top-0 bg-white z-50 pt-[60px]">
           <div className="flex items-center justify-between px-5 py-4">
             <h1 className="text-2xl font-bold text-gray-900">发现</h1>
             {/* 程序员大叔抽象头像 - 方形 */}
@@ -197,11 +197,9 @@ export default function DiscoveryPage() {
         <div className="px-5 pt-6 space-y-8 pb-4">
           {/* 能力连接 */}
           <section>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-blue-400">能力连接</h2>
             </div>
-            {/* 灰色横线 */}
-            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-4">
               {connectionItems.map((item) => (
                 <div
