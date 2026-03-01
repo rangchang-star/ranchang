@@ -4,19 +4,33 @@ import { PageContainer } from '@/components/page-container';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Radar, Heart, Target, Users, Calendar, MessageSquare, Settings, Edit, ChevronRight } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Radar, Heart, Target, Users, Calendar, MessageSquare, Settings, Edit, Flame, Mic, Play } from 'lucide-react';
+import { useState } from 'react';
 
 export default function ProfilePage() {
-  const user = {
+  const [user, setUser] = useState({
     name: '张明',
     age: 42,
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=zhangming',
     level: '活跃会员',
-  };
+  });
+
+  const [declaration, setDeclaration] = useState({
+    theme: '',
+    content: '',
+    hasAudio: false,
+    audioUrl: '',
+  });
+
+  const [isEditingDeclaration, setIsEditingDeclaration] = useState(false);
 
   return (
     <PageContainer>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* 用户信息卡片 */}
         <div className="flex items-center space-x-4">
           <Avatar className="w-20 h-20">
@@ -27,14 +41,130 @@ export default function ProfilePage() {
             <h2 className="text-2xl font-bold text-foreground mb-2">
               {user.name}
             </h2>
-            <span className="inline-block px-3 py-1 bg-secondary text-secondary-foreground text-sm rounded-full">
+            <Badge variant="secondary" className="text-sm">
               {user.level}
-            </span>
+            </Badge>
           </div>
           <Button variant="ghost" size="icon">
             <Edit className="w-5 h-5" />
           </Button>
         </div>
+
+        {/* 高燃宣导卡片 */}
+        <Card className="bg-gradient-to-br from-orange-50 to-pink-50 border-orange-100">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Flame className="w-5 h-5 text-orange-500" />
+                <h3 className="font-semibold text-foreground">我的高燃宣导</h3>
+              </div>
+              {!declaration.theme && (
+                <Badge variant="outline" className="text-xs">
+                  未发布
+                </Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {declaration.theme ? (
+              <>
+                <div className="space-y-2">
+                  <div className="font-medium text-orange-900">{declaration.theme}</div>
+                  <p className="text-sm text-orange-800/80">{declaration.content}</p>
+                </div>
+                {declaration.hasAudio && (
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" className="flex-1">
+                      <Play className="w-4 h-4 mr-2" />
+                      播放录音
+                    </Button>
+                    <span className="text-xs text-muted-foreground">1:00</span>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingDeclaration(true)}
+                  >
+                    重新编辑
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  发布您的高燃宣导，让更多人听到您的声音
+                </p>
+                <Button
+                  onClick={() => setIsEditingDeclaration(true)}
+                  className="w-full"
+                >
+                  <Mic className="w-4 h-4 mr-2" />
+                  创建高燃宣导
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 编辑高燃宣导表单 */}
+        {isEditingDeclaration && (
+          <Card>
+            <CardHeader>
+              <h3 className="font-semibold">编辑高燃宣导</h3>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">宣导主题（20字以内）</label>
+                <Input
+                  placeholder="一句话概括您的宣言"
+                  value={declaration.theme}
+                  onChange={(e) => setDeclaration({ ...declaration, theme: e.target.value })}
+                  maxLength={20}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {declaration.theme.length}/20
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">宣导内容</label>
+                <Textarea
+                  placeholder="详细描述您的宣言..."
+                  value={declaration.content}
+                  onChange={(e) => setDeclaration({ ...declaration, content: e.target.value })}
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">录音（1分钟以内）</label>
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="sm">
+                    <Mic className="w-4 h-4 mr-2" />
+                    开始录音
+                  </Button>
+                  {declaration.hasAudio && (
+                    <Button variant="outline" size="sm">
+                      <Play className="w-4 h-4 mr-2" />
+                      播放
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => setIsEditingDeclaration(false)}>
+                  保存
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditingDeclaration(false)}
+                >
+                  取消
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Tab 内容 */}
         <Tabs defaultValue="chart" className="w-full">
@@ -61,40 +191,6 @@ export default function ProfilePage() {
                 （暂未填写量表，请先完成能力评估）
               </p>
             </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">战略与商业</span>
-                <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded">
-                  3项
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">专业职能</span>
-                <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded">
-                  5项
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">软性领导力</span>
-                <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded">
-                  2项
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">技术数字化</span>
-                <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded">
-                  1项
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">行业经验</span>
-                <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded">
-                  2项
-                </span>
-              </div>
-            </div>
-
             <Button className="w-full">完善能力标签</Button>
           </TabsContent>
 
@@ -106,134 +202,60 @@ export default function ProfilePage() {
                 （暂未完成心理评估）
               </p>
             </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground font-medium">评估类型</span>
-                <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded">
-                  暂未评估
-                </span>
-              </div>
-            </div>
-
             <Button className="w-full">开始心理评估</Button>
           </TabsContent>
 
           {/* 我的连接 */}
-          <TabsContent value="needs" className="space-y-8 mt-6">
-            {/* 谁看过我 */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold flex items-center">
-                  <Users className="w-5 h-5 mr-2" />
-                  最近访客
-                </h3>
-                <Button variant="ghost" size="sm">
-                  查看更多
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                {[
-                  { name: '王姐', tag: '供应链专家' },
-                  { name: '李明', tag: '投融资' },
-                ].map((visitor, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback>{visitor.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{visitor.name}</p>
-                      <p className="text-xs text-muted-foreground">{visitor.tag}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="border-t border-border" />
-
-            {/* 可能感兴趣的人 */}
-            <div>
-              <h3 className="font-semibold flex items-center mb-4">
-                <Target className="w-5 h-5 mr-2" />
-                可能感兴趣的人
-              </h3>
-
-              <div className="space-y-4">
-                {[
-                  { name: '张总', tag: '智能制造', reason: '与您的行业相关' },
-                  { name: '陈老师', tag: '组织发展', reason: '可以互补资源' },
-                  { name: '刘总', tag: 'AI应用', reason: '热门领域专家' },
-                ].map((person, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback>{person.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{person.name}</p>
-                      <p className="text-xs text-muted-foreground">{person.tag}</p>
-                      <p className="text-xs text-primary mt-1">{person.reason}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="border-t border-border" />
-
-            {/* 我的活动 */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold flex items-center">
-                  <Calendar className="w-5 h-5 mr-2" />
-                  我的活动
-                </h3>
-                <Button variant="ghost" size="sm">
-                  查看全部
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                  <div>
-                    <p className="font-medium text-sm">转型期私董会</p>
-                    <p className="text-xs text-muted-foreground">2024-04-10</p>
-                  </div>
-                  <span className="px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded">
-                    已报名
+          <TabsContent value="needs" className="space-y-6 mt-6">
+            <Card>
+              <CardHeader>
+                <h3 className="font-semibold flex items-center justify-between">
+                  <span className="flex items-center">
+                    <Calendar className="w-5 h-5 mr-2" />
+                    我的活动
                   </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-border" />
-
-            {/* 我的咨询 */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold flex items-center">
-                  <MessageSquare className="w-5 h-5 mr-2" />
-                  我的咨询
+                  <Button variant="ghost" size="sm">
+                    查看全部
+                  </Button>
                 </h3>
-                <Button variant="ghost" size="sm">
-                  查看全部
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                  <div>
-                    <p className="font-medium text-sm">职业转型困惑</p>
-                    <p className="text-xs text-muted-foreground">2024-03-15</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                    <div>
+                      <p className="font-medium text-sm">转型期私董会</p>
+                      <p className="text-xs text-muted-foreground">2024-04-10</p>
+                    </div>
+                    <Badge variant="outline">已报名</Badge>
                   </div>
-                  <span className="px-2 py-1 bg-primary text-primary-foreground text-xs rounded">
-                    已回复
-                  </span>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <h3 className="font-semibold flex items-center justify-between">
+                  <span className="flex items-center">
+                    <MessageSquare className="w-5 h-5 mr-2" />
+                    我的咨询
+                  </span>
+                  <Button variant="ghost" size="sm">
+                    查看全部
+                  </Button>
+                </h3>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                    <div>
+                      <p className="font-medium text-sm">职业转型困惑</p>
+                      <p className="text-xs text-muted-foreground">2024-03-15</p>
+                    </div>
+                    <Badge>已回复</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* 设置 */}
@@ -249,9 +271,6 @@ export default function ProfilePage() {
                 隐私设置
               </Button>
             </div>
-
-            <div className="border-t border-border" />
-
             <Button variant="destructive" className="w-full">
               注销账户
             </Button>
