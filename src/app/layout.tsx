@@ -1,6 +1,13 @@
 import type { Metadata } from 'next';
 import { Inspector } from 'react-dev-inspector';
+import { Inter } from 'next/font/google';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -18,6 +25,7 @@ export const metadata: Metadata = {
     '能力连接',
     '困境解决',
     '跨界合作',
+    'AI培训',
   ],
   authors: [{ name: '燃场团队' }],
   generator: '燃场',
@@ -44,8 +52,8 @@ export default function RootLayout({
   const isDev = process.env.NODE_ENV === 'development';
 
   return (
-    <html lang="en">
-      <body className={`antialiased`}>
+    <html lang="zh-CN">
+      <body className={`${inter.variable} antialiased`}>
         {isDev && <Inspector />}
         {children}
       </body>

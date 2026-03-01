@@ -4,20 +4,26 @@ import { BottomNav } from './bottom-nav';
 interface PageContainerProps {
   children: ReactNode;
   title?: string;
+  subtitle?: string;
 }
 
-export function PageContainer({ children, title }: PageContainerProps) {
+export function PageContainer({ children, title, subtitle }: PageContainerProps) {
   return (
-    <div className="min-h-screen pb-20 bg-background">
-      <div className="max-w-lg mx-auto px-4 py-6">
+    <div className="min-h-screen pb-24 bg-[#F1F2F6]">
+      <div className="max-w-2xl mx-auto px-5 py-6">
         {title && (
           <header className="mb-6">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight text-gradient leading-tight">
               {title}
             </h1>
+            {subtitle && (
+              <p className="mt-2 text-base text-muted-foreground">
+                {subtitle}
+              </p>
+            )}
           </header>
         )}
-        <main>{children}</main>
+        <main className="space-y-5">{children}</main>
       </div>
       <BottomNav />
     </div>
