@@ -1,8 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { PageContainer } from '@/components/page-container';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { LayoutDashboard } from 'lucide-react';
 
 interface Member {
   id: string;
@@ -58,13 +61,21 @@ export default function HomePage() {
     <PageContainer>
       <div className="space-y-8">
         {/* 头部 */}
-        <div className="pt-2">
-          <h2 className="text-3xl font-bold text-foreground mb-2 tracking-tight">
-            燃场
-          </h2>
-          <p className="text-muted-foreground text-base font-normal">
-            让经验被复用，让困境有回响
-          </p>
+        <div className="pt-2 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-foreground mb-2 tracking-tight">
+              燃场
+            </h2>
+            <p className="text-muted-foreground text-base font-normal">
+              让经验被复用，让困境有回响
+            </p>
+          </div>
+          <Link href="/admin-entry">
+            <Button variant="outline" size="sm">
+              <LayoutDashboard className="w-4 h-4 mr-2" />
+              后台管理
+            </Button>
+          </Link>
         </div>
 
         {/* 会员展示墙 */}
