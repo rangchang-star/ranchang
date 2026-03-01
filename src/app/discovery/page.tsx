@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Flame, Play, MessageCircle, TrendingUp, User, MoreHorizontal } from 'lucide-react';
+import { Search, Flame, Play, MessageCircle, TrendingUp, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // 分类标签
@@ -19,7 +19,7 @@ const hotTopics = [
   { id: 'digital', name: '数字化转型', hot: false },
 ];
 
-// 能力连接（原为你推荐）
+// 能力连接
 const connectionItems = [
   {
     id: '1',
@@ -47,7 +47,7 @@ const connectionItems = [
   },
 ];
 
-// 活动推荐（原编辑精选）
+// 活动推荐
 const activityItems = [
   {
     id: '1',
@@ -96,7 +96,7 @@ const activityItems = [
   },
 ];
 
-// 高燃宣告（原最热榜）
+// 高燃宣告
 const declarationItems = [
   {
     id: '1',
@@ -150,8 +150,8 @@ export default function DiscoveryPage() {
       <div className="sticky top-0 bg-white z-50 border-b border-gray-100">
         <div className="flex items-center justify-between px-5 py-4">
           <h1 className="text-2xl font-bold text-gray-900">发现</h1>
-          {/* 程序员大叔抽象头像 */}
-          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+          {/* 程序员大叔抽象头像 - 方形 */}
+          <div className="w-10 h-10 bg-gray-100 flex items-center justify-center">
             <User className="w-5 h-5 text-gray-600" />
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function DiscoveryPage() {
               placeholder="搜索AI资产、活动、会员..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-2xl text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-gray-100 transition-colors"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-gray-100 transition-colors"
             />
           </div>
         </div>
@@ -177,9 +177,9 @@ export default function DiscoveryPage() {
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-all ${
                   selectedCategory === category.id
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-blue-400 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -189,7 +189,7 @@ export default function DiscoveryPage() {
             {hotTopics.map((topic) => (
               <button
                 key={topic.id}
-                className="flex items-center px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-red-50 text-red-600"
+                className="flex items-center px-4 py-2 text-sm font-medium whitespace-nowrap bg-red-50 text-red-600"
               >
                 {topic.hot && <Flame className="w-4 h-4 mr-1.5 fill-red-500" />}
                 {topic.name}
@@ -199,22 +199,24 @@ export default function DiscoveryPage() {
         </div>
       </div>
 
-      {/* 内容区 */}
-      <div className="px-5 pt-4 space-y-6">
-        {/* 能力连接（原为你推荐） */}
+      {/* 内容区 - 增加栏目间距 */}
+      <div className="px-5 pt-6 space-y-8">
+        {/* 能力连接 */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-blue-500">能力连接</h2>
+            <h2 className="text-lg font-bold text-blue-400">能力连接</h2>
             <button className="text-sm text-gray-400">更多</button>
           </div>
+          {/* 灰色横线 */}
+          <div className="h-[1px] bg-gray-200 mb-4" />
           <div className="space-y-4">
             {connectionItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-start p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="flex items-start p-3 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                {/* 方形头像 */}
-                <div className="w-14 h-14 rounded-xl flex-shrink-0 mr-4 overflow-hidden">
+                {/* 方形头像 - 纯方形 */}
+                <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
                   <img
                     src={item.avatar}
                     alt={item.name}
@@ -229,12 +231,12 @@ export default function DiscoveryPage() {
                     <span className="text-base font-semibold text-gray-900">{item.name}</span>
                     <span className="text-sm text-gray-400">{item.age}岁</span>
                   </div>
-                  {/* 方形浅灰色标签块 */}
+                  {/* 方形浅灰色标签块 - 纯方形 */}
                   <div className="flex flex-wrap gap-2 mb-2">
                     {item.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg"
+                        className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium"
                       >
                         {tag}
                       </span>
@@ -250,21 +252,23 @@ export default function DiscoveryPage() {
           </div>
         </section>
 
-        {/* 活动推荐（原编辑精选） */}
+        {/* 活动推荐 */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-blue-500">活动推荐</h2>
+            <h2 className="text-lg font-bold text-blue-400">活动推荐</h2>
             <button className="text-sm text-gray-400">更多</button>
           </div>
+          {/* 灰色横线 */}
+          <div className="h-[1px] bg-gray-200 mb-4" />
           <div className="space-y-4">
             {activityItems.map((item) => (
               <div
                 key={item.id}
-                className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="p-3 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <div className="flex items-start">
-                  {/* 左侧图片（比能力连接小20%） */}
-                  <div className="w-[80px] h-[80px] rounded-xl flex-shrink-0 mr-4 overflow-hidden">
+                  {/* 左侧图片 - 纯方形 */}
+                  <div className="w-[80px] h-[80px] flex-shrink-0 mr-4 overflow-hidden">
                     <img
                       src={item.image}
                       alt={item.title}
@@ -283,8 +287,8 @@ export default function DiscoveryPage() {
                     <p className="text-sm text-gray-900 mb-2 leading-relaxed">
                       {item.subtitle}
                     </p>
-                    {/* 活动简介（灰色方框，字体小20%） */}
-                    <div className="p-2.5 bg-gray-50 rounded-xl mb-2">
+                    {/* 活动简介 - 纯方形灰色框 */}
+                    <div className="p-2.5 bg-gray-50 mb-2">
                       <p className="text-xs text-gray-600 leading-relaxed">
                         {item.description}
                       </p>
@@ -310,29 +314,31 @@ export default function DiscoveryPage() {
           </div>
         </section>
 
-        {/* 高燃宣告（原最热榜） */}
+        {/* 高燃宣告 */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-blue-500">高燃宣告</h2>
+            <h2 className="text-lg font-bold text-blue-400">高燃宣告</h2>
             <button className="text-sm text-gray-400">更多</button>
           </div>
+          {/* 灰色横线 */}
+          <div className="h-[1px] bg-gray-200 mb-4" />
           <div className="space-y-3">
             {declarationItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="flex items-center p-3 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                {/* 排序 */}
+                {/* 排序 - 纯方形 */}
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mr-4 font-bold text-lg ${
+                  className={`w-10 h-10 flex items-center justify-center flex-shrink-0 mr-4 font-bold text-lg ${
                     item.rank <= 3 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-white' : 'bg-gray-100 text-gray-600'
                   }`}
                 >
                   {item.rank}
                 </div>
 
-                {/* 左侧头像 */}
-                <div className="w-14 h-14 rounded-xl flex-shrink-0 mr-4 overflow-hidden">
+                {/* 左侧头像 - 纯方形 */}
+                <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
                   <img
                     src={item.avatar}
                     alt={item.name}
@@ -346,14 +352,14 @@ export default function DiscoveryPage() {
                   <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
                     {item.title}
                   </h3>
-                  {/* 会员姓名与达人画像（灰色字，不超过9字） */}
+                  {/* 会员姓名与达人画像（灰色字） */}
                   <p className="text-sm text-gray-400">
                     {item.name} · {item.profile}
                   </p>
                 </div>
 
-                {/* 右侧播放按钮 */}
-                <button className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 ml-3 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all">
+                {/* 右侧播放按钮 - 纯方形 */}
+                <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0 ml-3">
                   <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                 </button>
               </div>
@@ -364,12 +370,14 @@ export default function DiscoveryPage() {
         {/* 每日宣告 */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-blue-500">每日宣告</h2>
+            <h2 className="text-lg font-bold text-blue-400">每日宣告</h2>
           </div>
-          <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+          {/* 灰色横线 */}
+          <div className="h-[1px] bg-gray-200 mb-4" />
+          <div className="p-4 bg-white hover:bg-gray-50 transition-colors cursor-pointer">
             <div className="flex items-start space-x-4">
-              {/* 图像 */}
-              <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden">
+              {/* 图像 - 纯方形 */}
+              <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
                 <img
                   src={dailyDeclaration.image}
                   alt="每日宣告"
@@ -391,8 +399,8 @@ export default function DiscoveryPage() {
                 </div>
               </div>
 
-              {/* 播放按钮 */}
-              <button className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all">
+              {/* 播放按钮 - 纯方形 */}
+              <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0">
                 <Play className="w-4 h-4 text-white fill-white ml-0.5" />
               </button>
             </div>
