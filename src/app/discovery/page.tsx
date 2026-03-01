@@ -146,284 +146,284 @@ export default function DiscoveryPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   return (
-    <div className="min-h-screen bg-white pb-40">
-      {/* 顶部导航 */}
-      <div className="sticky top-0 bg-white z-50 border-b border-gray-100">
-        <div className="flex items-center justify-between px-5 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">发现</h1>
-          {/* 程序员大叔抽象头像 - 方形 */}
-          <div className="w-10 h-10 bg-gray-100 flex items-center justify-center">
-            <User className="w-5 h-5 text-gray-600" />
+    <div className="min-h-screen bg-white pb-14">
+      {/* 可滚动内容区 */}
+      <div className="max-w-2xl mx-auto">
+        {/* 顶部导航 */}
+        <div className="sticky top-0 bg-white z-50 border-b border-gray-100">
+          <div className="flex items-center justify-between px-5 py-4">
+            <h1 className="text-2xl font-bold text-gray-900">发现</h1>
+            {/* 程序员大叔抽象头像 - 方形 */}
+            <div className="w-10 h-10 bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
+              <User className="w-5 h-5 text-[rgba(0,0,0,0.15)]" />
+            </div>
+          </div>
+
+          {/* 搜索框 */}
+          <div className="px-5 pb-4">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[rgba(0,0,0,0.15)]" />
+              <input
+                type="text"
+                placeholder="搜索AI资产、活动、会员..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-[rgba(0,0,0,0.05)] text-base text-gray-900 placeholder-[rgba(0,0,0,0.15)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* 标签栏 */}
+          <div className="px-5 pb-4 overflow-x-auto">
+            <div className="flex space-x-3">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-4 py-2 text-sm font-normal whitespace-nowrap transition-all ${
+                    selectedCategory === category.id
+                      ? 'bg-blue-400 text-white'
+                      : 'bg-[rgba(0,0,0,0.05)] text-gray-700 hover:bg-[rgba(0,0,0,0.08)]'
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* 搜索框 */}
-        <div className="px-5 pb-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="搜索AI资产、活动、会员..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-gray-100 transition-colors"
-            />
-          </div>
-        </div>
-
-        {/* 标签栏 */}
-        <div className="px-5 pb-4 overflow-x-auto">
-          <div className="flex space-x-3">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-all ${
-                  selectedCategory === category.id
-                    ? 'bg-blue-400 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 内容区 - 增加栏目间距 */}
-      <div className="px-5 pt-6 space-y-8">
-        {/* 能力连接 */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-blue-400">能力连接</h2>
-          </div>
-          {/* 灰色横线 */}
-          <div className="h-[1px] bg-gray-200 mb-4" />
-          <div className="space-y-4">
-            {connectionItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start p-3 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                {/* 方形头像 - 纯方形 */}
-                <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
-                  <img
-                    src={item.avatar}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* 中间文字 */}
-                <div className="flex-1 min-w-0">
-                  {/* 姓名与标签 */}
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-base font-semibold text-gray-900">{item.name}</span>
-                    <span className="text-sm text-gray-400">{item.age}岁</span>
-                  </div>
-                  {/* 方形浅灰色标签块 - 纯方形 */}
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {item.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  {/* 个人需求说明 */}
-                  <p className="text-sm text-gray-900 leading-relaxed">
-                    {item.need}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* 换一换灰色色块 */}
-          <div className="mt-4 flex justify-center">
-            <button className="px-6 py-2.5 bg-gray-100 text-gray-600 text-sm font-medium">
-              换一换
-            </button>
-          </div>
-        </section>
-
-        {/* 活动推荐 */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-blue-400">活动推荐</h2>
-          </div>
-          {/* 灰色横线 */}
-          <div className="h-[1px] bg-gray-200 mb-4" />
-          <div className="space-y-4">
-            {activityItems.map((item) => (
-              <div
-                key={item.id}
-                className="p-3 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                <div className="flex items-start">
-                  {/* 左侧图片 - 纯方形 */}
-                  <div className="w-[80px] h-[80px] flex-shrink-0 mr-4 overflow-hidden">
+        {/* 内容区 - 增加栏目间距 */}
+        <div className="px-5 pt-6 space-y-8 pb-4">
+          {/* 能力连接 */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-blue-400">能力连接</h2>
+            </div>
+            {/* 灰色横线 */}
+            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+            <div className="space-y-4">
+              {connectionItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-start p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                >
+                  {/* 方形头像 - 纯方形 */}
+                  <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
                     <img
-                      src={item.image}
-                      alt={item.title}
+                      src={item.avatar}
+                      alt={item.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
 
-                  {/* 右侧内容 */}
+                  {/* 中间文字 */}
                   <div className="flex-1 min-w-0">
-                    {/* 分类名称（灰色字） */}
-                    <div className="text-xs text-gray-400 mb-1">{item.category}</div>
-                    {/* 活动主题与副标题（黑色字） */}
-                    <h3 className="text-base font-semibold text-gray-900 mb-1 leading-tight">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-gray-900 mb-2 leading-relaxed">
-                      {item.subtitle}
-                    </p>
-                    {/* 活动简介 - 纯方形灰色框 */}
-                    <div className="p-2.5 bg-gray-50 mb-2">
-                      <p className="text-xs text-gray-600 leading-relaxed">
-                        {item.description}
-                      </p>
+                    {/* 姓名与标签 */}
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="text-base font-semibold text-gray-900 line-clamp-1">{item.name}</span>
+                      <span className="text-sm text-[rgba(0,0,0,0.15)]">{item.age}岁</span>
                     </div>
-                    {/* 报名人头像、人数、地址、茶水费 */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className="flex -space-x-2">
-                          {item.enrollments.slice(0, 3).map((avatar, idx) => (
-                            <Avatar key={idx} className="w-6 h-6 border-2 border-white">
-                              <AvatarImage src={avatar} />
-                              <AvatarFallback>用</AvatarFallback>
-                            </Avatar>
-                          ))}
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          {item.enrolledCount}人报名
+                    {/* 方形浅灰色标签块 - 纯方形 */}
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {item.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-block px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] text-xs font-normal line-clamp-1"
+                        >
+                          {tag}
                         </span>
+                      ))}
+                    </div>
+                    {/* 个人需求说明 */}
+                    <p className="text-sm text-gray-900 leading-relaxed line-clamp-3">
+                      {item.need}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* 换一换灰色色块 - 缩小50% */}
+            <div className="mt-4 flex justify-center">
+              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] text-xs font-normal">
+                换一换
+              </button>
+            </div>
+          </section>
+
+          {/* 活动推荐 */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-blue-400">活动推荐</h2>
+            </div>
+            {/* 灰色横线 */}
+            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+            <div className="space-y-4">
+              {activityItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                >
+                  <div className="flex items-start">
+                    {/* 左侧图片 - 纯方形 */}
+                    <div className="w-[80px] h-[80px] flex-shrink-0 mr-4 overflow-hidden">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    {/* 右侧内容 */}
+                    <div className="flex-1 min-w-0">
+                      {/* 分类名称（灰色字） */}
+                      <div className="text-xs text-[rgba(0,0,0,0.15)] mb-1">{item.category}</div>
+                      {/* 活动主题与副标题（黑色字） */}
+                      <h3 className="text-base font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-gray-900 mb-2 leading-relaxed line-clamp-2">
+                        {item.subtitle}
+                      </p>
+                      {/* 活动简介 - 纯方形灰色框 */}
+                      <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-2">
+                        <p className="text-xs text-[rgba(0,0,0,0.15)] leading-relaxed line-clamp-3">
+                          {item.description}
+                        </p>
                       </div>
-                      <div className="flex items-center space-x-2 text-xs text-gray-400">
-                        <span>{item.address}</span>
-                        <span>·</span>
-                        <span>{item.teaFee}</span>
+                      {/* 报名人头像、人数、地址、茶水费 */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex -space-x-2">
+                            {item.enrollments.slice(0, 3).map((avatar, idx) => (
+                              <Avatar key={idx} className="w-6 h-6 border-2 border-white">
+                                <AvatarImage src={avatar} />
+                                <AvatarFallback>用</AvatarFallback>
+                              </Avatar>
+                            ))}
+                          </div>
+                          <span className="text-xs text-[rgba(0,0,0,0.15)]">
+                            {item.enrolledCount}人报名
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-xs text-[rgba(0,0,0,0.15)]">
+                          <span className="line-clamp-1">{item.address}</span>
+                          <span>·</span>
+                          <span>{item.teaFee}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          {/* 换一换灰色色块 */}
-          <div className="mt-4 flex justify-center">
-            <button className="px-6 py-2.5 bg-gray-100 text-gray-600 text-sm font-medium">
-              换一换
-            </button>
-          </div>
-        </section>
+              ))}
+            </div>
+            {/* 换一换灰色色块 - 缩小50% */}
+            <div className="mt-4 flex justify-center">
+              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] text-xs font-normal">
+                换一换
+              </button>
+            </div>
+          </section>
 
-        {/* 高燃宣告 */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-blue-400">高燃宣告</h2>
-          </div>
-          {/* 灰色横线 */}
-          <div className="h-[1px] bg-gray-200 mb-4" />
-          <div className="space-y-3">
-            {declarationItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center p-3 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                {/* 排序 - 圆形，缩小70%，灰色 */}
+          {/* 高燃宣告 */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-blue-400">高燃宣告</h2>
+            </div>
+            {/* 灰色横线 */}
+            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+            <div className="space-y-3">
+              {declarationItems.map((item) => (
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-4 font-bold text-sm bg-gray-200 text-gray-600"
+                  key={item.id}
+                  className="flex items-center p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                 >
-                  {item.rank}
-                </div>
+                  {/* 排序 - 圆形，缩小70%，灰色 */}
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-4 font-normal text-sm bg-[rgba(0,0,0,0.15)] text-[rgba(0,0,0,0.15)]"
+                  >
+                    {item.rank}
+                  </div>
 
-                {/* 左侧头像 - 纯方形 */}
-                <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
+                  {/* 左侧头像 - 纯方形 */}
+                  <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
+                    <img
+                      src={item.avatar}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* 中间文字 */}
+                  <div className="flex-1 min-w-0">
+                    {/* 内容片花（黑色字） */}
+                    <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
+                      {item.title}
+                    </h3>
+                    {/* 会员姓名与达人画像（灰色字） */}
+                    <p className="text-sm text-[rgba(0,0,0,0.15)]">
+                      {item.name} · {item.profile}
+                    </p>
+                  </div>
+
+                  {/* 右侧播放按钮 - 纯方形 */}
+                  <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0 ml-3">
+                    <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            {/* 查看全部灰色色块按钮 - 缩小50% */}
+            <div className="mt-4 flex justify-center">
+              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] text-xs font-normal">
+                查看全部
+              </button>
+            </div>
+          </section>
+
+          {/* 每日宣告 */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-blue-400">每日宣告</h2>
+            </div>
+            {/* 灰色横线 */}
+            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+            <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer">
+              <div className="flex items-start space-x-4">
+                {/* 图像 - 纯方形 */}
+                <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
                   <img
-                    src={item.avatar}
-                    alt={item.name}
+                    src={dailyDeclaration.image}
+                    alt="每日宣告"
                     className="w-full h-full object-cover"
                   />
                 </div>
 
-                {/* 中间文字 */}
+                {/* 右侧内容 */}
                 <div className="flex-1 min-w-0">
-                  {/* 内容片花（黑色字） */}
-                  <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
-                    {item.title}
+                  {/* 日期加宣告片花（黑色字） */}
+                  <h3 className="text-base font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                    {dailyDeclaration.title}
                   </h3>
-                  {/* 会员姓名与达人画像（灰色字） */}
-                  <p className="text-sm text-gray-400">
-                    {item.name} · {item.profile}
-                  </p>
+                  {/* 年月日与录音时长（灰色字） */}
+                  <div className="flex items-center space-x-2 text-xs text-[rgba(0,0,0,0.15)]">
+                    <span>{dailyDeclaration.date}</span>
+                    <span>·</span>
+                    <span>{dailyDeclaration.duration}</span>
+                  </div>
                 </div>
 
-                {/* 右侧播放按钮 - 纯方形 */}
-                <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0 ml-3">
+                {/* 播放按钮 - 纯方形 */}
+                <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0">
                   <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                 </button>
               </div>
-            ))}
-          </div>
-          {/* 查看全部灰色色块按钮 */}
-          <div className="mt-4 flex justify-center">
-            <button className="px-6 py-2.5 bg-gray-100 text-gray-600 text-sm font-medium">
-              查看全部
-            </button>
-          </div>
-        </section>
-
-        {/* 每日宣告 */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-blue-400">每日宣告</h2>
-          </div>
-          {/* 灰色横线 */}
-          <div className="h-[1px] bg-gray-200 mb-4" />
-          <div className="p-4 bg-white hover:bg-gray-50 transition-colors cursor-pointer">
-            <div className="flex items-start space-x-4">
-              {/* 图像 - 纯方形 */}
-              <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
-                <img
-                  src={dailyDeclaration.image}
-                  alt="每日宣告"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* 右侧内容 */}
-              <div className="flex-1 min-w-0">
-                {/* 日期加宣告片花（黑色字） */}
-                <h3 className="text-base font-semibold text-gray-900 mb-1 leading-tight">
-                  {dailyDeclaration.title}
-                </h3>
-                {/* 年月日与录音时长（灰色字） */}
-                <div className="flex items-center space-x-2 text-xs text-gray-400">
-                  <span>{dailyDeclaration.date}</span>
-                  <span>·</span>
-                  <span>{dailyDeclaration.duration}</span>
-                </div>
-              </div>
-
-              {/* 播放按钮 - 纯方形 */}
-              <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0">
-                <Play className="w-4 h-4 text-white fill-white ml-0.5" />
-              </button>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
 
-      {/* 底部留白 */}
-      <div className="h-4" />
-
-      {/* 底部导航 */}
+      {/* 底部导航 - 固定在底部 */}
       <BottomNav />
     </div>
   );

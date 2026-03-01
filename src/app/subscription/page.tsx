@@ -94,197 +94,199 @@ export default function SubscriptionPage() {
   const [activeTab, setActiveTab] = useState('training');
 
   return (
-    <div className="min-h-screen bg-white pb-40">
-      <div className="px-5 pt-6 space-y-8">
-        {/* 顶部欢迎区 */}
-        <div>
-          <div className="flex items-center space-x-2 mb-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+    <div className="min-h-screen bg-white pb-14">
+      <div className="max-w-2xl mx-auto">
+        <div className="px-5 pt-6 space-y-8 pb-4">
+          {/* 顶部欢迎区 */}
+          <div>
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">订阅内容</h2>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">订阅内容</h2>
+            <p className="text-sm text-[rgba(0,0,0,0.15)] leading-relaxed">
+              探索AI赋能的培训课程与专业咨询服务，开启转型之旅
+            </p>
           </div>
-          <p className="text-sm text-gray-400 leading-relaxed">
-            探索AI赋能的培训课程与专业咨询服务，开启转型之旅
-          </p>
+
+          {/* 选项卡 */}
+          <Tabs defaultValue="training" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 bg-[rgba(0,0,0,0.05)] p-1">
+              <TabsTrigger
+                value="training"
+                className="data-[state=active]:bg-blue-400 data-[state=active]:text-white text-gray-600 font-normal"
+              >
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>AI培训</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger
+                value="consultation"
+                className="data-[state=active]:bg-blue-400 data-[state=active]:text-white text-gray-600 font-normal"
+              >
+                <div className="flex items-center space-x-2">
+                  <Heart className="w-4 h-4" />
+                  <span>咨询</span>
+                </div>
+              </TabsTrigger>
+            </TabsList>
+
+            {/* AI培训内容 */}
+            <TabsContent value="training" className="space-y-4 mt-6">
+              {trainings.map((training) => (
+                <div
+                  key={training.id}
+                  className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+                >
+                  {/* 图片 */}
+                  <div className="mb-3 overflow-hidden">
+                    <img
+                      src={training.image}
+                      alt={training.title}
+                      className="w-full h-44 object-cover"
+                    />
+                  </div>
+
+                  {/* 内容 */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Badge className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] font-normal text-xs">
+                        {training.level}
+                      </Badge>
+                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                        <PlayCircle className="w-3.5 h-3.5" />
+                        <span>{training.duration}</span>
+                      </div>
+                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                        <TrendingUp className="w-3.5 h-3.5" />
+                        <span>{training.rating}</span>
+                      </div>
+                    </div>
+
+                    <h3 className="text-base font-semibold text-gray-900 leading-tight line-clamp-1">
+                      {training.title}
+                    </h3>
+                    <p className="text-sm text-[rgba(0,0,0,0.15)] leading-relaxed line-clamp-2">
+                      {training.description}
+                    </p>
+
+                    {/* 标签 */}
+                    <div className="flex flex-wrap gap-2">
+                      {training.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] font-normal text-xs line-clamp-1"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    {/* 底部信息 */}
+                    <div className="flex items-center justify-between pt-2 border-t border-[rgba(0,0,0,0.05)]">
+                      <div className="flex items-center space-x-3">
+                        <div>
+                          <span className="text-lg font-semibold text-gray-900">¥{training.price}</span>
+                          <span className="text-sm text-[rgba(0,0,0,0.15)] line-through ml-2">
+                            ¥{training.originalPrice}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                          <span>{training.students}</span>
+                          <span>人已学</span>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="bg-blue-400 text-white hover:bg-blue-500 font-normal"
+                      >
+                        立即订阅
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </TabsContent>
+
+            {/* 咨询内容 */}
+            <TabsContent value="consultation" className="space-y-4 mt-6">
+              {consultations.map((consultation) => (
+                <div
+                  key={consultation.id}
+                  className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+                >
+                  {/* 图片 */}
+                  <div className="mb-3 overflow-hidden">
+                    <img
+                      src={consultation.image}
+                      alt={consultation.title}
+                      className="w-full h-44 object-cover"
+                    />
+                  </div>
+
+                  {/* 内容 */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Badge className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] font-normal text-xs">
+                        {consultation.category}
+                      </Badge>
+                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{consultation.duration}</span>
+                      </div>
+                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                        <Heart className="w-3.5 h-3.5" />
+                        <span>{consultation.rating}</span>
+                      </div>
+                    </div>
+
+                    <h3 className="text-base font-semibold text-gray-900 leading-tight line-clamp-1">
+                      {consultation.title}
+                    </h3>
+                    <p className="text-sm text-[rgba(0,0,0,0.15)] leading-relaxed line-clamp-2">
+                      {consultation.description}
+                    </p>
+
+                    {/* 标签 */}
+                    <div className="flex flex-wrap gap-2">
+                      {consultation.tags.map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="secondary"
+                          className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] font-normal text-xs line-clamp-1"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    {/* 底部信息 */}
+                    <div className="flex items-center justify-between pt-2 border-t border-[rgba(0,0,0,0.05)]">
+                      <div className="flex items-center space-x-3">
+                        <div>
+                          <span className="text-lg font-semibold text-gray-900">¥{consultation.price}</span>
+                        </div>
+                        <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                          <span>{consultation.reviews}</span>
+                          <span>条评价</span>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="bg-blue-400 text-white hover:bg-blue-500 font-normal"
+                      >
+                        预约咨询
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </TabsContent>
+          </Tabs>
         </div>
-
-        {/* 选项卡 */}
-        <Tabs defaultValue="training" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 bg-gray-50 p-1">
-            <TabsTrigger
-              value="training"
-              className="data-[state=active]:bg-blue-400 data-[state=active]:text-white text-gray-600"
-            >
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="w-4 h-4" />
-                <span>AI培训</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              value="consultation"
-              className="data-[state=active]:bg-blue-400 data-[state=active]:text-white text-gray-600"
-            >
-              <div className="flex items-center space-x-2">
-                <Heart className="w-4 h-4" />
-                <span>咨询</span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* AI培训内容 */}
-          <TabsContent value="training" className="space-y-4 mt-6">
-            {trainings.map((training) => (
-              <div
-                key={training.id}
-                className="p-4 bg-white hover:bg-gray-50 transition-colors"
-              >
-                {/* 图片 */}
-                <div className="mb-3 overflow-hidden">
-                  <img
-                    src={training.image}
-                    alt={training.title}
-                    className="w-full h-44 object-cover"
-                  />
-                </div>
-
-                {/* 内容 */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Badge className="bg-gray-100 text-gray-600 font-normal text-xs">
-                      {training.level}
-                    </Badge>
-                    <div className="flex items-center space-x-1 text-xs text-gray-400">
-                      <PlayCircle className="w-3.5 h-3.5" />
-                      <span>{training.duration}</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-xs text-gray-400">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      <span>{training.rating}</span>
-                    </div>
-                  </div>
-
-                  <h3 className="text-base font-semibold text-gray-900 leading-tight">
-                    {training.title}
-                  </h3>
-                  <p className="text-sm text-gray-400 leading-relaxed">
-                    {training.description}
-                  </p>
-
-                  {/* 标签 */}
-                  <div className="flex flex-wrap gap-2">
-                    {training.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="bg-gray-100 text-gray-600 font-normal text-xs"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* 底部信息 */}
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <span className="text-lg font-bold text-gray-900">¥{training.price}</span>
-                        <span className="text-sm text-gray-400 line-through ml-2">
-                          ¥{training.originalPrice}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-xs text-gray-400">
-                        <span>{training.students}</span>
-                        <span>人已学</span>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      className="bg-blue-400 text-white hover:bg-blue-500"
-                    >
-                      立即订阅
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </TabsContent>
-
-          {/* 咨询内容 */}
-          <TabsContent value="consultation" className="space-y-4 mt-6">
-            {consultations.map((consultation) => (
-              <div
-                key={consultation.id}
-                className="p-4 bg-white hover:bg-gray-50 transition-colors"
-              >
-                {/* 图片 */}
-                <div className="mb-3 overflow-hidden">
-                  <img
-                    src={consultation.image}
-                    alt={consultation.title}
-                    className="w-full h-44 object-cover"
-                  />
-                </div>
-
-                {/* 内容 */}
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Badge className="bg-gray-100 text-gray-600 font-normal text-xs">
-                      {consultation.category}
-                    </Badge>
-                    <div className="flex items-center space-x-1 text-xs text-gray-400">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{consultation.duration}</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-xs text-gray-400">
-                      <Heart className="w-3.5 h-3.5" />
-                      <span>{consultation.rating}</span>
-                    </div>
-                  </div>
-
-                  <h3 className="text-base font-semibold text-gray-900 leading-tight">
-                    {consultation.title}
-                  </h3>
-                  <p className="text-sm text-gray-400 leading-relaxed">
-                    {consultation.description}
-                  </p>
-
-                  {/* 标签 */}
-                  <div className="flex flex-wrap gap-2">
-                    {consultation.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="secondary"
-                        className="bg-gray-100 text-gray-600 font-normal text-xs"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* 底部信息 */}
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <span className="text-lg font-bold text-gray-900">¥{consultation.price}</span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-xs text-gray-400">
-                        <span>{consultation.reviews}</span>
-                        <span>条评价</span>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      className="bg-blue-400 text-white hover:bg-blue-500"
-                    >
-                      预约咨询
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </TabsContent>
-        </Tabs>
       </div>
 
       {/* 底部导航 */}
