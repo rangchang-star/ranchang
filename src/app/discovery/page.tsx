@@ -1,42 +1,26 @@
 'use client';
 
-import { PageContainer } from '@/components/page-container';
-import { Input } from '@/components/ui/input';
-import { Search, Sparkles, TrendingUp, Flame, ArrowRight, Play } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState } from 'react';
+import { Search, Flame, Play, MessageCircle, TrendingUp, User, MoreHorizontal } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-// 分类按钮
+// 分类标签
 const categories = [
-  { id: 'all', name: '全部' },
-  { id: 'private', name: '私董会' },
-  { id: 'salon', name: '沙龙' },
-  { id: 'training', name: '培训' },
-  { id: 'consultation', name: '咨询' },
+  { id: 'all', name: '全部', hot: false },
+  { id: 'private', name: '私董会', hot: false },
+  { id: 'salon', name: '沙龙', hot: false },
+  { id: 'training', name: '培训', hot: false },
+  { id: 'consultation', name: '咨询', hot: false },
 ];
 
-// AI数字资产推荐
-const aiAssets = [
-  {
-    id: '1',
-    title: 'Midjourney 商业摄影',
-    description: '10组高质量提示词',
-    type: 'prompt',
-    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop',
-  },
-  {
-    id: '2',
-    title: 'AI 视频生成攻略',
-    description: '从0到1全面掌握',
-    type: 'guide',
-    image: 'https://images.unsplash.com/photo-1676299081847-c3c6b35c7f88?w=400&h=300&fit=crop',
-  },
+// 特色话题
+const hotTopics = [
+  { id: 'ai', name: 'AI实战案例', hot: true },
+  { id: 'digital', name: '数字化转型', hot: false },
 ];
 
-// 能力连接
-const members = [
+// 能力连接（原为你推荐）
+const connectionItems = [
   {
     id: '1',
     name: '王姐',
@@ -53,312 +37,371 @@ const members = [
     tags: ['投融资', '战略规划'],
     need: '想寻找优质项目对接投资机构',
   },
-];
-
-// 活动推荐
-const recommendedActivities = [
   {
-    id: '1',
-    title: '转型期私董会',
-    date: '4月10日',
-    enrolled: 8,
-    max: 12,
-    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=250&fit=crop',
+    id: '3',
+    name: '赵芳',
+    age: 45,
+    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=Jane',
+    tags: ['人力资源', '团队管理'],
+    need: '需要搭建企业的人才培养体系',
   },
 ];
 
-// 活动精选
-const featuredActivities = [
+// 活动推荐（原编辑精选）
+const activityItems = [
+  {
+    id: '1',
+    category: '私董会',
+    title: 'CEO转型期私董会',
+    subtitle: '战略定位与组织重构',
+    description: '邀请10位CEO共同探讨传统企业在AI时代的转型路径，通过深度对话和案例分析，帮助企业在变革中找到新的增长点。',
+    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=160&h=160&fit=crop',
+    enrollments: [
+      'https://api.dicebear.com/7.x/micah/svg?seed=p1',
+      'https://api.dicebear.com/7.x/micah/svg?seed=p2',
+      'https://api.dicebear.com/7.x/micah/svg?seed=p3',
+    ],
+    enrolledCount: 8,
+    maxEnrollments: 12,
+  },
   {
     id: '2',
+    category: 'AI培训',
     title: 'AI实战赋能营',
-    description: '全天候AI工具实战培训',
-    date: '4月20日',
-    image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=200&fit=crop',
+    subtitle: '从工具应用到业务落地',
+    description: '全天候AI工具实战培训，涵盖Midjourney、ChatGPT等主流工具的深度应用，帮助学员快速掌握AI赋能业务的方法。',
+    image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=160&h=160&fit=crop',
+    enrollments: [
+      'https://api.dicebear.com/7.x/micah/svg?seed=p4',
+      'https://api.dicebear.com/7.x/micah/svg?seed=p5',
+      'https://api.dicebear.com/7.x/micah/svg?seed=p6',
+    ],
+    enrolledCount: 15,
+    maxEnrollments: 20,
+  },
+  {
+    id: '3',
+    category: '沙龙',
+    title: '创业者分享沙龙',
+    subtitle: '35+职场转型故事',
+    description: '邀请3位成功转型的35+创业者分享他们的转型故事和经验，为正在考虑转型的职场人提供参考和启发。',
+    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=160&h=160&fit=crop',
+    enrollments: [
+      'https://api.dicebear.com/7.x/micah/svg?seed=p7',
+      'https://api.dicebear.com/7.x/micah/svg?seed=p8',
+      'https://api.dicebear.com/7.x/micah/svg?seed=p9',
+    ],
+    enrolledCount: 6,
+    maxEnrollments: 15,
   },
 ];
 
-// 高燃宣导
-const declarations = [
+// 高燃宣告（原最热榜）
+const declarationItems = [
   {
     id: '1',
-    name: '张明',
+    rank: 1,
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=zhangming',
-    theme: '用AI重塑传统制造业',
-    content: '20年制造经验，现在要让AI赋能每一条生产线',
-    audioDuration: '1:00',
+    title: '用AI重塑传统制造业',
+    name: '张明',
+    profile: '制造专家',
+  },
+  {
+    id: '2',
+    rank: 2,
+    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=wangjie',
+    title: '35+创业者的破局之路',
+    name: '王杰',
+    profile: '连续创业者',
+  },
+  {
+    id: '3',
+    rank: 3,
+    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=lihua',
+    title: '从HR到企业合伙人',
+    name: '李华',
+    profile: '战略顾问',
+  },
+  {
+    id: '4',
+    rank: 4,
+    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=chenwei',
+    title: 'AI时代的产品思维',
+    name: '陈伟',
+    profile: '产品总监',
   },
 ];
+
+// 每日宣告
+const dailyDeclaration = {
+  image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop',
+  date: '2024年3月1日',
+  title: '每日宣告：重塑自我，迎接新挑战',
+  duration: '3:15',
+};
 
 export default function DiscoveryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   return (
-    <PageContainer>
-      <div className="space-y-6">
-        {/* 搜索框 - 现代化设计 */}
-        <div className="sticky top-0 bg-[#F1F2F6] z-10 pb-3">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground z-10" />
-            <Input
-              placeholder="探索活动、会员、AI资产..."
+    <div className="min-h-screen bg-white pb-40">
+      {/* 顶部导航 */}
+      <div className="sticky top-0 bg-white z-50 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-4">
+          <h1 className="text-2xl font-bold text-gray-900">发现</h1>
+          {/* 程序员大叔抽象头像 */}
+          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+            <User className="w-5 h-5 text-gray-600" />
+          </div>
+        </div>
+
+        {/* 搜索框 */}
+        <div className="px-5 pb-4">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="搜索AI资产、活动、会员..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-14 h-[52px] rounded-2xl bg-white shadow-soft border-0 text-base placeholder:text-muted-foreground/60 focus:shadow-soft-lg transition-all duration-300 z-10 relative"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-2xl text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-gray-100 transition-colors"
             />
           </div>
         </div>
 
-        {/* 分类按钮 + AI推荐 */}
-        <div>
-          <ScrollArea className="w-full pb-3">
-            <div className="flex space-x-3 min-w-max">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`px-5 py-2.5 rounded-2xl text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-                    selectedCategory === category.id
-                      ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/25'
-                      : 'bg-white text-muted-foreground hover:text-foreground shadow-soft'
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-              <div className="flex items-center px-5 py-2.5 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 rounded-2xl text-sm font-medium whitespace-nowrap shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300">
-                <Sparkles className="w-4 h-4 mr-2 text-white" />
-                <span className="text-white">AI数字资产</span>
-              </div>
-            </div>
-          </ScrollArea>
-
-          {/* AI数字资产推荐 */}
-          <div className="mt-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
-                  <Sparkles className="w-4 h-4 text-white" />
-                </div>
-                <h3 className="font-bold text-foreground">AI数字资产推荐</h3>
-              </div>
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-                查看全部
-              </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {aiAssets.map((asset) => (
-                <div
-                  key={asset.id}
-                  className="group relative overflow-hidden rounded-2xl shadow-soft hover:shadow-soft-lg transition-all duration-300 cursor-pointer"
-                >
-                  <img
-                    src={asset.image}
-                    alt={asset.title}
-                    className="w-full h-28 object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <h4 className="font-semibold text-white text-sm leading-tight mb-1">
-                      {asset.title}
-                    </h4>
-                    <p className="text-xs text-white/80">{asset.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* 标签栏 */}
+        <div className="px-5 pb-4 overflow-x-auto">
+          <div className="flex space-x-3">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                  selectedCategory === category.id
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {category.name}
+              </button>
+            ))}
+            {hotTopics.map((topic) => (
+              <button
+                key={topic.id}
+                className="flex items-center px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap bg-red-50 text-red-600"
+              >
+                {topic.hot && <Flame className="w-4 h-4 mr-1.5 fill-red-500" />}
+                {topic.name}
+              </button>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* 能力连接 */}
-        <div>
+      {/* 内容区 */}
+      <div className="px-5 pt-4 space-y-6">
+        {/* 能力连接（原为你推荐） */}
+        <section>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-lg shadow-primary/20">
-                <TrendingUp className="w-4 h-4 text-white" />
-              </div>
-              <h3 className="font-bold text-foreground">能力连接</h3>
-            </div>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-              更多 <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
+            <h2 className="text-lg font-bold text-blue-500">能力连接</h2>
+            <button className="text-sm text-gray-400">更多</button>
           </div>
-          <ScrollArea className="w-full pb-2">
-            <div className="flex space-x-4">
-              {members.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex-shrink-0 w-[280px] glass rounded-2xl p-5 space-y-4 hover:shadow-soft-lg transition-all duration-300"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <Avatar className="w-14 h-14 ring-2 ring-white shadow-md">
-                        <AvatarImage src={member.avatar} alt={member.name} />
-                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-accent rounded-full flex items-center justify-center border-2 border-white">
-                        <Flame className="w-3 h-3 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-bold text-foreground text-lg">
-                        {member.name} <span className="text-muted-foreground font-normal text-base">{member.age}岁</span>
-                      </div>
-                    </div>
+          <div className="space-y-4">
+            {connectionItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-start p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              >
+                {/* 方形头像 */}
+                <div className="w-14 h-14 rounded-xl flex-shrink-0 mr-4 overflow-hidden">
+                  <img
+                    src={item.avatar}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* 中间文字 */}
+                <div className="flex-1 min-w-0">
+                  {/* 姓名与标签 */}
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-base font-semibold text-gray-900">{item.name}</span>
+                    <span className="text-sm text-gray-400">{item.age}岁</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {member.tags.map((tag) => (
+                  {/* 方形浅灰色标签块 */}
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {item.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-block px-3 py-1 bg-white/60 backdrop-blur-sm text-foreground text-xs font-medium rounded-full shadow-sm"
+                        className="inline-block px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <p className="text-sm text-foreground leading-relaxed">
-                    {member.need}
+                  {/* 个人需求说明 */}
+                  <p className="text-sm text-gray-900 leading-relaxed">
+                    {item.need}
                   </p>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* 活动推荐 */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center shadow-lg shadow-accent/20">
-                <TrendingUp className="w-4 h-4 text-white" />
               </div>
-              <h3 className="font-bold text-foreground">活动推荐</h3>
-            </div>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-              更多 <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
+            ))}
           </div>
-          <div className="group relative overflow-hidden rounded-2xl shadow-soft hover:shadow-soft-lg transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <img
-              src={recommendedActivities[0].image}
-              alt={recommendedActivities[0].title}
-              className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-5">
-              <h4 className="font-bold text-white text-xl mb-2">
-                {recommendedActivities[0].title}
-              </h4>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white/90">{recommendedActivities[0].date}</span>
-                <div className="flex items-center space-x-2">
-                  <div className="flex-1 bg-white/20 backdrop-blur-sm rounded-full h-2 w-24">
-                    <div
-                      className="bg-gradient-to-r from-primary to-accent h-2 rounded-full"
-                      style={{ width: `${(recommendedActivities[0].enrolled / recommendedActivities[0].max) * 100}%` }}
+        </section>
+
+        {/* 活动推荐（原编辑精选） */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-blue-500">活动推荐</h2>
+            <button className="text-sm text-gray-400">更多</button>
+          </div>
+          <div className="space-y-4">
+            {activityItems.map((item) => (
+              <div
+                key={item.id}
+                className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <div className="flex items-start">
+                  {/* 左侧图片（比能力连接小20%） */}
+                  <div className="w-[80px] h-[80px] rounded-xl flex-shrink-0 mr-4 overflow-hidden">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className="text-sm text-white font-medium">
-                    {recommendedActivities[0].enrolled}/{recommendedActivities[0].max}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* 活动精选 */}
-        <div>
-          <div className="flex items-center space-x-2 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <Flame className="w-4 h-4 text-white" />
-            </div>
-            <h3 className="font-bold text-foreground">活动精选</h3>
-          </div>
-          <div className="group relative overflow-hidden rounded-2xl shadow-soft hover:shadow-soft-lg transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <img
-              src={featuredActivities[0].image}
-              alt={featuredActivities[0].title}
-              className="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-5">
-              <h4 className="font-bold text-white text-lg mb-1">
-                {featuredActivities[0].title}
-              </h4>
-              <p className="text-sm text-white/80 mb-2">{featuredActivities[0].description}</p>
-              <span className="text-xs text-white/90">{featuredActivities[0].date}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 高燃宣导 */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center shadow-lg shadow-orange-500/20 animate-pulse">
-                <Flame className="w-4 h-4 text-white" />
-              </div>
-              <h3 className="font-bold text-foreground">高燃宣导</h3>
-            </div>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
-              更多 <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {declarations.map((declaration) => (
-              <div
-                key={declaration.id}
-                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-50 via-pink-50 to-red-50 p-5 shadow-soft hover:shadow-soft-lg transition-all duration-300"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-200/30 to-pink-200/30 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-                <div className="relative">
-                  <div className="flex items-start space-x-4">
-                    <div className="relative">
-                      <Avatar className="w-14 h-14 ring-3 ring-white shadow-md">
-                        <AvatarImage src={declaration.avatar} alt={declaration.name} />
-                        <AvatarFallback>{declaration.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-primary to-primary-light rounded-full flex items-center justify-center border-3 border-white shadow-lg">
-                        <Flame className="w-3.5 h-3.5 text-white" />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="font-bold text-base">{declaration.name}</span>
-                        <div className="flex items-center space-x-1 px-2 py-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full">
-                          <Play className="w-3 h-3 text-primary" />
-                          <span className="text-xs font-medium text-primary">{declaration.audioDuration}</span>
-                        </div>
-                      </div>
-                      <h4 className="font-bold text-base text-orange-900 mb-2 leading-tight">
-                        {declaration.theme}
-                      </h4>
-                      <p className="text-sm text-orange-800/90 mb-3 leading-relaxed">
-                        {declaration.content}
+                  {/* 右侧内容 */}
+                  <div className="flex-1 min-w-0">
+                    {/* 分类名称（灰色字） */}
+                    <div className="text-xs text-gray-400 mb-1">{item.category}</div>
+                    {/* 活动主题与副标题（黑色字） */}
+                    <h3 className="text-base font-semibold text-gray-900 mb-1 leading-tight">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-900 mb-2 leading-relaxed">
+                      {item.subtitle}
+                    </p>
+                    {/* 活动简介（灰色方框，字体小20%） */}
+                    <div className="p-2.5 bg-gray-50 rounded-xl mb-2">
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {item.description}
                       </p>
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-primary to-primary-light text-white font-medium shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
-                      >
-                        <Play className="w-4 h-4 mr-2" />
-                        播放宣言
-                      </Button>
+                    </div>
+                    {/* 报名人头像与人数 */}
+                    <div className="flex items-center space-x-2">
+                      <div className="flex -space-x-2">
+                        {item.enrollments.slice(0, 3).map((avatar, idx) => (
+                          <Avatar key={idx} className="w-6 h-6 border-2 border-white">
+                            <AvatarImage src={avatar} />
+                            <AvatarFallback>用</AvatarFallback>
+                          </Avatar>
+                        ))}
+                      </div>
+                      <span className="text-xs text-gray-400">
+                        {item.enrolledCount}人报名
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* 底部留白 */}
-        <div className="h-8" />
+        {/* 高燃宣告（原最热榜） */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-blue-500">高燃宣告</h2>
+            <button className="text-sm text-gray-400">更多</button>
+          </div>
+          <div className="space-y-3">
+            {declarationItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              >
+                {/* 排序 */}
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mr-4 font-bold text-lg ${
+                    item.rank <= 3 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-white' : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  {item.rank}
+                </div>
+
+                {/* 左侧头像 */}
+                <div className="w-14 h-14 rounded-xl flex-shrink-0 mr-4 overflow-hidden">
+                  <img
+                    src={item.avatar}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* 中间文字 */}
+                <div className="flex-1 min-w-0">
+                  {/* 内容片花（黑色字） */}
+                  <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
+                    {item.title}
+                  </h3>
+                  {/* 会员姓名与达人画像（灰色字，不超过9字） */}
+                  <p className="text-sm text-gray-400">
+                    {item.name} · {item.profile}
+                  </p>
+                </div>
+
+                {/* 右侧播放按钮 */}
+                <button className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 ml-3 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all">
+                  <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 每日宣告 */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-blue-500">每日宣告</h2>
+          </div>
+          <div className="p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            <div className="flex items-start space-x-4">
+              {/* 图像 */}
+              <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden">
+                <img
+                  src={dailyDeclaration.image}
+                  alt="每日宣告"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* 右侧内容 */}
+              <div className="flex-1 min-w-0">
+                {/* 日期加宣告片花（黑色字） */}
+                <h3 className="text-base font-semibold text-gray-900 mb-1 leading-tight">
+                  {dailyDeclaration.title}
+                </h3>
+                {/* 年月日与录音时长（灰色字） */}
+                <div className="flex items-center space-x-2 text-xs text-gray-400">
+                  <span>{dailyDeclaration.date}</span>
+                  <span>·</span>
+                  <span>{dailyDeclaration.duration}</span>
+                </div>
+              </div>
+
+              {/* 播放按钮 */}
+              <button className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all">
+                <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
-    </PageContainer>
+
+      {/* 底部留白 */}
+      <div className="h-4" />
+    </div>
   );
 }
