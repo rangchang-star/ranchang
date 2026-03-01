@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Flame, Play, MessageCircle, TrendingUp, User } from 'lucide-react';
+import { Search, Flame, Play, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { BottomNav } from '@/components/bottom-nav';
 
 // 分类标签
 const categories = [
@@ -11,12 +12,6 @@ const categories = [
   { id: 'salon', name: '沙龙', hot: false },
   { id: 'training', name: '培训', hot: false },
   { id: 'consultation', name: '咨询', hot: false },
-];
-
-// 特色话题
-const hotTopics = [
-  { id: 'ai', name: 'AI实战案例', hot: true },
-  { id: 'digital', name: '数字化转型', hot: false },
 ];
 
 // 能力连接
@@ -63,6 +58,8 @@ const activityItems = [
     ],
     enrolledCount: 8,
     maxEnrollments: 12,
+    address: '北京市朝阳区CBD国贸大厦',
+    teaFee: 'aa茶水费35元',
   },
   {
     id: '2',
@@ -78,6 +75,8 @@ const activityItems = [
     ],
     enrolledCount: 15,
     maxEnrollments: 20,
+    address: '上海市浦东新区张江高科',
+    teaFee: 'aa茶水费50元',
   },
   {
     id: '3',
@@ -93,6 +92,8 @@ const activityItems = [
     ],
     enrolledCount: 6,
     maxEnrollments: 15,
+    address: '深圳市南山区科技园',
+    teaFee: 'aa茶水费40元',
   },
 ];
 
@@ -186,15 +187,6 @@ export default function DiscoveryPage() {
                 {category.name}
               </button>
             ))}
-            {hotTopics.map((topic) => (
-              <button
-                key={topic.id}
-                className="flex items-center px-4 py-2 text-sm font-medium whitespace-nowrap bg-red-50 text-red-600"
-              >
-                {topic.hot && <Flame className="w-4 h-4 mr-1.5 fill-red-500" />}
-                {topic.name}
-              </button>
-            ))}
           </div>
         </div>
       </div>
@@ -205,7 +197,6 @@ export default function DiscoveryPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-blue-400">能力连接</h2>
-            <button className="text-sm text-gray-400">更多</button>
           </div>
           {/* 灰色横线 */}
           <div className="h-[1px] bg-gray-200 mb-4" />
@@ -250,13 +241,18 @@ export default function DiscoveryPage() {
               </div>
             ))}
           </div>
+          {/* 换一换灰色色块 */}
+          <div className="mt-4 flex justify-center">
+            <button className="px-6 py-2.5 bg-gray-100 text-gray-600 text-sm font-medium">
+              换一换
+            </button>
+          </div>
         </section>
 
         {/* 活动推荐 */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-blue-400">活动推荐</h2>
-            <button className="text-sm text-gray-400">更多</button>
           </div>
           {/* 灰色横线 */}
           <div className="h-[1px] bg-gray-200 mb-4" />
@@ -293,24 +289,37 @@ export default function DiscoveryPage() {
                         {item.description}
                       </p>
                     </div>
-                    {/* 报名人头像与人数 */}
-                    <div className="flex items-center space-x-2">
-                      <div className="flex -space-x-2">
-                        {item.enrollments.slice(0, 3).map((avatar, idx) => (
-                          <Avatar key={idx} className="w-6 h-6 border-2 border-white">
-                            <AvatarImage src={avatar} />
-                            <AvatarFallback>用</AvatarFallback>
-                          </Avatar>
-                        ))}
+                    {/* 报名人头像、人数、地址、茶水费 */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex -space-x-2">
+                          {item.enrollments.slice(0, 3).map((avatar, idx) => (
+                            <Avatar key={idx} className="w-6 h-6 border-2 border-white">
+                              <AvatarImage src={avatar} />
+                              <AvatarFallback>用</AvatarFallback>
+                            </Avatar>
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {item.enrolledCount}人报名
+                        </span>
                       </div>
-                      <span className="text-xs text-gray-400">
-                        {item.enrolledCount}人报名
-                      </span>
+                      <div className="flex items-center space-x-2 text-xs text-gray-400">
+                        <span>{item.address}</span>
+                        <span>·</span>
+                        <span>{item.teaFee}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+          {/* 换一换灰色色块 */}
+          <div className="mt-4 flex justify-center">
+            <button className="px-6 py-2.5 bg-gray-100 text-gray-600 text-sm font-medium">
+              换一换
+            </button>
           </div>
         </section>
 
@@ -318,7 +327,6 @@ export default function DiscoveryPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-blue-400">高燃宣告</h2>
-            <button className="text-sm text-gray-400">更多</button>
           </div>
           {/* 灰色横线 */}
           <div className="h-[1px] bg-gray-200 mb-4" />
@@ -328,11 +336,9 @@ export default function DiscoveryPage() {
                 key={item.id}
                 className="flex items-center p-3 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                {/* 排序 - 纯方形 */}
+                {/* 排序 - 圆形，缩小70%，灰色 */}
                 <div
-                  className={`w-10 h-10 flex items-center justify-center flex-shrink-0 mr-4 font-bold text-lg ${
-                    item.rank <= 3 ? 'bg-gradient-to-br from-orange-400 to-red-500 text-white' : 'bg-gray-100 text-gray-600'
-                  }`}
+                  className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-4 font-bold text-sm bg-gray-200 text-gray-600"
                 >
                   {item.rank}
                 </div>
@@ -364,6 +370,12 @@ export default function DiscoveryPage() {
                 </button>
               </div>
             ))}
+          </div>
+          {/* 查看全部灰色色块按钮 */}
+          <div className="mt-4 flex justify-center">
+            <button className="px-6 py-2.5 bg-gray-100 text-gray-600 text-sm font-medium">
+              查看全部
+            </button>
           </div>
         </section>
 
@@ -410,6 +422,9 @@ export default function DiscoveryPage() {
 
       {/* 底部留白 */}
       <div className="h-4" />
+
+      {/* 底部导航 */}
+      <BottomNav />
     </div>
   );
 }

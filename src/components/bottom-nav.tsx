@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Compass, Bookmark, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/discovery', label: '发现', icon: Compass },
@@ -15,9 +14,9 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 glass shadow-soft-lg z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
       <div className="max-w-2xl mx-auto">
-        <div className="flex justify-around items-center h-[72px] px-2">
+        <div className="flex justify-around items-center h-14">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -26,30 +25,24 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={cn(
-                  'flex flex-col items-center justify-center space-y-1 px-6 py-3 rounded-2xl transition-all duration-300',
-                  isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                )}
+                className="flex flex-col items-center justify-center space-y-0.5 px-6 py-2 transition-colors relative"
               >
                 <Icon
-                  className={cn(
-                    'w-6 h-6 transition-transform duration-300',
-                    isActive ? 'scale-110' : ''
-                  )}
-                  strokeWidth={isActive ? 2.5 : 2}
+                  className={`w-6 h-6 transition-colors ${
+                    isActive ? 'text-blue-400' : 'text-gray-400'
+                  }`}
+                  strokeWidth={2}
                 />
                 <span
-                  className={cn(
-                    'text-xs font-medium transition-all duration-300',
-                    isActive ? 'font-semibold' : ''
-                  )}
+                  className={`text-xs transition-colors ${
+                    isActive ? 'text-blue-400' : 'text-gray-400'
+                  }`}
                 >
                   {item.label}
                 </span>
+                {/* 小红点 */}
                 {isActive && (
-                  <div className="absolute -top-1 w-1 h-1 bg-primary rounded-full" />
+                  <div className="absolute -top-1 right-3 w-1.5 h-1.5 bg-red-500 rounded-full" />
                 )}
               </Link>
             );
