@@ -44,13 +44,14 @@ const stats = [
 export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-white pb-14">
-      <div className="max-w-2xl mx-auto">
+      {/* 手机H5宽度 */}
+      <div className="w-full max-w-md mx-auto">
         <div className="px-5 pt-6 space-y-8 pb-4">
           {/* 顶部导航 */}
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">个人中心</h1>
             <button className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
-              <Settings className="w-5 h-5 text-[rgba(0,0,0,0.15)]" />
+              <Settings className="w-5 h-5 text-[rgba(0,0,0,0.25)]" />
             </button>
           </div>
 
@@ -58,27 +59,31 @@ export default function ProfilePage() {
           <div className="p-5 bg-white">
             <div className="flex items-start space-x-4">
               {/* 纯方形头像 */}
-              <Avatar className="w-20 h-20">
-                <AvatarImage src="https://api.dicebear.com/7.x/micah/svg?seed=profile" />
-                <AvatarFallback>王</AvatarFallback>
-              </Avatar>
+              <div className="w-20 h-20 flex-shrink-0 overflow-hidden">
+                <img
+                  src="https://api.dicebear.com/7.x/micah/svg?seed=profile"
+                  alt="头像"
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
               <div className="flex-1 space-y-2">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">王芳</h2>
-                  <p className="text-sm text-[rgba(0,0,0,0.15)]">人力资源专家 | 45岁</p>
+                  <p className="text-sm text-[rgba(0,0,0,0.25)]">人力资源专家 | 45岁</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] text-xs font-normal line-clamp-1">
+                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal line-clamp-1">
                     HRBP
                   </span>
-                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] text-xs font-normal line-clamp-1">
+                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal line-clamp-1">
                     团队管理
                   </span>
-                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] text-xs font-normal line-clamp-1">
+                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal line-clamp-1">
                     人才发展
                   </span>
                 </div>
+                {/* 纯方形按钮 */}
                 <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-xs px-4 py-2">
                   编辑资料
                 </Button>
@@ -90,7 +95,7 @@ export default function ProfilePage() {
               {stats.map((stat) => (
                 <div key={stat.label} className="text-center">
                   <div className="text-lg font-semibold text-gray-900">{stat.value}</div>
-                  <div className="text-xs text-[rgba(0,0,0,0.15)] mt-1 line-clamp-1">{stat.label}</div>
+                  <div className="text-xs text-[rgba(0,0,0,0.25)] mt-1 line-clamp-1">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -106,27 +111,27 @@ export default function ProfilePage() {
                 <div className="flex items-center space-x-4 flex-1">
                   {/* 图标 - 纯方形 */}
                   <div className="w-10 h-10 bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
-                    <item.icon className="w-5 h-5 text-[rgba(0,0,0,0.15)]" />
+                    <item.icon className="w-5 h-5 text-[rgba(0,0,0,0.25)]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="text-base font-semibold text-gray-900 line-clamp-1">
                         {item.label}
                       </span>
-                      <span className="text-sm text-[rgba(0,0,0,0.15)] line-clamp-1">
+                      <span className="text-sm text-[rgba(0,0,0,0.25)] line-clamp-1">
                         {item.subtitle}
                       </span>
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-[rgba(0,0,0,0.15)] ml-3 flex-shrink-0" />
+                <ChevronRight className="w-5 h-5 text-[rgba(0,0,0,0.25)] ml-3 flex-shrink-0" />
               </button>
             ))}
           </div>
 
           {/* 我的宣告 */}
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-1">
               <h2 className="text-lg font-bold text-blue-400">我的宣告</h2>
             </div>
             {/* 灰色横线 */}
@@ -135,18 +140,18 @@ export default function ProfilePage() {
               <div className="flex items-start space-x-4">
                 {/* 宣告图片 - 纯方形 */}
                 <div className="w-16 h-16 flex-shrink-0 bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
-                  <BookOpen className="w-8 h-8 text-[rgba(0,0,0,0.15)]" />
+                  <BookOpen className="w-8 h-8 text-[rgba(0,0,0,0.25)]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
                     用AI重构人力资源管理体系
                   </h3>
-                  <p className="text-sm text-[rgba(0,0,0,0.15)] leading-relaxed line-clamp-3">
+                  <p className="text-sm text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
                     作为一个从业15年的人力资源专家，我将分享如何利用AI工具优化人才招聘、培养和管理的全流程...
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex items-center justify-between text-xs text-[rgba(0,0,0,0.15)]">
+              <div className="mt-4 flex items-center justify-between text-xs text-[rgba(0,0,0,0.25)]">
                 <span>2024年2月28日</span>
                 <span>1,234次播放</span>
               </div>
@@ -155,7 +160,7 @@ export default function ProfilePage() {
 
           {/* 最近活动 */}
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-1">
               <h2 className="text-lg font-bold text-blue-400">最近活动</h2>
             </div>
             {/* 灰色横线 */}
@@ -165,16 +170,17 @@ export default function ProfilePage() {
                 <div className="flex items-start space-x-3">
                   {/* 活动图标 - 纯方形 */}
                   <div className="w-12 h-12 flex-shrink-0 bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
-                    <Calendar className="w-6 h-6 text-[rgba(0,0,0,0.15)]" />
+                    <Calendar className="w-6 h-6 text-[rgba(0,0,0,0.25)]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-1">
                       AI实战赋能营
                     </h3>
-                    <p className="text-sm text-[rgba(0,0,0,0.15)] line-clamp-2">
+                    <p className="text-sm text-[rgba(0,0,0,0.25)] line-clamp-2">
                       上海市浦东新区张江高科 | 3月15日 14:00
                     </p>
                   </div>
+                  {/* 纯方形按钮 */}
                   <Button
                     size="sm"
                     className="bg-blue-400 hover:bg-blue-500 font-normal text-xs flex-shrink-0 ml-2"

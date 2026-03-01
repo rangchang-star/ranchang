@@ -95,7 +95,8 @@ export default function SubscriptionPage() {
 
   return (
     <div className="min-h-screen bg-white pb-14">
-      <div className="max-w-2xl mx-auto">
+      {/* 手机H5宽度 */}
+      <div className="w-full max-w-md mx-auto">
         <div className="px-5 pt-6 space-y-8 pb-4">
           {/* 顶部欢迎区 */}
           <div>
@@ -105,7 +106,7 @@ export default function SubscriptionPage() {
               </div>
               <h2 className="text-xl font-bold text-gray-900">订阅内容</h2>
             </div>
-            <p className="text-sm text-[rgba(0,0,0,0.15)] leading-relaxed">
+            <p className="text-sm text-[rgba(0,0,0,0.25)] leading-relaxed">
               探索AI赋能的培训课程与专业咨询服务，开启转型之旅
             </p>
           </div>
@@ -152,14 +153,14 @@ export default function SubscriptionPage() {
                   {/* 内容 */}
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <Badge className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] font-normal text-xs">
+                      <Badge className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-xs">
                         {training.level}
                       </Badge>
-                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.25)]">
                         <PlayCircle className="w-3.5 h-3.5" />
                         <span>{training.duration}</span>
                       </div>
-                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.25)]">
                         <TrendingUp className="w-3.5 h-3.5" />
                         <span>{training.rating}</span>
                       </div>
@@ -168,7 +169,7 @@ export default function SubscriptionPage() {
                     <h3 className="text-base font-semibold text-gray-900 leading-tight line-clamp-1">
                       {training.title}
                     </h3>
-                    <p className="text-sm text-[rgba(0,0,0,0.15)] leading-relaxed line-clamp-2">
+                    <p className="text-sm text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
                       {training.description}
                     </p>
 
@@ -178,7 +179,7 @@ export default function SubscriptionPage() {
                         <Badge
                           key={tag}
                           variant="secondary"
-                          className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] font-normal text-xs line-clamp-1"
+                          className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-xs line-clamp-1"
                         >
                           {tag}
                         </Badge>
@@ -190,15 +191,16 @@ export default function SubscriptionPage() {
                       <div className="flex items-center space-x-3">
                         <div>
                           <span className="text-lg font-semibold text-gray-900">¥{training.price}</span>
-                          <span className="text-sm text-[rgba(0,0,0,0.15)] line-through ml-2">
+                          <span className="text-sm text-[rgba(0,0,0,0.25)] line-through ml-2">
                             ¥{training.originalPrice}
                           </span>
                         </div>
-                        <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                        <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.25)]">
                           <span>{training.students}</span>
                           <span>人已学</span>
                         </div>
                       </div>
+                      {/* 纯方形按钮 */}
                       <Button
                         size="sm"
                         className="bg-blue-400 text-white hover:bg-blue-500 font-normal"
@@ -230,14 +232,14 @@ export default function SubscriptionPage() {
                   {/* 内容 */}
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <Badge className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] font-normal text-xs">
+                      <Badge className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-xs">
                         {consultation.category}
                       </Badge>
-                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.25)]">
                         <Clock className="w-3.5 h-3.5" />
                         <span>{consultation.duration}</span>
                       </div>
-                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                      <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.25)]">
                         <Heart className="w-3.5 h-3.5" />
                         <span>{consultation.rating}</span>
                       </div>
@@ -246,7 +248,7 @@ export default function SubscriptionPage() {
                     <h3 className="text-base font-semibold text-gray-900 leading-tight line-clamp-1">
                       {consultation.title}
                     </h3>
-                    <p className="text-sm text-[rgba(0,0,0,0.15)] leading-relaxed line-clamp-2">
+                    <p className="text-sm text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
                       {consultation.description}
                     </p>
 
@@ -256,7 +258,7 @@ export default function SubscriptionPage() {
                         <Badge
                           key={tag}
                           variant="secondary"
-                          className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.15)] font-normal text-xs line-clamp-1"
+                          className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-xs line-clamp-1"
                         >
                           {tag}
                         </Badge>
@@ -269,11 +271,12 @@ export default function SubscriptionPage() {
                         <div>
                           <span className="text-lg font-semibold text-gray-900">¥{consultation.price}</span>
                         </div>
-                        <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.15)]">
+                        <div className="flex items-center space-x-1 text-xs text-[rgba(0,0,0,0.25)]">
                           <span>{consultation.reviews}</span>
                           <span>条评价</span>
                         </div>
                       </div>
+                      {/* 纯方形按钮 */}
                       <Button
                         size="sm"
                         className="bg-blue-400 text-white hover:bg-blue-500 font-normal"
