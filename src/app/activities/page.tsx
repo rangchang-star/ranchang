@@ -11,9 +11,9 @@ import { Label } from '@/components/ui/label';
 
 const filters = [
   { id: 'all', label: '全部活动' },
-  { id: 'private', label: '线下私董会' },
-  { id: 'salon', label: '跨界沙龙' },
-  { id: 'ai', label: 'AI实战营' },
+  { id: 'ongoing', label: '进行中' },
+  { id: 'ended', label: '已结束' },
+  { id: 'pending', label: '待审核' },
 ];
 
 const mockActivities = [
@@ -27,7 +27,8 @@ const mockActivities = [
     enrolled: 8,
     max: 12,
     tags: ['私董会', '名额紧张'],
-    status: 'enrolled',
+    status: 'ongoing',
+    applicationStatus: 'approved', // approved | pending | none
     image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=200&fit=crop',
   },
   {
@@ -40,7 +41,8 @@ const mockActivities = [
     enrolled: 20,
     max: 30,
     tags: ['跨界', 'AI'],
-    status: 'upcoming',
+    status: 'ongoing',
+    applicationStatus: 'pending', // 待审核
     image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=200&fit=crop',
   },
   {
@@ -53,8 +55,23 @@ const mockActivities = [
     enrolled: 25,
     max: 30,
     tags: ['AI实战', '工作坊'],
-    status: 'enrolled',
+    status: 'ended',
+    applicationStatus: 'approved',
     image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=200&fit=crop',
+  },
+  {
+    id: '4',
+    type: 'private',
+    title: '35+职场转型工作坊',
+    date: '2024-04-25',
+    time: '13:00-17:00',
+    location: '广州·天河',
+    enrolled: 5,
+    max: 15,
+    tags: ['工作坊', '即将开始'],
+    status: 'ongoing',
+    applicationStatus: 'none', // 未报名
+    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=200&fit=crop',
   },
 ];
 
@@ -62,10 +79,18 @@ export default function ActivitiesPage() {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [isApplyOpen, setIsApplyOpen] = useState(false);
 
-  const filteredActivities =
-    selectedFilter === 'all'
-      ? mockActivities
-      : mockActivities.filter((a) => a.type === selectedFilter);
+  const filteredActivities = (() => {
+    switch (selectedFilter) {
+      case 'ongoing':
+        return mockActivities.filter((a) => a.status === 'ongoing');
+      case 'ended':
+        return mockActivities.filter((a) => a.status === 'ended');
+      case 'pending':
+        return mockActivities.filter((a) => a.applicationStatus === 'pending');
+      default:
+        return mockActivities;
+    }
+  })();
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -162,16 +187,30 @@ export default function ActivitiesPage() {
                   </div>
                 </div>
 
+                {/* 活动状态 */}
+                <div>
+                  {activity.status === 'ended' ? (
+                    <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.4)] text-[11px] font-normal">
+                      已结束
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal">
+                      进行中
+                    </span>
+                  )}
+                </div>
+
                 {/* 操作按钮 */}
                 <div className="flex gap-3 pt-2">
-                  {activity.status === 'enrolled' ? (
+                  {activity.status === 'ended' ? (
                     <Button
                       variant="outline"
                       className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
                     >
                       查看详情
                     </Button>
-                  ) : (
+                  ) : activity.applicationStatus === 'none' ? (
+                    // 未报名：显示"查看详情"和"立即报名"
                     <>
                       <Button
                         variant="outline"
@@ -185,6 +224,27 @@ export default function ActivitiesPage() {
                         立即报名
                       </Button>
                     </>
+                  ) : activity.applicationStatus === 'pending' ? (
+                    // 待审核：显示"待审核"状态
+                    <div className="flex-1 flex items-center justify-center bg-[rgba(251,191,36,0.15)] text-yellow-600 text-[13px] h-10">
+                      待审核
+                    </div>
+                  ) : (
+                    // 已通过：显示"查看详情"和"已报名"
+                    <>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                      >
+                        查看详情
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white h-10 text-[13px] font-normal"
+                      >
+                        已报名
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -195,7 +255,7 @@ export default function ActivitiesPage() {
           {filteredActivities.length === 0 && (
             <div className="text-center py-16">
               <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
-                暂无相关活动
+                {selectedFilter === 'pending' ? '暂无待审核的活动' : '暂无相关活动'}
               </p>
             </div>
           )}
