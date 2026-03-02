@@ -661,18 +661,18 @@ export default function DiscoveryPage() {
 
       {/* 能力连接权限提示对话框 */}
       <Dialog open={trustDialogOpen} onOpenChange={setTrustDialogOpen}>
-        <DialogContent className="sm:max-w-[280px] p-4">
-          <DialogHeader>
-            <DialogTitle className="text-sm font-semibold">提示</DialogTitle>
+        <DialogContent className="w-[90vw] h-[90vh] max-w-none p-6 flex flex-col items-center justify-center">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-lg font-semibold">提示</DialogTitle>
             <DialogDescription className="hidden" />
           </DialogHeader>
-          <div className="text-[11px] text-gray-600 leading-relaxed">
+          <div className="text-sm text-gray-600 leading-relaxed text-center max-w-lg">
             该用户尚未开启"允许陌生人连接"权限，您可以先了解ta，或让ta主动来找到你。
           </div>
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-end mt-6">
             <Button
               variant="ghost"
-              className="text-[11px] h-7 px-4 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] hover:bg-[rgba(0,0,0,0.1)]"
+              className="text-sm h-9 px-6 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] hover:bg-[rgba(0,0,0,0.1)]"
               onClick={() => setTrustDialogOpen(false)}
             >
               我知道了
@@ -683,8 +683,8 @@ export default function DiscoveryPage() {
 
       {/* 查看更多悬浮页面 */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
-          <div className="w-full max-w-md bg-white rounded-t-none animate-in slide-in-from-bottom duration-300 max-h-[80vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-[90vw] h-[90vh] max-w-none bg-white rounded-lg shadow-xl flex flex-col animate-in zoom-in-95 duration-200">
             {/* 顶部固定区域 - 标题和关闭按钮 */}
             <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-[rgba(0,0,0,0.05)]">
               <h3 className="text-sm font-semibold text-gray-900">
@@ -701,7 +701,7 @@ export default function DiscoveryPage() {
             </div>
 
             {/* 滚动内容区域 */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
               {modalType === 'abilities' && (
                 <div className="space-y-3">
                   {connectionItems.map((item) => (
