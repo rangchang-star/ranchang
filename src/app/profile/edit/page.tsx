@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Camera, Upload, Plus, X } from 'lucide-react';
+import { ArrowLeft, Camera, Upload, Plus, X, Mic, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -24,17 +24,37 @@ const mockUserProfile = {
 };
 
 const industries = [
-  '制造业',
-  '互联网',
-  '金融',
-  '教育',
-  '医疗',
-  '零售',
-  '房地产',
-  '建筑',
-  '农业',
-  '服务业',
+  '互联网/IT/软件',
+  '金融/投资/保险',
+  '房地产/建筑/物业',
+  '制造业/工业',
+  '医疗/健康/医药',
+  '教育/培训/科研',
+  '零售/电商/贸易',
+  '传媒/广告/文化',
+  '汽车/交通/物流',
+  '能源/环保/化工',
+  '政府/公共事业',
+  '法律/咨询/专业服务',
+  '其他',
 ];
+
+// 行业标签映射
+const industryTagsMap: Record<string, string[]> = {
+  '互联网/IT/软件': ['人工智能', '软件开发', '数据分析', '云计算', '网络安全', '移动开发'],
+  '金融/投资/保险': ['银行', '证券', '基金', '保险', '投资', '互联网金融'],
+  '房地产/建筑/物业': ['房地产开发', '建筑设计', '物业管理', '室内设计', '工程施工'],
+  '制造业/工业': ['智能制造', '工业4.0', '供应链', '质量管理', '生产管理'],
+  '医疗/健康/医药': ['医疗服务', '医药研发', '医疗器械', '健康管理', '生物制药'],
+  '教育/培训/科研': ['在线教育', '职业培训', 'K12教育', '高等教育', '科研机构'],
+  '零售/电商/贸易': ['电子商务', '新零售', '跨境电商', '供应链管理', '品牌营销'],
+  '传媒/广告/文化': ['新媒体', '影视制作', '广告策划', '内容创作', '文化传播'],
+  '汽车/交通/物流': ['新能源汽车', '智能驾驶', '物流配送', '汽车制造', '交通出行'],
+  '能源/环保/化工': ['新能源', '节能环保', '化工新材料', '石油化工', '清洁能源'],
+  '政府/公共事业': ['政务管理', '公共服务', '事业单位', '社会组织'],
+  '法律/咨询/专业服务': ['法律服务', '管理咨询', '财务咨询', '人力资源', '市场咨询'],
+  '其他': ['综合服务', '跨行业', '自由职业'],
+};
 
 const resourceTags = [
   'AI技术',
@@ -58,10 +78,12 @@ const directions = [
 export default function ProfileEditPage() {
   const [profile, setProfile] = useState(mockUserProfile);
   const [selectedPurpose, setSelectedPurpose] = useState<string[]>(profile.purpose);
-  const [selectedIndustryTags, setSelectedIndustryTags] = useState<string[]>(profile.industryTags);
+  const [selectedIndustryTag, setSelectedIndustryTag] = useState<string>(profile.industryTags[0] || '');
   const [selectedResources, setSelectedResources] = useState<string[]>(profile.resources);
-  const [selectedDirections, setSelectedDirections] = useState<string[]>(profile.directions);
-  const [customIndustry, setCustomIndustry] = useState('');
+  const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
+  const [directionRecording, setDirectionRecording] = useState<string | null>(null);
+  const [showDeclarationInput, setShowDeclarationInput] = useState(false);
+  const [declarationDescription, setDeclarationDescription] = useState('');
 
   const handlePurposeToggle = (purpose: string) => {
     if (selectedPurpose.includes(purpose)) {
@@ -71,19 +93,19 @@ export default function ProfileEditPage() {
     }
   };
 
-  const handleIndustryTagToggle = (tag: string) => {
-    if (selectedIndustryTags.includes(tag)) {
-      setSelectedIndustryTags(selectedIndustryTags.filter((t) => t !== tag));
-    } else {
-      setSelectedIndustryTags([...selectedIndustryTags, tag]);
-    }
+  const handleIndustryTagSelect = (tag: string) => {
+    setSelectedIndustryTag(tag);
   };
 
-  const handleAddCustomIndustry = () => {
-    if (customIndustry && !selectedIndustryTags.includes(customIndustry)) {
-      setSelectedIndustryTags([...selectedIndustryTags, customIndustry]);
-      setCustomIndustry('');
-    }
+  const handleDirectionSelect = (directionId: string) => {
+    setSelectedDirection(directionId);
+  };
+
+  const handleDirectionRecord = (directionId: string) => {
+    // TODO: 实现录音功能
+    setDirectionRecording(directionId);
+    // 录音完成后，显示输入框
+    setShowDeclarationInput(true);
   };
 
   const handleResourceToggle = (resource: string) => {
@@ -94,22 +116,15 @@ export default function ProfileEditPage() {
     }
   };
 
-  const handleDirectionToggle = (direction: string) => {
-    if (selectedDirections.includes(direction)) {
-      setSelectedDirections(selectedDirections.filter((d) => d !== direction));
-    } else {
-      setSelectedDirections([...selectedDirections, direction]);
-    }
-  };
-
   const handleSave = () => {
     // 这里应该调用保存API
     console.log('保存资料:', {
       ...profile,
       purpose: selectedPurpose,
-      industryTags: selectedIndustryTags,
+      industryTags: selectedIndustryTag ? [selectedIndustryTag] : [],
       resources: selectedResources,
-      directions: selectedDirections,
+      directions: selectedDirection ? [selectedDirection] : [],
+      declarationDescription,
     });
     alert('资料保存成功！');
   };
@@ -226,7 +241,10 @@ export default function ProfileEditPage() {
               <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">选择行业</label>
               <select
                 value={profile.industry}
-                onChange={(e) => setProfile({ ...profile, industry: e.target.value })}
+                onChange={(e) => {
+                  setProfile({ ...profile, industry: e.target.value });
+                  setSelectedIndustryTag(''); // 切换行业时清空选中的标签
+                }}
                 className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
               >
                 <option value="">请选择行业</option>
@@ -237,55 +255,40 @@ export default function ProfileEditPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-2 block">行业标签（多选）</label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {selectedIndustryTags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-1 bg-green-400 bg-opacity-10 text-green-600 text-[10px] flex items-center space-x-1"
-                  >
-                    <span>{tag}</span>
+            {/* 行业标签 - 只有选择行业后才显示 */}
+            {profile.industry && (
+              <div>
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-2 block">行业标签（单选）</label>
+                {selectedIndustryTag && (
+                  <div className="mb-2">
+                    <span className="px-2 py-1 bg-green-400 bg-opacity-10 text-green-600 text-[10px] flex items-center space-x-1">
+                      <span>{selectedIndustryTag}</span>
+                      <button
+                        onClick={() => setSelectedIndustryTag('')}
+                        className="hover:text-red-400"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {(industryTagsMap[profile.industry] || []).map((tag) => (
                     <button
-                      onClick={() => handleIndustryTagToggle(tag)}
-                      className="hover:text-red-400"
+                      key={tag}
+                      onClick={() => handleIndustryTagSelect(tag)}
+                      className={`px-2 py-1 text-[10px] border ${
+                        selectedIndustryTag === tag
+                          ? 'border-green-400 bg-green-400 bg-opacity-10 text-green-600'
+                          : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)]'
+                      }`}
                     >
-                      <X className="w-3 h-3" />
+                      {tag}
                     </button>
-                  </span>
-                ))}
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {industries.map((industry) => (
-                  <button
-                    key={industry}
-                    onClick={() => handleIndustryTagToggle(industry)}
-                    className={`px-2 py-1 text-[10px] border ${
-                      selectedIndustryTags.includes(industry)
-                        ? 'border-green-400 bg-green-400 bg-opacity-10 text-green-600'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)]'
-                    }`}
-                  >
-                    {industry}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center space-x-2 mt-2">
-                <input
-                  type="text"
-                  value={customIndustry}
-                  onChange={(e) => setCustomIndustry(e.target.value)}
-                  className="flex-1 px-3 py-1.5 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
-                  placeholder="自定义行业标签"
-                />
-                <Button
-                  onClick={handleAddCustomIndustry}
-                  className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-3 py-1.5"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* 资源标签 */}
@@ -310,29 +313,67 @@ export default function ProfileEditPage() {
 
           {/* 宣告方向 */}
           <div className="space-y-3">
-            <h2 className="text-[13px] font-semibold text-gray-900">宣告方向</h2>
+            <h2 className="text-[13px] font-semibold text-gray-900">
+              宣告方向
+              <span className="text-[10px] text-[rgba(0,0,0,0.4)] font-normal ml-2">（请勾选你昨天展示的宣告）</span>
+            </h2>
             <div className="grid grid-cols-3 gap-2">
               {directions.map((direction) => (
                 <button
                   key={direction.id}
-                  onClick={() => handleDirectionToggle(direction.id)}
-                  className={`flex flex-col items-center p-2 border ${
-                    selectedDirections.includes(direction.id)
+                  onClick={() => handleDirectionSelect(direction.id)}
+                  className={`relative flex flex-col items-center p-2 border ${
+                    selectedDirection === direction.id
                       ? 'border-blue-400 bg-blue-400 bg-opacity-10'
                       : 'border-[rgba(0,0,0,0.1)]'
                   }`}
                 >
-                  <div className="w-10 h-10 mb-1">
+                  {/* 左上角勾选框 */}
+                  <div className="absolute top-1 left-1 w-4 h-4 border-2 border-blue-400 flex items-center justify-center">
+                    {selectedDirection === direction.id && (
+                      <Check className="w-3 h-3 text-blue-400" />
+                    )}
+                  </div>
+                  {/* 图标 */}
+                  <div className="w-10 h-10 mb-1 relative">
                     <img
                       src={direction.icon}
                       alt={direction.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <span className="text-[10px]">{direction.name}</span>
+                  {/* 右下角录音机图标 */}
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDirectionRecord(direction.id);
+                    }}
+                    className="absolute bottom-1 right-1 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-500 transition-colors"
+                  >
+                    <Mic className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="text-[10px] mt-1">{direction.name}</span>
                 </button>
               ))}
             </div>
+
+            {/* 宣告简述输入框 - 只有勾选并录音后才显示 */}
+            {showDeclarationInput && selectedDirection && (
+              <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] block">此宣告简述（不少于20字）</label>
+                <textarea
+                  value={declarationDescription}
+                  onChange={(e) => setDeclarationDescription(e.target.value)}
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none"
+                  rows={3}
+                  placeholder="请输入此宣告的简述..."
+                  minLength={20}
+                />
+                <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
+                  {declarationDescription.length}/20+
+                </p>
+              </div>
+            )}
           </div>
 
           {/* 一句说清你的需要 */}
