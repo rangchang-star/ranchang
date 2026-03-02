@@ -3,7 +3,7 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Download } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Download, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
 
 const mockActivities = [
@@ -110,13 +110,24 @@ const mockApplications = [
 
 export default function AdminActivitiesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'ended'>('all');
+  const [timeSort, setTimeSort] = useState<'asc' | 'desc' | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
   const [showApplications, setShowApplications] = useState(false);
   const [applications, setApplications] = useState(mockApplications);
 
-  const filteredActivities = mockActivities.filter((activity) =>
-    activity.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredActivities = mockActivities
+    .filter((activity) => activity.title.toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((activity) => {
+      if (statusFilter === 'all') return true;
+      return activity.status === statusFilter;
+    })
+    .sort((a, b) => {
+      if (timeSort === null) return 0;
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return timeSort === 'asc' ? dateA - dateB : dateB - dateA;
+    });
 
   const filteredApplications = selectedActivity
     ? applications.filter((app) => app.activityId === selectedActivity)
@@ -272,7 +283,7 @@ export default function AdminActivitiesPage() {
           </div>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between space-x-4">
           <div className="relative flex-1 max-w-md">
             <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
             <Input
@@ -282,6 +293,69 @@ export default function AdminActivitiesPage() {
               className="pl-10"
             />
           </div>
+
+          {/* 快捷搜索按钮 */}
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={statusFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('all')}
+              className={
+                statusFilter === 'all'
+                  ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border-blue-400'
+                  : ''
+              }
+            >
+              全部
+            </Button>
+            <Button
+              variant={statusFilter === 'active' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('active')}
+              className={
+                statusFilter === 'active'
+                  ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border-blue-400'
+                  : ''
+              }
+            >
+              进行中
+            </Button>
+            <Button
+              variant={statusFilter === 'ended' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('ended')}
+              className={
+                statusFilter === 'ended'
+                  ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border-blue-400'
+                  : ''
+              }
+            >
+              已结束
+            </Button>
+          </div>
+
+          {/* 时间排序按钮 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (timeSort === null) {
+                setTimeSort('desc');
+              } else if (timeSort === 'desc') {
+                setTimeSort('asc');
+              } else {
+                setTimeSort(null);
+              }
+            }}
+            className={
+              timeSort !== null
+                ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border-blue-400'
+                : ''
+            }
+          >
+            <ArrowUpDown className="w-4 h-4 mr-1" />
+            {timeSort === 'asc' ? '时间↑' : timeSort === 'desc' ? '时间↓' : '时间排序'}
+          </Button>
         </div>
 
         <div className="border border-[rgba(0,0,0,0.1)]">
