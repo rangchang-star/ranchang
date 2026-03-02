@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass, Bookmark, User } from 'lucide-react';
+import { Compass, Bookmark, User, Sun } from 'lucide-react';
 
 const navItems = [
   { href: '/discovery', label: '发现', icon: Compass },
-  { href: '/subscription', label: '点亮', icon: Bookmark },
+  { href: '/subscription', label: '点亮', icon: Sun },
   { href: '/profile', label: '个人', icon: User },
 ];
 
