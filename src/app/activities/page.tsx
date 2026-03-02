@@ -251,7 +251,7 @@ export default function ActivitiesPage() {
                       </div>
                     </>
                   ) : (
-                    // 已通过：显示"查看详情"和"已报名"
+                    // 已通过：显示"查看详情"和"报名成功"
                     <>
                       <Button
                         variant="outline"
@@ -264,7 +264,7 @@ export default function ActivitiesPage() {
                         variant="outline"
                         className="flex-1 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white h-10 text-[13px] font-normal"
                       >
-                        已报名
+                        报名成功
                       </Button>
                     </>
                   )}
