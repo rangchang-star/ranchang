@@ -7,7 +7,7 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, Bell, User } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -257,13 +257,6 @@ const menuItems = [
     subtitle: '2个',
     action: 'view-activities',
     route: '/activities',
-  },
-  {
-    icon: Bell,
-    label: '消息通知',
-    subtitle: '5条',
-    action: 'view-notifications',
-    route: '/notifications',
   },
   {
     icon: Settings,
