@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass, Bookmark, User, Sun } from 'lucide-react';
+import { Compass, User } from 'lucide-react';
+import { SunIcon } from '@/components/sun-icon';
 
 const navItems = [
   { href: '/discovery', label: '发现', icon: Compass },
-  { href: '/subscription', label: '点亮', icon: Sun },
+  { href: '/subscription', label: '点亮', icon: SunIcon },
   { href: '/profile', label: '个人', icon: User },
 ];
 
@@ -33,12 +34,21 @@ export function BottomNav() {
                     : 'px-6'
                 }`}
               >
-                <Icon
-                  className={`w-6 h-6 transition-colors ${
-                    isActive ? 'text-blue-400' : 'text-gray-400'
-                  }`}
-                  strokeWidth={2}
-                />
+                {item.icon === SunIcon ? (
+                  <Icon
+                    className={`w-6 h-6 transition-colors ${
+                      isActive ? 'text-blue-400' : 'text-gray-400'
+                    }`}
+                    size={24}
+                  />
+                ) : (
+                  <Icon
+                    className={`w-6 h-6 transition-colors ${
+                      isActive ? 'text-blue-400' : 'text-gray-400'
+                    }`}
+                    strokeWidth={2}
+                  />
+                )}
                 <span
                   className={`text-xs transition-colors ${
                     isActive ? 'text-blue-400' : 'text-gray-400'
