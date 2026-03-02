@@ -97,12 +97,13 @@ const activityItems = [
   },
 ];
 
-// 高燃宣告
+// 高燃宣告 - 使用图标类型
 const declarationItems = [
   {
     id: '1',
     rank: 1,
-    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=zhangming',
+    icon: '/icon-confidence.jpg',
+    iconType: '信心',
     title: '用AI重塑传统制造业',
     profile: '制造专家',
     duration: '5:23',
@@ -110,7 +111,8 @@ const declarationItems = [
   {
     id: '2',
     rank: 2,
-    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=wangjie',
+    icon: '/icon-mission.jpg',
+    iconType: '使命',
     title: '35+创业者的破局之路',
     profile: '连续创业者',
     duration: '8:15',
@@ -118,7 +120,8 @@ const declarationItems = [
   {
     id: '3',
     rank: 3,
-    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=lihua',
+    icon: '/icon-self.jpg',
+    iconType: '自我',
     title: '从HR到企业合伙人',
     profile: '战略顾问',
     duration: '6:42',
@@ -126,7 +129,8 @@ const declarationItems = [
   {
     id: '4',
     rank: 4,
-    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=chenwei',
+    icon: '/icon-opponent.jpg',
+    iconType: '对手',
     title: 'AI时代的产品思维',
     profile: '产品总监',
     duration: '7:30',
@@ -343,12 +347,12 @@ export default function DiscoveryPage() {
                     {item.rank}
                   </div>
 
-                  {/* 左侧头像 - 纯方形 */}
-                  <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
+                  {/* 左侧图标 - 纯方形 */}
+                  <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
                     <img
-                      src={item.avatar}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
+                      src={item.icon}
+                      alt={item.iconType}
+                      className="w-10 h-10 object-contain"
                     />
                   </div>
 
