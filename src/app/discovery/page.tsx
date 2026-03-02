@@ -22,6 +22,7 @@ const connectionItems = [
     age: 48,
     avatar: '/avatar-1.jpg',
     tags: ['供应链专家', '数字化转型'],
+    industry: '制造业',
     need: '希望找到传统制造业的数字化项目机会',
   },
   {
@@ -30,6 +31,7 @@ const connectionItems = [
     age: 52,
     avatar: '/avatar-2.jpg',
     tags: ['投融资', '战略规划'],
+    industry: '金融投资',
     need: '想寻找优质项目对接投资机构',
   },
   {
@@ -38,6 +40,7 @@ const connectionItems = [
     age: 45,
     avatar: '/avatar-3.jpg',
     tags: ['人力资源', '团队管理'],
+    industry: '企业服务',
     need: '需要搭建企业的人才培养体系',
   },
 ];
@@ -301,6 +304,10 @@ export default function DiscoveryPage() {
                           {tag}
                         </span>
                       ))}
+                      {/* 绿色行业标签块 */}
+                      <span className="inline-block px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal line-clamp-1">
+                        {item.industry}
+                      </span>
                     </div>
                     {/* 个人需求说明 */}
                     <p className="text-[11px] text-gray-900 leading-relaxed line-clamp-3">
