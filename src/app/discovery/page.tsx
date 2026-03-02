@@ -224,6 +224,14 @@ export default function DiscoveryPage() {
             </div>
           </div>
 
+          {/* Slogan - 与点亮页面样式一致 */}
+          <div className="px-5 pb-4">
+            <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed">
+              只要抓住使命，当年力量如何，现在力量也必定如何。<br />
+              35岁才是新的的开始，向前加油不回头！
+            </p>
+          </div>
+
           {/* 搜索框 */}
           <div className="px-5 pb-4 pt-0">
             <div className="relative">
@@ -236,14 +244,6 @@ export default function DiscoveryPage() {
                 className="w-full pl-12 pr-4 py-3 bg-[rgba(0,0,0,0.05)] text-[13px] text-gray-900 placeholder-[rgba(0,0,0,0.25)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
               />
             </div>
-          </div>
-
-          {/* Slogan */}
-          <div className="px-5 pb-4">
-            <p className="text-[13px] text-center leading-relaxed text-gray-700">
-              只要抓住使命，当年力量如何，现在力量也必定如何。<br />
-              35岁才是新的的开始，向前加油不回头！
-            </p>
           </div>
         </div>
 
