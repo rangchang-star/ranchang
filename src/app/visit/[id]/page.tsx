@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Calendar, Users, Star, Share2, Phone, MessageCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Users, Star, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -60,13 +60,8 @@ export default function VisitDetailPage() {
     }
   };
 
-  const handleContact = () => {
-    // 这里应该实现联系功能
-    console.log('联系:', visit.target.name);
-  };
-
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="min-h-screen bg-white pb-14">
       <div className="w-full max-w-md mx-auto">
         {/* 顶部导航 */}
         <div className="sticky top-0 bg-white z-50 px-5 py-4">
@@ -234,25 +229,6 @@ export default function VisitDetailPage() {
               </div>
             </div>
           )}
-
-          {/* 操作按钮 */}
-          <div className="flex items-center space-x-3 pt-4">
-            <Button
-              onClick={handleContact}
-              className="flex-1 bg-blue-400 hover:bg-blue-500 font-normal text-[13px]"
-            >
-              <Phone className="w-4 h-4 mr-2" />
-              联系
-            </Button>
-            <Button
-              onClick={handleContact}
-              variant="outline"
-              className="flex-1 font-normal text-[13px]"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              消息
-            </Button>
-          </div>
         </div>
       </div>
     </div>
