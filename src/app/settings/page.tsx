@@ -1,10 +1,22 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronRight, Shield, HelpCircle } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Shield, HelpCircle, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function SettingsPage() {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = () => {
+    if (confirm('确定要退出登录吗？')) {
+      setIsLoggingOut(true);
+      // 这里应该调用退出登录API
+      console.log('退出登录');
+      window.location.href = '/login';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white pb-20">
       <div className="w-full max-w-md mx-auto">
@@ -84,6 +96,16 @@ export default function SettingsPage() {
               燃场 v1.0.0
             </p>
           </div>
+
+          {/* 退出登录 */}
+          <Button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="w-full bg-blue-400 hover:bg-blue-500 text-white font-normal text-[13px] h-10"
+          >
+            <LogOut className={`w-4 h-4 mr-2 ${isLoggingOut ? 'animate-spin' : ''}`} />
+            {isLoggingOut ? '退出中...' : '退出登录'}
+          </Button>
         </div>
       </div>
     </div>
