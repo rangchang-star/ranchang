@@ -138,6 +138,30 @@ export default function ProfileEditPage() {
   };
 
   const handleSave = () => {
+    // 验证必选项
+    const requiredErrors: string[] = [];
+
+    // 验证来这里的目的
+    if (selectedPurpose.length === 0) {
+      requiredErrors.push('来这里的目的');
+    }
+
+    // 验证所属行业
+    if (!profile.industry) {
+      requiredErrors.push('所属行业');
+    }
+
+    // 验证一句说清你的需要
+    if (!profile.declaration || profile.declaration.trim().length < 20) {
+      requiredErrors.push('一句说清你的需要（不少于20字）');
+    }
+
+    // 如果有必选项未填写，显示提示
+    if (requiredErrors.length > 0) {
+      alert('请填写星号必选项：\n' + requiredErrors.join('、'));
+      return;
+    }
+
     // 这里应该调用保存API
     console.log('保存资料:', {
       ...profile,
