@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Flame, Play, User } from 'lucide-react';
+import { Search, Flame, Play, User, Timer } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BottomNav } from '@/components/bottom-nav';
 
@@ -362,9 +362,9 @@ export default function DiscoveryPage() {
                     <h3 className="text-[13px] font-semibold text-gray-900 mb-1 line-clamp-2">
                       {item.title}
                     </h3>
-                    {/* 达人画像（灰色字） */}
-                    <p className="text-[13px] text-[rgba(0,0,0,0.25)]">
-                      {item.profile}
+                    {/* 达人画像与时长（灰色字） */}
+                    <p className="text-[13px] text-[rgba(0,0,0,0.25)] flex items-center">
+                      {item.profile} · <Timer className="w-3 h-3 mx-1" />{item.duration}
                     </p>
                   </div>
 
