@@ -99,12 +99,10 @@ export default function SubscriptionPage() {
       <div className="w-full max-w-md mx-auto">
         <div className="px-5 pt-[60px] pb-4 space-y-8">
           {/* 顶部标题区 */}
-          <div className="flex items-center justify-between py-4">
-            <h1 className="text-2xl font-light text-gray-900">订阅内容</h1>
-          </div>
-
-          {/* 描述文字 */}
           <div>
+            <div className="flex items-center justify-between py-4">
+              <h1 className="text-2xl font-light text-gray-900">订阅内容</h1>
+            </div>
             <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed">
               探索AI赋能的培训课程与专业咨询服务，开启转型之旅
             </p>
