@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { AdminLayout } from '@/components/admin-layout';
@@ -10,7 +10,10 @@ import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 
 // 动态导入 React Quill，避免 SSR 问题
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = dynamic(() => import('react-quill'), { 
+  ssr: false,
+  loading: () => <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
+});
 
 // 活动类型选项
 const activityTypeOptions = [
@@ -24,6 +27,7 @@ const availableTags = ['私董会', '名额紧张', '跨界', 'AI', 'AI实战', 
 
 export default function AdminActivityCreatePage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -33,6 +37,10 @@ export default function AdminActivityCreatePage() {
   const [maxParticipants, setMaxParticipants] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [description, setDescription] = useState('');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleTagToggle = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -227,26 +235,30 @@ export default function AdminActivityCreatePage() {
               <h3 className="text-[13px] font-semibold text-gray-900">活动描述</h3>
             </div>
             <div className="p-4">
-              <div className="quill-wrapper">
-                <ReactQuill
-                  theme="snow"
-                  value={description}
-                  onChange={setDescription}
-                  placeholder="请输入活动描述..."
-                  modules={{
-                    toolbar: [
-                      [{ 'header': [1, 2, 3, false] }],
-                      ['bold', 'italic', 'underline', 'strike'],
-                      [{ 'color': [] }, { 'background': [] }],
-                      [{ 'font': [] }],
-                      [{ 'size': ['small', false, 'large', 'huge'] }],
-                      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                      [{ 'align': [] }],
-                      ['link', 'clean'],
-                    ],
-                  }}
-                />
-              </div>
+              {mounted ? (
+                <div className="quill-wrapper">
+                  <ReactQuill
+                    theme="snow"
+                    value={description}
+                    onChange={setDescription}
+                    placeholder="请输入活动描述..."
+                    modules={{
+                      toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'font': [] }],
+                        [{ 'size': ['small', false, 'large', 'huge'] }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['link', 'clean'],
+                      ],
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
+              )}
             </div>
           </div>
 
