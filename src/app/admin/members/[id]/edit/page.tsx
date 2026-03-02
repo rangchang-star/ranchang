@@ -51,10 +51,11 @@ const mockMember = {
   adminTags: ['普通', '私董案主'],
 
   // 公司信息
-  phone: '138****1234',
+  phone: '13800123000',
   email: 'wang@example.com',
   company: '某科技公司',
   position: 'CEO',
+  faith: '基督教',
 
   // 其他信息
   level: '活跃会员',
@@ -69,6 +70,8 @@ const mockMember = {
     summary: '基于15年人力资源管理经验，专注于企业数字化转型中的人才体系搭建与AI赋能实践',
     date: '2024年3月1日',
     views: 2847,
+    hasAudio: true,
+    audioUrl: '/declaration-audio.mp3',
   },
 
   // 量表评估
@@ -150,7 +153,9 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
   const [email, setEmail] = useState(mockMember.email);
   const [company, setCompany] = useState(mockMember.company);
   const [position, setPosition] = useState(mockMember.position);
+  const [faith, setFaith] = useState(mockMember.faith || '');
   const [isFeatured, setIsFeatured] = useState(mockMember.isFeatured);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   const handleTagToggle = (tag: string, type: 'admin' | 'ability' | 'resource') => {
     const setTags = type === 'admin' ? setAdminTags : type === 'ability' ? setAbilityTags : setResourceTags;
@@ -178,6 +183,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
       email,
       company,
       position,
+      faith,
       isFeatured,
     });
     alert('会员信息已保存');
@@ -189,6 +195,17 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
       console.log('删除会员:', memberId);
       alert('会员已删除');
       router.push('/admin/members');
+    }
+  };
+
+  const handlePlayAudio = () => {
+    setIsPlayingAudio(!isPlayingAudio);
+  };
+
+  const handleDeleteAudio = () => {
+    if (confirm('确定要删除录音吗？此操作不可恢复！')) {
+      setIsPlayingAudio(false);
+      alert('录音已删除');
     }
   };
 
@@ -378,6 +395,17 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                     className="text-[13px]"
                   />
                 </div>
+                <div>
+                  <label className="block text-[13px] font-medium text-[rgba(0,0,0,0.6)] mb-2">
+                    信仰（可选）
+                  </label>
+                  <Input
+                    value={faith}
+                    onChange={(e) => setFaith(e.target.value)}
+                    placeholder="请输入您的信仰"
+                    className="text-[13px]"
+                  />
+                </div>
               </div>
             </div>
 
@@ -480,21 +508,45 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
               <h3 className="text-[13px] font-semibold text-gray-900">高燃宣告</h3>
             </div>
             <div className="px-4 py-3">
-              <div className="p-3 bg-[rgba(0,0,0,0.02)]">
-                <p className="text-[13px] text-[rgba(0,0,0,0.6)] mb-2">
-                  <span className="font-medium text-gray-900">方向：</span>
-                  {mockMember.declaration.direction === 'confidence' && '信心'}
-                  {mockMember.declaration.direction === 'mission' && '使命'}
-                  {mockMember.declaration.direction === 'self' && '自我'}
-                  {mockMember.declaration.direction === 'opponent' && '对手'}
-                  {mockMember.declaration.direction === 'environment' && '环境'}
-                </p>
-                <p className="text-[13px] text-gray-900 mb-2">{mockMember.declaration.text}</p>
-                <p className="text-[11px] text-[rgba(0,0,0,0.6)] mb-1">{mockMember.declaration.summary}</p>
-                <div className="flex items-center space-x-4 text-[11px] text-[rgba(0,0,0,0.6)]">
-                  <span>发布时间：{mockMember.declaration.date}</span>
-                  <span>浏览量：{mockMember.declaration.views}</span>
+              <div className="flex items-start space-x-4">
+                <div className="flex-1">
+                  <div className="p-3 bg-[rgba(0,0,0,0.02)]">
+                    <p className="text-[13px] text-[rgba(0,0,0,0.6)] mb-2">
+                      <span className="font-medium text-gray-900">方向：</span>
+                      {mockMember.declaration.direction === 'confidence' && '信心'}
+                      {mockMember.declaration.direction === 'mission' && '使命'}
+                      {mockMember.declaration.direction === 'self' && '自我'}
+                      {mockMember.declaration.direction === 'opponent' && '对手'}
+                      {mockMember.declaration.direction === 'environment' && '环境'}
+                    </p>
+                    <p className="text-[13px] text-gray-900 mb-2">{mockMember.declaration.text}</p>
+                    <p className="text-[11px] text-[rgba(0,0,0,0.6)] mb-1">{mockMember.declaration.summary}</p>
+                    <div className="flex items-center space-x-4 text-[11px] text-[rgba(0,0,0,0.6)]">
+                      <span>发布时间：{mockMember.declaration.date}</span>
+                      <span>浏览量：{mockMember.declaration.views}</span>
+                    </div>
+                  </div>
                 </div>
+                {mockMember.declaration.hasAudio && (
+                  <div className="flex flex-col items-center space-y-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePlayAudio}
+                      className="w-12 h-12 rounded-full"
+                    >
+                      {isPlayingAudio ? '⏸' : '▶'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDeleteAudio}
+                      className="text-blue-600 border-blue-400 hover:bg-blue-50"
+                    >
+                      删除录音
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -577,7 +629,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
               <Button
                 variant="outline"
                 onClick={handleDelete}
-                className="w-full text-red-600 border-red-300 hover:bg-red-50 hover:border-red-500"
+                className="w-full text-blue-600 border-blue-400 hover:bg-blue-50 hover:border-blue-500"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 删除会员

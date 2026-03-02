@@ -339,7 +339,7 @@ export default function AdminActivitiesPage() {
                         </span>
                       )}
                     </Button>
-                    <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600 hover:border-red-500">
+                    <Button variant="outline" size="sm" className="text-blue-600 border-blue-400 hover:bg-blue-50 hover:border-blue-500">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
