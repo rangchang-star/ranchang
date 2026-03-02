@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -29,7 +30,13 @@ const mockMember = {
   visitCount: 5,
 };
 
-export default function AdminMemberDetailPage({ params }: { params: { id: string } }) {
+export default function AdminMemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const [memberId, setMemberId] = useState<string>('');
+
+  useEffect(() => {
+    params.then(p => setMemberId(p.id));
+  }, [params]);
+
   return (
     <AdminLayout>
       <div className="space-y-5">
@@ -44,10 +51,10 @@ export default function AdminMemberDetailPage({ params }: { params: { id: string
             </Link>
             <div>
               <h2 className="text-[15px] font-bold text-gray-900">会员详情</h2>
-              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">ID: {params.id}</p>
+              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">ID: {memberId}</p>
             </div>
           </div>
-          <Link href={`/admin/members/${params.id}/edit`}>
+          <Link href={`/admin/members/${memberId}/edit`}>
             <Button>
               <Edit className="w-4 h-4 mr-2" />
               编辑
