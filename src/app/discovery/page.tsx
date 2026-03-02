@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { Search, Flame, Play, User, Timer, Music2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BottomNav } from '@/components/bottom-nav';
@@ -306,8 +307,9 @@ export default function DiscoveryPage() {
             </div>
             <div className="space-y-4">
               {connectionItems.map((item) => (
-                <div
+                <Link
                   key={item.id}
+                  href={`/connection/${item.id}`}
                   className="relative flex items-start p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                 >
                   {/* 标签戳 */}
@@ -357,7 +359,7 @@ export default function DiscoveryPage() {
                       {item.need}
                     </p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
             {/* 查看更多灰色色块 - 缩小50% */}
@@ -380,8 +382,9 @@ export default function DiscoveryPage() {
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-4">
               {activityItems.map((item) => (
-                <div
+                <Link
                   key={item.id}
+                  href={`/activity/${item.id}`}
                   className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                 >
                   <div className="flex items-start">
@@ -438,7 +441,7 @@ export default function DiscoveryPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
             {/* 查看更多灰色色块 - 缩小50% */}
@@ -461,8 +464,9 @@ export default function DiscoveryPage() {
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-3">
               {declarationItems.map((item) => (
-                <div
+                <Link
                   key={item.id}
+                  href={`/declaration/${item.id}`}
                   className="flex items-center p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                 >
                   {/* 排序 - 圆形，缩小70%，灰色 */}
@@ -497,7 +501,7 @@ export default function DiscoveryPage() {
                   <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0 ml-3">
                     <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                   </button>
-                </div>
+                </Link>
               ))}
             </div>
             {/* 查看更多灰色色块 */}

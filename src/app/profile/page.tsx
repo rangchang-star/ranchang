@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, Bell, User } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -233,24 +235,42 @@ const menuItems = [
     label: '我的宣告',
     subtitle: '3条',
     action: 'view-declarations',
+    route: '/declarations',
   },
   {
     icon: TrendingUp,
     label: '探访记录',
     subtitle: '2次',
     action: 'view-visits',
+    route: '/visit/1',
   },
   {
     icon: Award,
     label: '数字资产',
     subtitle: '2个',
     action: 'view-assets',
+    route: '/assets',
   },
   {
     icon: Briefcase,
     label: '参与活动',
     subtitle: '2个',
     action: 'view-activities',
+    route: '/activities',
+  },
+  {
+    icon: Bell,
+    label: '消息通知',
+    subtitle: '5条',
+    action: 'view-notifications',
+    route: '/notifications',
+  },
+  {
+    icon: Settings,
+    label: '设置',
+    subtitle: '',
+    action: 'view-settings',
+    route: '/settings',
   },
 ];
 
@@ -396,10 +416,12 @@ export default function ProfilePage() {
 
             {/* 编辑按钮 */}
             <div className="mt-4 flex justify-center">
-              <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-6 py-2 flex items-center space-x-2">
-                <Edit className="w-3 h-3" />
-                <span>完善资料</span>
-              </Button>
+              <Link href="/profile/edit">
+                <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-6 py-2 flex items-center space-x-2">
+                  <Edit className="w-3 h-3" />
+                  <span>完善资料</span>
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -430,12 +452,14 @@ export default function ProfilePage() {
                         </Badge>
                       </div>
                     </div>
-                    <Button 
-                      className="bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.25)] font-normal text-[10px] px-3 py-1 h-7 flex items-center space-x-1"
+                    <Link
+                      href={`/assessment/${assessment.name === '创业心理评估' ? 'entrepreneurial-psychology' : assessment.name === '商业认知评估' ? 'business-cognition' : assessment.name === 'AI认知评估' ? 'ai-cognition' : 'career-mission'}`}
                     >
-                      <RotateCcw className="w-3 h-3" />
-                      <span>重新测试</span>
-                    </Button>
+                      <Button className="bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.25)] font-normal text-[10px] px-3 py-1 h-7 flex items-center space-x-1">
+                        <RotateCcw className="w-3 h-3" />
+                        <span>重新测试</span>
+                      </Button>
+                    </Link>
                   </div>
 
                   {/* 一句话总结 */}
@@ -578,8 +602,9 @@ export default function ProfilePage() {
           {/* 功能菜单 */}
           <div className="space-y-3">
             {menuItems.map((item) => (
-              <button
+              <Link
                 key={item.label}
+                href={item.route}
                 className="w-full p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors flex items-center"
               >
                 <div className="flex items-center space-x-4 flex-1">
@@ -598,7 +623,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-[rgba(0,0,0,0.25)] ml-3 flex-shrink-0" />
-              </button>
+              </Link>
             ))}
           </div>
         </div>
