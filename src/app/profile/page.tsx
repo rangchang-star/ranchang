@@ -95,25 +95,7 @@ const userInfo = {
   assessments: assessmentResults,
 };
 
-// 正在进行的连接
-const activeConnections = [
-  {
-    id: '1',
-    name: '李明',
-    avatar: '/avatar-2.jpg',
-    tags: ['投融资', '战略规划'],
-    status: '洽谈中',
-  },
-  {
-    id: '2',
-    name: '张总',
-    avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=ceo',
-    tags: ['制造业', '企业转型'],
-    status: '已确认',
-  },
-];
-
-// 探访记录
+// 探访记录（管理员后台确认后出现）
 const visitRecords = [
   {
     id: '1',
@@ -121,6 +103,11 @@ const visitRecords = [
     date: '2024年3月15日',
     role: '探访人',
     skill: '人力资源',
+    industry: '企业转型',
+    visitors: [
+      { name: '李明', avatar: '/avatar-2.jpg', skill: '战略' },
+      { name: '王芳', avatar: '/avatar-3.jpg', skill: '人力资源' },
+    ],
     image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=120&fit=crop',
   },
   {
@@ -129,6 +116,11 @@ const visitRecords = [
     date: '2024年3月12日',
     role: '探访人',
     skill: '组织优化',
+    industry: '战略规划',
+    visitors: [
+      { name: '王芳', avatar: '/avatar-3.jpg', skill: '组织优化' },
+      { name: '赵芳', avatar: '/avatar-3.jpg', skill: '运营' },
+    ],
     image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=200&h=120&fit=crop',
   },
 ];
@@ -184,26 +176,25 @@ const menuItems = [
   {
     icon: TrendingUp,
     label: '探访记录',
-    subtitle: '12次',
+    subtitle: '2次',
     action: 'view-visits',
-  },
-  {
-    icon: Briefcase,
-    label: '能力连接',
-    subtitle: '5个进行中',
-    action: 'view-connections',
   },
   {
     icon: Award,
     label: '数字资产',
-    subtitle: '8个',
+    subtitle: '2个',
     action: 'view-assets',
+  },
+  {
+    icon: Briefcase,
+    label: '参与活动',
+    subtitle: '2个',
+    action: 'view-activities',
   },
 ];
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
-  const [showEditModal, setShowEditModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-white pb-14">
@@ -275,8 +266,27 @@ export default function ProfilePage() {
               </button>
             </div>
 
+            {/* 资源标签 */}
+            <div className="mt-4">
+              <div className="text-[11px] text-[rgba(0,0,0,0.25)] mb-2">资源标签（必填）</div>
+              <div className="flex flex-wrap gap-2">
+                {userInfo.resourceTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal line-clamp-1"
+                  >
+                    {tag}
+                  </span>
+                ))}
+                <button className="px-2.5 py-1 border border-dashed border-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
+                  +添加
+                </button>
+              </div>
+            </div>
+
             {/* 一句说清你的需要 */}
             <div className="mt-4 p-3 bg-[rgba(0,0,0,0.02)]">
+              <div className="text-[11px] text-[rgba(0,0,0,0.25)] mb-1">一句话说清你的需求</div>
               <p className="text-[13px] text-gray-900 leading-relaxed line-clamp-3">
                 {userInfo.need}
               </p>
@@ -316,10 +326,7 @@ export default function ProfilePage() {
 
             {/* 编辑按钮 */}
             <div className="mt-4 flex justify-center">
-              <Button 
-                onClick={() => setShowEditModal(true)}
-                className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-6 py-2 flex items-center space-x-2"
-              >
+              <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-6 py-2 flex items-center space-x-2">
                 <Edit className="w-3 h-3" />
                 <span>完善资料</span>
               </Button>
@@ -372,147 +379,65 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* 正在进行的连接 */}
+          {/* 探访记录 */}
           <div>
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-xl font-bold">
-                <span className="text-[rgba(96,165,250,0.6)]">正在</span>
-                <span className="text-blue-400">连接</span>
+                <span className="text-[rgba(96,165,250,0.6)]">探访</span>
+                <span className="text-blue-400">记录</span>
               </h2>
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-3">
-              {activeConnections.map((conn) => (
+              {visitRecords.map((record) => (
                 <div
-                  key={conn.id}
-                  className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors flex items-start space-x-3"
+                  key={record.id}
+                  className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
                 >
-                  <div className="w-10 h-10 flex-shrink-0 overflow-hidden">
-                    <img
-                      src={conn.avatar}
-                      alt={conn.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-semibold text-gray-900">{conn.name}</h3>
-                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px]">
-                        {conn.status}
-                      </Badge>
+                  <div className="flex items-start space-x-3">
+                    <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
+                      <img
+                        src={record.image}
+                        alt={record.title}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <div className="flex flex-wrap gap-1">
-                      {conn.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[10px] font-normal line-clamp-1"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
+                        {record.title}
+                      </h3>
+                      <div className="flex items-center space-x-2 text-[10px] text-[rgba(0,0,0,0.25)] mb-2">
+                        <span>{record.date}</span>
+                        <span>·</span>
+                        <Badge className="rounded-none bg-[rgba(34,197,94,0.15)] text-green-600 font-normal text-[10px]">
+                          {record.industry}
+                        </Badge>
+                        <span>·</span>
+                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px]">
+                          {record.role}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {record.visitors.map((visitor, idx) => (
+                          <div key={idx} className="flex items-center space-x-1">
+                            <div className="w-6 h-6 rounded-full overflow-hidden">
+                              <img
+                                src={visitor.avatar}
+                                alt={visitor.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[9px]">
+                              {visitor.skill}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* 行动轨迹与数字资产 */}
-          <div>
-            <div className="flex items-center space-x-4 mb-4">
-              <button
-                onClick={() => setActiveTab('records')}
-                className={`text-sm font-normal transition-colors ${
-                  activeTab === 'records' ? 'text-blue-400' : 'text-[rgba(0,0,0,0.25)]'
-                }`}
-              >
-                探访记录
-              </button>
-              <button
-                onClick={() => setActiveTab('assets')}
-                className={`text-sm font-normal transition-colors ${
-                  activeTab === 'assets' ? 'text-blue-400' : 'text-[rgba(0,0,0,0.25)]'
-                }`}
-              >
-                数字资产
-              </button>
-            </div>
-
-            {/* 探访记录 */}
-            {activeTab === 'records' && (
-              <div className="space-y-3">
-                {visitRecords.map((record) => (
-                  <div
-                    key={record.id}
-                    className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
-                        <img
-                          src={record.image}
-                          alt={record.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
-                          {record.title}
-                        </h3>
-                        <div className="flex items-center space-x-2 text-[10px] text-[rgba(0,0,0,0.25)]">
-                          <span>{record.date}</span>
-                          <span>·</span>
-                          <span>{record.role}</span>
-                          <span>·</span>
-                          <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px]">
-                            {record.skill}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* 数字资产 */}
-            {activeTab === 'assets' && (
-              <div className="space-y-3">
-                {digitalAssets.map((asset) => (
-                  <div
-                    key={asset.id}
-                    className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
-                  >
-                    <div className="mb-2 overflow-hidden">
-                      <img
-                        src={asset.cover}
-                        alt={asset.title}
-                        className="w-full h-32 object-cover"
-                      />
-                    </div>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h4 className="text-xs font-semibold text-gray-900 mb-1 line-clamp-1">
-                          {asset.title}
-                        </h4>
-                        <p className="text-[11px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
-                          {asset.description}
-                        </p>
-                      </div>
-                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px] ml-2 flex-shrink-0">
-                        {asset.type}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between text-[9px] text-[rgba(0,0,0,0.25)]">
-                      <span>{asset.size}</span>
-                      <div className="flex items-center space-x-1">
-                        <Heart className="w-3 h-3" />
-                        <span>{asset.likes}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* 参与的活动 */}
