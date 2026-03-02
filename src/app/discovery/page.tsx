@@ -224,9 +224,9 @@ export default function DiscoveryPage() {
             </div>
           </div>
 
-          {/* Slogan - 蓝色加大字号 */}
+          {/* Slogan - 蓝色加大字号，正常字重 */}
           <div className="px-5 pb-4">
-            <p className="text-[14px] text-blue-400 leading-relaxed">
+            <p className="text-[14px] font-normal text-blue-400 leading-relaxed">
               只要抓住使命，当年力量如何，现在力量也必定如何。<br />
               35岁才是新的的开始，向前加油不回头！
             </p>
