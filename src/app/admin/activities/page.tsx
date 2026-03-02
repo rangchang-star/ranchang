@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Download, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
+import Link from 'next/link';
 
 const mockActivities = [
   {
@@ -276,10 +277,12 @@ export default function AdminActivitiesPage() {
               <Download className="w-4 h-4 mr-2" />
               导出数据
             </Button>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              发布活动
-            </Button>
+            <Link href="/admin/activities/create">
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                发布活动
+              </Button>
+            </Link>
           </div>
         </div>
 
