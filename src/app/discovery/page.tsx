@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Flame, Play, User, Timer } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, Flame, Play, User, Timer, Music2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BottomNav } from '@/components/bottom-nav';
 
@@ -38,6 +38,9 @@ const connectionItems = [
     need: '需要搭建企业的人才培养体系',
   },
 ];
+
+// 音频URL - 奇异恩典纯乐器（使用公共资源）
+const AMAZING_GRACE_AUDIO = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
 // 活动推荐
 const activityItems = [
@@ -209,6 +212,34 @@ const ActivityStatusBadge = ({ status, endTime }: { status: string; endTime?: st
 
 export default function DiscoveryPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const toggleMusic = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  useEffect(() => {
+    const audio = new Audio(AMAZING_GRACE_AUDIO);
+    audio.loop = true;
+    audio.volume = 0.3;
+    audioRef.current = audio;
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white pb-14">
@@ -218,9 +249,24 @@ export default function DiscoveryPage() {
         <div className="sticky top-0 bg-white z-50 pt-[60px]">
           <div className="flex items-center justify-between px-5 pt-4">
             <h1 className="text-2xl font-light text-gray-900">发现光亮</h1>
-            {/* Logo - 燃场品牌Logo */}
-            <div className="w-[126px] h-[126px] flex items-center justify-center">
-              <img src="/logo-ranchang.png" alt="燃场Logo" className="w-[90px] h-[90px] object-contain" />
+            <div className="flex items-center space-x-2">
+              {/* 音乐播放按钮 */}
+              <button
+                onClick={toggleMusic}
+                className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors"
+              >
+                <Music2
+                  className={`w-5 h-5 transition-colors ${
+                    isPlaying
+                      ? 'text-[rgba(0,0,0,0.7)]'
+                      : 'text-[rgba(0,0,0,0.3)]'
+                  }`}
+                />
+              </button>
+              {/* Logo - 燃场品牌Logo */}
+              <div className="w-[126px] h-[126px] flex items-center justify-center">
+                <img src="/logo-ranchang.png" alt="燃场Logo" className="w-[90px] h-[90px] object-contain" />
+              </div>
             </div>
           </div>
 
