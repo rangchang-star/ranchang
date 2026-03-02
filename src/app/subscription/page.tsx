@@ -453,16 +453,19 @@ export default function SubscriptionPage() {
       <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
         <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-5 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-gray-900">加入AI加油圈</DialogTitle>
+            <DialogTitle className="text-lg font-semibold text-gray-900">
+              加入AI加油圈
+              <span className="text-sm font-normal text-[rgba(0,0,0,0.4)] ml-2">
+                {salon.period}
+              </span>
+            </DialogTitle>
             <DialogDescription className="hidden" />
           </DialogHeader>
 
           {/* 提示信息 */}
-          <div className="bg-blue-50 border border-blue-100 p-3 rounded-none mb-4">
-            <p className="text-[13px] text-blue-700">
-              稍后到电话或微信与您确定
-            </p>
-          </div>
+          <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-4">
+            您报名成功后，会收到电话或微信通知。
+          </p>
 
           {/* 表单 */}
           <div className="space-y-4">
