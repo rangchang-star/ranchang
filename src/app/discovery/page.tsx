@@ -285,8 +285,8 @@ export default function DiscoveryPage() {
                   {item.tagStamp && (
                     <div className={`absolute top-0 right-0 px-2 py-0.5 text-[9px] font-medium rounded-bl-md z-10 ${
                       item.tagStamp === 'personLookingForJob'
-                        ? 'bg-[rgba(34,197,94,0.85)] text-white border-l-2 border-t-2 border-green-600'
-                        : 'bg-blue-500 text-white border-l-2 border-t-2 border-blue-600'
+                        ? 'bg-[rgba(34,197,94,0.15)] text-gray-600 border-l-2 border-t-2 border-gray-400'
+                        : 'bg-blue-100 text-gray-600 border-l-2 border-t-2 border-gray-400'
                     }`}>
                       {item.tagStamp === 'personLookingForJob' ? '人找事' : '事找人'}
                     </div>
