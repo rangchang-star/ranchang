@@ -262,50 +262,8 @@ export default function DiscoveryPage() {
           </div>
         </div>
 
-        {/* 每日宣告 - 固定在导航栏下方 */}
-        <div className="px-5 pb-4 bg-white sticky top-[154px] z-40 shadow-sm">
-          <section>
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-sm font-bold text-blue-400">每日宣告</h2>
-            </div>
-            {/* 灰色横线 */}
-            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
-            <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer">
-              <div className="flex items-start space-x-4">
-                {/* 图像 - 纯方形 */}
-                <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
-                  <img
-                    src={dailyDeclaration.image}
-                    alt="每日宣告"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* 右侧内容 */}
-                <div className="flex-1 min-w-0">
-                  {/* 日期加宣告片花（黑色字） */}
-                  <h3 className="text-[13px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
-                    {dailyDeclaration.title}
-                  </h3>
-                  {/* 年月日与录音时长（灰色字） */}
-                  <div className="flex items-center space-x-2 text-[11px] text-[rgba(0,0,0,0.25)]">
-                    <span>{dailyDeclaration.date}</span>
-                    <span>·</span>
-                    <span>{dailyDeclaration.duration}</span>
-                  </div>
-                </div>
-
-                {/* 播放按钮 - 纯方形 */}
-                <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0">
-                  <Play className="w-4 h-4 text-white fill-white ml-0.5" />
-                </button>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* 内容区 - 增加栏目间距 */}
-        <div className="px-5 pt-0 space-y-8 pb-4">
+        {/* 内容区 - 增加栏目间距，增加底部padding避免被固定的每日宣告遮挡 */}
+        <div className="px-5 pt-6 space-y-8 pb-64">
           {/* 能力连接 */}
           <section>
             <div className="flex items-center justify-between mb-4">
@@ -500,6 +458,48 @@ export default function DiscoveryPage() {
             </div>
           </section>
         </div>
+      </div>
+
+      {/* 每日宣告 - 固定在底部导航栏上方 */}
+      <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <section>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-sm font-bold text-blue-400">每日宣告</h2>
+          </div>
+          {/* 灰色横线 */}
+          <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+          <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer">
+            <div className="flex items-start space-x-4">
+              {/* 图像 - 纯方形 */}
+              <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
+                <img
+                  src={dailyDeclaration.image}
+                  alt="每日宣告"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* 右侧内容 */}
+              <div className="flex-1 min-w-0">
+                {/* 日期加宣告片花（黑色字） */}
+                <h3 className="text-[13px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                  {dailyDeclaration.title}
+                </h3>
+                {/* 年月日与录音时长（灰色字） */}
+                <div className="flex items-center space-x-2 text-[11px] text-[rgba(0,0,0,0.25)]">
+                  <span>{dailyDeclaration.date}</span>
+                  <span>·</span>
+                  <span>{dailyDeclaration.duration}</span>
+                </div>
+              </div>
+
+              {/* 播放按钮 - 纯方形 */}
+              <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0">
+                <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
 
       {/* 底部导航 - 固定在底部 */}
