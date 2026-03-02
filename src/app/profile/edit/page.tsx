@@ -15,7 +15,7 @@ const mockUserProfile = {
   age: 38,
   phone: '138****8888',
   email: 'wang***@example.com',
-  purpose: ['人找事'], // 人找事/事找人/纯交流
+  purpose: '人找事', // 人找事/事找人/纯交流
   industry: '制造业',
   industryTags: ['供应链', '智能制造', '数字化转型'],
   resources: ['AI技术', '供应链资源', '企业培训'],
@@ -79,21 +79,18 @@ const directions = [
 
 export default function ProfileEditPage() {
   const [profile, setProfile] = useState(mockUserProfile);
-  const [selectedPurpose, setSelectedPurpose] = useState<string[]>(profile.purpose);
+  const [selectedPurpose, setSelectedPurpose] = useState<string | null>(profile.purpose);
   const [selectedIndustryTag, setSelectedIndustryTag] = useState<string>(profile.industryTags[0] || '');
   const [selectedResources, setSelectedResources] = useState<string[]>(profile.resources);
+  const [customResource, setCustomResource] = useState('');
   const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecorded, setHasRecorded] = useState(false);
   const [showDeclarationInput, setShowDeclarationInput] = useState(false);
   const [declarationDescription, setDeclarationDescription] = useState('');
 
-  const handlePurposeToggle = (purpose: string) => {
-    if (selectedPurpose.includes(purpose)) {
-      setSelectedPurpose(selectedPurpose.filter((p) => p !== purpose));
-    } else {
-      setSelectedPurpose([...selectedPurpose, purpose]);
-    }
+  const handlePurposeSelect = (purpose: string) => {
+    setSelectedPurpose(purpose);
   };
 
   const handleIndustryTagSelect = (tag: string) => {
@@ -133,7 +130,23 @@ export default function ProfileEditPage() {
     if (selectedResources.includes(resource)) {
       setSelectedResources(selectedResources.filter((r) => r !== resource));
     } else {
+      // 最多选择两个
+      if (selectedResources.length >= 2) {
+        alert('资源标签最多选择两个');
+        return;
+      }
       setSelectedResources([...selectedResources, resource]);
+    }
+  };
+
+  const handleAddCustomResource = () => {
+    if (customResource && customResource.trim() && !selectedResources.includes(customResource.trim())) {
+      if (selectedResources.length >= 2) {
+        alert('资源标签最多选择两个');
+        return;
+      }
+      setSelectedResources([...selectedResources, customResource.trim()]);
+      setCustomResource('');
     }
   };
 
@@ -142,7 +155,7 @@ export default function ProfileEditPage() {
     const requiredErrors: string[] = [];
 
     // 验证来这里的目的
-    if (selectedPurpose.length === 0) {
+    if (!selectedPurpose) {
       requiredErrors.push('来这里的目的');
     }
 
@@ -266,9 +279,9 @@ export default function ProfileEditPage() {
               {['人找事', '事找人', '纯交流'].map((purpose) => (
                 <button
                   key={purpose}
-                  onClick={() => handlePurposeToggle(purpose)}
+                  onClick={() => handlePurposeSelect(purpose)}
                   className={`px-3 py-1.5 text-[11px] border ${
-                    selectedPurpose.includes(purpose)
+                    selectedPurpose === purpose
                       ? 'border-blue-400 bg-blue-400/40 text-blue-400'
                       : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)]'
                   }`}
@@ -369,6 +382,27 @@ export default function ProfileEditPage() {
                   {resource}
                 </button>
               ))}
+            </div>
+            {/* 自定义资源标签输入框 */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={customResource}
+                onChange={(e) => setCustomResource(e.target.value)}
+                className="flex-1 px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                placeholder="自定义资源标签"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAddCustomResource();
+                  }
+                }}
+              />
+              <button
+                onClick={handleAddCustomResource}
+                className="px-3 py-2 bg-blue-400 text-white text-[11px] border border-blue-400 hover:bg-blue-500"
+              >
+                添加
+              </button>
             </div>
           </div>
 
