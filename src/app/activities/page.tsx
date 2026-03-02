@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 
 const filters = [
   { id: 'all', label: '全部活动' },
-  { id: 'ongoing', label: '进行中' },
+  { id: 'upcoming', label: '待参加' },
   { id: 'ended', label: '已结束' },
   { id: 'pending', label: '待审核' },
 ];
@@ -81,13 +81,17 @@ export default function ActivitiesPage() {
 
   const filteredActivities = (() => {
     switch (selectedFilter) {
-      case 'ongoing':
-        return mockActivities.filter((a) => a.status === 'ongoing');
+      case 'upcoming':
+        // 待参加：只显示报名并通过审核的项目（进行中 + 已通过）
+        return mockActivities.filter((a) => a.status === 'ongoing' && a.applicationStatus === 'approved');
       case 'ended':
+        // 已结束：只显示已结束的活动
         return mockActivities.filter((a) => a.status === 'ended');
       case 'pending':
+        // 待审核：只显示待审核的报名
         return mockActivities.filter((a) => a.applicationStatus === 'pending');
       default:
+        // 全部活动：显示所有活动
         return mockActivities;
     }
   })();
@@ -255,7 +259,7 @@ export default function ActivitiesPage() {
           {filteredActivities.length === 0 && (
             <div className="text-center py-16">
               <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
-                {selectedFilter === 'pending' ? '暂无待审核的活动' : '暂无相关活动'}
+                {selectedFilter === 'pending' ? '暂无待审核的活动' : selectedFilter === 'upcoming' ? '暂无待参加的活动' : '暂无相关活动'}
               </p>
             </div>
           )}
