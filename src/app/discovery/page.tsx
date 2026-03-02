@@ -23,6 +23,7 @@ const connectionItems = [
     avatar: '/avatar-1.jpg',
     tags: ['供应链专家', '数字化转型'],
     industry: '制造业',
+    tagStamp: 'personLookingForJob', // 人找事
     need: '希望找到传统制造业的数字化项目机会',
   },
   {
@@ -32,6 +33,7 @@ const connectionItems = [
     avatar: '/avatar-2.jpg',
     tags: ['投融资', '战略规划'],
     industry: '金融投资',
+    tagStamp: 'jobLookingForPerson', // 事找人
     need: '想寻找优质项目对接投资机构',
   },
   {
@@ -41,6 +43,7 @@ const connectionItems = [
     avatar: '/avatar-3.jpg',
     tags: ['人力资源', '团队管理'],
     industry: '企业服务',
+    tagStamp: 'personLookingForJob', // 人找事
     need: '需要搭建企业的人才培养体系',
   },
 ];
@@ -276,8 +279,19 @@ export default function DiscoveryPage() {
               {connectionItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-start p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                  className="relative flex items-start p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                 >
+                  {/* 标签戳 */}
+                  {item.tagStamp && (
+                    <div className={`absolute top-0 right-0 px-2 py-0.5 text-[9px] font-medium rounded-bl-md z-10 ${
+                      item.tagStamp === 'personLookingForJob'
+                        ? 'bg-orange-100 text-orange-600 border-l-2 border-t-2 border-orange-400'
+                        : 'bg-blue-100 text-blue-600 border-l-2 border-t-2 border-blue-400'
+                    }`}>
+                      {item.tagStamp === 'personLookingForJob' ? '人找事' : '事找人'}
+                    </div>
+                  )}
+
                   {/* 方形头像 - 纯方形 */}
                   <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
                     <img
