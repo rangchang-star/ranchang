@@ -2,8 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Search, Flame, Play, User, Timer, Music2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Search, Flame, Play, User, Timer, Music2, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { BottomNav } from '@/components/bottom-nav';
 
 // 能力连接
@@ -17,6 +25,7 @@ const connectionItems = [
     industry: '制造业',
     tagStamp: 'personLookingForJob', // 人找事
     need: '希望找到传统制造业的数字化项目机会',
+    isTrusted: true, // 是否被信任
   },
   {
     id: '2',
@@ -27,6 +36,7 @@ const connectionItems = [
     industry: '金融投资',
     tagStamp: 'jobLookingForPerson', // 事找人
     need: '想寻找优质项目对接投资机构',
+    isTrusted: false, // 未信任
   },
   {
     id: '3',
@@ -37,6 +47,29 @@ const connectionItems = [
     industry: '企业服务',
     tagStamp: 'personLookingForJob', // 人找事
     need: '需要搭建企业的人才培养体系',
+    isTrusted: true,
+  },
+  {
+    id: '4',
+    name: '陈伟',
+    age: 50,
+    avatar: '/avatar-4.jpg',
+    tags: ['市场营销', '品牌建设'],
+    industry: '消费零售',
+    tagStamp: 'jobLookingForPerson', // 事找人
+    need: '寻找优质的营销合作项目',
+    isTrusted: false,
+  },
+  {
+    id: '5',
+    name: '刘芳',
+    age: 47,
+    avatar: '/avatar-5.jpg',
+    tags: ['财务顾问', '税务筹划'],
+    industry: '专业服务',
+    tagStamp: 'personLookingForJob', // 人找事
+    need: '为企业提供专业的财务咨询服务',
+    isTrusted: true,
   },
 ];
 
@@ -215,6 +248,12 @@ export default function DiscoveryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playingDeclarationId, setPlayingDeclarationId] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState<'abilities' | 'activities' | 'declarations'>('abilities');
+  const [trustDialogOpen, setTrustDialogOpen] = useState(false);
+  const declarationAudioRefs = useRef<Record<string, HTMLAudioElement>>({});
+  const router = useRouter();
 
   const toggleMusic = () => {
     if (!audioRef.current) return;
@@ -226,6 +265,36 @@ export default function DiscoveryPage() {
       audioRef.current.play();
       setIsPlaying(true);
     }
+  };
+
+  const toggleDeclarationAudio = (declarationId: string, audioUrl?: string) => {
+    if (playingDeclarationId === declarationId) {
+      // 暂停当前播放
+      const audio = declarationAudioRefs.current[declarationId];
+      if (audio) {
+        audio.pause();
+        setPlayingDeclarationId(null);
+      }
+    } else {
+      // 暂停之前的
+      if (playingDeclarationId) {
+        const prevAudio = declarationAudioRefs.current[playingDeclarationId];
+        if (prevAudio) prevAudio.pause();
+      }
+      // 播放新的
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+        declarationAudioRefs.current[declarationId] = audio;
+        audio.play();
+        setPlayingDeclarationId(declarationId);
+      }
+    }
+  };
+
+  const handlePlayDeclaration = (declarationId: string) => {
+    // 模拟音频URL
+    const audioUrl = `https://example.com/declaration/${declarationId}.mp3`;
+    toggleDeclarationAudio(declarationId, audioUrl);
   };
 
   useEffect(() => {
@@ -307,10 +376,18 @@ export default function DiscoveryPage() {
             </div>
             <div className="space-y-4">
               {connectionItems.map((item) => (
-                <Link
+                <div
                   key={item.id}
-                  href={`/connection/${item.id}`}
-                  className="relative flex items-start p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                  onClick={() => {
+                    if (!item.isTrusted) {
+                      setTrustDialogOpen(true);
+                    }
+                  }}
+                  className={`relative flex items-start p-3 transition-colors ${
+                    item.isTrusted
+                      ? 'bg-white hover:bg-[rgba(0,0,0,0.02)] cursor-pointer'
+                      : 'bg-[rgba(0,0,0,0.02)] cursor-not-allowed opacity-75'
+                  }`}
                 >
                   {/* 标签戳 */}
                   {item.tagStamp && (
@@ -359,12 +436,18 @@ export default function DiscoveryPage() {
                       {item.need}
                     </p>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
             {/* 查看更多灰色色块 - 缩小50% */}
             <div className="mt-4 flex justify-center">
-              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
+              <button
+                className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal"
+                onClick={() => {
+                  setModalType('activities');
+                  setShowModal(true);
+                }}
+              >
                 查看更多
               </button>
             </div>
@@ -446,7 +529,13 @@ export default function DiscoveryPage() {
             </div>
             {/* 查看更多灰色色块 - 缩小50% */}
             <div className="mt-4 flex justify-center">
-              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
+              <button
+                className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal"
+                onClick={() => {
+                  setModalType('activities');
+                  setShowModal(true);
+                }}
+              >
                 查看更多
               </button>
             </div>
@@ -464,10 +553,10 @@ export default function DiscoveryPage() {
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-3">
               {declarationItems.map((item) => (
-                <Link
+                <div
                   key={item.id}
-                  href={`/declaration/${item.id}`}
                   className="flex items-center p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                  onClick={() => router.push(`/declaration/${item.id}`)}
                 >
                   {/* 排序 - 圆形，缩小70%，灰色 */}
                   <div
@@ -498,15 +587,27 @@ export default function DiscoveryPage() {
                   </div>
 
                   {/* 右侧播放按钮 - 圆形 */}
-                  <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0 ml-3">
+                  <button
+                    className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0 ml-3"
+                    onClick={(e) => {
+                      e.stopPropagation(); // 阻止事件冒泡
+                      handlePlayDeclaration(item.id);
+                    }}
+                  >
                     <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                   </button>
-                </Link>
+                </div>
               ))}
             </div>
             {/* 查看更多灰色色块 */}
             <div className="mt-4 flex justify-center">
-              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
+              <button
+                className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal"
+                onClick={() => {
+                  setModalType('declarations');
+                  setShowModal(true);
+                }}
+              >
                 查看更多
               </button>
             </div>
@@ -556,6 +657,160 @@ export default function DiscoveryPage() {
 
       {/* 底部导航 - 固定在底部 */}
       <BottomNav />
+
+      {/* 能力连接权限提示对话框 */}
+      <Dialog open={trustDialogOpen} onOpenChange={setTrustDialogOpen}>
+        <DialogContent className="sm:max-w-[280px] p-4">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold">提示</DialogTitle>
+          </DialogHeader>
+          <div className="text-[11px] text-gray-600 leading-relaxed">
+            该用户尚未开启"允许陌生人连接"权限，您可以先了解ta，或让ta主动来找到你。
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button
+              variant="ghost"
+              className="text-[11px] h-7 px-4 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] hover:bg-[rgba(0,0,0,0.1)]"
+              onClick={() => setTrustDialogOpen(false)}
+            >
+              我知道了
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 查看更多悬浮页面 */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
+          <div className="w-full max-w-md bg-white rounded-t-none animate-in slide-in-from-bottom duration-300 max-h-[80vh] flex flex-col">
+            {/* 顶部固定区域 - 标题和关闭按钮 */}
+            <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-[rgba(0,0,0,0.05)]">
+              <h3 className="text-sm font-semibold text-gray-900">
+                {modalType === 'abilities' && '更多能力连接'}
+                {modalType === 'activities' && '更多活动'}
+                {modalType === 'declarations' && '更多高燃宣告'}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 滚动内容区域 */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {modalType === 'abilities' && (
+                <div className="space-y-3">
+                  {connectionItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center p-3 bg-[rgba(0,0,0,0.02)] cursor-pointer"
+                      onClick={() => {
+                        setShowModal(false);
+                        router.push(`/ability/${item.id}`);
+                      }}
+                    >
+                      {/* 头像 */}
+                      <div className="w-[60px] h-[60px] flex-shrink-0 mr-3 overflow-hidden">
+                        <img
+                          src={item.avatar}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      {/* 内容 */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="text-[13px] font-semibold text-gray-900">{item.name}</span>
+                          <span className="text-[13px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-1">
+                          {item.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="inline-block px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[10px]"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-gray-900 line-clamp-2">{item.need}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {modalType === 'activities' && (
+                <div className="space-y-3">
+                  {activityItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-3 bg-[rgba(0,0,0,0.02)] cursor-pointer"
+                      onClick={() => {
+                        setShowModal(false);
+                        router.push(`/activity/${item.id}`);
+                      }}
+                    >
+                      <div className="flex items-start">
+                        <div className="w-[60px] h-[60px] flex-shrink-0 mr-3 overflow-hidden">
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] text-[rgba(0,0,0,0.25)] mb-1">{item.category}</div>
+                          <h3 className="text-[13px] font-semibold text-gray-900 mb-1 line-clamp-2">{item.title}</h3>
+                          <p className="text-[11px] text-[rgba(0,0,0,0.25)]">{item.address.substring(0, 8)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {modalType === 'declarations' && (
+                <div className="space-y-3">
+                  {declarationItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center p-3 bg-[rgba(0,0,0,0.02)] cursor-pointer"
+                      onClick={() => {
+                        setShowModal(false);
+                        router.push(`/declaration/${item.id}`);
+                      }}
+                    >
+                      <div className="w-10 h-10 flex-shrink-0 mr-3 overflow-hidden bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
+                        <img
+                          src={item.icon}
+                          alt={item.iconType}
+                          className="w-8 h-8 object-contain"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[13px] font-semibold text-gray-900 mb-1 line-clamp-2">{item.title}</h3>
+                        <p className="text-[11px] text-[rgba(0,0,0,0.25)]">{item.profile}</p>
+                      </div>
+                      <button
+                        className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0 ml-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlayDeclaration(item.id);
+                        }}
+                      >
+                        <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
