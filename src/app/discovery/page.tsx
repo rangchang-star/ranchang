@@ -465,8 +465,8 @@ export default function DiscoveryPage() {
         <section>
           <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer">
             <div className="flex items-start space-x-4">
-              {/* 图像 - 纯方形，缩小60% */}
-              <div className="w-6 h-6 flex-shrink-0 overflow-hidden">
+              {/* 图像 - 纯方形，放大30% */}
+              <div className="w-8 h-8 flex-shrink-0 overflow-hidden">
                 <img
                   src={dailyDeclaration.image}
                   alt="每日宣告"
@@ -484,7 +484,10 @@ export default function DiscoveryPage() {
                 <div className="flex items-center space-x-2 text-[11px] text-[rgba(0,0,0,0.25)]">
                   <span>{dailyDeclaration.date}</span>
                   <span>·</span>
-                  <span>{dailyDeclaration.duration}</span>
+                  <span className="flex items-center">
+                    <Timer className="w-3 h-3 mr-1" />
+                    {dailyDeclaration.duration}
+                  </span>
                 </div>
               </div>
 
