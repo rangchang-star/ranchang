@@ -228,9 +228,9 @@ export default function DiscoveryPage() {
         <div className="sticky top-0 bg-white z-50 pt-[60px]">
           <div className="flex items-center justify-between px-5 py-4">
             <h1 className="text-2xl font-light text-gray-900">发现光亮</h1>
-            {/* 程序员大叔抽象头像 - 方形 */}
-            <div className="w-10 h-10 bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
-              <User className="w-5 h-5 text-[rgba(0,0,0,0.25)]" />
+            {/* Logo - 蓝色系太阳图标 */}
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img src="/logo-sun-blue.png" alt="燃场Logo" className="w-8 h-8 object-contain" />
             </div>
           </div>
 
