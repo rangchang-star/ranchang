@@ -16,18 +16,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {/* 顶部导航栏 */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-background border-b border-border z-50">
-        <div className="flex items-center justify-between h-full px-6">
+      <header className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-[rgba(0,0,0,0.05)] z-50">
+        <div className="flex items-center justify-between h-full px-5">
           <div className="flex items-center space-x-2">
-            <h1 className="text-xl font-bold text-foreground">燃场后台</h1>
+            <h1 className="text-[15px] font-bold text-gray-900">燃场后台</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-muted-foreground">管理员</span>
+            <span className="text-[13px] text-[rgba(0,0,0,0.6)]">管理员</span>
             <Link
               href="/"
-              className="flex items-center space-x-1 text-sm text-muted-foreground hover:text-foreground"
+              className="flex items-center space-x-1 text-[13px] text-[rgba(0,0,0,0.6)] hover:text-gray-900"
             >
               <LogOut className="w-4 h-4" />
               <span>退出</span>
@@ -36,9 +36,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <div className="flex pt-16">
+      <div className="flex pt-14">
         {/* 侧边栏 */}
-        <aside className="fixed left-0 top-16 bottom-0 w-56 bg-background border-r border-border">
+        <aside className="fixed left-0 top-14 bottom-0 w-48 bg-white border-r border-[rgba(0,0,0,0.05)]">
           <nav className="p-4 space-y-1">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
@@ -49,10 +49,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                    'flex items-center space-x-3 px-3 py-2 text-[13px] transition-colors',
                     isActive
-                      ? 'bg-primary text-primary-foreground font-medium'
-                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                      ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 font-medium'
+                      : 'text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.05)] hover:text-gray-900'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -64,7 +64,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* 主内容区 */}
-        <main className="ml-56 flex-1 p-6">
+        <main className="ml-48 flex-1 p-5">
           {children}
         </main>
       </div>

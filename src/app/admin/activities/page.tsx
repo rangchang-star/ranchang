@@ -1,11 +1,9 @@
 'use client';
 
 import { AdminLayout } from '@/components/admin-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Eye, Download } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Download } from 'lucide-react';
 import { useState } from 'react';
 
 const mockActivities = [
@@ -20,7 +18,7 @@ const mockActivities = [
     max: 12,
     tags: ['私董会', '名额紧张'],
     status: 'active',
-    pendingApplications: 3, // 待审核申请数量
+    pendingApplications: 3,
   },
   {
     id: '2',
@@ -63,7 +61,6 @@ const mockActivities = [
   },
 ];
 
-// 模拟报名申请数据
 const mockApplications = [
   {
     id: 'app-1',
@@ -73,7 +70,7 @@ const mockApplications = [
     userCompany: '某科技公司',
     userPosition: 'CEO',
     reason: '希望参与私董会，获得更多创业指导',
-    status: 'pending', // pending, approved, rejected
+    status: 'pending',
     applyTime: '2024-04-05 10:30',
   },
   {
@@ -125,7 +122,6 @@ export default function AdminActivitiesPage() {
     ? applications.filter((app) => app.activityId === selectedActivity)
     : applications.filter((app) => app.status === 'pending');
 
-  // 添加通知到localStorage
   const addNotification = (notification: any) => {
     try {
       const stored = localStorage.getItem('notifications');
@@ -136,21 +132,17 @@ export default function AdminActivitiesPage() {
     }
   };
 
-  // 审核通过
   const handleApprove = (applicationId: string) => {
     const updatedApplications = applications.map((app) =>
       app.id === applicationId ? { ...app, status: 'approved' as const } : app
     );
     setApplications(updatedApplications);
 
-    // 获取申请信息
     const app = applications.find(a => a.id === applicationId);
     const activity = mockActivities.find(a => a.id === app?.activityId);
 
-    // 同时更新localStorage中的活动数据
     updateLocalStorage(applicationId, 'approved');
 
-    // 添加审核通过通知
     addNotification({
       id: `approval-${Date.now()}`,
       type: 'success',
@@ -164,7 +156,6 @@ export default function AdminActivitiesPage() {
     alert('已通过申请');
   };
 
-  // 审核拒绝
   const handleReject = (applicationId: string) => {
     if (!confirm('确定要拒绝此申请吗？')) return;
 
@@ -173,14 +164,11 @@ export default function AdminActivitiesPage() {
     );
     setApplications(updatedApplications);
 
-    // 获取申请信息
     const app = applications.find(a => a.id === applicationId);
     const activity = mockActivities.find(a => a.id === app?.activityId);
 
-    // 同时更新localStorage中的活动数据
     updateLocalStorage(applicationId, 'rejected');
 
-    // 添加审核拒绝通知
     addNotification({
       id: `rejection-${Date.now()}`,
       type: 'error',
@@ -193,7 +181,6 @@ export default function AdminActivitiesPage() {
     alert('已拒绝申请');
   };
 
-  // 更新localStorage中的活动数据
   const updateLocalStorage = (applicationId: string, status: 'approved' | 'rejected') => {
     try {
       const storedActivities = localStorage.getItem('activities');
@@ -203,7 +190,6 @@ export default function AdminActivitiesPage() {
         if (app) {
           const activity = activities.find((a: any) => a.id === app.activityId);
           if (activity) {
-            // 更新活动的报名状态
             if (!activity.applications) {
               activity.applications = [];
             }
@@ -229,14 +215,12 @@ export default function AdminActivitiesPage() {
     return labels[type] || type;
   };
 
-  // 导出活动数据为Excel
   const handleExport = () => {
     if (filteredActivities.length === 0) {
       alert('没有数据可导出');
       return;
     }
 
-    // 构建CSV数据
     const headers = ['活动ID', '活动标题', '日期', '时间', '地点', '类型', '已报名', '最大人数', '报名率', '状态'];
     const rows = filteredActivities.map(activity => [
       activity.id,
@@ -251,14 +235,12 @@ export default function AdminActivitiesPage() {
       activity.status === 'active' ? '进行中' : '已结束',
     ]);
 
-    // 添加BOM以支持Excel中文显示
     const BOM = '\uFEFF';
     const csvContent = BOM + [
       headers.join(','),
       ...rows.map(row => row.join(','))
     ].join('\n');
 
-    // 创建下载链接
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -272,11 +254,11 @@ export default function AdminActivitiesPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">活动管理</h2>
-            <p className="text-muted-foreground">管理平台活动及报名</p>
+            <h2 className="text-[15px] font-bold text-gray-900 mb-1">活动管理</h2>
+            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">管理平台活动及报名</p>
           </div>
           <div className="flex items-center space-x-2">
             <Button variant="outline" onClick={handleExport}>
@@ -290,10 +272,9 @@ export default function AdminActivitiesPage() {
           </div>
         </div>
 
-        {/* 搜索栏 */}
         <div className="flex items-center space-x-4">
           <div className="relative flex-1 max-w-md">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
             <Input
               placeholder="搜索活动..."
               value={searchTerm}
@@ -303,112 +284,115 @@ export default function AdminActivitiesPage() {
           </div>
         </div>
 
-        {/* 活动列表 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>活动列表（{filteredActivities.length}）</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredActivities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="p-4 border border-border rounded-lg hover:bg-secondary/50 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">{activity.title}</h3>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        <Badge variant="outline">{getTypeLabel(activity.type)}</Badge>
-                        {activity.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {activity.status === 'ended' && (
-                          <Badge variant="outline" className="text-xs text-gray-500">
-                            已结束
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button variant="outline" size="sm">
-                        <Edit className="w-4 h-4 mr-1" />
-                        编辑
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedActivity(activity.id);
-                          setShowApplications(true);
-                        }}
-                      >
-                        <Users className="w-4 h-4 mr-1" />
-                        报名
-                        {activity.pendingApplications > 0 && (
-                          <Badge variant="destructive" className="ml-1 text-xs">
-                            {activity.pendingApplications}
-                          </Badge>
-                        )}
-                      </Button>
-                      <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+        <div className="border border-[rgba(0,0,0,0.1)]">
+          <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
+            <h3 className="text-[13px] font-semibold text-gray-900">
+              活动列表（{filteredActivities.length}）
+            </h3>
+          </div>
+          <div className="divide-y divide-[rgba(0,0,0,0.05)]">
+            {filteredActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className="p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="text-[15px] font-semibold text-gray-900 mb-2">{activity.title}</h3>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal">
+                        {getTypeLabel(activity.type)}
+                      </span>
+                      {activity.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {activity.status === 'ended' && (
+                        <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[11px] font-normal">
+                          已结束
+                        </span>
+                      )}
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center space-x-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span>{activity.date}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span>{activity.time}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      <span>{activity.location}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex items-center space-x-2">
-                    <Users className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      已报名: <span className="text-foreground font-medium">{activity.enrolled}</span>
-                      {' '} / {activity.max}
-                    </span>
-                    <div className="flex-1 bg-secondary rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{ width: `${(activity.enrolled / activity.max) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {Math.round((activity.enrolled / activity.max) * 100)}%
-                    </span>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-4 h-4 mr-1" />
+                      编辑
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedActivity(activity.id);
+                        setShowApplications(true);
+                      }}
+                    >
+                      <Users className="w-4 h-4 mr-1" />
+                      报名
+                      {activity.pendingApplications > 0 && (
+                        <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-normal">
+                          {activity.pendingApplications}
+                        </span>
+                      )}
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-red-500 hover:text-red-600 hover:border-red-500">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* 报名审核面板 */}
+                <div className="grid grid-cols-3 gap-4 text-[13px]">
+                  <div className="flex items-center space-x-2 text-[rgba(0,0,0,0.6)]">
+                    <Calendar className="w-4 h-4" />
+                    <span>{activity.date}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-[rgba(0,0,0,0.6)]">
+                    <Calendar className="w-4 h-4" />
+                    <span>{activity.time}</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-[rgba(0,0,0,0.6)]">
+                    <MapPin className="w-4 h-4" />
+                    <span>{activity.location}</span>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center space-x-2">
+                  <Users className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
+                  <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                    已报名: <span className="text-gray-900 font-medium">{activity.enrolled}</span>
+                    {' '} / {activity.max}
+                  </span>
+                  <div className="flex-1 bg-[rgba(0,0,0,0.05)] h-2">
+                    <div
+                      className="bg-blue-400 h-2"
+                      style={{ width: `${(activity.enrolled / activity.max) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                    {Math.round((activity.enrolled / activity.max) * 100)}%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {showApplications && (
-          <Card>
-            <CardHeader>
+          <div className="border border-[rgba(0,0,0,0.1)]">
+            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
               <div className="flex items-center justify-between">
-                <CardTitle>
+                <h3 className="text-[13px] font-semibold text-gray-900">
                   {selectedActivity
                     ? `报名审核 - ${mockActivities.find(a => a.id === selectedActivity)?.title}`
                     : '待审核申请'}
-                  <Badge variant="outline" className="ml-2">
+                  <span className="ml-2 px-2 py-0.5 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal">
                     {filteredApplications.length}条
-                  </Badge>
-                </CardTitle>
+                  </span>
+                </h3>
                 <Button
                   variant="outline"
                   size="sm"
@@ -420,64 +404,68 @@ export default function AdminActivitiesPage() {
                   关闭
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {filteredApplications.map((application) => (
-                  <div
-                    key={application.id}
-                    className="p-4 border border-border rounded-lg hover:bg-secondary/50 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="font-semibold">{application.userName}</h3>
-                          <Badge variant={application.status === 'pending' ? 'secondary' : application.status === 'approved' ? 'default' : 'destructive'}>
-                            {application.status === 'pending' ? '待审核' : application.status === 'approved' ? '已通过' : '已拒绝'}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <p>电话: {application.userPhone}</p>
-                          <p>公司: {application.userCompany}</p>
-                          <p>职位: {application.userPosition}</p>
-                          <p>申请时间: {application.applyTime}</p>
-                        </div>
-                        <div className="mt-2 p-2 bg-secondary/50 rounded text-sm">
-                          <span className="font-medium">申请理由: </span>
-                          {application.reason}
-                        </div>
+            </div>
+            <div className="divide-y divide-[rgba(0,0,0,0.05)]">
+              {filteredApplications.map((application) => (
+                <div
+                  key={application.id}
+                  className="p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <h3 className="text-[15px] font-semibold text-gray-900">{application.userName}</h3>
+                        <span className={`px-2 py-0.5 text-[11px] font-normal ${
+                          application.status === 'pending'
+                            ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                            : application.status === 'approved'
+                            ? 'bg-green-100 text-green-600'
+                            : 'bg-red-100 text-red-600'
+                        }`}>
+                          {application.status === 'pending' ? '待审核' : application.status === 'approved' ? '已通过' : '已拒绝'}
+                        </span>
+                      </div>
+                      <div className="text-[13px] text-[rgba(0,0,0,0.6)] space-y-1">
+                        <p>电话: {application.userPhone}</p>
+                        <p>公司: {application.userCompany}</p>
+                        <p>职位: {application.userPosition}</p>
+                        <p>申请时间: {application.applyTime}</p>
+                      </div>
+                      <div className="mt-2 p-2 bg-[rgba(0,0,0,0.02)] text-[13px]">
+                        <span className="font-medium text-gray-900">申请理由: </span>
+                        <span className="text-[rgba(0,0,0,0.6)]">{application.reason}</span>
                       </div>
                     </div>
-                    {application.status === 'pending' && (
-                      <div className="flex items-center justify-end space-x-2 mt-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleReject(application.id)}
-                        >
-                          <XCircle className="w-4 h-4 mr-1" />
-                          拒绝
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => handleApprove(application.id)}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          通过
-                        </Button>
-                      </div>
-                    )}
                   </div>
-                ))}
+                  {application.status === 'pending' && (
+                    <div className="flex items-center justify-end space-x-2 mt-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleReject(application.id)}
+                      >
+                        <XCircle className="w-4 h-4 mr-1" />
+                        拒绝
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleApprove(application.id)}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        通过
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
 
-                {filteredApplications.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    暂无申请记录
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              {filteredApplications.length === 0 && (
+                <div className="text-center py-8 text-[rgba(0,0,0,0.6)] text-[13px]">
+                  暂无申请记录
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </AdminLayout>
