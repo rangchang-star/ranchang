@@ -287,9 +287,9 @@ export default function ProfilePage() {
           {/* 顶部导航 */}
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-light text-gray-900">个人中心</h1>
-            <button className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
-              <Settings className="w-5 h-5 text-[rgba(0,0,0,0.25)]" />
-            </button>
+            <Link href="/settings" className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
+              <Settings className="w-5 h-5 text-blue-400" />
+            </Link>
           </div>
 
           {/* 用户信息卡片 */}
