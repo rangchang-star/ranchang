@@ -5,30 +5,94 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload } from 'lucide-react';
+
+// 行业数据项（必选）
+const industryOptions = [
+  '企业服务', '金融投资', '制造业', '教育培训', '医疗健康', 
+  '消费零售', '房地产', '互联网', '人工智能', '新能源',
+  '汽车行业', '物流运输', '传媒娱乐', '农业', '政府公共',
+  '法律咨询', '建筑设计', '化工环保', '通信', '其他'
+];
+
+// 资源标签数据项（必选，参考同类平台）
+const resourceTags = [
+  '资金', '人才', '技术', '渠道', '客户资源',
+  '供应链', '品牌', '专利', '场地', '设备',
+  '数据资源', '政府关系', '媒体资源', '合作伙伴', '其他'
+];
+
+// 人找事/事找人/纯交流选项（必选）
+const connectionType = [
+  { id: 'personLookingForJob', label: '人找事', description: '我有能力，寻找项目机会' },
+  { id: 'jobLookingForPerson', label: '事找人', description: '我有项目，寻找合作伙伴' },
+  { id: 'pureExchange', label: '纯交流', description: '只想交流学习，暂无合作需求' }
+];
+
+// 高燃宣告方向选项
+const declarationDirections = [
+  { id: 'confidence', name: '信心', icon: 'icon-confidence.jpg' },
+  { id: 'mission', name: '使命', icon: 'icon-mission.jpg' },
+  { id: 'self', name: '自我', icon: 'icon-self.jpg' },
+  { id: 'opponent', name: '对手', icon: 'icon-opponent.jpg' },
+  { id: 'environment', name: '环境', icon: 'icon-environment.jpg' }
+];
+
+// 量表结果数据（图形化展示）
+const assessmentResults = [
+  {
+    name: '创业心理评估',
+    score: 85,
+    level: '优秀',
+    dimensions: [
+      { name: '抗压能力', score: 90 },
+      { name: '创新能力', score: 85 },
+      { name: '团队协作', score: 80 },
+      { name: '风险意识', score: 82 }
+    ]
+  },
+  {
+    name: '商业认知评估',
+    score: 78,
+    level: '良好',
+    dimensions: [
+      { name: '市场洞察', score: 75 },
+      { name: '商业模式', score: 80 },
+      { name: '财务分析', score: 72 },
+      { name: '战略规划', score: 85 }
+    ]
+  },
+  {
+    name: 'AI认知评估',
+    score: 88,
+    level: '优秀',
+    dimensions: [
+      { name: 'AI工具应用', score: 92 },
+      { name: 'AI趋势理解', score: 85 },
+      { name: 'AI思维', score: 88 },
+      { name: 'AI落地实践', score: 85 }
+    ]
+  }
+];
 
 // 用户基本信息
 const userInfo = {
   name: '王芳',
   age: 45,
   avatar: '/avatar-3.jpg',
+  connectionType: 'personLookingForJob', // 人找事/事找人/纯交流
   industry: '企业服务',
-  tagStamp: 'personLookingForJob', // 人找事/事找人
+  need: '希望找到传统制造业的数字化转型项目机会，用15年HRBP经验帮助企业搭建AI时代的人才培养体系',
+  abilityTags: ['HRBP', '团队管理', '人才发展', '组织优化', '数字化转型'],
+  resourceTags: ['人才', '技术', '品牌'],
   currentDeclaration: {
-    type: 'confidence',
+    direction: 'confidence',
     text: '用15年HRBP经验，帮助企业搭建AI时代的人才培养体系，实现从传统HR到数字化HRBP的转型',
+    summary: '基于15年人力资源管理经验，专注于企业数字化转型中的人才体系搭建与AI赋能实践',
     date: '2024年3月1日',
     views: 2847,
   },
-};
-
-// 能力标签
-const abilityTags = ['HRBP', '团队管理', '人才发展', '组织优化', '数字化转型'];
-
-// 标签戳配置
-const tagStampConfig = {
-  personLookingForJob: { label: '人找事', colorClass: 'bg-[rgba(34,197,94,0.15)] text-green-600 border-green-400' },
-  jobLookingForPerson: { label: '事找人', colorClass: 'bg-blue-100 text-blue-600 border-blue-400' },
+  assessments: assessmentResults,
 };
 
 // 正在进行的连接
@@ -139,6 +203,7 @@ const menuItems = [
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
+  const [showEditModal, setShowEditModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-white pb-14">
@@ -156,24 +221,29 @@ export default function ProfilePage() {
           {/* 用户信息卡片 */}
           <div className="p-4 bg-white relative">
             {/* 标签戳 */}
-            {userInfo.tagStamp && (
+            {userInfo.connectionType && (
               <div className={`absolute top-0 right-0 px-2 py-0.5 text-[9px] font-medium rounded-bl-md z-10 border-l-2 border-t-2 ${
-                userInfo.tagStamp === 'personLookingForJob'
+                userInfo.connectionType === 'personLookingForJob'
                   ? 'bg-[rgba(34,197,94,0.15)] text-gray-600 border-gray-400'
-                  : 'bg-blue-100 text-gray-600 border-gray-400'
+                  : userInfo.connectionType === 'jobLookingForPerson'
+                  ? 'bg-blue-100 text-gray-600 border-gray-400'
+                  : 'bg-gray-100 text-gray-600 border-gray-400'
               }`}>
-                {tagStampConfig[userInfo.tagStamp as keyof typeof tagStampConfig].label}
+                {connectionType.find(t => t.id === userInfo.connectionType)?.label}
               </div>
             )}
 
             <div className="flex items-start space-x-4">
               {/* 方形头像 */}
-              <div className="w-20 h-20 flex-shrink-0 overflow-hidden">
+              <div className="w-20 h-20 flex-shrink-0 overflow-hidden relative">
                 <img
                   src={userInfo.avatar}
                   alt={userInfo.name}
                   className="w-full h-full object-cover"
                 />
+                <button className="absolute bottom-0 right-0 w-6 h-6 bg-blue-400 flex items-center justify-center">
+                  <Upload className="w-3 h-3 text-white" />
+                </button>
               </div>
 
               <div className="flex-1 min-w-0">
@@ -192,7 +262,7 @@ export default function ProfilePage() {
 
             {/* 能力标签 */}
             <div className="mt-4 flex flex-wrap gap-2">
-              {abilityTags.map((tag) => (
+              {userInfo.abilityTags.map((tag) => (
                 <span
                   key={tag}
                   className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal line-clamp-1"
@@ -200,6 +270,16 @@ export default function ProfilePage() {
                   {tag}
                 </span>
               ))}
+              <button className="px-2.5 py-1 border border-dashed border-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
+                +添加
+              </button>
+            </div>
+
+            {/* 一句说清你的需要 */}
+            <div className="mt-4 p-3 bg-[rgba(0,0,0,0.02)]">
+              <p className="text-[13px] text-gray-900 leading-relaxed line-clamp-3">
+                {userInfo.need}
+              </p>
             </div>
 
             {/* 当前宣告 */}
@@ -207,15 +287,88 @@ export default function ProfilePage() {
               <div className="flex items-start space-x-2">
                 <Flame className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] text-gray-900 leading-relaxed line-clamp-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] text-[rgba(0,0,0,0.25)]">
+                      {declarationDirections.find(d => d.id === userInfo.currentDeclaration.direction)?.name}
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <button className="p-1 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
+                        <Mic className="w-3 h-3 text-[rgba(0,0,0,0.25)]" />
+                      </button>
+                      <button className="p-1 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
+                        <PlayCircle className="w-3 h-3 text-[rgba(0,0,0,0.25)]" />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[13px] text-gray-900 leading-relaxed line-clamp-2 mb-2">
                     {userInfo.currentDeclaration.text}
                   </p>
-                  <div className="mt-2 flex items-center justify-between text-[9px] text-[rgba(0,0,0,0.25)]">
+                  <p className="text-[11px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2 mb-2">
+                    {userInfo.currentDeclaration.summary}
+                  </p>
+                  <div className="flex items-center justify-between text-[9px] text-[rgba(0,0,0,0.25)]">
                     <span>{userInfo.currentDeclaration.date}</span>
                     <span>{userInfo.currentDeclaration.views.toLocaleString()}次</span>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* 编辑按钮 */}
+            <div className="mt-4 flex justify-center">
+              <Button 
+                onClick={() => setShowEditModal(true)}
+                className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-6 py-2 flex items-center space-x-2"
+              >
+                <Edit className="w-3 h-3" />
+                <span>完善资料</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* 量表结果展示 */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-xl font-bold">
+                <span className="text-[rgba(96,165,250,0.6)]">量表</span>
+                <span className="text-blue-400">评估</span>
+              </h2>
+            </div>
+            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+            <div className="space-y-4">
+              {userInfo.assessments.map((assessment, idx) => (
+                <div key={idx} className="p-4 bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-gray-900">{assessment.name}</h3>
+                    <Badge className={`rounded-none font-normal text-[10px] ${
+                      assessment.level === '优秀' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                    }`}>
+                      {assessment.level} · {assessment.score}分
+                    </Badge>
+                  </div>
+                  {/* 维度条形图 */}
+                  <div className="space-y-2">
+                    {assessment.dimensions.map((dimension, dimIdx) => (
+                      <div key={dimIdx} className="space-y-1">
+                        <div className="flex items-center justify-between text-[10px] text-[rgba(0,0,0,0.25)]">
+                          <span>{dimension.name}</span>
+                          <span>{dimension.score}分</span>
+                        </div>
+                        <div className="w-full bg-[rgba(0,0,0,0.05)] h-2">
+                          <div 
+                            className={`h-2 rounded-none transition-all ${
+                              dimension.score >= 90 ? 'bg-green-500' :
+                              dimension.score >= 80 ? 'bg-blue-500' :
+                              dimension.score >= 70 ? 'bg-yellow-500' : 'bg-orange-500'
+                            }`}
+                            style={{ width: `${dimension.score}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
