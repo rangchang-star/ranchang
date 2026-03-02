@@ -15,7 +15,7 @@ const mockUserProfile = {
   age: 38,
   phone: '138****8888',
   email: 'wang***@example.com',
-  purpose: ['找人做事'], // 人找事/事找人/纯交流
+  purpose: ['人找事'], // 人找事/事找人/纯交流
   industry: '制造业',
   industryTags: ['供应链', '智能制造', '数字化转型'],
   resources: ['AI技术', '供应链资源', '企业培训'],
@@ -239,7 +239,7 @@ export default function ProfileEditPage() {
           <div className="space-y-3">
             <h2 className="text-[13px] font-semibold text-gray-900">来这里的目的 <span className="text-red-400">*</span></h2>
             <div className="flex flex-wrap gap-2">
-              {['找人做事', '事找人', '纯交流'].map((purpose) => (
+              {['人找事', '事找人', '纯交流'].map((purpose) => (
                 <button
                   key={purpose}
                   onClick={() => handlePurposeToggle(purpose)}
