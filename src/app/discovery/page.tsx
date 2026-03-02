@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Flame, Play, User, Timer } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BottomNav } from '@/components/bottom-nav';
@@ -60,6 +60,7 @@ const activityItems = [
     maxEnrollments: 12,
     address: '北京市朝阳区CBD国贸大厦',
     teaFee: 'aa茶水费35元',
+    status: 'ended', // 进行中 / 已结束
   },
   {
     id: '2',
@@ -77,6 +78,8 @@ const activityItems = [
     maxEnrollments: 20,
     address: '上海市浦东新区张江高科',
     teaFee: 'aa茶水费50元',
+    status: 'ongoing', // 进行中
+    endTime: '2024-03-15T18:00:00', // 结束时间
   },
   {
     id: '3',
@@ -94,6 +97,8 @@ const activityItems = [
     maxEnrollments: 15,
     address: '深圳市南山区科技园',
     teaFee: 'aa茶水费40元',
+    status: 'ongoing', // 进行中
+    endTime: '2024-03-20T14:00:00', // 结束时间
   },
 ];
 
@@ -143,6 +148,66 @@ const dailyDeclaration = {
   date: '2024年3月1日',
   title: '每日宣告：重塑自我，迎接新挑战',
   duration: '3:15',
+};
+
+// 倒计时 Hook
+const useCountdown = (endTime: string | undefined) => {
+  const [timeLeft, setTimeLeft] = useState<string>('');
+
+  useEffect(() => {
+    if (!endTime) return;
+
+    const calculateTimeLeft = () => {
+      const end = new Date(endTime).getTime();
+      const now = new Date().getTime();
+      const difference = end - now;
+
+      if (difference <= 0) {
+        setTimeLeft('00:00:00');
+        return;
+      }
+
+      const hours = Math.floor(difference / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      setTimeLeft(
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      );
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timer);
+  }, [endTime]);
+
+  return timeLeft;
+};
+
+// 状态图标组件
+const ActivityStatusBadge = ({ status, endTime }: { status: string; endTime?: string }) => {
+  const timeLeft = useCountdown(endTime);
+
+  if (status === 'ended') {
+    return (
+      <div className="flex items-center space-x-1 px-2 py-1 bg-[rgba(0,0,0,0.08)]">
+        <div className="w-1.5 h-1.5 bg-[rgba(0,0,0,0.4)]" />
+        <span className="text-[10px] text-[rgba(0,0,0,0.4)]">已结束</span>
+      </div>
+    );
+  }
+
+  if (status === 'ongoing' && endTime) {
+    return (
+      <div className="flex items-center space-x-1 px-2 py-1 bg-blue-50">
+        <div className="w-1.5 h-1.5 bg-blue-400 animate-pulse" />
+        <span className="text-[10px] text-blue-400 font-medium">{timeLeft}</span>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default function DiscoveryPage() {
@@ -278,8 +343,12 @@ export default function DiscoveryPage() {
 
                     {/* 右侧内容 */}
                     <div className="flex-1 min-w-0">
-                      {/* 分类名称（灰色字） */}
-                      <div className="text-[11px] text-[rgba(0,0,0,0.25)] mb-1">{item.category}</div>
+                      {/* 分类名称和状态图标 */}
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="text-[11px] text-[rgba(0,0,0,0.25)]">{item.category}</div>
+                        {/* 状态图标 - 右上角 */}
+                        <ActivityStatusBadge status={item.status} endTime={item.endTime} />
+                      </div>
                       {/* 活动主题与副标题（黑色字） */}
                       <h3 className="text-[13px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
                         {item.title}
