@@ -214,7 +214,7 @@ export default function NotificationsPage() {
               {filteredNotifications.map((notification) => (
                 <Link
                   key={notification.id}
-                  href={notification.actionUrl}
+                  href={notification.actionUrl || '#'}
                   className="block p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
                 >
                   <div className="flex items-start space-x-3">

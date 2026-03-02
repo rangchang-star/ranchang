@@ -125,6 +125,17 @@ export default function AdminActivitiesPage() {
     ? applications.filter((app) => app.activityId === selectedActivity)
     : applications.filter((app) => app.status === 'pending');
 
+  // 添加通知到localStorage
+  const addNotification = (notification: any) => {
+    try {
+      const stored = localStorage.getItem('notifications');
+      const existing = stored ? JSON.parse(stored) : [];
+      localStorage.setItem('notifications', JSON.stringify([notification, ...existing]));
+    } catch (error) {
+      console.error('保存通知失败:', error);
+    }
+  };
+
   // 审核通过
   const handleApprove = (applicationId: string) => {
     const updatedApplications = applications.map((app) =>
@@ -132,8 +143,23 @@ export default function AdminActivitiesPage() {
     );
     setApplications(updatedApplications);
 
+    // 获取申请信息
+    const app = applications.find(a => a.id === applicationId);
+    const activity = mockActivities.find(a => a.id === app?.activityId);
+
     // 同时更新localStorage中的活动数据
     updateLocalStorage(applicationId, 'approved');
+
+    // 添加审核通过通知
+    addNotification({
+      id: `approval-${Date.now()}`,
+      type: 'success',
+      title: '报名审核通过',
+      message: `您报名的「${activity?.title || '活动'}」已通过审核，请按时参加`,
+      time: new Date().toLocaleString('zh-CN'),
+      read: false,
+      actionUrl: `/activity/${app?.activityId}`,
+    });
 
     alert('已通过申请');
   };
@@ -147,8 +173,22 @@ export default function AdminActivitiesPage() {
     );
     setApplications(updatedApplications);
 
+    // 获取申请信息
+    const app = applications.find(a => a.id === applicationId);
+    const activity = mockActivities.find(a => a.id === app?.activityId);
+
     // 同时更新localStorage中的活动数据
     updateLocalStorage(applicationId, 'rejected');
+
+    // 添加审核拒绝通知
+    addNotification({
+      id: `rejection-${Date.now()}`,
+      type: 'error',
+      title: '报名审核未通过',
+      message: `您报名的「${activity?.title || '活动'}」未通过审核，如有疑问请联系客服`,
+      time: new Date().toLocaleString('zh-CN'),
+      read: false,
+    });
 
     alert('已拒绝申请');
   };

@@ -16,6 +16,24 @@ interface Notification {
   read: boolean;
 }
 
+// 活动类型定义
+interface Activity {
+  id: string;
+  type: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  address: string;
+  enrolled: number;
+  max: number;
+  tags: string[];
+  status: string;
+  applicationStatus: 'approved' | 'pending' | 'none';
+  description: string;
+  image: string;
+}
+
 const filters = [
   { id: 'all', label: '全部活动' },
   { id: 'upcoming', label: '待参加' },
@@ -169,20 +187,20 @@ export default function ActivitiesPage() {
     switch (selectedFilter) {
       case 'upcoming':
         // 待参加：只显示报名并通过审核的项目（进行中 + 已通过）
-        return activities.filter((a) => a.status === 'ongoing' && a.applicationStatus === 'approved');
+        return activities.filter((a: Activity) => a.status === 'ongoing' && a.applicationStatus === 'approved');
       case 'ended':
         // 已结束：只显示已结束的活动
-        return activities.filter((a) => a.status === 'ended');
+        return activities.filter((a: Activity) => a.status === 'ended');
       case 'pending':
         // 待审核：只显示待审核的报名
-        return activities.filter((a) => a.applicationStatus === 'pending');
+        return activities.filter((a: Activity) => a.applicationStatus === 'pending');
       default:
         // 全部活动：显示所有活动
         return activities;
     }
   })();
 
-  const handleApply = (activity: typeof defaultActivities[0]) => {
+  const handleApply = (activity: Activity) => {
     setActivityToApply(activity);
     setShowApplyConfirm(true);
   };
@@ -198,7 +216,7 @@ export default function ActivitiesPage() {
     sessionStorage.setItem('activity-applying', 'true');
 
     // 更新活动状态为待审核
-    const updatedActivities = activities.map((a) =>
+    const updatedActivities = activities.map((a: Activity) =>
       a.id === activityToApply.id
         ? { ...a, applicationStatus: 'pending' as const, enrolled: a.enrolled + 1 }
         : a
@@ -215,7 +233,7 @@ export default function ActivitiesPage() {
     }, 1000);
   };
 
-  const handleCancel = (activity: typeof defaultActivities[0]) => {
+  const handleCancel = (activity: Activity) => {
     if (!confirm(`确定要取消报名「${activity.title}」吗？`)) {
       return;
     }
@@ -228,7 +246,7 @@ export default function ActivitiesPage() {
     sessionStorage.setItem('activity-canceling', 'true');
 
     // 更新活动状态为未报名
-    const updatedActivities = activities.map((a) =>
+    const updatedActivities = activities.map((a: Activity) =>
       a.id === activity.id
         ? { ...a, applicationStatus: undefined, enrolled: Math.max(0, a.enrolled - 1) }
         : a
@@ -303,7 +321,7 @@ export default function ActivitiesPage() {
 
           {/* 活动列表 */}
           <div className="divide-y divide-[rgba(0,0,0,0.05)]">
-            {filteredActivities.map((activity) => (
+            {filteredActivities.map((activity: Activity) => (
               <div key={activity.id} className="py-5 space-y-4">
                 {/* 活动图片 */}
                 {activity.image && (
@@ -322,7 +340,7 @@ export default function ActivitiesPage() {
                     {activity.title}
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {activity.tags.map((tag) => (
+                    {activity.tags.map((tag: string) => (
                       <span
                         key={tag}
                         className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
