@@ -104,7 +104,7 @@ export default function SubscriptionPage() {
               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-base font-bold text-gray-900">订阅内容</h2>
+              <h2 className="text-xl font-bold text-blue-400">订阅内容</h2>
             </div>
             <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed">
               探索AI赋能的培训课程与专业咨询服务，开启转型之旅
@@ -166,7 +166,7 @@ export default function SubscriptionPage() {
                       </div>
                     </div>
 
-                    <h3 className="text-[13px] font-semibold text-gray-900 leading-tight line-clamp-1">
+                    <h3 className="text-sm font-semibold text-gray-900 leading-tight line-clamp-1">
                       {training.title}
                     </h3>
                     <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
@@ -190,8 +190,8 @@ export default function SubscriptionPage() {
                     <div className="flex items-center justify-between pt-2 border-t border-[rgba(0,0,0,0.05)]">
                       <div className="flex items-center space-x-3">
                         <div>
-                          <span className="text-[15px] font-semibold text-gray-900">¥{training.price}</span>
-                          <span className="text-[13px] text-[rgba(0,0,0,0.25)] line-through ml-2">
+                          <span className="text-sm font-semibold text-gray-900">¥{training.price}</span>
+                          <span className="text-[11px] text-[rgba(0,0,0,0.25)] line-through ml-2">
                             ¥{training.originalPrice}
                           </span>
                         </div>
@@ -202,7 +202,7 @@ export default function SubscriptionPage() {
                       {/* 纯方形按钮 */}
                       <Button
                         size="sm"
-                        className="bg-blue-400 text-white hover:bg-blue-500 font-normal"
+                        className="bg-blue-400 text-white hover:bg-blue-500 font-normal text-[11px]"
                       >
                         立即订阅
                       </Button>
@@ -244,7 +244,7 @@ export default function SubscriptionPage() {
                       </div>
                     </div>
 
-                    <h3 className="text-[13px] font-semibold text-gray-900 leading-tight line-clamp-1">
+                    <h3 className="text-sm font-semibold text-gray-900 leading-tight line-clamp-1">
                       {consultation.title}
                     </h3>
                     <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
@@ -268,7 +268,7 @@ export default function SubscriptionPage() {
                     <div className="flex items-center justify-between pt-2 border-t border-[rgba(0,0,0,0.05)]">
                       <div className="flex items-center space-x-3">
                         <div>
-                          <span className="text-[15px] font-semibold text-gray-900">¥{consultation.price}</span>
+                          <span className="text-sm font-semibold text-gray-900">¥{consultation.price}</span>
                         </div>
                         <div className="flex items-center space-x-1 text-[9px] text-[rgba(0,0,0,0.25)]">
                           <span>{consultation.reviews}</span>
@@ -277,7 +277,7 @@ export default function SubscriptionPage() {
                       {/* 纯方形按钮 */}
                       <Button
                         size="sm"
-                        className="bg-blue-400 text-white hover:bg-blue-500 font-normal"
+                        className="bg-blue-400 text-white hover:bg-blue-500 font-normal text-[11px]"
                       >
                         预约咨询
                       </Button>
