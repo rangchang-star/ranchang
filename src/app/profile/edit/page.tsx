@@ -15,6 +15,10 @@ const mockUserProfile = {
   age: 38,
   phone: '138****8888',
   email: 'wang***@example.com',
+  companyName: '',
+  companyScale: '',
+  companyPosition: '',
+  belief: '',
   purpose: '人找事', // 人找事/事找人/纯交流
   industry: '制造业',
   industryTags: ['供应链', '智能制造', '数字化转型'],
@@ -22,6 +26,14 @@ const mockUserProfile = {
   declaration: '用15年供应链管理经验，帮助传统企业实现AI转型',
   directions: ['信心', '使命', '自我'],
 };
+
+const companyScales = [
+  '1-10人',
+  '10-50人',
+  '50-100人',
+  '100-500人',
+  '500人以上',
+];
 
 const industries = [
   '互联网/IT/软件',
@@ -154,6 +166,20 @@ export default function ProfileEditPage() {
     // 验证必选项
     const requiredErrors: string[] = [];
 
+    // 验证基本信息
+    if (!profile.name || profile.name.trim() === '') {
+      requiredErrors.push('姓名或花名');
+    }
+    if (!profile.gender) {
+      requiredErrors.push('性别');
+    }
+    if (!profile.age || profile.age <= 0) {
+      requiredErrors.push('年龄');
+    }
+    if (!profile.phone || profile.phone.trim() === '') {
+      requiredErrors.push('电话号');
+    }
+
     // 验证来这里的目的
     if (!selectedPurpose) {
       requiredErrors.push('来这里的目的');
@@ -225,17 +251,17 @@ export default function ProfileEditPage() {
             <h2 className="text-[13px] font-semibold text-gray-900">基本信息</h2>
             <div className="space-y-3">
               <div>
-                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">姓名</label>
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">姓名或花名 <span className="text-red-400">*</span></label>
                 <input
                   type="text"
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                   className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
-                  placeholder="请输入姓名"
+                  placeholder="请输入姓名或花名"
                 />
               </div>
               <div>
-                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">性别</label>
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">性别 <span className="text-red-400">*</span></label>
                 <div className="flex items-center space-x-4">
                   <label className="flex items-center space-x-2 cursor-pointer">
                     <input
@@ -260,13 +286,68 @@ export default function ProfileEditPage() {
                 </div>
               </div>
               <div>
-                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">年龄</label>
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">年龄 <span className="text-red-400">*</span></label>
                 <input
                   type="number"
                   value={profile.age}
                   onChange={(e) => setProfile({ ...profile, age: parseInt(e.target.value) })}
                   className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
                   placeholder="请输入年龄"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">电话号 <span className="text-red-400">*</span></label>
+                <input
+                  type="tel"
+                  value={profile.phone}
+                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  placeholder="请输入电话号"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">公司名称</label>
+                <input
+                  type="text"
+                  value={profile.companyName}
+                  onChange={(e) => setProfile({ ...profile, companyName: e.target.value })}
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  placeholder="请输入公司名称"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">公司规模</label>
+                <select
+                  value={profile.companyScale}
+                  onChange={(e) => setProfile({ ...profile, companyScale: e.target.value })}
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                >
+                  <option value="">请选择公司规模</option>
+                  {companyScales.map((scale) => (
+                    <option key={scale} value={scale}>
+                      {scale}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">公司职位</label>
+                <input
+                  type="text"
+                  value={profile.companyPosition}
+                  onChange={(e) => setProfile({ ...profile, companyPosition: e.target.value })}
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  placeholder="请输入公司职位"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">信仰</label>
+                <input
+                  type="text"
+                  value={profile.belief}
+                  onChange={(e) => setProfile({ ...profile, belief: e.target.value })}
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  placeholder="请输入信仰"
                 />
               </div>
             </div>
