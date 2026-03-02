@@ -18,6 +18,12 @@ const industryTypes = [
   '资本运作',
 ];
 
+// Tab描述文字（由管理后台录入）
+const tabDescriptions = {
+  training: '探访企业现场，深入了解行业前沿实践，通过实地考察获取第一手商业洞察',
+  consultation: '定期举行的深度沙龙，汇集行业精英，共同探讨AI时代的商业机会与挑战',
+};
+
 // 探访点亮内容
 const visits = [
   {
@@ -112,7 +118,13 @@ const salon = {
 };
 
 export default function SubscriptionPage() {
-  const [activeTab, setActiveTab] = useState('training');
+  const [activeTab, setActiveTab] = useState<'training' | 'consultation'>('training');
+
+  const handleTabChange = (value: string) => {
+    if (value === 'training' || value === 'consultation') {
+      setActiveTab(value);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white pb-14">
@@ -125,12 +137,12 @@ export default function SubscriptionPage() {
               <h1 className="text-2xl font-light text-gray-900">订阅内容</h1>
             </div>
             <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed">
-              探索AI赋能的培训课程与专业咨询服务，开启转型之旅
+              {tabDescriptions[activeTab]}
             </p>
           </div>
 
           {/* 选项卡 */}
-          <Tabs defaultValue="training" value={activeTab} onValueChange={setActiveTab}>
+          <Tabs defaultValue="training" value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="rounded-none grid w-full grid-cols-2 bg-[rgba(0,0,0,0.05)] p-1">
               <TabsTrigger
                 value="training"
