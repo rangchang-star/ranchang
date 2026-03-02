@@ -237,12 +237,6 @@ export default function SubscriptionPage() {
                 </div>
               ))}
             </TabsContent>
-            {/* 查看更多灰色色块 */}
-            <div className="mt-4 flex justify-center">
-              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
-                查看更多
-              </button>
-            </div>
 
             {/* AI加油圈内容 */}
             <TabsContent value="consultation" className="space-y-4 mt-6">
