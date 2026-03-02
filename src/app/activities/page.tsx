@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Calendar, MapPin, Users, Clock, X, Bell, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 // 通知类型定义
 interface Notification {
@@ -466,6 +467,9 @@ export default function ActivitiesPage() {
       {/* 活动详情悬浮窗口 */}
       <Dialog open={!!selectedActivity} onOpenChange={(open) => !open && setSelectedActivity(null)}>
         <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-0">
+          <VisuallyHidden>
+            <DialogTitle>活动详情</DialogTitle>
+          </VisuallyHidden>
           {selectedActivity && (
             <>
               {/* 活动图片 */}
