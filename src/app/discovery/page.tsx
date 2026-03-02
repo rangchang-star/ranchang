@@ -7,11 +7,11 @@ import { BottomNav } from '@/components/bottom-nav';
 
 // 分类标签
 const categories = [
-  { id: 'all', name: '全部', hot: false },
+  { id: 'category', name: '分类', hot: false },
   { id: 'private', name: '私董会', hot: false },
   { id: 'salon', name: '沙龙', hot: false },
-  { id: 'training', name: '培训', hot: false },
-  { id: 'consultation', name: '咨询', hot: false },
+  { id: 'ai', name: 'AI学习', hot: false },
+  { id: 'assets', name: '数字资产', hot: false },
 ];
 
 // 能力连接
@@ -218,7 +218,7 @@ const ActivityStatusBadge = ({ status, endTime }: { status: string; endTime?: st
 
 export default function DiscoveryPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('category');
 
   return (
     <div className="min-h-screen bg-white pb-14">
