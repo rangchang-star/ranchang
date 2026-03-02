@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -156,6 +156,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
   const [faith, setFaith] = useState(mockMember.faith || '');
   const [isFeatured, setIsFeatured] = useState(mockMember.isFeatured);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(mockMember.avatar);
 
   const handleTagToggle = (tag: string, type: 'admin' | 'ability' | 'resource') => {
     const setTags = type === 'admin' ? setAdminTags : type === 'ability' ? setAbilityTags : setResourceTags;
@@ -165,6 +166,15 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
       setTags(currentTags.filter((t) => t !== tag));
     } else {
       setTags([...currentTags, tag]);
+    }
+  };
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 创建本地预览URL
+      const url = URL.createObjectURL(file);
+      setAvatarUrl(url);
     }
   };
 
@@ -185,6 +195,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
       position,
       faith,
       isFeatured,
+      avatarUrl,
     });
     alert('会员信息已保存');
     router.back();
@@ -245,7 +256,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
               <div className="flex items-center space-x-4">
                 <div className="w-20 h-20 rounded-full overflow-hidden">
                   <Image
-                    src={mockMember.avatar}
+                    src={avatarUrl}
                     alt={name}
                     width={80}
                     height={80}
@@ -258,6 +269,24 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                   <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
                     {mockMember.level} · {mockMember.joinDate} 加入
                   </p>
+                  <div className="mt-2">
+                    <input
+                      type="file"
+                      id="avatar-upload"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('avatar-upload')?.click()}
+                      className="border-[rgba(0,0,0,0.1)]"
+                    >
+                      <Upload className="w-3.5 h-3.5 mr-1" />
+                      更换头像
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
