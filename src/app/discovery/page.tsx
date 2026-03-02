@@ -461,17 +461,12 @@ export default function DiscoveryPage() {
       </div>
 
       {/* 每日宣告 - 固定在底部导航栏上方 */}
-      <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40">
         <section>
-          <div className="flex items-center justify-between mb-1">
-            <h2 className="text-sm font-bold text-blue-400">每日宣告</h2>
-          </div>
-          {/* 灰色横线 */}
-          <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
           <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer">
             <div className="flex items-start space-x-4">
-              {/* 图像 - 纯方形 */}
-              <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
+              {/* 图像 - 纯方形，缩小60% */}
+              <div className="w-6 h-6 flex-shrink-0 overflow-hidden">
                 <img
                   src={dailyDeclaration.image}
                   alt="每日宣告"
