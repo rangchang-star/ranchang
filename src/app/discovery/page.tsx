@@ -250,12 +250,12 @@ export default function DiscoveryPage() {
 
           {/* 标签栏 */}
           <div className="px-5 pb-4 overflow-x-auto">
-            <div className="flex space-x-3">
+            <div className="flex justify-between">
               {categories.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 py-2 text-[13px] font-normal whitespace-nowrap transition-all ${
+                  className={`flex-1 px-2 py-2 text-[13px] font-normal whitespace-nowrap transition-all ${
                     selectedCategory === category.id
                       ? 'bg-blue-400 text-white'
                       : 'bg-[rgba(0,0,0,0.05)] text-gray-700 hover:bg-[rgba(0,0,0,0.08)]'
