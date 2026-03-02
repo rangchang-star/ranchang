@@ -113,10 +113,10 @@ export default function SubscriptionPage() {
 
           {/* 选项卡 */}
           <Tabs defaultValue="training" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 bg-[rgba(0,0,0,0.05)] p-1">
+            <TabsList className="rounded-none grid w-full grid-cols-2 bg-[rgba(0,0,0,0.05)] p-1">
               <TabsTrigger
                 value="training"
-                className="data-[state=active]:bg-blue-400 data-[state=active]:text-white text-gray-600 font-normal"
+                className="rounded-none data-[state=active]:bg-blue-400 data-[state=active]:text-white text-gray-600 font-normal"
               >
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-4 h-4" />
@@ -125,7 +125,7 @@ export default function SubscriptionPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="consultation"
-                className="data-[state=active]:bg-blue-400 data-[state=active]:text-white text-gray-600 font-normal"
+                className="rounded-none data-[state=active]:bg-blue-400 data-[state=active]:text-white text-gray-600 font-normal"
               >
                 <div className="flex items-center space-x-2">
                   <Heart className="w-4 h-4" />
@@ -153,7 +153,7 @@ export default function SubscriptionPage() {
                   {/* 内容 */}
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <Badge className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px]">
+                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px]">
                         {training.level}
                       </Badge>
                       <div className="flex items-center space-x-1 text-[11px] text-[rgba(0,0,0,0.25)]">
@@ -179,7 +179,7 @@ export default function SubscriptionPage() {
                         <Badge
                           key={tag}
                           variant="secondary"
-                          className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px] line-clamp-1"
+                          className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px] line-clamp-1"
                         >
                           {tag}
                         </Badge>
@@ -202,7 +202,7 @@ export default function SubscriptionPage() {
                       {/* 纯方形按钮 */}
                       <Button
                         size="sm"
-                        className="bg-blue-400 text-white hover:bg-blue-500 font-normal text-[11px]"
+                        className="rounded-none bg-blue-400 text-white hover:bg-blue-500 font-normal text-[11px]"
                       >
                         立即订阅
                       </Button>
@@ -231,7 +231,7 @@ export default function SubscriptionPage() {
                   {/* 内容 */}
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <Badge className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px]">
+                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px]">
                         {consultation.category}
                       </Badge>
                       <div className="flex items-center space-x-1 text-[11px] text-[rgba(0,0,0,0.25)]">
@@ -257,7 +257,7 @@ export default function SubscriptionPage() {
                         <Badge
                           key={tag}
                           variant="secondary"
-                          className="bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px] line-clamp-1"
+                          className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px] line-clamp-1"
                         >
                           {tag}
                         </Badge>
@@ -277,7 +277,7 @@ export default function SubscriptionPage() {
                       {/* 纯方形按钮 */}
                       <Button
                         size="sm"
-                        className="bg-blue-400 text-white hover:bg-blue-500 font-normal text-[11px]"
+                        className="rounded-none bg-blue-400 text-white hover:bg-blue-500 font-normal text-[11px]"
                       >
                         预约咨询
                       </Button>
