@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
@@ -379,10 +380,13 @@ export default function ProfilePage() {
             <div className="flex items-start space-x-4">
               {/* 方形头像 */}
               <div className="w-20 h-20 flex-shrink-0 overflow-hidden relative">
-                <img
+                <Image
                   src={userInfo.avatar}
                   alt={userInfo.name}
+                  width={80}
+                  height={80}
                   className="w-full h-full object-cover"
+                  unoptimized
                 />
                 <button className="absolute bottom-0 right-0 w-6 h-6 bg-blue-400 flex items-center justify-center">
                   <Upload className="w-3 h-3 text-white" />
@@ -487,6 +491,31 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* 引导说明 */}
+          <div className="p-4 bg-[rgba(59,130,246,0.05)] border border-blue-200">
+            <div className="flex items-start space-x-2">
+              <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-white text-[10px] font-bold">!</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[13px] font-semibold text-blue-900 mb-1">完善您的个人资料</h3>
+                <p className="text-[11px] text-blue-800 leading-relaxed">
+                  完善资料后，您的信息将在"发现光亮"页面向其他会员展示，帮助您快速找到匹配的合作伙伴和机会。
+                </p>
+                <div className="mt-2 flex items-center space-x-2">
+                  <span className="text-[10px] text-blue-700">下一步：</span>
+                  <Link href="/profile/edit" className="text-[10px] text-blue-600 underline">
+                    完善资料
+                  </Link>
+                  <span className="text-[10px] text-blue-700">或</span>
+                  <Link href="/activities" className="text-[10px] text-blue-600 underline">
+                    参与活动
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* 量表结果展示 */}
           <div>
             <div className="flex items-center justify-between mb-1">
@@ -577,10 +606,13 @@ export default function ProfilePage() {
                 >
                   <div className="flex items-start space-x-3">
                     <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
-                      <img
+                      <Image
                         src={record.image}
                         alt={record.title}
+                        width={64}
+                        height={64}
                         className="w-full h-full object-cover"
+                        unoptimized
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -602,10 +634,13 @@ export default function ProfilePage() {
                         {record.visitors.map((visitor, idx) => (
                           <div key={idx} className="flex items-center space-x-1">
                             <div className="w-6 h-6 rounded-full overflow-hidden">
-                              <img
+                              <Image
                                 src={visitor.avatar}
                                 alt={visitor.name}
+                                width={24}
+                                height={24}
                                 className="w-full h-full object-cover"
+                                unoptimized
                               />
                             </div>
                             <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[9px]">

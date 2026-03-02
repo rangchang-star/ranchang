@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Users, Calendar, MapPin } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { useState } from 'react';
 
 const mockActivities = [
@@ -20,6 +20,7 @@ const mockActivities = [
     max: 12,
     tags: ['私董会', '名额紧张'],
     status: 'active',
+    pendingApplications: 3, // 待审核申请数量
   },
   {
     id: '2',
@@ -32,6 +33,7 @@ const mockActivities = [
     max: 30,
     tags: ['跨界', 'AI'],
     status: 'active',
+    pendingApplications: 5,
   },
   {
     id: '3',
@@ -44,6 +46,7 @@ const mockActivities = [
     max: 30,
     tags: ['AI实战', '工作坊'],
     status: 'active',
+    pendingApplications: 2,
   },
   {
     id: '4',
@@ -56,15 +59,126 @@ const mockActivities = [
     max: 50,
     tags: ['已结束'],
     status: 'ended',
+    pendingApplications: 0,
+  },
+];
+
+// 模拟报名申请数据
+const mockApplications = [
+  {
+    id: 'app-1',
+    activityId: '1',
+    userName: '张三',
+    userPhone: '138****1234',
+    userCompany: '某科技公司',
+    userPosition: 'CEO',
+    reason: '希望参与私董会，获得更多创业指导',
+    status: 'pending', // pending, approved, rejected
+    applyTime: '2024-04-05 10:30',
+  },
+  {
+    id: 'app-2',
+    activityId: '1',
+    userName: '李四',
+    userPhone: '139****5678',
+    userCompany: '某制造企业',
+    userPosition: '总经理',
+    reason: '数字化转型需要同行交流',
+    status: 'pending',
+    applyTime: '2024-04-05 14:20',
+  },
+  {
+    id: 'app-3',
+    activityId: '1',
+    userName: '王五',
+    userPhone: '137****9012',
+    userCompany: '某咨询公司',
+    userPosition: '合伙人',
+    reason: '了解最新AI应用趋势',
+    status: 'pending',
+    applyTime: '2024-04-06 09:15',
+  },
+  {
+    id: 'app-4',
+    activityId: '2',
+    userName: '赵六',
+    userPhone: '136****3456',
+    userCompany: '某创业公司',
+    userPosition: '创始人',
+    reason: '拓展人脉资源',
+    status: 'approved',
+    applyTime: '2024-04-01 11:00',
   },
 ];
 
 export default function AdminActivitiesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
+  const [showApplications, setShowApplications] = useState(false);
+  const [applications, setApplications] = useState(mockApplications);
 
   const filteredActivities = mockActivities.filter((activity) =>
     activity.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const filteredApplications = selectedActivity
+    ? applications.filter((app) => app.activityId === selectedActivity)
+    : applications.filter((app) => app.status === 'pending');
+
+  // 审核通过
+  const handleApprove = (applicationId: string) => {
+    const updatedApplications = applications.map((app) =>
+      app.id === applicationId ? { ...app, status: 'approved' as const } : app
+    );
+    setApplications(updatedApplications);
+
+    // 同时更新localStorage中的活动数据
+    updateLocalStorage(applicationId, 'approved');
+
+    alert('已通过申请');
+  };
+
+  // 审核拒绝
+  const handleReject = (applicationId: string) => {
+    if (!confirm('确定要拒绝此申请吗？')) return;
+
+    const updatedApplications = applications.map((app) =>
+      app.id === applicationId ? { ...app, status: 'rejected' as const } : app
+    );
+    setApplications(updatedApplications);
+
+    // 同时更新localStorage中的活动数据
+    updateLocalStorage(applicationId, 'rejected');
+
+    alert('已拒绝申请');
+  };
+
+  // 更新localStorage中的活动数据
+  const updateLocalStorage = (applicationId: string, status: 'approved' | 'rejected') => {
+    try {
+      const storedActivities = localStorage.getItem('activities');
+      if (storedActivities) {
+        const activities = JSON.parse(storedActivities);
+        const app = applications.find(a => a.id === applicationId);
+        if (app) {
+          const activity = activities.find((a: any) => a.id === app.activityId);
+          if (activity) {
+            // 更新活动的报名状态
+            if (!activity.applications) {
+              activity.applications = [];
+            }
+            const existingApp = activity.applications.find((a: any) => a.id === applicationId);
+            if (existingApp) {
+              existingApp.status = status;
+            }
+            localStorage.setItem('activities', JSON.stringify(activities));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('更新localStorage失败:', error);
+    }
+  };
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -136,9 +250,21 @@ export default function AdminActivitiesPage() {
                         <Edit className="w-4 h-4 mr-1" />
                         编辑
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedActivity(activity.id);
+                          setShowApplications(true);
+                        }}
+                      >
                         <Users className="w-4 h-4 mr-1" />
                         报名
+                        {activity.pendingApplications > 0 && (
+                          <Badge variant="destructive" className="ml-1 text-xs">
+                            {activity.pendingApplications}
+                          </Badge>
+                        )}
                       </Button>
                       <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
                         <Trash2 className="w-4 h-4" />
@@ -182,6 +308,90 @@ export default function AdminActivitiesPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* 报名审核面板 */}
+        {showApplications && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>
+                  {selectedActivity
+                    ? `报名审核 - ${mockActivities.find(a => a.id === selectedActivity)?.title}`
+                    : '待审核申请'}
+                  <Badge variant="outline" className="ml-2">
+                    {filteredApplications.length}条
+                  </Badge>
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowApplications(false);
+                    setSelectedActivity(null);
+                  }}
+                >
+                  关闭
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredApplications.map((application) => (
+                  <div
+                    key={application.id}
+                    className="p-4 border border-border rounded-lg hover:bg-secondary/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h3 className="font-semibold">{application.userName}</h3>
+                          <Badge variant={application.status === 'pending' ? 'secondary' : application.status === 'approved' ? 'default' : 'destructive'}>
+                            {application.status === 'pending' ? '待审核' : application.status === 'approved' ? '已通过' : '已拒绝'}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p>电话: {application.userPhone}</p>
+                          <p>公司: {application.userCompany}</p>
+                          <p>职位: {application.userPosition}</p>
+                          <p>申请时间: {application.applyTime}</p>
+                        </div>
+                        <div className="mt-2 p-2 bg-secondary/50 rounded text-sm">
+                          <span className="font-medium">申请理由: </span>
+                          {application.reason}
+                        </div>
+                      </div>
+                    </div>
+                    {application.status === 'pending' && (
+                      <div className="flex items-center justify-end space-x-2 mt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleReject(application.id)}
+                        >
+                          <XCircle className="w-4 h-4 mr-1" />
+                          拒绝
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleApprove(application.id)}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          通过
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {filteredApplications.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    暂无申请记录
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AdminLayout>
   );

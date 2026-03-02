@@ -7,6 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
+// 数据验证函数：检查特殊字符
+const containsSpecialChars = (str: string): boolean => {
+  // 允许中文、英文、数字、空格、常见标点符号
+  const validPattern = /^[\u4e00-\u9fa5a-zA-Z0-9\s\u002c\u002e\uff0c\u3002\uff01\uff1f\u0021\uff1f\u0022\u201c\u201d\u2018\u2019\uff08\uff09\u0028\u0029\u3010\u3011\u300a\u300b\u002d\u2014\u005f]+$/;
+  return !validPattern.test(str);
+};
+
+// 防XSS攻击：转义HTML特殊字符
+const escapeHtml = (str: string): string => {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+};
+
 // 模拟数据
 const mockUserProfile = {
   avatar: '/avatar-1.jpg',
@@ -169,6 +183,8 @@ export default function ProfileEditPage() {
     // 验证基本信息
     if (!profile.name || profile.name.trim() === '') {
       requiredErrors.push('姓名或花名');
+    } else if (containsSpecialChars(profile.name)) {
+      requiredErrors.push('姓名包含非法字符');
     }
     if (!profile.gender) {
       requiredErrors.push('性别');
@@ -178,6 +194,8 @@ export default function ProfileEditPage() {
     }
     if (!profile.phone || profile.phone.trim() === '') {
       requiredErrors.push('电话号');
+    } else if (!/^1[3-9]\d{9}$/.test(profile.phone.replace(/\s/g, ''))) {
+      requiredErrors.push('电话号格式不正确（应为11位手机号）');
     }
 
     // 验证来这里的目的
@@ -193,6 +211,10 @@ export default function ProfileEditPage() {
     // 验证一句说清你的需要
     if (!profile.declaration || profile.declaration.trim().length < 20) {
       requiredErrors.push('一句说清你的需要（不少于20字）');
+    } else if (profile.declaration.length > 200) {
+      requiredErrors.push('一句说清你的需要（不超过200字，当前' + profile.declaration.length + '字）');
+    } else if (containsSpecialChars(profile.declaration)) {
+      requiredErrors.push('一句说清你的需要包含非法字符');
     }
 
     // 如果有必选项未填写，显示提示
@@ -201,16 +223,84 @@ export default function ProfileEditPage() {
       return;
     }
 
-    // 这里应该调用保存API
-    console.log('保存资料:', {
+    // 防重复提交检查
+    const submitKey = `profile-submit-${Date.now()}`;
+    if (sessionStorage.getItem('profile-submitting') === 'true') {
+      alert('正在保存中，请勿重复提交');
+      return;
+    }
+    sessionStorage.setItem('profile-submitting', 'true');
+
+    // 组合完整数据
+    const fullProfile = {
       ...profile,
       purpose: selectedPurpose,
       industryTags: selectedIndustryTag ? [selectedIndustryTag] : [],
       resources: selectedResources,
       directions: selectedDirection ? [selectedDirection] : [],
       declarationDescription,
-    });
-    alert('资料保存成功！');
+      updatedAt: new Date().toISOString(),
+    };
+
+    // 保存到localStorage
+    try {
+      localStorage.setItem('userProfile', JSON.stringify(fullProfile));
+
+      // 同时也保存到userDeclarations（兼容旧的宣告数据结构）
+      const declarationData = {
+        id: `decl-${Date.now()}`,
+        rank: 1,
+        icon: `/icon-${selectedDirection}.jpg`,
+        iconType: directions.find(d => d.id === selectedDirection)?.name || '信心',
+        title: profile.declaration || '我的宣告',
+        summary: declarationDescription || '基于个人经验，为行业贡献力量',
+        duration: '5:00', // 默认时长
+        image: profile.avatar,
+        publishDate: new Date().toLocaleDateString('zh-CN'),
+        views: 0,
+        likes: 0,
+        comments: 0,
+      };
+
+      // 获取现有宣告数据并添加新宣告
+      const existingDeclarations = JSON.parse(localStorage.getItem('userDeclarations') || '[]');
+      if (!Array.isArray(existingDeclarations)) {
+        // 如果不是数组，初始化为空数组
+        localStorage.setItem('userDeclarations', JSON.stringify([declarationData]));
+      } else {
+        // 检查是否已存在（通过title判断）
+        const exists = existingDeclarations.some((d: any) => d.title === declarationData.title);
+        if (!exists) {
+          existingDeclarations.unshift(declarationData);
+          localStorage.setItem('userDeclarations', JSON.stringify(existingDeclarations));
+        }
+      }
+
+      // 触发自定义事件，通知其他页面更新
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'userProfile',
+        newValue: JSON.stringify(fullProfile),
+        storageArea: window.localStorage,
+      }));
+
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'userDeclarations',
+        newValue: JSON.stringify(existingDeclarations),
+        storageArea: window.localStorage,
+      }));
+
+      console.log('保存资料:', fullProfile);
+      alert('资料保存成功！');
+      window.location.href = '/profile';
+    } catch (error) {
+      console.error('保存失败:', error);
+      alert('保存失败，请重试');
+    } finally {
+      // 清除提交状态
+      setTimeout(() => {
+        sessionStorage.removeItem('profile-submitting');
+      }, 1000);
+    }
   };
 
   return (
@@ -385,7 +475,16 @@ export default function ProfileEditPage() {
               minLength={20}
             />
             <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
-              {profile.declaration.length}/20+
+              {profile.declaration.length}/200字（最少20字）
+              {profile.declaration.length < 20 && profile.declaration.length > 0 && (
+                <span className="text-red-400 ml-1">还需{20 - profile.declaration.length}字</span>
+              )}
+              {profile.declaration.length >= 20 && profile.declaration.length <= 200 && (
+                <span className="text-green-600 ml-1">✓</span>
+              )}
+              {profile.declaration.length > 200 && (
+                <span className="text-red-400 ml-1">超出{profile.declaration.length - 200}字</span>
+              )}
             </p>
           </div>
 

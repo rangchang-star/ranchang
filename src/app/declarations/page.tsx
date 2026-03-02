@@ -1,14 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Plus, Play, Heart, MessageCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
-// 模拟数据
-const mockDeclarations = [
+// 宣告类型定义
+interface Declaration {
+  id: string;
+  rank: number;
+  icon: string;
+  iconType: string;
+  title: string;
+  summary: string;
+  duration: string;
+  image: string;
+  publishDate: string;
+  views: number;
+  likes: number;
+  comments: number;
+}
+
+// 模拟数据（作为备用）
+const mockDeclarations: Declaration[] = [
   {
     id: '1',
     rank: 1,
@@ -54,7 +71,47 @@ const mockDeclarations = [
 ];
 
 export default function MyDeclarationsPage() {
-  const [declarations] = useState(mockDeclarations);
+  const [declarations, setDeclarations] = useState<Declaration[]>([]);
+
+  // 从localStorage加载宣告数据
+  useEffect(() => {
+    const loadDeclarations = () => {
+      try {
+        const storedDeclarations = localStorage.getItem('userDeclarations');
+        if (storedDeclarations) {
+          const parsedDeclarations = JSON.parse(storedDeclarations);
+          if (Array.isArray(parsedDeclarations) && parsedDeclarations.length > 0) {
+            setDeclarations(parsedDeclarations);
+          } else {
+            // 如果数据为空或格式错误，使用模拟数据
+            setDeclarations(mockDeclarations);
+          }
+        } else {
+          // 如果没有存储数据，使用模拟数据
+          setDeclarations(mockDeclarations);
+        }
+      } catch (error) {
+        console.error('加载宣告数据失败:', error);
+        // 出错时使用模拟数据
+        setDeclarations(mockDeclarations);
+      }
+    };
+
+    loadDeclarations();
+
+    // 监听localStorage变化
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userDeclarations') {
+        loadDeclarations();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handleDelete = (id: string) => {
     if (confirm('确定要删除这条宣告吗？')) {
@@ -95,10 +152,13 @@ export default function MyDeclarationsPage() {
                 <div className="flex items-start space-x-3">
                   {/* 封面图 */}
                   <div className="w-20 h-14 flex-shrink-0 overflow-hidden relative">
-                    <img
+                    <Image
                       src={declaration.image}
                       alt={declaration.title}
+                      width={80}
+                      height={56}
                       className="w-full h-full object-cover"
+                      unoptimized
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                       <Play className="w-5 h-5 text-white" />
