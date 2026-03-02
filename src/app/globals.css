@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import 'react-quill/dist/quill.snow.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -215,4 +216,47 @@ body {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
 }
+
+/* 富文本编辑器样式 */
+.quill-wrapper {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+}
+
+.quill-wrapper .ql-toolbar {
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px 6px 0 0;
+  padding: 8px;
+}
+
+.quill-wrapper .ql-container {
+  border: none;
+  border-radius: 0 0 6px 6px;
+  font-size: 13px;
+  min-height: 200px;
+}
+
+.quill-wrapper .ql-editor {
+  padding: 12px;
+  min-height: 200px;
+}
+
+.quill-wrapper .ql-toolbar .ql-picker {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.quill-wrapper .ql-toolbar button {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.quill-wrapper .ql-toolbar button:hover,
+.quill-wrapper .ql-toolbar button.ql-active {
+  color: #3B82F6;
+}
+
+.quill-wrapper .ql-toolbar .ql-picker-options {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 

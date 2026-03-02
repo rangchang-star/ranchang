@@ -2,11 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
+
+// 动态导入 React Quill，避免 SSR 问题
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 // 活动类型选项
 const activityTypeOptions = [
@@ -223,13 +227,26 @@ export default function AdminActivityCreatePage() {
               <h3 className="text-[13px] font-semibold text-gray-900">活动描述</h3>
             </div>
             <div className="p-4">
-              <textarea
-                placeholder="请输入活动描述..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={6}
-                className="w-full p-3 text-[13px] border border-[rgba(0,0,0,0.1)] rounded-md focus:outline-none focus:border-blue-400 resize-none"
-              />
+              <div className="quill-wrapper">
+                <ReactQuill
+                  theme="snow"
+                  value={description}
+                  onChange={setDescription}
+                  placeholder="请输入活动描述..."
+                  modules={{
+                    toolbar: [
+                      [{ 'header': [1, 2, 3, false] }],
+                      ['bold', 'italic', 'underline', 'strike'],
+                      [{ 'color': [] }, { 'background': [] }],
+                      [{ 'font': [] }],
+                      [{ 'size': ['small', false, 'large', 'huge'] }],
+                      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                      [{ 'align': [] }],
+                      ['link', 'clean'],
+                    ],
+                  }}
+                />
+              </div>
             </div>
           </div>
 
