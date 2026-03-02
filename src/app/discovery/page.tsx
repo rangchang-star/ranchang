@@ -372,7 +372,13 @@ export default function DiscoveryPage() {
               ))}
             </div>
             {/* 查看完整榜单 */}
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex flex-col items-center space-y-2">
+              {/* 三道线段：一条蓝色、两条灰色 - 左右滑动条 */}
+              <div className="flex space-x-2">
+                <div className="w-1 h-3 bg-blue-400"></div>
+                <div className="w-1 h-3 bg-[rgba(0,0,0,0.15)]"></div>
+                <div className="w-1 h-3 bg-[rgba(0,0,0,0.15)]"></div>
+              </div>
               <button className="w-48 px-4 py-2.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-sm font-normal">
                 查看完整榜单
               </button>
