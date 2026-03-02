@@ -445,7 +445,7 @@ export default function DiscoveryPage() {
               <button
                 className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal"
                 onClick={() => {
-                  setModalType('activities');
+                  setModalType('abilities');
                   setShowModal(true);
                 }}
               >
