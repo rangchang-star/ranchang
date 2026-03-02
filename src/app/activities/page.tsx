@@ -28,6 +28,7 @@ const mockActivities = [
     max: 12,
     tags: ['私董会', '名额紧张'],
     status: 'enrolled',
+    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=200&fit=crop',
   },
   {
     id: '2',
@@ -40,6 +41,7 @@ const mockActivities = [
     max: 30,
     tags: ['跨界', 'AI'],
     status: 'upcoming',
+    image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=200&fit=crop',
   },
   {
     id: '3',
@@ -52,6 +54,7 @@ const mockActivities = [
     max: 30,
     tags: ['AI实战', '工作坊'],
     status: 'enrolled',
+    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=200&fit=crop',
   },
 ];
 
@@ -109,6 +112,17 @@ export default function ActivitiesPage() {
           <div className="divide-y divide-[rgba(0,0,0,0.05)]">
             {filteredActivities.map((activity) => (
               <div key={activity.id} className="py-5 space-y-4">
+                {/* 活动图片 */}
+                {activity.image && (
+                  <div className="w-full h-40 overflow-hidden">
+                    <img
+                      src={activity.image}
+                      alt={activity.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
                 {/* 活动标题 */}
                 <div>
                   <h3 className="text-[15px] font-semibold text-gray-900 mb-2">
