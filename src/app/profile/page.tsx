@@ -677,17 +677,17 @@ export default function ProfilePage() {
                 <span className="text-white text-[10px] font-bold">!</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-[13px] font-semibold text-blue-900 mb-1">完善您的个人资料</h3>
-                <p className="text-[11px] text-blue-800 leading-relaxed">
+                <h3 className="text-[13px] font-semibold text-gray-900 mb-1">完善您的个人资料</h3>
+                <p className="text-[11px] text-[rgba(0,0,0,0.4)] leading-relaxed">
                   完善资料后，您的信息将在"发现光亮"页面向其他会员展示，帮助您快速找到匹配的合作伙伴和机会。
                 </p>
                 <div className="mt-2 flex items-center space-x-2">
-                  <span className="text-[10px] text-blue-700">下一步：</span>
-                  <Link href="/profile/edit" className="text-[10px] text-blue-600 underline">
+                  <span className="text-[10px] text-[rgba(0,0,0,0.4)]">下一步：</span>
+                  <Link href="/profile/edit" className="text-[10px] text-[rgba(0,0,0,0.4)] underline">
                     完善资料
                   </Link>
-                  <span className="text-[10px] text-blue-700">或</span>
-                  <Link href="/activities" className="text-[10px] text-blue-600 underline">
+                  <span className="text-[10px] text-[rgba(0,0,0,0.4)]">或</span>
+                  <Link href="/activities" className="text-[10px] text-[rgba(0,0,0,0.4)] underline">
                     参与活动
                   </Link>
                 </div>
