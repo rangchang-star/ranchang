@@ -152,7 +152,7 @@ export default function DiscoveryPage() {
         {/* 顶部导航 - 标题上方留出两个字高度 */}
         <div className="sticky top-0 bg-white z-50 pt-[60px]">
           <div className="flex items-center justify-between px-5 py-4">
-            <h1 className="text-lg font-bold text-gray-900">发现</h1>
+            <h1 className="text-2xl font-light text-gray-900">发现</h1>
             {/* 程序员大叔抽象头像 - 方形 */}
             <div className="w-10 h-10 bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
               <User className="w-5 h-5 text-[rgba(0,0,0,0.25)]" />
@@ -198,7 +198,7 @@ export default function DiscoveryPage() {
           {/* 能力连接 */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-blue-400">能力连接</h2>
+              <h2 className="text-xl font-bold text-blue-400">能力连接</h2>
             </div>
             <div className="space-y-4">
               {connectionItems.map((item) => (
@@ -252,7 +252,7 @@ export default function DiscoveryPage() {
           {/* 活动推荐 */}
           <section>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-sm font-bold text-blue-400">活动推荐</h2>
+              <h2 className="text-xl font-bold text-blue-400">活动推荐</h2>
             </div>
             {/* 灰色横线 */}
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
@@ -326,7 +326,7 @@ export default function DiscoveryPage() {
           {/* 高燃宣告 */}
           <section>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-sm font-bold text-blue-400">高燃宣告</h2>
+              <h2 className="text-xl font-bold text-blue-400">高燃宣告</h2>
             </div>
             {/* 灰色横线 */}
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
