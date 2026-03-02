@@ -5,7 +5,7 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Clock, PlayCircle, TrendingUp, Heart, Sparkles } from 'lucide-react';
+import { Clock, PlayCircle, TrendingUp, Heart } from 'lucide-react';
 
 // AI培训内容
 const trainings = [
@@ -100,11 +100,8 @@ export default function SubscriptionPage() {
         <div className="px-5 pt-6 space-y-8 pb-4">
           {/* 顶部欢迎区 */}
           <div>
-            <div className="flex items-center space-x-2 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-xl font-bold text-blue-400">订阅内容</h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-2xl font-light text-gray-900">订阅内容</h2>
             </div>
             <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed">
               探索AI赋能的培训课程与专业咨询服务，开启转型之旅
