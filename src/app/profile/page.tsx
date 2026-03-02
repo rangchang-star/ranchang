@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BottomNav } from '@/components/bottom-nav';
@@ -228,45 +228,6 @@ const digitalAssets = [
   },
 ];
 
-// 功能菜单
-const menuItems = [
-  {
-    icon: Flame,
-    label: '我的宣告',
-    subtitle: '3条',
-    action: 'view-declarations',
-    route: '/declarations',
-  },
-  {
-    icon: TrendingUp,
-    label: '探访记录',
-    subtitle: '2次',
-    action: 'view-visits',
-    route: '/visit/1',
-  },
-  {
-    icon: Award,
-    label: '数字资产',
-    subtitle: '2个',
-    action: 'view-assets',
-    route: '/assets',
-  },
-  {
-    icon: Briefcase,
-    label: '参与活动',
-    subtitle: '2个',
-    action: 'view-activities',
-    route: '/activities',
-  },
-  {
-    icon: Settings,
-    label: '设置',
-    subtitle: '',
-    action: 'view-settings',
-    route: '/settings',
-  },
-];
-
 // 量表图标映射
 const getAssessmentIcon = (name: string) => {
   if (name === '创业心理评估') return '🧠';
@@ -278,6 +239,114 @@ const getAssessmentIcon = (name: string) => {
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
+
+  // 功能菜单数据结构
+  interface MenuItem {
+    icon: any;
+    label: string;
+    subtitle: string;
+    action: string;
+    route: string;
+  }
+
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+
+  // 从localStorage加载宣告数量并动态生成menuItems
+  useEffect(() => {
+    const loadDeclarationCount = () => {
+      try {
+        const storedDeclarations = localStorage.getItem('userDeclarations');
+        let count = 0;
+        if (storedDeclarations) {
+          const declarations = JSON.parse(storedDeclarations);
+          count = Array.isArray(declarations) ? declarations.length : 0;
+        }
+
+        // 动态生成menuItems，"我的宣告"数量从localStorage读取
+        const items: MenuItem[] = [
+          {
+            icon: Flame,
+            label: '我的宣告',
+            subtitle: `${count}条`,
+            action: 'view-declarations',
+            route: '/declarations',
+          },
+          {
+            icon: TrendingUp,
+            label: '探访记录',
+            subtitle: '2次',
+            action: 'view-visits',
+            route: '/visit/1',
+          },
+          {
+            icon: Award,
+            label: '数字资产',
+            subtitle: '2个',
+            action: 'view-assets',
+            route: '/assets',
+          },
+          {
+            icon: Briefcase,
+            label: '参与活动',
+            subtitle: '2个',
+            action: 'view-activities',
+            route: '/activities',
+          },
+        ];
+
+        setMenuItems(items);
+      } catch (error) {
+        console.error('Failed to load declaration count:', error);
+        // 如果加载失败，使用默认值
+        const items: MenuItem[] = [
+          {
+            icon: Flame,
+            label: '我的宣告',
+            subtitle: '0条',
+            action: 'view-declarations',
+            route: '/declarations',
+          },
+          {
+            icon: TrendingUp,
+            label: '探访记录',
+            subtitle: '2次',
+            action: 'view-visits',
+            route: '/visit/1',
+          },
+          {
+            icon: Award,
+            label: '数字资产',
+            subtitle: '2个',
+            action: 'view-assets',
+            route: '/assets',
+          },
+          {
+            icon: Briefcase,
+            label: '参与活动',
+            subtitle: '2个',
+            action: 'view-activities',
+            route: '/activities',
+          },
+        ];
+        setMenuItems(items);
+      }
+    };
+
+    loadDeclarationCount();
+
+    // 监听localStorage变化（当其他页面添加宣告时，这里也会更新）
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userDeclarations') {
+        loadDeclarationCount();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-white pb-14">

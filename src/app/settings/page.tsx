@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronRight, Shield, HelpCircle, LogOut } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Shield, HelpCircle, LogOut, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function SettingsPage() {
@@ -85,6 +85,20 @@ export default function SettingsPage() {
               </Link>
               <Link href="/terms" className="flex items-center justify-between py-4 hover:bg-[rgba(0,0,0,0.02)]">
                 <span className="text-[13px] text-gray-900">用户协议</span>
+                <ChevronRight className="w-5 h-5 text-[rgba(0,0,0,0.3)]" />
+              </Link>
+            </div>
+          </div>
+
+          {/* 管理后台 */}
+          <div>
+            <div className="flex items-center space-x-2 mb-4">
+              <LayoutDashboard className="w-5 h-5 text-[rgba(0,0,0,0.4)]" />
+              <h2 className="text-[15px] font-semibold text-gray-900">管理后台</h2>
+            </div>
+            <div className="divide-y divide-[rgba(0,0,0,0.05)]">
+              <Link href="/admin" className="flex items-center justify-between py-4 hover:bg-[rgba(0,0,0,0.02)]">
+                <span className="text-[13px] text-gray-900">进入管理后台</span>
                 <ChevronRight className="w-5 h-5 text-[rgba(0,0,0,0.3)]" />
               </Link>
             </div>

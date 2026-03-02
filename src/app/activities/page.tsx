@@ -13,7 +13,8 @@ const filters = [
   { id: 'pending', label: '待审核' },
 ];
 
-const mockActivities = [
+// 模拟数据 - 从localStorage读取或使用默认值
+const defaultActivities = [
   {
     id: '1',
     type: 'private',
@@ -80,26 +81,74 @@ const mockActivities = [
   },
 ];
 
+// 从localStorage读取活动数据或使用默认值
+const loadActivitiesFromStorage = () => {
+  if (typeof window === 'undefined') return defaultActivities;
+  try {
+    const stored = localStorage.getItem('activities');
+    return stored ? JSON.parse(stored) : defaultActivities;
+  } catch {
+    return defaultActivities;
+  }
+};
+
+// 保存活动数据到localStorage
+const saveActivitiesToStorage = (activities: typeof defaultActivities) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('activities', JSON.stringify(activities));
+  } catch (error) {
+    console.error('保存活动数据失败:', error);
+  }
+};
+
+// 初始化活动数据
+const getActivities = () => loadActivitiesFromStorage();
+
 export default function ActivitiesPage() {
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [selectedActivity, setSelectedActivity] = useState<typeof mockActivities[0] | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<typeof defaultActivities[0] | null>(null);
+  const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+  const [activityToApply, setActivityToApply] = useState<typeof defaultActivities[0] | null>(null);
+  const [activities, setActivities] = useState(() => getActivities());
 
   const filteredActivities = (() => {
     switch (selectedFilter) {
       case 'upcoming':
         // 待参加：只显示报名并通过审核的项目（进行中 + 已通过）
-        return mockActivities.filter((a) => a.status === 'ongoing' && a.applicationStatus === 'approved');
+        return activities.filter((a) => a.status === 'ongoing' && a.applicationStatus === 'approved');
       case 'ended':
         // 已结束：只显示已结束的活动
-        return mockActivities.filter((a) => a.status === 'ended');
+        return activities.filter((a) => a.status === 'ended');
       case 'pending':
         // 待审核：只显示待审核的报名
-        return mockActivities.filter((a) => a.applicationStatus === 'pending');
+        return activities.filter((a) => a.applicationStatus === 'pending');
       default:
         // 全部活动：显示所有活动
-        return mockActivities;
+        return activities;
     }
   })();
+
+  const handleApply = (activity: typeof defaultActivities[0]) => {
+    setActivityToApply(activity);
+    setShowApplyConfirm(true);
+  };
+
+  const confirmApply = () => {
+    if (!activityToApply) return;
+
+    // 更新活动状态为待审核
+    const updatedActivities = activities.map((a) =>
+      a.id === activityToApply.id
+        ? { ...a, applicationStatus: 'pending' as const, enrolled: a.enrolled + 1 }
+        : a
+    );
+
+    setActivities(updatedActivities);
+    saveActivitiesToStorage(updatedActivities);
+    setShowApplyConfirm(false);
+    setActivityToApply(null);
+  };
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -232,6 +281,7 @@ export default function ActivitiesPage() {
                       </Button>
                       <Button
                         className="flex-1 bg-blue-400 hover:bg-blue-500 h-10 text-[13px] font-normal"
+                        onClick={() => handleApply(activity)}
                       >
                         立即报名
                       </Button>
@@ -362,6 +412,56 @@ export default function ActivitiesPage() {
                 </div>
               </div>
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 报名确认弹窗 */}
+      <Dialog open={showApplyConfirm} onOpenChange={setShowApplyConfirm}>
+        <DialogContent className="w-[95%] max-w-[480px] p-6">
+          <DialogHeader>
+            <DialogTitle className="text-[15px] font-semibold text-gray-900">
+              确认报名
+            </DialogTitle>
+          </DialogHeader>
+          {activityToApply && (
+            <div className="space-y-4">
+              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                确定要报名参加以下活动吗？
+              </p>
+              <div className="p-4 bg-[rgba(0,0,0,0.03)] space-y-2">
+                <h3 className="text-[15px] font-semibold text-gray-900">
+                  {activityToApply.title}
+                </h3>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+                  <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activityToApply.date}</span>
+                  <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activityToApply.time}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <MapPin className="w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+                  <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activityToApply.location}</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                报名后需要等待管理员审核，审核通过后会显示在"待参加"列表中。
+              </p>
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                  onClick={() => setShowApplyConfirm(false)}
+                >
+                  取消
+                </Button>
+                <Button
+                  className="flex-1 bg-blue-400 hover:bg-blue-500 h-10 text-[13px] font-normal"
+                  onClick={confirmApply}
+                >
+                  确认报名
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
