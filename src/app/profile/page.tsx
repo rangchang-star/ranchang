@@ -237,14 +237,14 @@ const activities = [
     id: '1',
     title: 'CEO转型期私董会',
     date: '2024年3月20日',
-    status: '即将开始',
+    status: '待参加',
     category: '私董会',
   },
   {
     id: '2',
     title: 'AI加油圈2026期',
     date: '2024年3月15日',
-    status: '进行中',
+    status: '待审核',
     category: '沙龙',
   },
 ];
@@ -845,7 +845,7 @@ export default function ProfilePage() {
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-3">
-              {activities.filter(a => a.status === '进行中').map((activity) => (
+              {activities.map((activity) => (
                 <div
                   key={activity.id}
                   className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors flex items-center justify-between"
@@ -863,8 +863,10 @@ export default function ProfilePage() {
                   </div>
                   <Badge
                     className={`rounded-none font-normal text-[10px] ml-2 flex-shrink-0 ${
-                      activity.status === '进行中'
+                      activity.status === '待参加'
                         ? 'bg-blue-400 text-white'
+                        : activity.status === '待审核'
+                        ? 'bg-yellow-400 text-white'
                         : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)]'
                     }`}
                   >
