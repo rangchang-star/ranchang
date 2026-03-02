@@ -46,10 +46,6 @@ export function BottomNav() {
                 >
                   {item.label}
                 </span>
-                {/* 小红点 */}
-                {isActive && (
-                  <div className="absolute top-0 right-0 w-1.5 h-1.5 bg-red-500 rounded-full" />
-                )}
               </Link>
             );
           })}
