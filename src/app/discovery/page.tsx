@@ -152,7 +152,7 @@ export default function DiscoveryPage() {
         {/* 顶部导航 - 标题上方留出两个字高度 */}
         <div className="sticky top-0 bg-white z-50 pt-[60px]">
           <div className="flex items-center justify-between px-5 py-4">
-            <h1 className="text-2xl font-bold text-gray-900">发现</h1>
+            <h1 className="text-lg font-bold text-gray-900">发现</h1>
             {/* 程序员大叔抽象头像 - 方形 */}
             <div className="w-10 h-10 bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
               <User className="w-5 h-5 text-[rgba(0,0,0,0.25)]" />
@@ -168,7 +168,7 @@ export default function DiscoveryPage() {
                 placeholder="搜索AI资产、活动、会员..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-[rgba(0,0,0,0.05)] text-base text-gray-900 placeholder-[rgba(0,0,0,0.25)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
+                className="w-full pl-12 pr-4 py-3 bg-[rgba(0,0,0,0.05)] text-[13px] text-gray-900 placeholder-[rgba(0,0,0,0.25)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
               />
             </div>
           </div>
@@ -180,7 +180,7 @@ export default function DiscoveryPage() {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 py-2 text-sm font-normal whitespace-nowrap transition-all ${
+                  className={`px-4 py-2 text-[13px] font-normal whitespace-nowrap transition-all ${
                     selectedCategory === category.id
                       ? 'bg-blue-400 text-white'
                       : 'bg-[rgba(0,0,0,0.05)] text-gray-700 hover:bg-[rgba(0,0,0,0.08)]'
@@ -198,7 +198,7 @@ export default function DiscoveryPage() {
           {/* 能力连接 */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-blue-400">能力连接</h2>
+              <h2 className="text-sm font-bold text-blue-400">能力连接</h2>
             </div>
             <div className="space-y-4">
               {connectionItems.map((item) => (
@@ -219,22 +219,22 @@ export default function DiscoveryPage() {
                   <div className="flex-1 min-w-0">
                     {/* 姓名与标签 */}
                     <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-base font-semibold text-gray-900 line-clamp-1">{item.name}</span>
-                      <span className="text-sm text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
+                      <span className="text-[13px] font-semibold text-gray-900 line-clamp-1">{item.name}</span>
+                      <span className="text-[13px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
                     </div>
                     {/* 方形浅灰色标签块 - 纯方形 */}
                     <div className="flex flex-wrap gap-2 mb-2">
                       {item.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-block px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal line-clamp-1"
+                          className="inline-block px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal line-clamp-1"
                         >
                           {tag}
                         </span>
                       ))}
                     </div>
                     {/* 个人需求说明 */}
-                    <p className="text-sm text-gray-900 leading-relaxed line-clamp-3">
+                    <p className="text-[11px] text-gray-900 leading-relaxed line-clamp-3">
                       {item.need}
                     </p>
                   </div>
@@ -243,7 +243,7 @@ export default function DiscoveryPage() {
             </div>
             {/* 换一换灰色色块 - 缩小50% */}
             <div className="mt-4 flex justify-center">
-              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal">
+              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
                 换一换
               </button>
             </div>
@@ -252,7 +252,7 @@ export default function DiscoveryPage() {
           {/* 活动推荐 */}
           <section>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg font-bold text-blue-400">活动推荐</h2>
+              <h2 className="text-sm font-bold text-blue-400">活动推荐</h2>
             </div>
             {/* 灰色横线 */}
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
@@ -275,17 +275,17 @@ export default function DiscoveryPage() {
                     {/* 右侧内容 */}
                     <div className="flex-1 min-w-0">
                       {/* 分类名称（灰色字） */}
-                      <div className="text-xs text-[rgba(0,0,0,0.25)] mb-1">{item.category}</div>
+                      <div className="text-[11px] text-[rgba(0,0,0,0.25)] mb-1">{item.category}</div>
                       {/* 活动主题与副标题（黑色字） */}
-                      <h3 className="text-base font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                      <h3 className="text-[13px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
                         {item.title}
                       </h3>
-                      <p className="text-sm text-gray-900 mb-2 leading-relaxed line-clamp-2">
+                      <p className="text-[11px] text-gray-900 mb-2 leading-relaxed line-clamp-2">
                         {item.subtitle}
                       </p>
                       {/* 活动简介 - 纯方形灰色框 */}
                       <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-2">
-                        <p className="text-xs text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
+                        <p className="text-[11px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
                           {item.description}
                         </p>
                       </div>
@@ -300,11 +300,11 @@ export default function DiscoveryPage() {
                               </Avatar>
                             ))}
                           </div>
-                          <span className="text-[10px] text-[rgba(0,0,0,0.25)]">
+                          <span className="text-[9px] text-[rgba(0,0,0,0.25)]">
                             {item.enrolledCount}人
                           </span>
                         </div>
-                        <div className="flex items-center space-x-2 text-[10px] text-[rgba(0,0,0,0.25)]">
+                        <div className="flex items-center space-x-2 text-[9px] text-[rgba(0,0,0,0.25)]">
                           <span className="line-clamp-1">{item.address.substring(0, 6)}</span>
                           <span>·</span>
                           <span>{item.teaFee.substring(0, 5)}</span>
@@ -317,7 +317,7 @@ export default function DiscoveryPage() {
             </div>
             {/* 换一换灰色色块 - 缩小50% */}
             <div className="mt-4 flex justify-center">
-              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal">
+              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
                 换一换
               </button>
             </div>
@@ -326,7 +326,7 @@ export default function DiscoveryPage() {
           {/* 高燃宣告 */}
           <section>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg font-bold text-blue-400">高燃宣告</h2>
+              <h2 className="text-sm font-bold text-blue-400">高燃宣告</h2>
             </div>
             {/* 灰色横线 */}
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
@@ -338,7 +338,7 @@ export default function DiscoveryPage() {
                 >
                   {/* 排序 - 圆形，缩小70%，灰色 */}
                   <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-4 font-normal text-sm bg-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)]"
+                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-4 font-normal text-[13px] bg-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)]"
                   >
                     {item.rank}
                   </div>
@@ -355,11 +355,11 @@ export default function DiscoveryPage() {
                   {/* 中间文字 */}
                   <div className="flex-1 min-w-0">
                     {/* 内容片花（黑色字） */}
-                    <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
+                    <h3 className="text-[13px] font-semibold text-gray-900 mb-1 line-clamp-2">
                       {item.title}
                     </h3>
                     {/* 达人画像与时长（灰色字） */}
-                    <p className="text-sm text-[rgba(0,0,0,0.25)]">
+                    <p className="text-[13px] text-[rgba(0,0,0,0.25)]">
                       {item.profile} · {item.duration}
                     </p>
                   </div>
@@ -379,7 +379,7 @@ export default function DiscoveryPage() {
                 <div className="w-1 h-3 bg-[rgba(0,0,0,0.15)]"></div>
                 <div className="w-1 h-3 bg-[rgba(0,0,0,0.15)]"></div>
               </div>
-              <button className="w-48 px-4 py-2.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-sm font-normal">
+              <button className="w-48 px-4 py-2.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[13px] font-normal">
                 查看完整榜单
               </button>
             </div>
@@ -388,7 +388,7 @@ export default function DiscoveryPage() {
           {/* 每日宣告 */}
           <section>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg font-bold text-blue-400">每日宣告</h2>
+              <h2 className="text-sm font-bold text-blue-400">每日宣告</h2>
             </div>
             {/* 灰色横线 */}
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
@@ -406,11 +406,11 @@ export default function DiscoveryPage() {
                 {/* 右侧内容 */}
                 <div className="flex-1 min-w-0">
                   {/* 日期加宣告片花（黑色字） */}
-                  <h3 className="text-base font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                  <h3 className="text-[13px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
                     {dailyDeclaration.title}
                   </h3>
                   {/* 年月日与录音时长（灰色字） */}
-                  <div className="flex items-center space-x-2 text-xs text-[rgba(0,0,0,0.25)]">
+                  <div className="flex items-center space-x-2 text-[11px] text-[rgba(0,0,0,0.25)]">
                     <span>{dailyDeclaration.date}</span>
                     <span>·</span>
                     <span>{dailyDeclaration.duration}</span>

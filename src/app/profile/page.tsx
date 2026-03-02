@@ -49,7 +49,7 @@ export default function ProfilePage() {
         <div className="px-5 pt-6 space-y-8 pb-4">
           {/* 顶部导航 */}
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">个人中心</h1>
+            <h1 className="text-lg font-bold text-gray-900">个人中心</h1>
             <button className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
               <Settings className="w-5 h-5 text-[rgba(0,0,0,0.25)]" />
             </button>
@@ -69,22 +69,22 @@ export default function ProfilePage() {
 
               <div className="flex-1 space-y-2">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">王芳</h2>
-                  <p className="text-sm text-[rgba(0,0,0,0.25)]">人力资源专家 | 45岁</p>
+                  <h2 className="text-base font-bold text-gray-900">王芳</h2>
+                  <p className="text-[13px] text-[rgba(0,0,0,0.25)]">人力资源专家 | 45岁</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal line-clamp-1">
+                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal line-clamp-1">
                     HRBP
                   </span>
-                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal line-clamp-1">
+                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal line-clamp-1">
                     团队管理
                   </span>
-                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal line-clamp-1">
+                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal line-clamp-1">
                     人才发展
                   </span>
                 </div>
                 {/* 纯方形按钮 */}
-                <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-xs px-4 py-2">
+                <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-4 py-2">
                   编辑资料
                 </Button>
               </div>
@@ -94,8 +94,8 @@ export default function ProfilePage() {
             <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t border-[rgba(0,0,0,0.05)]">
               {stats.map((stat) => (
                 <div key={stat.label} className="text-center">
-                  <div className="text-base font-semibold text-gray-900">{stat.value}</div>
-                  <div className="text-[10px] text-[rgba(0,0,0,0.25)] mt-1 line-clamp-1">{stat.label}</div>
+                  <div className="text-sm font-semibold text-gray-900">{stat.value}</div>
+                  <div className="text-[9px] text-[rgba(0,0,0,0.25)] mt-1 line-clamp-1">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -115,10 +115,10 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-base font-semibold text-gray-900 line-clamp-1">
+                      <span className="text-sm font-semibold text-gray-900 line-clamp-1">
                         {item.label}
                       </span>
-                      <span className="text-sm text-[rgba(0,0,0,0.25)] line-clamp-1">
+                      <span className="text-[13px] text-[rgba(0,0,0,0.25)] line-clamp-1">
                         {item.subtitle}
                       </span>
                     </div>
@@ -132,7 +132,7 @@ export default function ProfilePage() {
           {/* 我的宣告 */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg font-bold text-blue-400">我的宣告</h2>
+              <h2 className="text-base font-bold text-blue-400">我的宣告</h2>
             </div>
             {/* 灰色横线 */}
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
@@ -143,15 +143,15 @@ export default function ProfilePage() {
                   <BookOpen className="w-8 h-8 text-[rgba(0,0,0,0.25)]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
                     用AI重构人力资源管理体系
                   </h3>
-                  <p className="text-sm text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
+                  <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
                     作为一个从业15年的人力资源专家，我将分享如何利用AI工具优化人才招聘、培养和管理的全流程...
                   </p>
                 </div>
               </div>
-              <div className="mt-4 flex items-center justify-between text-[10px] text-[rgba(0,0,0,0.25)]">
+              <div className="mt-4 flex items-center justify-between text-[9px] text-[rgba(0,0,0,0.25)]">
                 <span>2024年2月28日</span>
                 <span>1,234次</span>
               </div>
@@ -161,7 +161,7 @@ export default function ProfilePage() {
           {/* 最近活动 */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg font-bold text-blue-400">最近活动</h2>
+              <h2 className="text-base font-bold text-blue-400">最近活动</h2>
             </div>
             {/* 灰色横线 */}
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
@@ -173,17 +173,17 @@ export default function ProfilePage() {
                     <Calendar className="w-6 h-6 text-[rgba(0,0,0,0.25)]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-1">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
                       AI实战赋能营
                     </h3>
-                    <p className="text-[11px] text-[rgba(0,0,0,0.25)] line-clamp-2">
+                    <p className="text-[9px] text-[rgba(0,0,0,0.25)] line-clamp-2">
                       上海市浦东 | 3月15日
                     </p>
                   </div>
                   {/* 纯方形按钮 */}
                   <Button
                     size="sm"
-                    className="bg-blue-400 hover:bg-blue-500 font-normal text-xs flex-shrink-0 ml-2"
+                    className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] flex-shrink-0 ml-2"
                   >
                     已报名
                   </Button>
