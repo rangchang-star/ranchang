@@ -256,7 +256,7 @@ export default function ProfileEditPage() {
                   type="text"
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
                   placeholder="请输入姓名或花名"
                 />
               </div>
@@ -291,7 +291,7 @@ export default function ProfileEditPage() {
                   type="number"
                   value={profile.age}
                   onChange={(e) => setProfile({ ...profile, age: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
                   placeholder="请输入年龄"
                 />
               </div>
@@ -301,7 +301,7 @@ export default function ProfileEditPage() {
                   type="tel"
                   value={profile.phone}
                   onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
                   placeholder="请输入电话号"
                 />
               </div>
@@ -311,7 +311,7 @@ export default function ProfileEditPage() {
                   type="text"
                   value={profile.companyName}
                   onChange={(e) => setProfile({ ...profile, companyName: e.target.value })}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
                   placeholder="请输入公司名称"
                 />
               </div>
@@ -320,7 +320,7 @@ export default function ProfileEditPage() {
                 <select
                   value={profile.companyScale}
                   onChange={(e) => setProfile({ ...profile, companyScale: e.target.value })}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
                 >
                   <option value="">请选择公司规模</option>
                   {companyScales.map((scale) => (
@@ -336,7 +336,7 @@ export default function ProfileEditPage() {
                   type="text"
                   value={profile.companyPosition}
                   onChange={(e) => setProfile({ ...profile, companyPosition: e.target.value })}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
                   placeholder="请输入公司职位"
                 />
               </div>
@@ -379,7 +379,7 @@ export default function ProfileEditPage() {
             <textarea
               value={profile.declaration}
               onChange={(e) => setProfile({ ...profile, declaration: e.target.value })}
-              className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none"
+              className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none placeholder-[rgba(0,0,0,0.3)]"
               rows={3}
               placeholder="用一句话描述你的需要和目标（不少于20字）"
               minLength={20}
@@ -470,7 +470,7 @@ export default function ProfileEditPage() {
                 type="text"
                 value={customResource}
                 onChange={(e) => setCustomResource(e.target.value)}
-                className="flex-1 px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                className="flex-1 px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
                 placeholder="自定义资源标签"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
@@ -561,7 +561,7 @@ export default function ProfileEditPage() {
                 <textarea
                   value={declarationDescription}
                   onChange={(e) => setDeclarationDescription(e.target.value)}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none"
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none placeholder-[rgba(0,0,0,0.3)]"
                   rows={3}
                   placeholder="请输入此宣告的简述..."
                   minLength={20}
