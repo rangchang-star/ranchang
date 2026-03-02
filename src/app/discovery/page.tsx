@@ -249,25 +249,26 @@ export default function DiscoveryPage() {
         <div className="sticky top-0 bg-white z-50 pt-[60px]">
           <div className="flex items-center justify-between px-5 pt-4">
             <h1 className="text-2xl font-light text-gray-900">发现光亮</h1>
-            <div className="flex items-center space-x-2">
-              {/* 音乐播放按钮 */}
-              <button
-                onClick={toggleMusic}
-                className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors"
-              >
-                <Music2
-                  className={`w-5 h-5 transition-colors ${
-                    isPlaying
-                      ? 'text-[rgba(0,0,0,0.7)]'
-                      : 'text-[rgba(0,0,0,0.3)]'
-                  }`}
-                />
-              </button>
-              {/* Logo - 燃场品牌Logo */}
-              <div className="w-[126px] h-[126px] flex items-center justify-center">
-                <img src="/logo-ranchang.png" alt="燃场Logo" className="w-[90px] h-[90px] object-contain" />
-              </div>
-            </div>
+            {/* Logo + 音乐符号 - 点击播放音乐 */}
+            <button
+              onClick={toggleMusic}
+              className="relative w-[126px] h-[126px] flex items-center justify-center hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+            >
+              <img
+                src="/logo-ranchang.png"
+                alt="燃场Logo"
+                className="w-[90px] h-[90px] object-contain"
+              />
+              {/* 音乐符号在logo内部 */}
+              <Music2
+                className={`absolute w-6 h-6 transition-colors ${
+                  isPlaying
+                    ? 'text-[rgba(0,0,0,0.7)]'
+                    : 'text-[rgba(0,0,0,0.3)]'
+                }`}
+                style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+              />
+            </button>
           </div>
 
           {/* Slogan - 蓝色加大字号，加粗 */}
