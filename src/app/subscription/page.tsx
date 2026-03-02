@@ -3,10 +3,18 @@
 import { useState } from 'react';
 import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Clock, PlayCircle, TrendingUp, Heart, Mic, Users } from 'lucide-react';
+import { Clock, PlayCircle, TrendingUp, Heart, Mic, Users, X } from 'lucide-react';
 
 // 商业咨询行业标签
 const industryTypes = [
@@ -120,9 +128,90 @@ const salon = {
 export default function SubscriptionPage() {
   const [activeTab, setActiveTab] = useState<'training' | 'consultation'>('training');
 
+  // 加入表单状态
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    wechat: '',
+  });
+  const [errors, setErrors] = useState({
+    name: '',
+    phone: '',
+    wechat: '',
+  });
+
   const handleTabChange = (value: string) => {
     if (value === 'training' || value === 'consultation') {
       setActiveTab(value);
+    }
+  };
+
+  // 电话号码验证
+  const validatePhone = (phone: string): boolean => {
+    const phoneRegex = /^1[3-9]\d{9}$/;
+    return phoneRegex.test(phone);
+  };
+
+  // 表单验证
+  const validateForm = (): boolean => {
+    const newErrors = {
+      name: '',
+      phone: '',
+      wechat: '',
+    };
+
+    let isValid = true;
+
+    if (!formData.name.trim()) {
+      newErrors.name = '请输入姓名';
+      isValid = false;
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = '请输入电话号码';
+      isValid = false;
+    } else if (!validatePhone(formData.phone)) {
+      newErrors.phone = '请输入正确的11位手机号码';
+      isValid = false;
+    }
+
+    if (!formData.wechat.trim()) {
+      newErrors.wechat = '请输入微信号';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // 处理表单输入
+  const handleInputChange = (field: keyof typeof formData) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [field]: e.target.value,
+    });
+    // 清除该字段的错误
+    if (errors[field]) {
+      setErrors({
+        ...errors,
+        [field]: '',
+      });
+    }
+  };
+
+  // 处理加入提交
+  const handleJoinSubmit = () => {
+    if (validateForm()) {
+      // 这里可以调用API提交数据
+      console.log('提交加入申请:', formData);
+      setJoinDialogOpen(false);
+      // 重置表单
+      setFormData({ name: '', phone: '', wechat: '' });
+      setErrors({ name: '', phone: '', wechat: '' });
+      // 可以在这里显示成功提示
     }
   };
 
@@ -266,7 +355,10 @@ export default function SubscriptionPage() {
                     </div>
                   </div>
                   {/* 圆形蓝色按钮 */}
-                  <button className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white text-xs font-normal flex items-center justify-center hover:scale-110 hover:-translate-y-1 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200">
+                  <button
+                    onClick={() => setJoinDialogOpen(true)}
+                    className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white text-xs font-normal flex items-center justify-center hover:scale-110 hover:-translate-y-1 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200"
+                  >
                     加入
                   </button>
                 </div>
@@ -356,6 +448,100 @@ export default function SubscriptionPage() {
           </div>
         </div>
       </div>
+
+      {/* 加入AI加油圈弹窗 */}
+      <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+        <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-5 sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-gray-900">加入AI加油圈</DialogTitle>
+            <DialogDescription className="hidden" />
+          </DialogHeader>
+
+          {/* 提示信息 */}
+          <div className="bg-blue-50 border border-blue-100 p-3 rounded-none mb-4">
+            <p className="text-[13px] text-blue-700">
+              稍后到电话或微信与您确定
+            </p>
+          </div>
+
+          {/* 表单 */}
+          <div className="space-y-4">
+            {/* 姓名 */}
+            <div className="space-y-2">
+              <label className="text-[13px] font-medium text-gray-700">
+                姓名 <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="text"
+                placeholder="请输入您的姓名"
+                value={formData.name}
+                onChange={handleInputChange('name')}
+                className={`rounded-none ${errors.name ? 'border-red-500' : ''}`}
+              />
+              {errors.name && (
+                <p className="text-[11px] text-red-500">{errors.name}</p>
+              )}
+            </div>
+
+            {/* 电话号码 */}
+            <div className="space-y-2">
+              <label className="text-[13px] font-medium text-gray-700">
+                电话号码 <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="tel"
+                placeholder="请输入11位手机号码"
+                value={formData.phone}
+                onChange={handleInputChange('phone')}
+                maxLength={11}
+                className={`rounded-none ${errors.phone ? 'border-red-500' : ''}`}
+              />
+              {errors.phone && (
+                <p className="text-[11px] text-red-500">{errors.phone}</p>
+              )}
+            </div>
+
+            {/* 微信号 */}
+            <div className="space-y-2">
+              <label className="text-[13px] font-medium text-gray-700">
+                微信号 <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="text"
+                placeholder="请输入您的微信号"
+                value={formData.wechat}
+                onChange={handleInputChange('wechat')}
+                className={`rounded-none ${errors.wechat ? 'border-red-500' : ''}`}
+              />
+              {errors.wechat && (
+                <p className="text-[11px] text-red-500">{errors.wechat}</p>
+              )}
+            </div>
+          </div>
+
+          {/* 按钮 */}
+          <div className="flex justify-end mt-6 space-x-3">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setJoinDialogOpen(false);
+                setFormData({ name: '', phone: '', wechat: '' });
+                setErrors({ name: '', phone: '', wechat: '' });
+              }}
+              className="rounded-none text-[13px] h-9 px-6"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleJoinSubmit}
+              disabled={!formData.name || !formData.phone || !formData.wechat}
+              className="rounded-none bg-blue-400 text-white text-[13px] h-9 px-6 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              确定
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 底部导航 */}
       <BottomNav />
