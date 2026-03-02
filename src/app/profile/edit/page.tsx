@@ -346,7 +346,7 @@ export default function ProfileEditPage() {
                   type="text"
                   value={profile.belief}
                   onChange={(e) => setProfile({ ...profile, belief: e.target.value })}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)]"
+                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.4)]"
                   placeholder="请输入信仰"
                 />
               </div>
