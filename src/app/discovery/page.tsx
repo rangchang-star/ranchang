@@ -510,17 +510,6 @@ export default function DiscoveryPage() {
         </div>
       </div>
 
-      {/* 图片测试区域 */}
-      <div className="mt-8 px-5">
-        <h3 className="text-[15px] font-semibold text-gray-900 mb-3">图片测试</h3>
-        <div className="space-y-3">
-          <div className="p-3 bg-[rgba(0,0,0,0.02)]">
-            <p className="text-[11px] text-[rgba(0,0,0,0.4)] mb-2">测试图片：WechatIMG1280.jpg</p>
-            <img src="/images/WechatIMG1280.jpg" alt="测试图片" className="w-full h-auto" />
-          </div>
-        </div>
-      </div>
-
       {/* 每日宣告 - 固定在底部导航栏上方 */}
       <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40">
         <section>
