@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -375,7 +376,7 @@ export default function DiscoveryPage() {
               </h2>
             </div>
             <div className="space-y-4">
-              {connectionItems.map((item) => (
+              {connectionItems.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
                   onClick={() => {
@@ -464,7 +465,7 @@ export default function DiscoveryPage() {
             {/* 灰色横线 */}
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-4">
-              {activityItems.map((item) => (
+              {activityItems.slice(0, 3).map((item) => (
                 <Link
                   key={item.id}
                   href={`/activity/${item.id}`}
@@ -552,7 +553,7 @@ export default function DiscoveryPage() {
             {/* 灰色横线 */}
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-3">
-              {declarationItems.map((item) => (
+              {declarationItems.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
                   className="flex items-center p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
@@ -663,6 +664,7 @@ export default function DiscoveryPage() {
         <DialogContent className="sm:max-w-[280px] p-4">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">提示</DialogTitle>
+            <DialogDescription className="hidden" />
           </DialogHeader>
           <div className="text-[11px] text-gray-600 leading-relaxed">
             该用户尚未开启"允许陌生人连接"权限，您可以先了解ta，或让ta主动来找到你。
@@ -744,7 +746,7 @@ export default function DiscoveryPage() {
 
               {modalType === 'activities' && (
                 <div className="space-y-3">
-                  {activityItems.map((item) => (
+                  {activityItems.slice(0, 3).map((item) => (
                     <div
                       key={item.id}
                       className="p-3 bg-[rgba(0,0,0,0.02)] cursor-pointer"
@@ -774,7 +776,7 @@ export default function DiscoveryPage() {
 
               {modalType === 'declarations' && (
                 <div className="space-y-3">
-                  {declarationItems.map((item) => (
+                  {declarationItems.slice(0, 3).map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center p-3 bg-[rgba(0,0,0,0.02)] cursor-pointer"
