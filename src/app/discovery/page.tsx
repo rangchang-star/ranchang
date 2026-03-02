@@ -226,16 +226,16 @@ export default function DiscoveryPage() {
       <div className="w-full max-w-md mx-auto">
         {/* 顶部导航 - 标题上方留出两个字高度 */}
         <div className="sticky top-0 bg-white z-50 pt-[60px]">
-          <div className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center justify-between px-5 pt-4">
             <h1 className="text-2xl font-light text-gray-900">发现光亮</h1>
-            {/* Logo - 蓝色系太阳图标 - 放大400% */}
-            <div className="w-40 h-40 flex items-center justify-center">
-              <img src="/logo-sun-blue.png" alt="燃场Logo" className="w-32 h-32 object-contain" />
+            {/* Logo - 燃场品牌Logo */}
+            <div className="w-[126px] h-[126px] flex items-center justify-center">
+              <img src="/logo-ranchang.png" alt="燃场Logo" className="w-[90px] h-[90px] object-contain" />
             </div>
           </div>
 
           {/* 搜索框 */}
-          <div className="px-5 pb-4">
+          <div className="px-5 pb-4 pt-0">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[rgba(0,0,0,0.25)]" />
               <input
