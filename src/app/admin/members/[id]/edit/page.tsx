@@ -10,7 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 // 可用标签
-const availableTags = ['普通', '私董案主', '探访主', '学员', '小组成员'];
+const availableTags = ['普通', '私董案主', '探访主', '探访员', '学员', '小组成员', '同工'];
 
 // 人找事/事找人/纯交流选项
 const connectionTypeOptions = [
@@ -556,16 +556,21 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                     </div>
                   </div>
                 </div>
-                {mockMember.declaration.hasAudio && (
-                  <div className="flex flex-col items-center space-y-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handlePlayAudio}
-                      className="w-12 h-12 rounded-full"
-                    >
-                      {isPlayingAudio ? '⏸' : '▶'}
-                    </Button>
+                <div className="flex flex-col items-center space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePlayAudio}
+                    className={`w-12 h-12 rounded-full ${
+                      mockMember.declaration.hasAudio
+                        ? 'text-blue-600 border-blue-400'
+                        : 'text-gray-400 border-gray-300'
+                    }`}
+                    disabled={!mockMember.declaration.hasAudio}
+                  >
+                    {isPlayingAudio ? '⏸' : '▶'}
+                  </Button>
+                  {mockMember.declaration.hasAudio && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -574,8 +579,8 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                     >
                       删除录音
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -4,13 +4,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* 燃场设计系统 - "火焰与重生"主题 */
+  /* 燃场设计系统 - UI蓝色主题 */
 
   /* 色彩系统 */
-  --color-primary: #FF4757;
-  --color-primary-hover: #FF6B81;
-  --color-primary-light: #FFA8B9;
-  --color-primary-dark: #E8414F;
+  --color-primary: #3B82F6;
+  --color-primary-hover: #2563EB;
+  --color-primary-light: #60A5FA;
+  --color-primary-dark: #1D4ED8;
 
   --color-secondary: #2F3542;
   --color-secondary-light: #57606F;
@@ -41,7 +41,7 @@
   --color-muted-foreground-dark: #A0A0B0;
 
   /* 渐变色 */
-  --gradient-primary: linear-gradient(135deg, #FF4757 0%, #FF6B81 50%, #FFA8B9 100%);
+  --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #2563EB 50%, #1D4ED8 100%);
   --gradient-accent: linear-gradient(135deg, #FFA502 0%, #FFC048 100%);
   --gradient-dark: linear-gradient(135deg, #2F3542 0%, #57606F 100%);
   --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
