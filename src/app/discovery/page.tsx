@@ -5,15 +5,6 @@ import { Search, Flame, Play, User, Timer } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BottomNav } from '@/components/bottom-nav';
 
-// 分类标签
-const categories = [
-  { id: 'category', name: '分类', hot: false },
-  { id: 'private', name: '私董会', hot: false },
-  { id: 'salon', name: '沙龙', hot: false },
-  { id: 'ai', name: 'AI学习', hot: false },
-  { id: 'assets', name: '数字资产', hot: false },
-];
-
 // 能力连接
 const connectionItems = [
   {
@@ -218,7 +209,6 @@ const ActivityStatusBadge = ({ status, endTime }: { status: string; endTime?: st
 
 export default function DiscoveryPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('category');
 
   return (
     <div className="min-h-screen bg-white pb-14">
@@ -248,23 +238,12 @@ export default function DiscoveryPage() {
             </div>
           </div>
 
-          {/* 标签栏 */}
-          <div className="px-5 pb-4 overflow-x-auto">
-            <div className="flex justify-between">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`flex-1 px-2 py-2 text-[13px] font-normal whitespace-nowrap transition-all ${
-                    selectedCategory === category.id
-                      ? 'bg-blue-400 text-white'
-                      : 'bg-[rgba(0,0,0,0.05)] text-gray-700 hover:bg-[rgba(0,0,0,0.08)]'
-                  }`}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
+          {/* Slogan */}
+          <div className="px-5 pb-4">
+            <p className="text-[13px] text-center leading-relaxed text-gray-700">
+              只要抓住使命，当年力量如何，现在力量也必定如何。<br />
+              35岁才是新的的开始，向前加油不回头！
+            </p>
           </div>
         </div>
 
