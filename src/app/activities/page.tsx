@@ -2,12 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, MapPin, Users, Clock, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const filters = [
   { id: 'all', label: '全部活动' },
@@ -24,11 +21,13 @@ const mockActivities = [
     date: '2024-04-10',
     time: '14:00-17:00',
     location: '上海·静安',
+    address: '上海市静安区南京西路1788号',
     enrolled: 8,
     max: 12,
     tags: ['私董会', '名额紧张'],
     status: 'ongoing',
     applicationStatus: 'approved', // approved | pending | none
+    description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。我们将围绕"如何利用过往经验"、"如何降低试错成本"等话题展开讨论。',
     image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=200&fit=crop',
   },
   {
@@ -38,11 +37,13 @@ const mockActivities = [
     date: '2024-04-15',
     time: '19:00-21:00',
     location: '北京·朝阳',
+    address: '北京市朝阳区CBD国贸大厦',
     enrolled: 20,
     max: 30,
     tags: ['跨界', 'AI'],
     status: 'ongoing',
     applicationStatus: 'pending', // 待审核
+    description: '邀请不同领域的专家分享AI在各行业的应用实践，促进跨界交流与合作。适合对AI商业化感兴趣的朋友参与。',
     image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=200&fit=crop',
   },
   {
@@ -52,11 +53,13 @@ const mockActivities = [
     date: '2024-04-20',
     time: '09:00-17:00',
     location: '深圳·南山',
+    address: '深圳市南山区科技园',
     enrolled: 25,
     max: 30,
     tags: ['AI实战', '工作坊'],
     status: 'ended',
     applicationStatus: 'approved',
+    description: '全天候AI工具实战培训，从工具选型到场景落地，帮你快速掌握AI辅助工作的核心技能。',
     image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=200&fit=crop',
   },
   {
@@ -66,18 +69,20 @@ const mockActivities = [
     date: '2024-04-25',
     time: '13:00-17:00',
     location: '广州·天河',
+    address: '广州市天河区珠江新城',
     enrolled: 5,
     max: 15,
     tags: ['工作坊', '即将开始'],
     status: 'ongoing',
     applicationStatus: 'none', // 未报名
+    description: '为35+职场人提供转型指导，涵盖简历优化、面试技巧、行业分析等内容，帮助你顺利实现职业转型。',
     image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=200&fit=crop',
   },
 ];
 
 export default function ActivitiesPage() {
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [isApplyOpen, setIsApplyOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<typeof mockActivities[0] | null>(null);
 
   const filteredActivities = (() => {
     switch (selectedFilter) {
@@ -207,9 +212,11 @@ export default function ActivitiesPage() {
                 {/* 操作按钮 */}
                 <div className="flex gap-3 pt-2">
                   {activity.status === 'ended' ? (
+                    // 已结束：只显示"查看详情"按钮
                     <Button
                       variant="outline"
                       className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                      onClick={() => setSelectedActivity(activity)}
                     >
                       查看详情
                     </Button>
@@ -219,6 +226,7 @@ export default function ActivitiesPage() {
                       <Button
                         variant="outline"
                         className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                        onClick={() => setSelectedActivity(activity)}
                       >
                         查看详情
                       </Button>
@@ -229,16 +237,26 @@ export default function ActivitiesPage() {
                       </Button>
                     </>
                   ) : activity.applicationStatus === 'pending' ? (
-                    // 待审核：显示"待审核"状态
-                    <div className="flex-1 flex items-center justify-center bg-[rgba(251,191,36,0.15)] text-yellow-600 text-[13px] h-10">
-                      待审核
-                    </div>
+                    // 待审核：显示"查看详情"和"待审核"状态
+                    <>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                        onClick={() => setSelectedActivity(activity)}
+                      >
+                        查看详情
+                      </Button>
+                      <div className="flex-1 flex items-center justify-center bg-[rgba(251,191,36,0.15)] text-yellow-600 text-[13px] h-10">
+                        待审核
+                      </div>
+                    </>
                   ) : (
                     // 已通过：显示"查看详情"和"已报名"
                     <>
                       <Button
                         variant="outline"
                         className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                        onClick={() => setSelectedActivity(activity)}
                       >
                         查看详情
                       </Button>
@@ -265,69 +283,91 @@ export default function ActivitiesPage() {
           )}
         </div>
       </div>
+
+      {/* 活动详情悬浮窗口 */}
+      <Dialog open={!!selectedActivity} onOpenChange={(open) => !open && setSelectedActivity(null)}>
+        <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-0">
+          {selectedActivity && (
+            <>
+              {/* 活动图片 */}
+              <div className="w-full h-48 overflow-hidden">
+                <img
+                  src={selectedActivity.image}
+                  alt={selectedActivity.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* 活动内容 */}
+              <div className="p-5 space-y-4">
+                {/* 标题和标签 */}
+                <div>
+                  <h2 className="text-[15px] font-semibold text-gray-900 mb-2">
+                    {selectedActivity.title}
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedActivity.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 活动描述 */}
+                <div>
+                  <p className="text-[13px] text-[rgba(0,0,0,0.6)] leading-relaxed">
+                    {selectedActivity.description}
+                  </p>
+                </div>
+
+                {/* 活动信息 */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{selectedActivity.date}</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Clock className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{selectedActivity.time}</span>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <MapPin className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{selectedActivity.location}</span>
+                      {selectedActivity.address && (
+                        <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">{selectedActivity.address}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Users className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                      {selectedActivity.enrolled}/{selectedActivity.max}人
+                    </span>
+                  </div>
+                </div>
+
+                {/* 活动状态 */}
+                <div>
+                  {selectedActivity.status === 'ended' ? (
+                    <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.4)] text-[11px] font-normal">
+                      已结束
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal">
+                      进行中
+                    </span>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
-  );
-}
-
-function CaseApplyForm({ onClose }: { onClose: () => void }) {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('申请已提交，我们将在3个工作日内回复您');
-    onClose();
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="title" className="text-[13px] text-[rgba(0,0,0,0.8)]">问题标题</Label>
-        <Input
-          id="title"
-          placeholder="一句话概括您的问题"
-          className="mt-1 text-[13px] placeholder:text-[rgba(0,0,0,0.3)]"
-        />
-      </div>
-      <div>
-        <Label htmlFor="situation" className="text-[13px] text-[rgba(0,0,0,0.8)]">情况说明</Label>
-        <Textarea
-          id="situation"
-          placeholder="详细描述您的背景和困境"
-          className="mt-1 text-[13px] placeholder:text-[rgba(0,0,0,0.3)]"
-          rows={4}
-        />
-      </div>
-      <div>
-        <Label htmlFor="help" className="text-[13px] text-[rgba(0,0,0,0.8)]">希望获得什么帮助</Label>
-        <Textarea
-          id="help"
-          placeholder="期待被如何支持"
-          className="mt-1 text-[13px] placeholder:text-[rgba(0,0,0,0.3)]"
-          rows={3}
-        />
-      </div>
-      <div>
-        <Label htmlFor="contact" className="text-[13px] text-[rgba(0,0,0,0.8)]">联系方式</Label>
-        <Input
-          id="contact"
-          placeholder="手机/微信"
-          className="mt-1 text-[13px] placeholder:text-[rgba(0,0,0,0.3)]"
-        />
-      </div>
-      <div className="flex gap-2 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
-          onClick={onClose}
-        >
-          取消
-        </Button>
-        <Button
-          type="submit"
-          className="flex-1 bg-blue-400 hover:bg-blue-500 h-10 text-[13px] font-normal"
-        >
-          提交申请
-        </Button>
-      </div>
-    </form>
   );
 }
