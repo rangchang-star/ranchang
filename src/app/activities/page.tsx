@@ -1,13 +1,12 @@
 'use client';
 
-import { PageContainer } from '@/components/page-container';
-import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 
 const filters = [
@@ -28,7 +27,7 @@ const mockActivities = [
     enrolled: 8,
     max: 12,
     tags: ['私董会', '名额紧张'],
-    description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。我们将围绕"如何利用过往经验"、"如何降低试错成本"等话题展开讨论。',
+    status: 'enrolled',
   },
   {
     id: '2',
@@ -40,7 +39,7 @@ const mockActivities = [
     enrolled: 20,
     max: 30,
     tags: ['跨界', 'AI'],
-    description: '邀请不同领域的专家分享AI在各行业的应用实践，促进跨界交流与合作。适合对AI商业化感兴趣的朋友参与。',
+    status: 'upcoming',
   },
   {
     id: '3',
@@ -52,7 +51,7 @@ const mockActivities = [
     enrolled: 25,
     max: 30,
     tags: ['AI实战', '工作坊'],
-    description: '全天候AI工具实战培训，从工具选型到场景落地，帮你快速掌握AI辅助工作的核心技能。',
+    status: 'enrolled',
   },
 ];
 
@@ -66,115 +65,128 @@ export default function ActivitiesPage() {
       : mockActivities.filter((a) => a.type === selectedFilter);
 
   return (
-    <PageContainer title="让不同的人，碰撞出可能的火花">
-      <div className="space-y-8">
-        {/* 筛选栏 */}
-        <ScrollableTabs
-          tabs={filters}
-          selected={selectedFilter}
-          onSelect={setSelectedFilter}
-        />
+    <div className="min-h-screen bg-white pb-20">
+      <div className="w-full max-w-md mx-auto">
+        {/* 顶部导航 */}
+        <div className="sticky top-0 bg-white z-50 px-5 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/profile">
+              <Button variant="ghost" className="p-2">
+                <ArrowLeft className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+              </Button>
+            </Link>
+            <h1 className="text-[15px] font-semibold text-gray-900">参与活动</h1>
+            <div className="w-10" />
+          </div>
+        </div>
 
-        {/* 活动列表 */}
-        <div className="space-y-6">
-          {filteredActivities.map((activity) => (
-            <div key={activity.id} className="space-y-4">
-              <div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">
-                  {activity.title}
-                </h3>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {activity.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-block px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-full"
-                    >
-                      {tag}
+        <div className="px-5 space-y-6">
+          {/* Slogan */}
+          <div className="py-2">
+            <p className="text-[13px] font-bold text-blue-400 leading-relaxed">
+              让不同的人，碰撞出可能的火花
+            </p>
+          </div>
+
+          {/* 筛选标签 */}
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5">
+            {filters.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedFilter(tab.id)}
+                className={`px-4 py-2 text-[13px] font-normal whitespace-nowrap transition-colors ${
+                  selectedFilter === tab.id
+                    ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 活动列表 */}
+          <div className="divide-y divide-[rgba(0,0,0,0.05)]">
+            {filteredActivities.map((activity) => (
+              <div key={activity.id} className="py-5 space-y-4">
+                {/* 活动标题 */}
+                <div>
+                  <h3 className="text-[15px] font-semibold text-gray-900 mb-2">
+                    {activity.title}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {activity.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 活动信息 */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.date}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.time}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.location}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                      {activity.enrolled}/{activity.max}人
                     </span>
-                  ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4 flex-shrink-0" />
-                  <span>{activity.date}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 flex-shrink-0" />
-                  <span>{activity.time}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4 flex-shrink-0" />
-                  <span>{activity.location}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4 flex-shrink-0" />
-                  <span>
-                    {activity.enrolled}/{activity.max}
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {activity.description}
-              </p>
-
-              <div className="flex gap-3">
-                <Button variant="outline" className="flex-1">
-                  查看详情
-                </Button>
-                <Button className="flex-1">立即报名</Button>
-                {activity.type === 'private' && (
-                  <Dialog open={isApplyOpen} onOpenChange={setIsApplyOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="ghost" className="flex-1">
-                        申请成为案主
+                {/* 操作按钮 */}
+                <div className="flex gap-3 pt-2">
+                  {activity.status === 'enrolled' ? (
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                    >
+                      查看详情
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                      >
+                        查看详情
                       </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>申请成为案主</DialogTitle>
-                      </DialogHeader>
-                      <CaseApplyForm onClose={() => setIsApplyOpen(false)} />
-                    </DialogContent>
-                  </Dialog>
-                )}
+                      <Button
+                        className="flex-1 bg-blue-400 hover:bg-blue-500 h-10 text-[13px] font-normal"
+                      >
+                        立即报名
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
+            ))}
+          </div>
 
-              <div className="border-t border-border" />
+          {/* 空状态 */}
+          {filteredActivities.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
+                暂无相关活动
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </div>
-    </PageContainer>
-  );
-}
-
-function ScrollableTabs({
-  tabs,
-  selected,
-  onSelect,
-}: {
-  tabs: { id: string; label: string }[];
-  selected: string;
-  onSelect: (id: string) => void;
-}) {
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onSelect(tab.id)}
-          className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${
-            selected === tab.id
-              ? 'bg-primary text-primary-foreground font-medium'
-              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
     </div>
   );
 }
@@ -182,7 +194,6 @@ function ScrollableTabs({
 function CaseApplyForm({ onClose }: { onClose: () => void }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 提交表单
     alert('申请已提交，我们将在3个工作日内回复您');
     onClose();
   };
@@ -190,44 +201,52 @@ function CaseApplyForm({ onClose }: { onClose: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label htmlFor="title">问题标题</Label>
+        <Label htmlFor="title" className="text-[13px] text-[rgba(0,0,0,0.8)]">问题标题</Label>
         <Input
           id="title"
           placeholder="一句话概括您的问题"
-          className="mt-1"
+          className="mt-1 text-[13px] placeholder:text-[rgba(0,0,0,0.3)]"
         />
       </div>
       <div>
-        <Label htmlFor="situation">情况说明</Label>
+        <Label htmlFor="situation" className="text-[13px] text-[rgba(0,0,0,0.8)]">情况说明</Label>
         <Textarea
           id="situation"
           placeholder="详细描述您的背景和困境"
-          className="mt-1"
+          className="mt-1 text-[13px] placeholder:text-[rgba(0,0,0,0.3)]"
           rows={4}
         />
       </div>
       <div>
-        <Label htmlFor="help">希望获得什么帮助</Label>
+        <Label htmlFor="help" className="text-[13px] text-[rgba(0,0,0,0.8)]">希望获得什么帮助</Label>
         <Textarea
           id="help"
           placeholder="期待被如何支持"
-          className="mt-1"
+          className="mt-1 text-[13px] placeholder:text-[rgba(0,0,0,0.3)]"
           rows={3}
         />
       </div>
       <div>
-        <Label htmlFor="contact">联系方式</Label>
+        <Label htmlFor="contact" className="text-[13px] text-[rgba(0,0,0,0.8)]">联系方式</Label>
         <Input
           id="contact"
           placeholder="手机/微信"
-          className="mt-1"
+          className="mt-1 text-[13px] placeholder:text-[rgba(0,0,0,0.3)]"
         />
       </div>
       <div className="flex gap-2 pt-2">
-        <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
+        <Button
+          type="button"
+          variant="outline"
+          className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+          onClick={onClose}
+        >
           取消
         </Button>
-        <Button type="submit" className="flex-1">
+        <Button
+          type="submit"
+          className="flex-1 bg-blue-400 hover:bg-blue-500 h-10 text-[13px] font-normal"
+        >
           提交申请
         </Button>
       </div>
