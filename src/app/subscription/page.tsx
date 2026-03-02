@@ -134,7 +134,7 @@ export default function SubscriptionPage() {
           {/* 顶部标题区 */}
           <div>
             <div className="flex items-center justify-between py-4">
-              <h1 className="text-2xl font-light text-gray-900">订阅内容</h1>
+              <h1 className="text-2xl font-light text-gray-900">点亮事业</h1>
             </div>
             <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed">
               {tabDescriptions[activeTab]}

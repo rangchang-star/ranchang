@@ -6,7 +6,7 @@ import { Compass, Bookmark, User } from 'lucide-react';
 
 const navItems = [
   { href: '/discovery', label: '发现', icon: Compass },
-  { href: '/subscription', label: '订阅', icon: Bookmark },
+  { href: '/subscription', label: '点亮', icon: Bookmark },
   { href: '/profile', label: '个人', icon: User },
 ];
 
