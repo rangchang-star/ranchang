@@ -31,6 +31,7 @@ const industries = [
   '医疗/健康/医药',
   '教育/培训/科研',
   '零售/电商/贸易',
+  '服务业',
   '传媒/广告/文化',
   '汽车/交通/物流',
   '能源/环保/化工',
@@ -48,6 +49,7 @@ const industryTagsMap: Record<string, string[]> = {
   '医疗/健康/医药': ['医疗服务', '医药研发', '医疗器械', '健康管理', '生物制药'],
   '教育/培训/科研': ['在线教育', '职业培训', 'K12教育', '高等教育', '科研机构'],
   '零售/电商/贸易': ['电子商务', '新零售', '跨境电商', '供应链管理', '品牌营销'],
+  '服务业': ['餐饮', '酒店', '旅游', '美容美发', '家政服务', '物流配送', '生活服务'],
   '传媒/广告/文化': ['新媒体', '影视制作', '广告策划', '内容创作', '文化传播'],
   '汽车/交通/物流': ['新能源汽车', '智能驾驶', '物流配送', '汽车制造', '交通出行'],
   '能源/环保/化工': ['新能源', '节能环保', '化工新材料', '石油化工', '清洁能源'],
@@ -81,7 +83,8 @@ export default function ProfileEditPage() {
   const [selectedIndustryTag, setSelectedIndustryTag] = useState<string>(profile.industryTags[0] || '');
   const [selectedResources, setSelectedResources] = useState<string[]>(profile.resources);
   const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
-  const [directionRecording, setDirectionRecording] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [hasRecorded, setHasRecorded] = useState(false);
   const [showDeclarationInput, setShowDeclarationInput] = useState(false);
   const [declarationDescription, setDeclarationDescription] = useState('');
 
@@ -99,13 +102,31 @@ export default function ProfileEditPage() {
 
   const handleDirectionSelect = (directionId: string) => {
     setSelectedDirection(directionId);
+    // 切换方向时重置录音状态
+    setIsRecording(false);
+    setHasRecorded(false);
+    setShowDeclarationInput(false);
+    setDeclarationDescription('');
   };
 
   const handleDirectionRecord = (directionId: string) => {
-    // TODO: 实现录音功能
-    setDirectionRecording(directionId);
-    // 录音完成后，显示输入框
-    setShowDeclarationInput(true);
+    // 只有勾选了方向才能录音
+    if (selectedDirection !== directionId) {
+      return;
+    }
+
+    if (isRecording) {
+      // 停止录音
+      setIsRecording(false);
+      setHasRecorded(true);
+      // 录音完成后，显示输入框
+      setShowDeclarationInput(true);
+    } else {
+      // 开始录音
+      setIsRecording(true);
+      setHasRecorded(false);
+      setShowDeclarationInput(false);
+    }
   };
 
   const handleResourceToggle = (resource: string) => {
@@ -224,7 +245,7 @@ export default function ProfileEditPage() {
                   onClick={() => handlePurposeToggle(purpose)}
                   className={`px-3 py-1.5 text-[11px] border ${
                     selectedPurpose.includes(purpose)
-                      ? 'border-blue-400 bg-blue-400 bg-opacity-10 text-blue-400'
+                      ? 'border-blue-400 bg-blue-400/40 text-blue-400'
                       : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)]'
                   }`}
                 >
@@ -232,6 +253,22 @@ export default function ProfileEditPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* 一句说清你的需要 */}
+          <div className="space-y-3">
+            <h2 className="text-[13px] font-semibold text-gray-900">一句说清你的需要 <span className="text-red-400">*</span></h2>
+            <textarea
+              value={profile.declaration}
+              onChange={(e) => setProfile({ ...profile, declaration: e.target.value })}
+              className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none"
+              rows={3}
+              placeholder="用一句话描述你的需要和目标（不少于20字）"
+              minLength={20}
+            />
+            <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
+              {profile.declaration.length}/20+
+            </p>
           </div>
 
           {/* 所属行业 */}
@@ -301,7 +338,7 @@ export default function ProfileEditPage() {
                   onClick={() => handleResourceToggle(resource)}
                   className={`px-2 py-1 text-[10px] border ${
                     selectedResources.includes(resource)
-                      ? 'border-blue-400 bg-blue-400 bg-opacity-10 text-blue-400'
+                      ? 'border-blue-400 bg-blue-400/40 text-blue-400'
                       : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)]'
                   }`}
                 >
@@ -324,7 +361,7 @@ export default function ProfileEditPage() {
                   onClick={() => handleDirectionSelect(direction.id)}
                   className={`relative flex flex-col items-center p-2 border ${
                     selectedDirection === direction.id
-                      ? 'border-blue-400 bg-blue-400 bg-opacity-10'
+                      ? 'border-blue-400 bg-blue-400/40'
                       : 'border-[rgba(0,0,0,0.1)]'
                   }`}
                 >
@@ -348,7 +385,15 @@ export default function ProfileEditPage() {
                       e.stopPropagation();
                       handleDirectionRecord(direction.id);
                     }}
-                    className="absolute bottom-1 right-1 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-500 transition-colors"
+                    className={`absolute bottom-1 right-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
+                      selectedDirection === direction.id && isRecording
+                        ? 'bg-red-500 animate-pulse'
+                        : selectedDirection === direction.id && hasRecorded
+                        ? 'bg-green-500'
+                        : selectedDirection === direction.id
+                        ? 'bg-blue-400 hover:bg-blue-500'
+                        : 'bg-gray-300 cursor-not-allowed'
+                    }`}
                   >
                     <Mic className="w-3 h-3 text-white" />
                   </div>
@@ -356,6 +401,19 @@ export default function ProfileEditPage() {
                 </button>
               ))}
             </div>
+
+            {/* 录音状态提示 */}
+            {selectedDirection && (
+              <div className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                {isRecording ? (
+                  <span className="text-red-500">🔴 正在录音...</span>
+                ) : hasRecorded ? (
+                  <span className="text-green-600">✓ 录音完成，请填写简述</span>
+                ) : (
+                  <span>点击录音图标开始录音此宣告</span>
+                )}
+              </div>
+            )}
 
             {/* 宣告简述输入框 - 只有勾选并录音后才显示 */}
             {showDeclarationInput && selectedDirection && (
@@ -374,22 +432,6 @@ export default function ProfileEditPage() {
                 </p>
               </div>
             )}
-          </div>
-
-          {/* 一句说清你的需要 */}
-          <div className="space-y-3">
-            <h2 className="text-[13px] font-semibold text-gray-900">一句说清你的需要 <span className="text-red-400">*</span></h2>
-            <textarea
-              value={profile.declaration}
-              onChange={(e) => setProfile({ ...profile, declaration: e.target.value })}
-              className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none"
-              rows={3}
-              placeholder="用一句话描述你的需要和目标（不少于20字）"
-              minLength={20}
-            />
-            <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
-              {profile.declaration.length}/20+
-            </p>
           </div>
         </div>
       </div>
