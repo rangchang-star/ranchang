@@ -3,7 +3,7 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Download, ArrowUpDown } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Download, ArrowUpDown, Search } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -286,79 +286,76 @@ export default function AdminActivitiesPage() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between space-x-4">
-          <div className="relative flex-1 max-w-md">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
-            <Input
-              placeholder="搜索活动..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+        <div className="space-y-3">
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+              <Input
+                placeholder="搜索活动名称..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 text-[13px]"
+              />
+            </div>
           </div>
+          
+          {/* 标签筛选和排序 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="text-[13px] text-[rgba(0,0,0,0.6)]">状态筛选：</span>
+              <button
+                onClick={() => setStatusFilter('all')}
+                className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
+                  statusFilter === 'all'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+              >
+                全部
+              </button>
+              <button
+                onClick={() => setStatusFilter('active')}
+                className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
+                  statusFilter === 'active'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+              >
+                进行中
+              </button>
+              <button
+                onClick={() => setStatusFilter('ended')}
+                className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
+                  statusFilter === 'ended'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+              >
+                已结束
+              </button>
+            </div>
 
-          {/* 快捷搜索按钮 */}
-          <div className="flex items-center space-x-2">
-            <Button
-              variant={statusFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('all')}
-              className={
-                statusFilter === 'all'
-                  ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border-blue-400'
-                  : ''
-              }
+            {/* 时间排序按钮 */}
+            <button
+              onClick={() => {
+                if (timeSort === null) {
+                  setTimeSort('desc');
+                } else if (timeSort === 'desc') {
+                  setTimeSort('asc');
+                } else {
+                  setTimeSort(null);
+                }
+              }}
+              className={`px-3 py-1.5 text-[13px] font-normal transition-colors flex items-center space-x-1 ${
+                timeSort !== null
+                  ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                  : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+              }`}
             >
-              全部
-            </Button>
-            <Button
-              variant={statusFilter === 'active' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('active')}
-              className={
-                statusFilter === 'active'
-                  ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border-blue-400'
-                  : ''
-              }
-            >
-              进行中
-            </Button>
-            <Button
-              variant={statusFilter === 'ended' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter('ended')}
-              className={
-                statusFilter === 'ended'
-                  ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border-blue-400'
-                  : ''
-              }
-            >
-              已结束
-            </Button>
+              <ArrowUpDown className="w-3.5 h-3.5" />
+              <span>{timeSort === 'asc' ? '时间↑' : timeSort === 'desc' ? '时间↓' : '时间排序'}</span>
+            </button>
           </div>
-
-          {/* 时间排序按钮 */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (timeSort === null) {
-                setTimeSort('desc');
-              } else if (timeSort === 'desc') {
-                setTimeSort('asc');
-              } else {
-                setTimeSort(null);
-              }
-            }}
-            className={
-              timeSort !== null
-                ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border-blue-400'
-                : ''
-            }
-          >
-            <ArrowUpDown className="w-4 h-4 mr-1" />
-            {timeSort === 'asc' ? '时间↑' : timeSort === 'desc' ? '时间↓' : '时间排序'}
-          </Button>
         </div>
 
         <div className="border border-[rgba(0,0,0,0.1)]">
