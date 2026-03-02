@@ -845,7 +845,7 @@ export default function ProfilePage() {
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-3">
-              {activities.map((activity) => (
+              {activities.filter(a => a.status === '进行中').map((activity) => (
                 <div
                   key={activity.id}
                   className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors flex items-center justify-between"
