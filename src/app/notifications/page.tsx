@@ -7,8 +7,30 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
-// 模拟数据
-const mockNotifications = [
+// 通知类型定义
+interface Notification {
+  id: string;
+  type: 'activity' | 'follow' | 'comment' | 'like' | 'system' | 'message' | 'promotion' | 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  content: string;
+  time: string;
+  read: boolean;
+  actionUrl?: string;
+}
+
+// 从localStorage加载通知或使用默认数据
+const loadNotifications = (): Notification[] => {
+  if (typeof window === 'undefined') return mockNotifications;
+  try {
+    const stored = localStorage.getItem('notifications');
+    return stored ? JSON.parse(stored) : mockNotifications;
+  } catch {
+    return mockNotifications;
+  }
+};
+
+// 模拟数据（作为备用）
+const mockNotifications: Notification[] = [
   {
     id: '1',
     type: 'activity',
@@ -92,23 +114,34 @@ const filterOptions = [
 ];
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>(loadNotifications());
   const [selectedFilter, setSelectedFilter] = useState('all');
+
+  // 更新通知状态并保存到localStorage
+  const updateNotificationState = (updatedNotifications: Notification[]) => {
+    setNotifications(updatedNotifications);
+    try {
+      localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+    } catch (error) {
+      console.error('保存通知失败:', error);
+    }
+  };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleMarkAsRead = (id: string) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    const updated = notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
+    updateNotificationState(updated);
   };
 
   const handleMarkAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
+    const updated = notifications.map((n) => ({ ...n, read: true }));
+    updateNotificationState(updated);
   };
 
   const handleDelete = (id: string) => {
-    setNotifications(notifications.filter((n) => n.id !== id));
+    const updated = notifications.filter((n) => n.id !== id);
+    updateNotificationState(updated);
   };
 
   const getFilteredNotifications = () => {

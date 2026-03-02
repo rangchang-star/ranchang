@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Eye, Download } from 'lucide-react';
 import { useState } from 'react';
 
 const mockActivities = [
@@ -189,6 +189,47 @@ export default function AdminActivitiesPage() {
     return labels[type] || type;
   };
 
+  // 导出活动数据为Excel
+  const handleExport = () => {
+    if (filteredActivities.length === 0) {
+      alert('没有数据可导出');
+      return;
+    }
+
+    // 构建CSV数据
+    const headers = ['活动ID', '活动标题', '日期', '时间', '地点', '类型', '已报名', '最大人数', '报名率', '状态'];
+    const rows = filteredActivities.map(activity => [
+      activity.id,
+      activity.title,
+      activity.date,
+      activity.time,
+      activity.location,
+      getTypeLabel(activity.type),
+      activity.enrolled,
+      activity.max,
+      `${Math.round((activity.enrolled / activity.max) * 100)}%`,
+      activity.status === 'active' ? '进行中' : '已结束',
+    ]);
+
+    // 添加BOM以支持Excel中文显示
+    const BOM = '\uFEFF';
+    const csvContent = BOM + [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // 创建下载链接
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `活动数据_${new Date().toLocaleDateString('zh-CN')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -197,10 +238,16 @@ export default function AdminActivitiesPage() {
             <h2 className="text-2xl font-bold text-foreground mb-2">活动管理</h2>
             <p className="text-muted-foreground">管理平台活动及报名</p>
           </div>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            发布活动
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="w-4 h-4 mr-2" />
+              导出数据
+            </Button>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              发布活动
+            </Button>
+          </div>
         </div>
 
         {/* 搜索栏 */}

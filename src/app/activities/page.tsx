@@ -2,9 +2,19 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, MapPin, Users, Clock, X } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, X, Bell, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+
+// 通知类型定义
+interface Notification {
+  id: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
 
 const filters = [
   { id: 'all', label: '全部活动' },
@@ -111,6 +121,49 @@ export default function ActivitiesPage() {
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
   const [activityToApply, setActivityToApply] = useState<typeof defaultActivities[0] | null>(null);
   const [activities, setActivities] = useState(() => getActivities());
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // 添加通知
+  const addNotification = (notification: Notification) => {
+    setNotifications((prev) => [notification, ...prev]);
+    // 同时保存到localStorage
+    try {
+      const stored = localStorage.getItem('notifications');
+      const existing = stored ? JSON.parse(stored) : [];
+      localStorage.setItem('notifications', JSON.stringify([notification, ...existing]));
+    } catch (error) {
+      console.error('保存通知失败:', error);
+    }
+  };
+
+  // 标记通知为已读
+  const markAsRead = (id: string) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    try {
+      const stored = localStorage.getItem('notifications');
+      if (stored) {
+        const existing = JSON.parse(stored);
+        const updated = existing.map((n: Notification) => (n.id === id ? { ...n, read: true } : n));
+        localStorage.setItem('notifications', JSON.stringify(updated));
+      }
+    } catch (error) {
+      console.error('更新通知状态失败:', error);
+    }
+  };
+
+  // 获取通知图标
+  const getNotificationIcon = (type: Notification['type']) => {
+    switch (type) {
+      case 'success':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'warning':
+        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+      case 'error':
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <Info className="w-5 h-5 text-blue-500" />;
+    }
+  };
 
   const filteredActivities = (() => {
     switch (selectedFilter) {
@@ -137,6 +190,13 @@ export default function ActivitiesPage() {
   const confirmApply = () => {
     if (!activityToApply) return;
 
+    // 防重复提交检查
+    if (sessionStorage.getItem('activity-applying') === 'true') {
+      alert('正在报名中，请勿重复提交');
+      return;
+    }
+    sessionStorage.setItem('activity-applying', 'true');
+
     // 更新活动状态为待审核
     const updatedActivities = activities.map((a) =>
       a.id === activityToApply.id
@@ -148,6 +208,49 @@ export default function ActivitiesPage() {
     saveActivitiesToStorage(updatedActivities);
     setShowApplyConfirm(false);
     setActivityToApply(null);
+
+    // 清除提交状态
+    setTimeout(() => {
+      sessionStorage.removeItem('activity-applying');
+    }, 1000);
+  };
+
+  const handleCancel = (activity: typeof defaultActivities[0]) => {
+    if (!confirm(`确定要取消报名「${activity.title}」吗？`)) {
+      return;
+    }
+
+    // 防重复操作检查
+    if (sessionStorage.getItem('activity-canceling') === 'true') {
+      alert('正在取消中，请勿重复操作');
+      return;
+    }
+    sessionStorage.setItem('activity-canceling', 'true');
+
+    // 更新活动状态为未报名
+    const updatedActivities = activities.map((a) =>
+      a.id === activity.id
+        ? { ...a, applicationStatus: undefined, enrolled: Math.max(0, a.enrolled - 1) }
+        : a
+    );
+
+    setActivities(updatedActivities);
+    saveActivitiesToStorage(updatedActivities);
+
+    // 添加取消通知
+    addNotification({
+      id: `cancel-${Date.now()}`,
+      type: 'info',
+      title: '报名已取消',
+      message: `您已取消「${activity.title}」的报名`,
+      time: new Date().toLocaleString('zh-CN'),
+      read: false,
+    });
+
+    // 清除操作状态
+    setTimeout(() => {
+      sessionStorage.removeItem('activity-canceling');
+    }, 1000);
   };
 
   return (
@@ -162,7 +265,14 @@ export default function ActivitiesPage() {
               </Button>
             </Link>
             <h1 className="text-[15px] font-semibold text-gray-900">参与活动</h1>
-            <div className="w-10" />
+            <Link href="/notifications" className="relative">
+              <Button variant="ghost" className="p-2">
+                <Bell className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+              </Button>
+              {notifications.filter((n) => !n.read).length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
+              )}
+            </Link>
           </div>
         </div>
 
@@ -301,7 +411,7 @@ export default function ActivitiesPage() {
                       </div>
                     </>
                   ) : (
-                    // 已通过：显示"查看详情"和"报名成功"状态
+                    // 已通过：显示"查看详情"和"取消报名"按钮
                     <>
                       <Button
                         variant="outline"
@@ -310,9 +420,13 @@ export default function ActivitiesPage() {
                       >
                         查看详情
                       </Button>
-                      <div className="flex-1 flex items-center justify-center bg-[rgba(59,130,246,0.4)] text-blue-600 text-[13px] h-10">
-                        报名成功
-                      </div>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400 h-10 text-[13px] font-normal"
+                        onClick={() => handleCancel(activity)}
+                      >
+                        取消报名
+                      </Button>
                     </>
                   )}
                 </div>

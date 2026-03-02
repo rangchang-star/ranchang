@@ -156,9 +156,9 @@ export default function ProfileEditPage() {
     if (selectedResources.includes(resource)) {
       setSelectedResources(selectedResources.filter((r) => r !== resource));
     } else {
-      // 最多选择两个
-      if (selectedResources.length >= 2) {
-        alert('资源标签最多选择两个');
+      // 最多选择三个
+      if (selectedResources.length >= 3) {
+        alert('资源标签最多选择三个');
         return;
       }
       setSelectedResources([...selectedResources, resource]);
@@ -167,8 +167,8 @@ export default function ProfileEditPage() {
 
   const handleAddCustomResource = () => {
     if (customResource && customResource.trim() && !selectedResources.includes(customResource.trim())) {
-      if (selectedResources.length >= 2) {
-        alert('资源标签最多选择两个');
+      if (selectedResources.length >= 3) {
+        alert('资源标签最多选择三个');
         return;
       }
       setSelectedResources([...selectedResources, customResource.trim()]);
