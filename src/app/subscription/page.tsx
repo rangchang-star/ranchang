@@ -5,48 +5,67 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Clock, PlayCircle, TrendingUp, Heart } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Clock, PlayCircle, TrendingUp, Heart, Mic, Users } from 'lucide-react';
 
-// AI培训内容
-const trainings = [
+// 商业咨询行业标签
+const industryTypes = [
+  '企业转型',
+  '战略规划',
+  '组织优化',
+  '市场拓展',
+  '产品创新',
+  '资本运作',
+];
+
+// 探访点亮内容
+const visits = [
   {
     id: '1',
-    title: 'AI时代领导者思维升级',
-    description: '帮助企业主和高管适应AI时代的领导力挑战',
-    tags: ['战略思维', 'AI应用', '领导力'],
-    duration: '2.5小时',
-    price: 299,
-    originalPrice: 499,
-    image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=200&fit=crop',
-    rating: 4.9,
-    students: 1280,
-    level: '中级',
+    title: '上海某制造业企业数字化转型探访',
+    industry: '企业转型',
+    duration: '4小时',
+    date: '2024年3月15日',
+    visitors: [
+      { name: '李明', avatar: '/avatar-2.jpg', skill: '战略' },
+      { name: '王芳', avatar: '/avatar-3.jpg', skill: '营销' },
+      { name: '张伟', avatar: '/avatar-4.jpg', skill: '产品' },
+    ],
+    record: '企业面临数字化转型的关键阶段，传统生产模式效率低下，需要从设备智能化、流程数字化、管理信息化三个维度进行全面改造。本次走访重点了解企业当前痛点，制定分阶段转型方案。',
+    status: ['组织优化', '战略规划', '产品创新'],
+    audioDuration: '5:23',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=200&fit=crop',
   },
   {
     id: '2',
-    title: '私董会组织实战指南',
-    description: '从0到1打造高效的私董会组织',
-    tags: ['私董会', '组织管理', '方法论'],
-    duration: '3小时',
-    price: 199,
-    originalPrice: 399,
-    image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=200&fit=crop',
-    rating: 4.8,
-    students: 856,
-    level: '入门',
+    title: '杭州科技创业公司战略规划探访',
+    industry: '战略规划',
+    duration: '3.5小时',
+    date: '2024年3月12日',
+    visitors: [
+      { name: '赵芳', avatar: '/avatar-3.jpg', skill: '运营' },
+      { name: '李明', avatar: '/avatar-2.jpg', skill: '战略' },
+    ],
+    record: '创业公司快速发展期面临战略选择，需要在A轮融资、市场扩张、产品迭代之间找到平衡点。通过深度访谈，明确未来6个月的优先级，建立关键指标体系。',
+    status: ['市场拓展', '资本运作'],
+    audioDuration: '4:15',
+    image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400&h=200&fit=crop',
   },
   {
     id: '3',
-    title: 'AI工具应用速成班',
-    description: '掌握最实用的AI工具，提升工作效率',
-    tags: ['AI工具', '效率提升', '实操'],
-    duration: '1.5小时',
-    price: 99,
-    originalPrice: 199,
-    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=200&fit=crop',
-    rating: 4.7,
-    students: 2156,
-    level: '入门',
+    title: '广州连锁企业组织优化探访',
+    industry: '组织优化',
+    duration: '5小时',
+    date: '2024年3月10日',
+    visitors: [
+      { name: '张伟', avatar: '/avatar-4.jpg', skill: '管理' },
+      { name: '王芳', avatar: '/avatar-3.jpg', skill: '渠道' },
+      { name: '李明', avatar: '/avatar-2.jpg', skill: '战略' },
+    ],
+    record: '连锁门店快速扩张后，组织架构和管理体系跟不上发展节奏，跨区域协同困难。重点考察门店运营流程，设计标准化管理体系和人才培训机制。',
+    status: ['组织优化', '市场拓展', '产品创新'],
+    audioDuration: '6:30',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=200&fit=crop',
   },
 ];
 
@@ -117,7 +136,7 @@ export default function SubscriptionPage() {
               >
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-4 h-4" />
-                  <span>AI培训</span>
+                  <span>探访点亮</span>
                 </div>
               </TabsTrigger>
               <TabsTrigger
@@ -131,79 +150,87 @@ export default function SubscriptionPage() {
               </TabsTrigger>
             </TabsList>
 
-            {/* AI培训内容 */}
+            {/* 探访点亮内容 */}
             <TabsContent value="training" className="space-y-4 mt-6">
-              {trainings.map((training) => (
+              {visits.map((visit) => (
                 <div
-                  key={training.id}
+                  key={visit.id}
                   className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
                 >
                   {/* 图片 */}
                   <div className="mb-3 overflow-hidden">
                     <img
-                      src={training.image}
-                      alt={training.title}
+                      src={visit.image}
+                      alt={visit.title}
                       className="w-full h-44 object-cover"
                     />
                   </div>
 
-                  {/* 内容 */}
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px]">
-                        {training.level}
-                      </Badge>
-                      <div className="flex items-center space-x-1 text-[11px] text-[rgba(0,0,0,0.25)]">
-                        <PlayCircle className="w-3.5 h-3.5" />
-                        <span>{training.duration}</span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-[11px] text-[rgba(0,0,0,0.25)]">
-                        <TrendingUp className="w-3.5 h-3.5" />
-                        <span>{training.rating}</span>
-                      </div>
+                  {/* 行业标签、时长、日期 */}
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px]">
+                      {visit.industry}
+                    </Badge>
+                    <div className="flex items-center space-x-1 text-[11px] text-[rgba(0,0,0,0.25)]">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{visit.duration}</span>
+                      <span>·</span>
+                      <span>{visit.date}</span>
                     </div>
+                  </div>
 
-                    <h3 className="text-sm font-semibold text-gray-900 leading-tight line-clamp-1">
-                      {training.title}
-                    </h3>
-                    <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
-                      {training.description}
-                    </p>
+                  {/* 探访人头像和标签 */}
+                  <div className="flex items-center space-x-4 mb-3">
+                    {visit.visitors.slice(0, 3).map((visitor, idx) => (
+                      <div key={idx} className="flex flex-col items-center">
+                        <div className="w-10 h-10 rounded-full overflow-hidden mb-1">
+                          <img
+                            src={visitor.avatar}
+                            alt={visitor.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[9px] line-clamp-1">
+                          {visitor.skill}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
 
-                    {/* 标签 */}
+                  {/* 标题 */}
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2 leading-tight line-clamp-1">
+                    {visit.title}
+                  </h3>
+
+                  {/* 走访记录 */}
+                  <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3 mb-3">
+                    {visit.record}
+                  </p>
+
+                  {/* 状态标签 */}
+                  <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-3">
                     <div className="flex flex-wrap gap-2">
-                      {training.tags.map((tag) => (
+                      {visit.status.map((status) => (
                         <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px] line-clamp-1"
+                          key={status}
+                          className="rounded-none bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.6)] font-normal text-[10px] line-clamp-1"
                         >
-                          {tag}
+                          {status}
                         </Badge>
                       ))}
                     </div>
+                  </div>
 
-                    {/* 底部信息 */}
-                    <div className="flex items-center justify-between pt-2 border-t border-[rgba(0,0,0,0.05)]">
-                      <div className="flex items-center space-x-3">
-                        <div>
-                          <span className="text-sm font-semibold text-gray-900">¥{training.price}</span>
-                          <span className="text-[11px] text-[rgba(0,0,0,0.25)] line-through ml-2">
-                            ¥{training.originalPrice}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1 text-[9px] text-[rgba(0,0,0,0.25)]">
-                          <span>{training.students}</span>
-                        </div>
-                      </div>
-                      {/* 纯方形按钮 */}
-                      <Button
-                        size="sm"
-                        className="rounded-none bg-blue-400 text-white hover:bg-blue-500 font-normal text-[11px]"
-                      >
-                        立即订阅
-                      </Button>
+                  {/* 走访录音 */}
+                  <div className="flex items-center space-x-3 p-3 bg-[rgba(0,0,0,0.03)]">
+                    <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0">
+                      <PlayCircle className="w-4 h-4 text-white fill-white ml-0.5" />
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] text-gray-900 font-medium">走访反馈录音</p>
+                      <p className="text-[9px] text-[rgba(0,0,0,0.25)]">{visit.audioDuration}</p>
                     </div>
+                    <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
                   </div>
                 </div>
               ))}
