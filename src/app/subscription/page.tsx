@@ -14,7 +14,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Clock, PlayCircle, TrendingUp, Heart, Mic, Users, X } from 'lucide-react';
+import { Clock, PlayCircle, TrendingUp, Heart, Mic, Users, X, ChevronDown } from 'lucide-react';
 
 // 商业咨询行业标签
 const industryTypes = [
@@ -128,6 +128,10 @@ const salon = {
 export default function SubscriptionPage() {
   const [activeTab, setActiveTab] = useState<'training' | 'consultation'>('training');
 
+  // 展开状态
+  const [expandedVisits, setExpandedVisits] = useState<Record<string, boolean>>({});
+  const [expandedSalon, setExpandedSalon] = useState(false);
+
   // 加入表单状态
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -145,6 +149,18 @@ export default function SubscriptionPage() {
     if (value === 'training' || value === 'consultation') {
       setActiveTab(value);
     }
+  };
+
+  // 切换展开状态
+  const toggleVisitExpand = (id: string) => {
+    setExpandedVisits(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const toggleSalonExpand = () => {
+    setExpandedSalon(prev => !prev);
   };
 
   // 电话号码验证
@@ -282,59 +298,82 @@ export default function SubscriptionPage() {
                     </div>
                   </div>
 
-                  {/* 探访人头像和标签 */}
-                  <div className="flex items-center space-x-4 mb-3">
-                    {visit.visitors.slice(0, 3).map((visitor, idx) => (
-                      <div key={idx} className="flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full overflow-hidden mb-1">
-                          <img
-                            src={visitor.avatar}
-                            alt={visitor.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[9px] line-clamp-1">
-                          {visitor.skill}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-
                   {/* 标题 */}
                   <h3 className="text-sm font-semibold text-gray-900 mb-2 leading-tight line-clamp-1">
                     {visit.title}
                   </h3>
 
-                  {/* 走访记录 */}
-                  <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3 mb-3">
+                  {/* 简短描述 */}
+                  <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2 mb-3">
                     {visit.record}
                   </p>
 
-                  {/* 状态标签 */}
-                  <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-3">
-                    <div className="flex flex-wrap gap-2">
-                      {visit.status.map((status) => (
-                        <Badge
-                          key={status}
-                          className="rounded-none bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.6)] font-normal text-[10px] line-clamp-1"
-                        >
-                          {status}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
+                  {/* 展开按钮 */}
+                  <button
+                    onClick={() => toggleVisitExpand(visit.id)}
+                    className="w-full py-2 text-[11px] text-blue-400 font-medium flex items-center justify-center space-x-1 hover:text-blue-500 transition-colors"
+                  >
+                    <span>{expandedVisits[visit.id] ? '收起' : '展开'}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        expandedVisits[visit.id] ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
 
-                  {/* 走访录音 */}
-                  <div className="flex items-center space-x-3 p-3 bg-[rgba(0,0,0,0.03)]">
-                    <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0">
-                      <PlayCircle className="w-4 h-4 text-white fill-white ml-0.5" />
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] text-gray-900 font-medium">走访反馈录音</p>
-                      <p className="text-[9px] text-[rgba(0,0,0,0.25)]">{visit.audioDuration}</p>
+                  {/* 展开内容 */}
+                  {expandedVisits[visit.id] && (
+                    <div className="mt-3 pt-3 border-t border-[rgba(0,0,0,0.05)] animate-in slide-in-from-top-2 duration-200">
+                      {/* 探访人头像和标签 */}
+                      <div className="flex items-center space-x-4 mb-3">
+                        {visit.visitors.slice(0, 3).map((visitor, idx) => (
+                          <div key={idx} className="flex flex-col items-center">
+                            <div className="w-10 h-10 rounded-full overflow-hidden mb-1">
+                              <img
+                                src={visitor.avatar}
+                                alt={visitor.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[9px] line-clamp-1">
+                              {visitor.skill}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* 详细走访记录 */}
+                      <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed mb-3">
+                        {visit.record}
+                      </p>
+
+                      {/* 状态标签 */}
+                      <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-3">
+                        <div className="flex flex-wrap gap-2">
+                          {visit.status.map((status) => (
+                            <Badge
+                              key={status}
+                              className="rounded-none bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.6)] font-normal text-[10px] line-clamp-1"
+                            >
+                              {status}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 走访录音 */}
+                      <div className="flex items-center space-x-3 p-3 bg-[rgba(0,0,0,0.03)]">
+                        <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0">
+                          <PlayCircle className="w-4 h-4 text-white fill-white ml-0.5" />
+                        </button>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] text-gray-900 font-medium">走访反馈录音</p>
+                          <p className="text-[9px] text-[rgba(0,0,0,0.25)]">{visit.audioDuration}</p>
+                        </div>
+                        <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
+                      </div>
                     </div>
-                    <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
-                  </div>
+                  )}
                 </div>
               ))}
             </TabsContent>
@@ -368,52 +407,67 @@ export default function SubscriptionPage() {
                   {salon.introduction}
                 </p>
 
-                {/* 圈子数字资产产出 */}
-                <h4 className="text-xl font-bold text-blue-400 mb-3">圈子数字资产产出</h4>
-
-                {/* 数字资产列表 */}
-                <div className="space-y-3">
-                  {salon.digitalAssets.map((asset) => (
-                    <div
-                      key={asset.id}
-                      className="p-3 bg-[rgba(0,0,0,0.02)] hover:bg-[rgba(0,0,0,0.04)] transition-colors"
-                    >
-                      {/* 资产图片 */}
-                      <div className="mb-2 overflow-hidden">
-                        <img
-                          src={asset.cover}
-                          alt={asset.title}
-                          className="w-full h-32 object-cover"
-                        />
-                      </div>
-
-                      {/* 资产信息 */}
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <h5 className="text-xs font-semibold text-gray-900 mb-1">{asset.title}</h5>
-                          <p className="text-[11px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
-                            {asset.description}
-                          </p>
-                        </div>
-                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px] ml-2 flex-shrink-0">
-                          {asset.type}
-                        </Badge>
-                      </div>
-
-                      {/* 底部信息 */}
-                      <div className="flex items-center justify-between text-[9px] text-[rgba(0,0,0,0.4)]">
-                        <div className="flex items-center space-x-3">
-                          <span>{asset.createTime}</span>
-                          <span>{asset.size}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Heart className="w-3 h-3" />
-                          <span>{asset.likes}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                {/* 圈子数字资产产出 - 标题和展开按钮 */}
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xl font-bold text-blue-400">圈子数字资产产出</h4>
+                  <button
+                    onClick={toggleSalonExpand}
+                    className="text-[11px] text-blue-400 font-medium flex items-center space-x-1 hover:text-blue-500 transition-colors"
+                  >
+                    <span>{expandedSalon ? '收起' : '展开'}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        expandedSalon ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
                 </div>
+
+                {/* 数字资产列表 - 展开时显示 */}
+                {expandedSalon && (
+                  <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
+                    {salon.digitalAssets.map((asset) => (
+                      <div
+                        key={asset.id}
+                        className="p-3 bg-[rgba(0,0,0,0.02)] hover:bg-[rgba(0,0,0,0.04)] transition-colors"
+                      >
+                        {/* 资产图片 */}
+                        <div className="mb-2 overflow-hidden">
+                          <img
+                            src={asset.cover}
+                            alt={asset.title}
+                            className="w-full h-32 object-cover"
+                          />
+                        </div>
+
+                        {/* 资产信息 */}
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h5 className="text-xs font-semibold text-gray-900 mb-1">{asset.title}</h5>
+                            <p className="text-[11px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
+                              {asset.description}
+                            </p>
+                          </div>
+                          <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px] ml-2 flex-shrink-0">
+                            {asset.type}
+                          </Badge>
+                        </div>
+
+                        {/* 底部信息 */}
+                        <div className="flex items-center justify-between text-[9px] text-[rgba(0,0,0,0.4)]">
+                          <div className="flex items-center space-x-3">
+                            <span>{asset.createTime}</span>
+                            <span>{asset.size}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Heart className="w-3 h-3" />
+                            <span>{asset.likes}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
