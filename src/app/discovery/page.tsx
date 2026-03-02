@@ -371,16 +371,10 @@ export default function DiscoveryPage() {
                 </div>
               ))}
             </div>
-            {/* 查看全部灰色色块按钮 - 缩小50% */}
-            <div className="mt-4 flex flex-col items-center space-y-2">
-              {/* 三个左右滑动线条 */}
-              <div className="flex space-x-1">
-                <div className="w-1 h-3 bg-[rgba(0,0,0,0.15)]"></div>
-                <div className="w-1 h-3 bg-[rgba(0,0,0,0.15)]"></div>
-                <div className="w-1 h-3 bg-[rgba(0,0,0,0.15)]"></div>
-              </div>
-              <button className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-xs font-normal">
-                查看全部
+            {/* 查看完整榜单 */}
+            <div className="mt-4 flex justify-center">
+              <button className="w-48 px-4 py-2.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-sm font-normal">
+                查看完整榜单
               </button>
             </div>
           </section>
