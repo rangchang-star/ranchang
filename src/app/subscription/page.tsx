@@ -69,45 +69,47 @@ const visits = [
   },
 ];
 
-// 咨询内容
-const consultations = [
-  {
-    id: '1',
-    title: '企业转型战略咨询',
-    description: '针对传统企业的数字化转型策略制定',
-    tags: ['企业转型', '数字化', '战略规划'],
-    duration: '1小时',
-    price: 599,
-    image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&h=200&fit=crop',
-    rating: 5.0,
-    reviews: 234,
-    category: '战略咨询',
-  },
-  {
-    id: '2',
-    title: '创业项目评估',
-    description: '专业的项目可行性分析与建议',
-    tags: ['创业', '项目评估', '投资'],
-    duration: '45分钟',
-    price: 399,
-    image: 'https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=400&h=200&fit=crop',
-    rating: 4.9,
-    reviews: 189,
-    category: '项目咨询',
-  },
-  {
-    id: '3',
-    title: '个人成长教练',
-    description: '一对一职业发展规划与能力提升',
-    tags: ['个人成长', '职业规划', '能力提升'],
-    duration: '1小时',
-    price: 299,
-    image: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=400&h=200&fit=crop',
-    rating: 4.8,
-    reviews: 312,
-    category: '成长教练',
-  },
-];
+// 沙龙内容
+const salon = {
+  id: '1',
+  period: '2026期',
+  introduction: '定期举行的深度沙龙，汇集行业精英，共同探讨AI时代的商业机会与挑战，通过小组协作产出高价值的数字资产。',
+  duration: '一年',
+  schedule: '每周五 19:00',
+  limit: '限15人',
+  digitalAssets: [
+    {
+      id: '1',
+      title: 'AI营销策略白皮书',
+      description: '基于小组讨论产出，涵盖5个行业的AI营销实战案例',
+      type: '文档',
+      size: '2.3MB',
+      createTime: '2024年3月1日',
+      likes: 45,
+      cover: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&h=120&fit=crop',
+    },
+    {
+      id: '2',
+      title: '数字化转型项目清单',
+      description: '15个中小企业数字化转型实用工具和模板',
+      type: '表格',
+      size: '1.8MB',
+      createTime: '2024年3月8日',
+      likes: 67,
+      cover: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=200&h=120&fit=crop',
+    },
+    {
+      id: '3',
+      title: 'AI工具使用手册',
+      description: 'ChatGPT、Midjourney等主流AI工具的使用技巧',
+      type: '文档',
+      size: '3.5MB',
+      createTime: '2024年3月15日',
+      likes: 89,
+      cover: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=200&h=120&fit=crop',
+    },
+  ],
+};
 
 export default function SubscriptionPage() {
   const [activeTab, setActiveTab] = useState('training');
@@ -145,7 +147,7 @@ export default function SubscriptionPage() {
               >
                 <div className="flex items-center space-x-2">
                   <Heart className="w-4 h-4" />
-                  <span>咨询</span>
+                  <span>AI加油圈</span>
                 </div>
               </TabsTrigger>
             </TabsList>
@@ -242,79 +244,79 @@ export default function SubscriptionPage() {
               </button>
             </div>
 
-            {/* 咨询内容 */}
+            {/* AI加油圈内容 */}
             <TabsContent value="consultation" className="space-y-4 mt-6">
-              {consultations.map((consultation) => (
-                <div
-                  key={consultation.id}
-                  className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
-                >
-                  {/* 图片 */}
-                  <div className="mb-3 overflow-hidden">
-                    <img
-                      src={consultation.image}
-                      alt={consultation.title}
-                      className="w-full h-44 object-cover"
-                    />
-                  </div>
-
-                  {/* 内容 */}
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px]">
-                        {consultation.category}
-                      </Badge>
-                      <div className="flex items-center space-x-1 text-[11px] text-[rgba(0,0,0,0.25)]">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{consultation.duration}</span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-[11px] text-[rgba(0,0,0,0.25)]">
-                        <Heart className="w-3.5 h-3.5" />
-                        <span>{consultation.rating}</span>
-                      </div>
-                    </div>
-
-                    <h3 className="text-sm font-semibold text-gray-900 leading-tight line-clamp-1">
-                      {consultation.title}
-                    </h3>
-                    <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
-                      {consultation.description}
-                    </p>
-
-                    {/* 标签 */}
-                    <div className="flex flex-wrap gap-2">
-                      {consultation.tags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px] line-clamp-1"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* 底部信息 */}
-                    <div className="flex items-center justify-between pt-2 border-t border-[rgba(0,0,0,0.05)]">
-                      <div className="flex items-center space-x-3">
-                        <div>
-                          <span className="text-sm font-semibold text-gray-900">¥{consultation.price}</span>
-                        </div>
-                        <div className="flex items-center space-x-1 text-[9px] text-[rgba(0,0,0,0.25)]">
-                          <span>{consultation.reviews}</span>
-                        </div>
-                      </div>
-                      {/* 纯方形按钮 */}
-                      <Button
-                        size="sm"
-                        className="rounded-none bg-blue-400 text-white hover:bg-blue-500 font-normal text-[11px]"
-                      >
-                        预约咨询
-                      </Button>
+              <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors">
+                {/* 顶部信息行 */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <h3 className="text-sm font-semibold text-gray-900">{salon.period}</h3>
+                    <div className="flex items-center space-x-2 text-[11px] text-[rgba(0,0,0,0.4)]">
+                      <span>{salon.duration}</span>
+                      <span>·</span>
+                      <span>{salon.schedule}</span>
+                      <span>·</span>
+                      <span>{salon.limit}</span>
                     </div>
                   </div>
+                  {/* 圆形蓝色按钮 */}
+                  <button className="w-12 h-12 rounded-full bg-blue-400 text-white text-xs font-normal flex items-center justify-center hover:bg-blue-500 transition-colors">
+                    加入
+                  </button>
                 </div>
-              ))}
+
+                {/* 介绍 */}
+                <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed mb-4">
+                  {salon.introduction}
+                </p>
+
+                {/* 小组数字资产产出 */}
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">小组数字资产产出</h4>
+
+                {/* 数字资产列表 */}
+                <div className="space-y-3">
+                  {salon.digitalAssets.map((asset) => (
+                    <div
+                      key={asset.id}
+                      className="p-3 bg-[rgba(0,0,0,0.02)] hover:bg-[rgba(0,0,0,0.04)] transition-colors"
+                    >
+                      {/* 资产图片 */}
+                      <div className="mb-2 overflow-hidden">
+                        <img
+                          src={asset.cover}
+                          alt={asset.title}
+                          className="w-full h-32 object-cover"
+                        />
+                      </div>
+
+                      {/* 资产信息 */}
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <h5 className="text-xs font-semibold text-gray-900 mb-1">{asset.title}</h5>
+                          <p className="text-[11px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
+                            {asset.description}
+                          </p>
+                        </div>
+                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px] ml-2 flex-shrink-0">
+                          {asset.type}
+                        </Badge>
+                      </div>
+
+                      {/* 底部信息 */}
+                      <div className="flex items-center justify-between text-[9px] text-[rgba(0,0,0,0.4)]">
+                        <div className="flex items-center space-x-3">
+                          <span>{asset.createTime}</span>
+                          <span>{asset.size}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Heart className="w-3 h-3" />
+                          <span>{asset.likes}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
