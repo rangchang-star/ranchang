@@ -104,32 +104,32 @@ const declarationItems = [
     rank: 1,
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=zhangming',
     title: '用AI重塑传统制造业',
-    name: '张明',
     profile: '制造专家',
+    duration: '5:23',
   },
   {
     id: '2',
     rank: 2,
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=wangjie',
     title: '35+创业者的破局之路',
-    name: '王杰',
     profile: '连续创业者',
+    duration: '8:15',
   },
   {
     id: '3',
     rank: 3,
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=lihua',
     title: '从HR到企业合伙人',
-    name: '李华',
     profile: '战略顾问',
+    duration: '6:42',
   },
   {
     id: '4',
     rank: 4,
     avatar: 'https://api.dicebear.com/7.x/micah/svg?seed=chenwei',
     title: 'AI时代的产品思维',
-    name: '陈伟',
     profile: '产品总监',
+    duration: '7:30',
   },
 ];
 
@@ -347,7 +347,7 @@ export default function DiscoveryPage() {
                   <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
                     <img
                       src={item.avatar}
-                      alt={item.name}
+                      alt={item.title}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -358,14 +358,14 @@ export default function DiscoveryPage() {
                     <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
                       {item.title}
                     </h3>
-                    {/* 会员姓名与达人画像（灰色字） */}
+                    {/* 达人画像与时长（灰色字） */}
                     <p className="text-sm text-[rgba(0,0,0,0.25)]">
-                      {item.name} · {item.profile}
+                      {item.profile} · {item.duration}
                     </p>
                   </div>
 
-                  {/* 右侧播放按钮 - 纯方形 */}
-                  <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0 ml-3">
+                  {/* 右侧播放按钮 - 圆形 */}
+                  <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0 ml-3">
                     <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                   </button>
                 </div>
