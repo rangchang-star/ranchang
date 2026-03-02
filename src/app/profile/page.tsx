@@ -8,7 +8,7 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -46,6 +46,48 @@ const connectionType = [
   { id: 'personLookingForJob', label: '人找事', description: '我有能力，寻找项目机会' },
   { id: 'jobLookingForPerson', label: '事找人', description: '我有项目，寻找合作伙伴' },
   { id: 'pureExchange', label: '纯交流', description: '只想交流学习，暂无合作需求' }
+];
+
+// 通知类型定义
+interface Notification {
+  id: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  actionUrl?: string;
+}
+
+// 默认通知数据
+const defaultNotifications: Notification[] = [
+  {
+    id: '1',
+    type: 'success',
+    title: '报名审核通过',
+    message: '您报名的「转型期私董会」已通过审核，请按时参加',
+    time: '2024-03-02 10:30',
+    read: false,
+    actionUrl: '/activities',
+  },
+  {
+    id: '2',
+    type: 'info',
+    title: '新的探访邀请',
+    message: '张明邀请您参与「上海某制造业企业数字化转型探访」',
+    time: '2024-03-01 15:20',
+    read: false,
+    actionUrl: '/profile',
+  },
+  {
+    id: '3',
+    type: 'warning',
+    title: '活动即将开始',
+    message: '「CEO转型期私董会」将在2小时后开始',
+    time: '2024-03-01 08:00',
+    read: true,
+    actionUrl: '/activities',
+  },
 ];
 
 // 高燃宣告方向选项
@@ -240,6 +282,37 @@ const getAssessmentIcon = (name: string) => {
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
+
+  // 获取未读通知数量
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  // 获取通知图标
+  const getNotificationIcon = (type: Notification['type']) => {
+    switch (type) {
+      case 'success':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'warning':
+        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+      case 'error':
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <Info className="w-5 h-5 text-blue-500" />;
+    }
+  };
+
+  // 标记通知为已读
+  const markAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    ));
+  };
+
+  // 标记所有通知为已读
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
 
   // 功能菜单数据结构
   interface MenuItem {
@@ -357,10 +430,116 @@ export default function ProfilePage() {
           {/* 顶部导航 */}
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-light text-gray-900">个人中心</h1>
-            <Link href="/settings" className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
-              <Settings className="w-5 h-5 text-blue-400" />
-            </Link>
+            <div className="flex items-center space-x-2">
+              {/* 消息按钮 */}
+              <button
+                className="relative p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
+                <Bell className="w-5 h-5 text-blue-400" />
+                {/* 红点 */}
+                {unreadCount > 0 ? (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                ) : (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-gray-300 rounded-full border-2 border-white" />
+                )}
+              </button>
+              {/* 设置按钮 */}
+              <Link href="/settings" className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
+                <Settings className="w-5 h-5 text-blue-400" />
+              </Link>
+            </div>
           </div>
+
+          {/* 消息弹窗 */}
+          {showNotifications && (
+            <div className="absolute right-0 top-14 w-80 bg-white border border-[rgba(0,0,0,0.1)] rounded-lg shadow-xl z-50 overflow-hidden">
+              {/* 弹窗头部 */}
+              <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-[13px] font-semibold text-gray-900">消息通知</h3>
+                  {unreadCount > 0 && (
+                    <span className="px-2 py-0.5 bg-red-500 text-white text-[10px] rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="text-[11px] text-blue-600 hover:text-blue-700"
+                    >
+                      全部已读
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowNotifications(false)}
+                    className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded"
+                  >
+                    <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 消息列表 */}
+              <div className="max-h-80 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <div className="py-8 text-center text-[13px] text-[rgba(0,0,0,0.6)]">
+                    暂无消息
+                  </div>
+                ) : (
+                  notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`px-4 py-3 border-b border-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer ${
+                        !notification.read ? 'bg-blue-50/30' : ''
+                      }`}
+                      onClick={() => {
+                        markAsRead(notification.id);
+                        if (notification.actionUrl) {
+                          setShowNotifications(false);
+                          // 这里可以添加跳转逻辑
+                        }
+                      }}
+                    >
+                      <div className="flex items-start space-x-3">
+                        {getNotificationIcon(notification.type)}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className={`text-[13px] font-medium text-gray-900 ${!notification.read ? 'font-semibold' : ''}`}>
+                              {notification.title}
+                            </h4>
+                          </div>
+                          <p className="text-[12px] text-[rgba(0,0,0,0.6)] mb-1 line-clamp-2">
+                            {notification.message}
+                          </p>
+                          <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                            {notification.time}
+                          </p>
+                        </div>
+                        {!notification.read && (
+                          <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-2" />
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* 底部查看全部 */}
+              {notifications.length > 0 && (
+                <div className="px-4 py-2 border-t border-[rgba(0,0,0,0.1)]">
+                  <button
+                    className="w-full py-2 text-[12px] text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                    onClick={() => setShowNotifications(false)}
+                  >
+                    查看全部消息
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 用户信息卡片 */}
           <div className="p-4 bg-white relative">
