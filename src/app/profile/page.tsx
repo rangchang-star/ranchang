@@ -5,7 +5,23 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw } from 'lucide-react';
+
+// 量表维度类型
+interface AssessmentDimension {
+  name: string;
+  score: number;
+  description: string;
+}
+
+// 量表类型
+interface Assessment {
+  name: string;
+  score: number;
+  level: string;
+  summary: string;
+  dimensions: AssessmentDimension[];
+}
 
 // 行业数据项（必选）
 const industryOptions = [
@@ -38,42 +54,87 @@ const declarationDirections = [
   { id: 'environment', name: '环境', icon: 'icon-environment.jpg' }
 ];
 
-// 量表结果数据（图形化展示）
-const assessmentResults = [
-  {
-    name: '创业心理评估',
-    score: 85,
-    level: '优秀',
-    dimensions: [
-      { name: '抗压能力', score: 90 },
-      { name: '创新能力', score: 85 },
-      { name: '团队协作', score: 80 },
-      { name: '风险意识', score: 82 }
-    ]
-  },
-  {
-    name: '商业认知评估',
-    score: 78,
-    level: '良好',
-    dimensions: [
-      { name: '市场洞察', score: 75 },
-      { name: '商业模式', score: 80 },
-      { name: '财务分析', score: 72 },
-      { name: '战略规划', score: 85 }
-    ]
-  },
-  {
-    name: 'AI认知评估',
-    score: 88,
-    level: '优秀',
-    dimensions: [
-      { name: 'AI工具应用', score: 92 },
-      { name: 'AI趋势理解', score: 85 },
-      { name: 'AI思维', score: 88 },
-      { name: 'AI落地实践', score: 85 }
-    ]
-  }
-];
+// 量表结果数据（基于成熟量表设计）
+
+/**
+ * 量表1：创业心理评估
+ * 理论基础：心理资本理论（Psychological Capital Theory - Luthans et al.）
+ * 参考量表：PCQ-24心理资本问卷、创业自我效能感量表
+ */
+const entrepreneurialPsychologyAssessment = {
+  name: '创业心理评估',
+  score: 85,
+  level: '优秀',
+  summary: '您的创业心理素质全面，具备出色的抗压能力、创新思维和风险把控能力，适合在充满不确定性的创业环境中发挥领导力。',
+  dimensions: [
+    { name: '抗压韧性', score: 90, description: '面对挫折和压力时的恢复能力' },
+    { name: '创新思维', score: 85, description: '产生新想法和解决方案的能力' },
+    { name: '团队协作', score: 80, description: '与他人合作并建立信任的能力' },
+    { name: '风险意识', score: 82, description: '识别、评估和管理风险的能力' },
+    { name: '成就动机', score: 88, description: '追求卓越和实现目标的内在驱动力' },
+    { name: '适应性', score: 84, description: '适应变化和环境调整的能力' }
+  ]
+};
+
+/**
+ * 量表2：商业认知评估
+ * 理论基础：创业认知理论（Entrepreneurial Cognition Theory - Baron & Shane）
+ * 参考量表：商业洞察力评估、创业认知量表
+ */
+const businessCognitionAssessment = {
+  name: '商业认知评估',
+  score: 78,
+  level: '良好',
+  summary: '您对商业模式和市场策略有基本理解，但在财务分析和战略规划方面还有提升空间，建议加强商业系统性思维的训练。',
+  dimensions: [
+    { name: '市场洞察', score: 75, description: '识别市场机会和用户需求的能力' },
+    { name: '商业模式', score: 80, description: '设计和优化盈利模式的能力' },
+    { name: '财务分析', score: 72, description: '理解和运用财务指标的能力' },
+    { name: '战略规划', score: 85, description: '制定和执行长期战略的能力' },
+    { name: '资源整合', score: 76, description: '有效配置和整合资源的能力' },
+    { name: '竞争分析', score: 79, description: '理解和应对市场竞争的能力' }
+  ]
+};
+
+/**
+ * 量表3：AI认知评估
+ * 理论基础：AI素养框架（EU DigComp Framework）、数字素养模型
+ * 参考量表：AI应用能力评估、数字素养问卷
+ */
+const aiCognitionAssessment = {
+  name: 'AI认知评估',
+  score: 88,
+  level: '优秀',
+  summary: '您对AI工具有深入理解和丰富实践经验，具备将AI技术落地应用的能力，是组织中推动AI转型的关键人才。',
+  dimensions: [
+    { name: 'AI工具应用', score: 92, description: '使用各类AI工具解决实际问题的能力' },
+    { name: 'AI趋势理解', score: 85, description: '理解AI发展趋势和技术边界的能力' },
+    { name: 'AI思维模式', score: 88, description: '用AI思维优化工作流程的能力' },
+    { name: 'AI落地实践', score: 85, description: '将AI技术整合到业务中的能力' },
+    { name: 'AI伦理意识', score: 86, description: '理解AI伦理和合规要求的能力' },
+    { name: 'AI学习能力', score: 90, description: '持续学习AI新技术的能力' }
+  ]
+};
+
+/**
+ * 量表4：事业使命感评估
+ * 理论基础：使命感理论（Calling Theory - Steger et al.）、职业价值观理论（Super）
+ * 参考量表：使命承诺量表（Calling and Vocation Questionnaire）、职业价值观问卷
+ */
+const careerMissionAssessment = {
+  name: '事业使命感评估',
+  score: 82,
+  level: '良好',
+  summary: '您有清晰的职业使命感，能够将个人价值观与社会价值结合，建议在使命传达和团队感召方面进一步加强影响力。',
+  dimensions: [
+    { name: '使命感清晰度', score: 85, description: '对自身使命和愿景的清晰程度' },
+    { name: '社会价值认同', score: 80, description: '认同工作对社会贡献的程度' },
+    { name: '内在驱动力', score: 84, description: '基于使命感而非外部奖励的工作动力' },
+    { name: '使命坚持', score: 78, description: '在困难中坚持使命的韧性' },
+    { name: '使命传达', score: 79, description: '向他人传达使命和价值观的能力' },
+    { name: '使命整合', score: 86, description: '将使命融入日常工作决策的能力' }
+  ]
+};
 
 // 用户基本信息
 const userInfo = {
@@ -92,7 +153,7 @@ const userInfo = {
     date: '2024年3月1日',
     views: 2847,
   },
-  assessments: assessmentResults,
+  assessments: [entrepreneurialPsychologyAssessment, businessCognitionAssessment, aiCognitionAssessment, careerMissionAssessment] as Assessment[],
 };
 
 // 探访记录（管理员后台确认后出现）
@@ -192,6 +253,15 @@ const menuItems = [
     action: 'view-activities',
   },
 ];
+
+// 量表图标映射
+const getAssessmentIcon = (name: string) => {
+  if (name === '创业心理评估') return '🧠';
+  if (name === '商业认知评估') return '💼';
+  if (name === 'AI认知评估') return '🤖';
+  if (name === '事业使命感评估') return '🎯';
+  return '📊';
+};
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
@@ -342,23 +412,45 @@ export default function ProfilePage() {
               </h2>
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
-            <div className="space-y-4">
-              {userInfo.assessments.map((assessment, idx) => (
+            <div className="space-y-5">
+              {userInfo.assessments.map((assessment: Assessment, idx: number) => (
                 <div key={idx} className="p-4 bg-white">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-gray-900">{assessment.name}</h3>
-                    <Badge className={`rounded-none font-normal text-[10px] ${
-                      assessment.level === '优秀' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
-                    }`}>
-                      {assessment.level} · {assessment.score}分
-                    </Badge>
+                  {/* 量表标题和总分 */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">{getAssessmentIcon(assessment.name)}</span>
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900">{assessment.name}</h3>
+                        <Badge className={`rounded-none font-normal text-[10px] mt-1 ${
+                          assessment.level === '优秀' ? 'bg-green-100 text-green-600' : 
+                          assessment.level === '良好' ? 'bg-blue-100 text-blue-600' :
+                          'bg-yellow-100 text-yellow-600'
+                        }`}>
+                          {assessment.level} · {assessment.score}分
+                        </Badge>
+                      </div>
+                    </div>
+                    <Button 
+                      className="bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.25)] font-normal text-[10px] px-3 py-1 h-7 flex items-center space-x-1"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>重新测试</span>
+                    </Button>
                   </div>
+
+                  {/* 一句话总结 */}
+                  <div className="p-3 bg-[rgba(0,0,0,0.02)] mb-3">
+                    <p className="text-[12px] text-gray-700 leading-relaxed">
+                      {assessment.summary}
+                    </p>
+                  </div>
+
                   {/* 维度条形图 */}
                   <div className="space-y-2">
-                    {assessment.dimensions.map((dimension, dimIdx) => (
+                    {assessment.dimensions.map((dimension: AssessmentDimension, dimIdx: number) => (
                       <div key={dimIdx} className="space-y-1">
                         <div className="flex items-center justify-between text-[10px] text-[rgba(0,0,0,0.25)]">
-                          <span>{dimension.name}</span>
+                          <span className="font-medium">{dimension.name}</span>
                           <span>{dimension.score}分</span>
                         </div>
                         <div className="w-full bg-[rgba(0,0,0,0.05)] h-2">
@@ -371,6 +463,9 @@ export default function ProfilePage() {
                             style={{ width: `${dimension.score}%` }}
                           />
                         </div>
+                        <p className="text-[9px] text-[rgba(0,0,0,0.25)] pl-1">
+                          {dimension.description}
+                        </p>
                       </div>
                     ))}
                   </div>
