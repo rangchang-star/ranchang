@@ -8,7 +8,7 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -237,15 +237,25 @@ const activities = [
     id: '1',
     title: 'CEO转型期私董会',
     date: '2024年3月20日',
+    time: '14:00-17:00',
+    location: '上海·静安',
     status: '待参加',
     category: '私董会',
+    description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。我们将围绕"如何利用过往经验"、"如何降低试错成本"等话题展开讨论。',
+    participants: 12,
+    enrolled: 8,
   },
   {
     id: '2',
     title: 'AI加油圈2026期',
     date: '2024年3月15日',
+    time: '19:00-21:00',
+    location: '北京·朝阳',
     status: '待审核',
     category: '沙龙',
+    description: '邀请不同领域的专家分享AI在各行业的应用实践，促进跨界交流与合作。适合对AI商业化感兴趣的朋友参与。',
+    participants: 30,
+    enrolled: 20,
   },
 ];
 
@@ -284,6 +294,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
+  const [showActivityDetail, setShowActivityDetail] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
 
   // 获取未读通知数量
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -766,6 +778,84 @@ export default function ProfilePage() {
                 </div>
               ))}
             </div>
+
+          {/* 活动详情弹窗 */}
+          {showActivityDetail && selectedActivity && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              {/* 背景遮罩 */}
+              <div 
+                className="absolute inset-0 bg-black/50"
+                onClick={() => setShowActivityDetail(false)}
+              />
+              
+              {/* 弹窗内容 */}
+              <div className="relative bg-white border border-[rgba(0,0,0,0.1)] rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+                {/* 弹窗头部 */}
+                <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between">
+                  <h3 className="text-[13px] font-semibold text-gray-900">活动详情</h3>
+                  <button
+                    onClick={() => setShowActivityDetail(false)}
+                    className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded"
+                  >
+                    <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
+                  </button>
+                </div>
+
+                {/* 弹窗内容 */}
+                <div className="p-4 space-y-4">
+                  {/* 活动标题 */}
+                  <div>
+                    <h4 className="text-[15px] font-bold text-gray-900 mb-2">{selectedActivity.title}</h4>
+                    <Badge
+                      className={`rounded-none font-normal text-[11px] ${
+                        selectedActivity.status === '待参加'
+                          ? 'bg-blue-400 text-white'
+                          : selectedActivity.status === '待审核'
+                          ? 'bg-yellow-400 text-white'
+                          : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)]'
+                      }`}
+                    >
+                      {selectedActivity.status}
+                    </Badge>
+                  </div>
+
+                  {/* 活动信息 */}
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.6)]">
+                      <Calendar className="w-4 h-4" />
+                      <span>{selectedActivity.date} {selectedActivity.time}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.6)]">
+                      <MapPin className="w-4 h-4" />
+                      <span>{selectedActivity.location}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.6)]">
+                      <Users className="w-4 h-4" />
+                      <span>已报名 {selectedActivity.enrolled}/{selectedActivity.participants} 人</span>
+                    </div>
+                  </div>
+
+                  {/* 活动描述 */}
+                  <div>
+                    <h5 className="text-[13px] font-semibold text-gray-900 mb-2">活动介绍</h5>
+                    <p className="text-[13px] text-[rgba(0,0,0,0.6)] leading-relaxed">
+                      {selectedActivity.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 弹窗底部 */}
+                <div className="px-4 py-3 border-t border-[rgba(0,0,0,0.1)]">
+                  <Button
+                    className="w-full bg-blue-400 hover:bg-blue-500 text-white text-[13px]"
+                    onClick={() => setShowActivityDetail(false)}
+                  >
+                    关闭
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
           </div>
 
           {/* 探访记录 */}
@@ -851,7 +941,13 @@ export default function ProfilePage() {
                   className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors flex items-center justify-between"
                 >
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1">
+                    <h3 
+                      className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors"
+                      onClick={() => {
+                        setSelectedActivity(activity);
+                        setShowActivityDetail(true);
+                      }}
+                    >
                       {activity.title}
                     </h3>
                     <div className="flex items-center space-x-2 text-[10px] text-[rgba(0,0,0,0.25)]">
