@@ -3,7 +3,7 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Download, ArrowUpDown, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Download, ArrowUpDown, Search, Clock } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -393,10 +393,12 @@ export default function AdminActivitiesPage() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Edit className="w-4 h-4 mr-1" />
-                      编辑
-                    </Button>
+                    <Link href={`/admin/activities/${activity.id}/edit`}>
+                      <Button variant="outline" size="sm">
+                        <Edit className="w-4 h-4 mr-1" />
+                        编辑
+                      </Button>
+                    </Link>
                     <Button
                       variant="outline"
                       size="sm"
@@ -425,7 +427,7 @@ export default function AdminActivitiesPage() {
                     <span>{activity.date}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-[rgba(0,0,0,0.6)]">
-                    <Calendar className="w-4 h-4" />
+                    <Clock className="w-4 h-4" />
                     <span>{activity.time}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-[rgba(0,0,0,0.6)]">
