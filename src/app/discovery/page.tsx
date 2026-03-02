@@ -661,18 +661,18 @@ export default function DiscoveryPage() {
 
       {/* 能力连接权限提示对话框 */}
       <Dialog open={trustDialogOpen} onOpenChange={setTrustDialogOpen}>
-        <DialogContent className="w-[90vw] h-[90vh] max-w-none p-6 flex flex-col items-center justify-center">
+        <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-5 sm:p-6 flex flex-col items-center justify-center">
           <DialogHeader className="text-center">
-            <DialogTitle className="text-lg font-semibold">提示</DialogTitle>
+            <DialogTitle className="text-base sm:text-lg font-semibold">提示</DialogTitle>
             <DialogDescription className="hidden" />
           </DialogHeader>
-          <div className="text-sm text-gray-600 leading-relaxed text-center max-w-lg">
+          <div className="text-[13px] sm:text-sm text-gray-600 leading-relaxed text-center max-w-lg">
             该用户尚未开启"允许陌生人连接"权限，您可以先了解ta，或让ta主动来找到你。
           </div>
-          <div className="flex justify-end mt-6">
+          <div className="flex justify-end mt-5 sm:mt-6 w-full">
             <Button
               variant="ghost"
-              className="text-sm h-9 px-6 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] hover:bg-[rgba(0,0,0,0.1)]"
+              className="text-xs sm:text-sm h-8 sm:h-9 px-4 sm:px-6 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] hover:bg-[rgba(0,0,0,0.1)]"
               onClick={() => setTrustDialogOpen(false)}
             >
               我知道了
@@ -683,10 +683,10 @@ export default function DiscoveryPage() {
 
       {/* 查看更多悬浮页面 */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-[90vw] h-[90vh] max-w-none bg-white rounded-lg shadow-xl flex flex-col animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
+          <div className="w-[95%] h-[85vh] max-w-[480px] bg-white rounded-lg shadow-xl flex flex-col animate-in zoom-in-95 duration-200">
             {/* 顶部固定区域 - 标题和关闭按钮 */}
-            <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-[rgba(0,0,0,0.05)]">
+            <div className="flex-shrink-0 flex items-center justify-between p-3 sm:p-4 border-b border-[rgba(0,0,0,0.05)]">
               <h3 className="text-sm font-semibold text-gray-900">
                 {modalType === 'abilities' && '更多能力连接'}
                 {modalType === 'activities' && '更多活动'}
@@ -694,14 +694,14 @@ export default function DiscoveryPage() {
               </h3>
               <button
                 onClick={() => setShowModal(false)}
-                className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors"
+                className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors flex-shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* 滚动内容区域 */}
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar">
               {modalType === 'abilities' && (
                 <div className="space-y-3">
                   {connectionItems.map((item) => (
