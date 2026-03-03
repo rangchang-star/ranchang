@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Flame, Play, User, Timer, Music2, X, List, Folder, Share2, ArrowLeft } from 'lucide-react';
+import { Search, Flame, Play, User, Timer, Music2, X, List, Folder, Share2, ArrowLeft, ArrowRight, Zap } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -786,12 +786,12 @@ export default function DiscoveryPage() {
                 <Play className="w-3 h-3 text-white fill-white ml-0.5" />
               </button>
 
-              {/* 资料按钮 */}
+              {/* 查看详情按钮 - 醒目设计 */}
               <button
                 onClick={() => setShowAssetsModal(true)}
-                className="w-7 h-7 bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] flex items-center justify-center flex-shrink-0 rounded transition-colors"
+                className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 flex items-center justify-center flex-shrink-0 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200"
               >
-                <Folder className="w-3.5 h-3.5 text-gray-600" />
+                <Zap className="w-4 h-4 text-white" />
               </button>
             </div>
           </div>
