@@ -264,7 +264,7 @@ export default function SubscriptionPage() {
     <div className="min-h-screen bg-white pb-14">
       {/* 手机H5宽度 */}
       <div className="w-full max-w-md mx-auto">
-        <div className="px-5 pt-[40px] pb-4 space-y-8">
+        <div className="px-5 pt-[20px] pb-4 space-y-8">
           {/* 顶部标题区 */}
           <div>
             <div className="flex items-center justify-between py-4">
