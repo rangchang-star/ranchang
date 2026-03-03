@@ -27,10 +27,10 @@ const industryTypes = [
   '资本运作',
 ];
 
-// Tab描述文字（由管理后台录入）
+// Tab描述文字（与后台配置的slogan保持一致）
 const tabDescriptions = {
-  training: '探访企业现场，深入了解行业前沿实践，通过实地考察获取第一手商业洞察',
-  consultation: '定期举行的深度沙龙，汇集行业精英，共同探讨AI时代的商业机会与挑战',
+  training: '探访点亮，看见榜样',
+  consultation: 'AI加油圈，互助成长',
 };
 
 // 默认媒体配置（实际应从后台API获取）
