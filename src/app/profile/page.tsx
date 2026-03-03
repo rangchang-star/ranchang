@@ -260,6 +260,34 @@ const activities = [
   },
 ];
 
+// 咨询话题
+const consultationTopics = [
+  {
+    id: 'ai-frontier',
+    name: 'AI前沿',
+    placeholder: '您在AI应用中遇到什么挑战？请描述具体场景，例如：如何将AI整合到现有业务流程中、选择合适的AI工具、AI实施的风险和成本控制等...',
+    icon: '🤖',
+  },
+  {
+    id: 'entrepreneur-psychology',
+    name: '创业心理',
+    placeholder: '作为创业者，您最困扰的是什么？请描述您的心境，例如：如何应对创业不确定性、团队管理中的心理挑战、失败后的心理重建、如何保持创业激情等...',
+    icon: '🧠',
+  },
+  {
+    id: 'business-logic',
+    name: '商业逻辑',
+    placeholder: '您的商业模式中遇到什么困惑？请具体描述，例如：如何找到盈利点、如何设计可持续的商业模式、如何验证市场需求、如何优化成本结构等...',
+    icon: '💡',
+  },
+  {
+    id: 'mission-navigation',
+    name: '使命导航',
+    placeholder: '您对事业使命有什么迷茫？请详细说明，例如：如何找到个人使命感、使命与现实的冲突、如何传递使命给团队、使命与盈利的平衡等...',
+    icon: '🎯',
+  },
+];
+
 // 数字资产产出
 const digitalAssets = [
   {
@@ -297,6 +325,11 @@ export default function ProfilePage() {
   const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
   const [showActivityDetail, setShowActivityDetail] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
+  
+  // 咨询相关状态
+  const [selectedTopic, setSelectedTopic] = useState<string>('');
+  const [consultationQuestion, setConsultationQuestion] = useState('');
+  const [isSubmittingConsultation, setIsSubmittingConsultation] = useState(false);
 
   // 过滤出包含当前用户作为访客的探访记录
   const userVisitRecords = visitRecords.filter((record) =>
@@ -330,6 +363,40 @@ export default function ProfilePage() {
   // 标记所有通知为已读
   const markAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  // 提交咨询
+  const handleSubmitConsultation = async () => {
+    if (!selectedTopic) {
+      alert('请选择咨询话题');
+      return;
+    }
+    if (!consultationQuestion.trim()) {
+      alert('请输入您的问题');
+      return;
+    }
+
+    setIsSubmittingConsultation(true);
+    try {
+      // 模拟API调用
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const topic = consultationTopics.find(t => t.id === selectedTopic);
+      console.log('提交咨询:', {
+        topic: topic?.name,
+        question: consultationQuestion,
+        userId: userInfo.id,
+      });
+
+      alert('咨询提交成功！我们会尽快回复您。');
+      setSelectedTopic('');
+      setConsultationQuestion('');
+    } catch (error) {
+      console.error('提交咨询失败:', error);
+      alert('提交咨询失败，请重试');
+    } finally {
+      setIsSubmittingConsultation(false);
+    }
   };
 
   // 功能菜单数据结构
@@ -988,6 +1055,62 @@ export default function ProfilePage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* 我要咨询 */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-xl font-bold">
+                <span className="text-[rgba(96,165,250,0.6)]">我要</span>
+                <span className="text-blue-400">咨询</span>
+              </h2>
+            </div>
+            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+            
+            {/* 话题选择 */}
+            <div className="space-y-3 mb-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-[12px] text-[rgba(0,0,0,0.6)]">选择话题：</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {consultationTopics.map((topic) => (
+                  <button
+                    key={topic.id}
+                    type="button"
+                    onClick={() => setSelectedTopic(topic.id)}
+                    className={`px-3 py-2 text-[13px] font-normal transition-colors flex items-center space-x-1 ${
+                      selectedTopic === topic.id
+                        ? 'bg-[rgba(59,130,246,0.4)] text-white'
+                        : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                    }`}
+                  >
+                    <span>{topic.icon}</span>
+                    <span>{topic.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 问题输入 */}
+            {selectedTopic && (
+              <div className="space-y-3">
+                <div>
+                  <textarea
+                    value={consultationQuestion}
+                    onChange={(e) => setConsultationQuestion(e.target.value)}
+                    placeholder={consultationTopics.find(t => t.id === selectedTopic)?.placeholder}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[120px] resize-none"
+                  />
+                </div>
+                <Button
+                  onClick={handleSubmitConsultation}
+                  disabled={isSubmittingConsultation}
+                  className="w-full bg-blue-400 hover:bg-blue-500 text-white rounded-none"
+                >
+                  {isSubmittingConsultation ? '提交中...' : '提交咨询'}
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* 功能菜单 */}
