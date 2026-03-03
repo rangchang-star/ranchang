@@ -76,8 +76,38 @@ export default function VisitDetailPage() {
     phone: '',
     wechat: '',
     industry: '',
+    problem: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 从本地存储同步用户信息
+  const loadUserInfo = () => {
+    try {
+      const userInfo = localStorage.getItem('userInfo');
+      if (userInfo) {
+        const info = JSON.parse(userInfo);
+        setFormData((prev) => ({
+          ...prev,
+          name: info.name || prev.name,
+          phone: info.phone || prev.phone,
+          wechat: info.wechat || prev.wechat,
+          company: info.company || prev.company,
+          position: info.position || prev.position,
+          scale: info.scale || prev.scale,
+          industry: info.industry || prev.industry,
+          belief: info.belief || prev.belief,
+        }));
+      }
+    } catch (error) {
+      console.error('加载用户信息失败:', error);
+    }
+  };
+
+  // 打开对话框时加载用户信息
+  const handleOpenDialog = () => {
+    loadUserInfo();
+    setApplyDialogOpen(true);
+  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -96,6 +126,7 @@ export default function VisitDetailPage() {
       phone: '',
       wechat: '',
       industry: '',
+      problem: '',
     };
 
     if (!formData.name.trim()) {
@@ -116,6 +147,12 @@ export default function VisitDetailPage() {
       newErrors.industry = '请输入行业';
     }
 
+    if (!formData.problem.trim()) {
+      newErrors.problem = '请填写需要解决的问题';
+    } else if (formData.problem.trim().length < 10) {
+      newErrors.problem = '问题描述至少需要10个字';
+    }
+
     setErrors(newErrors);
     return Object.values(newErrors).every((error) => error === '');
   };
@@ -128,25 +165,33 @@ export default function VisitDetailPage() {
       // 模拟提交到后台
       setTimeout(() => {
         setIsSubmitting(false);
+
+        // 保存用户信息到本地存储，以便下次自动填充
+        const userInfo = {
+          name: formData.name,
+          phone: formData.phone,
+          wechat: formData.wechat,
+          company: formData.company,
+          position: formData.position,
+          scale: formData.scale,
+          industry: formData.industry,
+          belief: formData.belief,
+        };
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+
         setApplyDialogOpen(false);
 
-        // 重置表单
-        setFormData({
-          name: '',
-          phone: '',
-          wechat: '',
-          company: '',
-          position: '',
-          scale: '',
-          industry: '',
-          belief: '',
+        // 重置表单（保留加载的用户信息）
+        setFormData((prev) => ({
+          ...prev,
           problem: '',
-        });
+        }));
         setErrors({
           name: '',
           phone: '',
           wechat: '',
           industry: '',
+          problem: '',
         });
 
         // 模拟添加通知到本地存储
@@ -343,7 +388,7 @@ export default function VisitDetailPage() {
           {/* 申请按钮 */}
           <div className="flex justify-center pt-4 pb-4">
             <button
-              onClick={() => setApplyDialogOpen(true)}
+              onClick={handleOpenDialog}
               className="px-6 py-2 rounded-none bg-gradient-to-br from-blue-400 to-blue-500 text-white text-sm font-normal hover:scale-105 hover:-translate-y-0.5 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200"
             >
               申请成为被访者
@@ -485,7 +530,7 @@ export default function VisitDetailPage() {
             {/* 需要解决的问题 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                需要解决的问题
+                需要解决的问题 <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={formData.problem}
@@ -494,6 +539,9 @@ export default function VisitDetailPage() {
                 rows={4}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
+              {errors.problem && (
+                <p className="mt-1 text-xs text-red-500">{errors.problem}</p>
+              )}
             </div>
           </div>
 
