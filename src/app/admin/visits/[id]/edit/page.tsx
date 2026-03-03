@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,14 @@ const ReactQuill = dynamic(() => import('react-quill'), {
 
 // 可用标签
 const availableTags = ['已结束', '进行中', 'AI', '智能制造', '金融投资', '数字化转型', '工业互联网'];
+
+// 模拟会员数据（实际项目中应从API获取）
+const mockMembers = [
+  { id: '1', name: '王姐', avatar: '/avatar-3.jpg', abilityTags: ['HRBP', '团队管理'] },
+  { id: '2', name: '李明', avatar: '/avatar-2.jpg', abilityTags: ['战略', '金融投资'] },
+  { id: '3', name: '张总', avatar: '/avatar-1.jpg', abilityTags: ['智能制造', '技术研发'] },
+  { id: '4', name: '陈老师', avatar: '/avatar-4.jpg', abilityTags: ['教育培训', '创业指导'] },
+];
 
 // 模拟数据（实际项目中应从API获取）
 const mockVisit = {
@@ -52,6 +61,10 @@ const mockVisit = {
     'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&h=200&fit=crop',
   ],
   tags: ['已结束', '智能制造', '数字化转型'],
+  visitors: [
+    { id: '1', name: '王姐', avatar: '/avatar-3.jpg', abilityTags: ['HRBP', '团队管理'] },
+    { id: '2', name: '李明', avatar: '/avatar-2.jpg', abilityTags: ['战略', '金融投资'] },
+  ],
   createdAt: '2024年3月5日 16:30',
 };
 
@@ -85,6 +98,9 @@ export default function AdminVisitEditPage() {
   // 标签和图片
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [rating, setRating] = useState(5);
+
+  // 访客选择
+  const [selectedVisitors, setSelectedVisitors] = useState<string[]>([]);
 
   // 关键点（动态数组）
   const [keyPoints, setKeyPoints] = useState<string[]>(['']);
@@ -124,6 +140,7 @@ export default function AdminVisitEditPage() {
         setNotes(mockVisit.notes || '');
         setSelectedTags(mockVisit.tags);
         setRating(mockVisit.rating);
+        setSelectedVisitors(mockVisit.visitors?.map((v) => v.id) || []);
         setKeyPoints(mockVisit.keyPoints.length > 0 ? mockVisit.keyPoints : ['']);
         setNextSteps(mockVisit.nextSteps.length > 0 ? mockVisit.nextSteps : ['']);
         setImageUrls(mockVisit.images.length > 0 ? mockVisit.images : ['']);
@@ -148,6 +165,18 @@ export default function AdminVisitEditPage() {
   // 移除标签
   const handleRemoveTag = (tag: string) => {
     setSelectedTags(selectedTags.filter((t) => t !== tag));
+  };
+
+  // 添加访客
+  const handleAddVisitor = (memberId: string) => {
+    if (!selectedVisitors.includes(memberId)) {
+      setSelectedVisitors([...selectedVisitors, memberId]);
+    }
+  };
+
+  // 移除访客
+  const handleRemoveVisitor = (memberId: string) => {
+    setSelectedVisitors(selectedVisitors.filter((id) => id !== memberId));
   };
 
   // 添加关键点
@@ -276,6 +305,17 @@ export default function AdminVisitEditPage() {
         notes,
         images: imageUrls.filter((url) => url.trim()),
         tags: selectedTags,
+        visitors: selectedVisitors.map((memberId) => {
+          const member = mockMembers.find((m) => m.id === memberId);
+          return member
+            ? {
+                id: member.id,
+                name: member.name,
+                avatar: member.avatar,
+                abilityTags: member.abilityTags,
+              }
+            : null;
+        }).filter(Boolean),
         createdAt: mockVisit.createdAt,
         updatedAt: new Date().toLocaleString('zh-CN'),
       };
@@ -456,6 +496,85 @@ export default function AdminVisitEditPage() {
                   placeholder="请输入参与人数"
                   className="text-[13px]"
                 />
+              </div>
+
+              {/* 访客选择 */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    选择访客
+                  </label>
+                  <span className="text-[12px] text-[rgba(0,0,0,0.4)]">
+                    已选择 {selectedVisitors.length} 位访客
+                  </span>
+                </div>
+
+                {/* 已选访客 */}
+                {selectedVisitors.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {selectedVisitors.map((memberId) => {
+                      const member = mockMembers.find((m) => m.id === memberId);
+                      if (!member) return null;
+                      return (
+                        <div
+                          key={memberId}
+                          className="flex items-center space-x-2 px-3 py-2 bg-[rgba(59,130,246,0.4)] text-white text-[13px]"
+                        >
+                          <Image
+                            src={member.avatar}
+                            alt={member.name}
+                            width={24}
+                            height={24}
+                            className="w-6 h-6 rounded-full"
+                            unoptimized
+                          />
+                          <span>{member.name}</span>
+                          <button
+                            onClick={() => handleRemoveVisitor(memberId)}
+                            className="hover:text-gray-200"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* 可选访客 */}
+                <div className="space-y-2">
+                  <span className="text-[12px] text-[rgba(0,0,0,0.6)]">可选访客：</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {mockMembers
+                      .filter((member) => !selectedVisitors.includes(member.id))
+                      .map((member) => (
+                        <button
+                          key={member.id}
+                          type="button"
+                          onClick={() => handleAddVisitor(member.id)}
+                          className="flex items-center space-x-2 p-2 bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.08)] transition-colors text-left"
+                        >
+                          <Image
+                            src={member.avatar}
+                            alt={member.name}
+                            width={32}
+                            height={32}
+                            className="w-8 h-8 rounded-full"
+                            unoptimized
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[13px] font-medium text-gray-900 truncate">
+                              {member.name}
+                            </div>
+                            <div className="text-[11px] text-[rgba(0,0,0,0.6)] truncate">
+                              {member.abilityTags.join(' · ')}
+                            </div>
+                          </div>
+                          <Plus className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                        </button>
+                      ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

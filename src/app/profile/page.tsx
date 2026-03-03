@@ -183,6 +183,7 @@ const careerMissionAssessment = {
 
 // 用户基本信息
 const userInfo = {
+  id: '1', // 用户ID，用于匹配探访记录中的访客
   name: '王芳',
   age: 45,
   avatar: '/avatar-3.jpg',
@@ -211,8 +212,8 @@ const visitRecords = [
     skill: '人力资源',
     industry: '企业转型',
     visitors: [
-      { name: '李明', avatar: '/avatar-2.jpg', skill: '战略' },
-      { name: '王芳', avatar: '/avatar-3.jpg', skill: '人力资源' },
+      { id: '2', name: '李明', avatar: '/avatar-2.jpg', skill: '战略' },
+      { id: '1', name: '王芳', avatar: '/avatar-3.jpg', skill: '人力资源' },
     ],
     image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=120&fit=crop',
   },
@@ -224,8 +225,8 @@ const visitRecords = [
     skill: '组织优化',
     industry: '战略规划',
     visitors: [
-      { name: '王芳', avatar: '/avatar-3.jpg', skill: '组织优化' },
-      { name: '赵芳', avatar: '/avatar-3.jpg', skill: '运营' },
+      { id: '1', name: '王芳', avatar: '/avatar-3.jpg', skill: '组织优化' },
+      { id: '4', name: '赵芳', avatar: '/avatar-3.jpg', skill: '运营' },
     ],
     image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=200&h=120&fit=crop',
   },
@@ -296,6 +297,11 @@ export default function ProfilePage() {
   const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
   const [showActivityDetail, setShowActivityDetail] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
+
+  // 过滤出包含当前用户作为访客的探访记录
+  const userVisitRecords = visitRecords.filter((record) =>
+    record.visitors.some((visitor) => visitor.id === userInfo.id)
+  );
 
   // 获取未读通知数量
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -868,11 +874,21 @@ export default function ProfilePage() {
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-3">
-              {visitRecords.map((record) => (
-                <div
-                  key={record.id}
-                  className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
-                >
+              {userVisitRecords.length === 0 ? (
+                <div className="p-8 text-center">
+                  <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                    暂无探访记录
+                  </p>
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    探访记录将在后台探访管理中添加访客后显示
+                  </p>
+                </div>
+              ) : (
+                userVisitRecords.map((record) => (
+                  <div
+                    key={record.id}
+                    className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+                  >
                   <div className="flex items-start space-x-3">
                     <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
                       <Image
@@ -921,7 +937,8 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
