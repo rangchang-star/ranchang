@@ -171,6 +171,13 @@ export default function AdminConsultationsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showUserDetailDialog, setShowUserDetailDialog] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showStatusConfirmDialog, setShowStatusConfirmDialog] = useState(false);
+  const [statusConfirmInfo, setStatusConfirmInfo] = useState<{
+    consultId: string;
+    consultName: string;
+    fromStatus: ConsultationStatus;
+    toStatus: ConsultationStatus;
+  } | null>(null);
 
   // 过滤咨询
   const filteredConsultations = consultations.filter((consult) => {
@@ -207,11 +214,42 @@ export default function AdminConsultationsPage() {
 
   // 切换咨询状态
   const handleStatusChange = (consultId: string, newStatus: ConsultationStatus) => {
+    const consult = consultations.find(c => c.id === consultId);
+    if (!consult) return;
+
+    // 如果点击的是当前状态，不显示确认对话框
+    if (consult.status === newStatus) return;
+
+    // 显示确认对话框
+    setStatusConfirmInfo({
+      consultId,
+      consultName: consult.userName,
+      fromStatus: consult.status,
+      toStatus: newStatus,
+    });
+    setShowStatusConfirmDialog(true);
+  };
+
+  // 确认状态切换
+  const confirmStatusChange = () => {
+    if (!statusConfirmInfo) return;
+
     setConsultations(prev =>
       prev.map(consult =>
-        consult.id === consultId ? { ...consult, status: newStatus } : consult
+        consult.id === statusConfirmInfo.consultId
+          ? { ...consult, status: statusConfirmInfo.toStatus }
+          : consult
       )
     );
+
+    setShowStatusConfirmDialog(false);
+    setStatusConfirmInfo(null);
+  };
+
+  // 取消状态切换
+  const cancelStatusChange = () => {
+    setShowStatusConfirmDialog(false);
+    setStatusConfirmInfo(null);
   };
 
   // 获取状态标签配置
@@ -518,6 +556,59 @@ export default function AdminConsultationsPage() {
           </div>
         </div>
       </div>
+
+      {/* 状态切换确认对话框 */}
+      {showStatusConfirmDialog && statusConfirmInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white w-full max-w-md">
+            {/* 头部 */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-base font-semibold text-gray-900">确认状态切换</h3>
+            </div>
+
+            {/* 内容 */}
+            <div className="p-6">
+              <p className="text-sm text-gray-700 mb-4">
+                您要将咨询状态从
+                <span className="mx-1 font-semibold text-gray-900">
+                  {statusConfirmInfo.fromStatus === 'pending' ? '待处理' : statusConfirmInfo.fromStatus === 'processing' ? '处理中' : '已处理'}
+                </span>
+                切换为
+                <span className="mx-1 font-semibold text-gray-900">
+                  {statusConfirmInfo.toStatus === 'pending' ? '待处理' : statusConfirmInfo.toStatus === 'processing' ? '处理中' : '已处理'}
+                </span>
+                吗？
+              </p>
+              <div className="bg-[rgba(0,0,0,0.03)] p-4 rounded-none">
+                <div className="flex items-center space-x-2 mb-2">
+                  <span className="text-sm text-[rgba(0,0,0,0.5)]">用户：</span>
+                  <span className="text-sm font-medium text-gray-900">{statusConfirmInfo.consultName}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-[rgba(0,0,0,0.5)]">咨询ID：</span>
+                  <span className="text-sm text-gray-700">{statusConfirmInfo.consultId}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 底部按钮 */}
+            <div className="flex border-t border-gray-200">
+              <button
+                onClick={cancelStatusChange}
+                className="flex-1 py-3 text-sm text-gray-600 hover:bg-gray-50 border-r border-gray-200"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmStatusChange}
+                className="flex-1 py-3 text-sm text-white bg-[rgba(59,130,246,0.4)] hover:bg-[rgba(59,130,246,0.5)]"
+              >
+                确认切换
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 用户详细信息悬浮页面 */}
       {showUserDetailDialog && selectedUserId && (
