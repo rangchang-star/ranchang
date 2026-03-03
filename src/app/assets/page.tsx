@@ -91,7 +91,7 @@ export default function DigitalAssetsPage() {
                 <ArrowLeft className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
               </Button>
             </Link>
-            <h1 className="text-[21px] font-semibold text-blue-600">大鱼的认知库</h1>
+            <h1 className="text-[13px] font-semibold text-[rgba(0,0,0,0.7)]">大鱼的认知库</h1>
             <Link href="/profile">
               <Button variant="ghost" className="p-2 h-9 w-9">
                 <X className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
