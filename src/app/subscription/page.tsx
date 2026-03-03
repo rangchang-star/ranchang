@@ -511,7 +511,7 @@ export default function SubscriptionPage() {
 
           {/* 提示信息 */}
           <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-4">
-            您报名成功后，会收到电话或微信通知。
+            您提交申请后，会接到电话沟通，最终以微信通知你申请结果。
           </p>
 
           {/* 表单 */}
