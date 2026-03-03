@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   CheckCircle, XCircle, Search, Send, Mail, 
   User, Calendar, Target, UserCheck, Filter, ChevronRight,
-  MessageSquare, Clock, Bell
+  MessageSquare, Clock, Bell, ArrowUp, ArrowDown, ChevronUp
 } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -153,6 +153,7 @@ export default function AdminMessagesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<'all' | ApplicationType>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [timeSort, setTimeSort] = useState<'asc' | 'desc' | null>(null);
   
   // 消息发送相关状态
   const [showMessageDialog, setShowMessageDialog] = useState(false);
@@ -175,6 +176,11 @@ export default function AdminMessagesPage() {
     const matchesStatus = selectedStatus === 'all' || app.status === selectedStatus;
     
     return matchesSearch && matchesType && matchesStatus;
+  }).sort((a, b) => {
+    if (!timeSort) return 0;
+    const dateA = new Date(a.applyTime).getTime();
+    const dateB = new Date(b.applyTime).getTime();
+    return timeSort === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
   // 审批处理
@@ -278,10 +284,6 @@ export default function AdminMessagesPage() {
           </TabsList>
 
           <TabsContent value="pending" className="space-y-4">
-            {renderApplicationList('pending')}
-          </TabsContent>
-
-          <TabsContent value="all" className="space-y-4">
             <div className="flex items-center space-x-4 mb-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
@@ -292,26 +294,180 @@ export default function AdminMessagesPage() {
                   className="pl-10"
                 />
               </div>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value as any)}
-                className="px-3 py-2 border border-[rgba(0,0,0,0.1)] text-[13px] bg-white"
+              <button
+                onClick={() => setTimeSort(timeSort === 'desc' ? null : 'desc')}
+                className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
+                  timeSort === 'desc' 
+                    ? 'border-blue-400 bg-blue-50 text-blue-600' 
+                    : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                }`}
+                title="按时间降序"
               >
-                <option value="all">全部类型</option>
-                <option value="activity">活动申请</option>
-                <option value="visit">探访申请</option>
-                <option value="boardMember">私董会案主</option>
-                <option value="visitTarget">被探访案主</option>
-              </select>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value as any)}
-                className="px-3 py-2 border border-[rgba(0,0,0,0.1)] text-[13px] bg-white"
+                <Clock className="w-4 h-4" />
+                <ArrowDown className="w-3 h-3" />
+                <span>最新</span>
+              </button>
+              <button
+                onClick={() => setTimeSort(timeSort === 'asc' ? null : 'asc')}
+                className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
+                  timeSort === 'asc' 
+                    ? 'border-blue-400 bg-blue-50 text-blue-600' 
+                    : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                }`}
+                title="按时间升序"
               >
-                <option value="pending">待审批</option>
-                <option value="approved">已通过</option>
-                <option value="rejected">已拒绝</option>
-              </select>
+                <Clock className="w-4 h-4" />
+                <ArrowUp className="w-3 h-3" />
+                <span>最早</span>
+              </button>
+            </div>
+            {renderApplicationList('pending')}
+          </TabsContent>
+
+          <TabsContent value="all" className="space-y-4">
+            <div className="space-y-4 mb-4">
+              {/* 搜索框 */}
+              <div className="flex items-center space-x-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+                  <Input
+                    placeholder="搜索申请人或公司..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <button
+                  onClick={() => setTimeSort(timeSort === 'desc' ? null : 'desc')}
+                  className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
+                    timeSort === 'desc' 
+                      ? 'border-blue-400 bg-blue-50 text-blue-600' 
+                      : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                  }`}
+                  title="按时间降序"
+                >
+                  <Clock className="w-4 h-4" />
+                  <ArrowDown className="w-3 h-3" />
+                  <span>最新</span>
+                </button>
+                <button
+                  onClick={() => setTimeSort(timeSort === 'asc' ? null : 'asc')}
+                  className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
+                    timeSort === 'asc' 
+                      ? 'border-blue-400 bg-blue-50 text-blue-600' 
+                      : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                  }`}
+                  title="按时间升序"
+                >
+                  <Clock className="w-4 h-4" />
+                  <ArrowUp className="w-3 h-3" />
+                  <span>最早</span>
+                </button>
+              </div>
+
+              {/* 类型标签筛选 */}
+              <div className="flex items-center space-x-3">
+                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">类型筛选：</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedType('all')}
+                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      selectedType === 'all'
+                        ? 'bg-blue-400 border-blue-400 text-white'
+                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                    }`}
+                  >
+                    全部类型
+                  </button>
+                  <button
+                    onClick={() => setSelectedType('activity')}
+                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      selectedType === 'activity'
+                        ? 'bg-blue-400 border-blue-400 text-white'
+                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                    }`}
+                  >
+                    活动申请
+                  </button>
+                  <button
+                    onClick={() => setSelectedType('boardMember')}
+                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      selectedType === 'boardMember'
+                        ? 'bg-blue-400 border-blue-400 text-white'
+                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                    }`}
+                  >
+                    私董会案主
+                  </button>
+                  <button
+                    onClick={() => setSelectedType('visit')}
+                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      selectedType === 'visit'
+                        ? 'bg-blue-400 border-blue-400 text-white'
+                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                    }`}
+                  >
+                    探访项目
+                  </button>
+                  <button
+                    onClick={() => setSelectedType('visitTarget')}
+                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      selectedType === 'visitTarget'
+                        ? 'bg-blue-400 border-blue-400 text-white'
+                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                    }`}
+                  >
+                    被探访案主
+                  </button>
+                </div>
+              </div>
+
+              {/* 状态筛选 */}
+              <div className="flex items-center space-x-3">
+                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">状态筛选：</span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedStatus('all')}
+                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      selectedStatus === 'all'
+                        ? 'bg-blue-400 border-blue-400 text-white'
+                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                    }`}
+                  >
+                    全部状态
+                  </button>
+                  <button
+                    onClick={() => setSelectedStatus('pending')}
+                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      selectedStatus === 'pending'
+                        ? 'bg-blue-400 border-blue-400 text-white'
+                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                    }`}
+                  >
+                    待审批
+                  </button>
+                  <button
+                    onClick={() => setSelectedStatus('approved')}
+                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      selectedStatus === 'approved'
+                        ? 'bg-blue-400 border-blue-400 text-white'
+                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                    }`}
+                  >
+                    已通过
+                  </button>
+                  <button
+                    onClick={() => setSelectedStatus('rejected')}
+                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      selectedStatus === 'rejected'
+                        ? 'bg-blue-400 border-blue-400 text-white'
+                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                    }`}
+                  >
+                    已拒绝
+                  </button>
+                </div>
+              </div>
             </div>
 
             {renderApplicationList(selectedStatus)}
@@ -410,9 +566,27 @@ export default function AdminMessagesPage() {
   );
 
   function renderApplicationList(statusFilter: 'all' | 'pending' | 'approved' | 'rejected') {
-    const listToRender = statusFilter === 'pending' 
-      ? applications.filter(app => app.status === 'pending')
-      : filteredApplications;
+    let listToRender: Application[];
+
+    if (statusFilter === 'pending') {
+      // 待审批列表：筛选状态为pending，然后应用搜索和排序
+      listToRender = applications
+        .filter(app => app.status === 'pending')
+        .filter(app => {
+          const matchesSearch = app.applicantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                               (app.applicantCompany || '').toLowerCase().includes(searchTerm.toLowerCase());
+          return matchesSearch;
+        })
+        .sort((a, b) => {
+          if (!timeSort) return 0;
+          const dateA = new Date(a.applyTime).getTime();
+          const dateB = new Date(b.applyTime).getTime();
+          return timeSort === 'asc' ? dateA - dateB : dateB - dateA;
+        });
+    } else {
+      // 其他列表使用filteredApplications
+      listToRender = filteredApplications;
+    }
 
     if (listToRender.length === 0) {
       return (
