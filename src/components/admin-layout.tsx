@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, MessageSquare, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, MessageSquare, LogOut, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/admin', label: '数据看板', icon: LayoutDashboard },
   { href: '/admin/members', label: '会员管理', icon: Users },
   { href: '/admin/activities', label: '活动管理', icon: Calendar },
+  { href: '/admin/messages', label: '消息管理', icon: Bell },
   { href: '/admin/consultations', label: '咨询管理', icon: MessageSquare },
 ];
 

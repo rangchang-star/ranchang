@@ -3,7 +3,7 @@
 import { PageContainer } from '@/components/page-container';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard, Users, Calendar, MessageSquare, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, MessageSquare, Bell, ArrowRight } from 'lucide-react';
 
 export default function AdminEntryPage() {
   const adminPages = [
@@ -24,6 +24,12 @@ export default function AdminEntryPage() {
       title: '活动管理',
       description: '管理活动及报名',
       icon: Calendar,
+    },
+    {
+      href: '/admin/messages',
+      title: '消息管理',
+      description: '审批申请并群发消息',
+      icon: Bell,
     },
     {
       href: '/admin/consultations',
