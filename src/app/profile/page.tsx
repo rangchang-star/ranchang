@@ -330,6 +330,8 @@ export default function ProfilePage() {
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [consultationQuestion, setConsultationQuestion] = useState('');
   const [isSubmittingConsultation, setIsSubmittingConsultation] = useState(false);
+  const [showProfileGuideDialog, setShowProfileGuideDialog] = useState(false);
+  const [guideType, setGuideType] = useState<'login' | 'profile' | null>(null);
 
   // 过滤出包含当前用户作为访客的探访记录
   const userVisitRecords = visitRecords.filter((record) =>
@@ -363,6 +365,39 @@ export default function ProfilePage() {
   // 标记所有通知为已读
   const markAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  // 检查用户基础信息
+  const checkUserProfile = (): boolean => {
+    // 模拟检查是否登录（实际应该从全局状态或cookie获取）
+    const isLoggedIn = true; // 假设已登录
+
+    if (!isLoggedIn) {
+      setGuideType('login');
+      setShowProfileGuideDialog(true);
+      return false;
+    }
+
+    // 检查基础信息是否完整
+    const isProfileComplete = userInfo.name && userInfo.industry && userInfo.connectionType;
+
+    if (!isProfileComplete) {
+      setGuideType('profile');
+      setShowProfileGuideDialog(true);
+      return false;
+    }
+
+    return true;
+  };
+
+  // 处理话题选择
+  const handleTopicSelect = (topicId: string) => {
+    // 先检查基础信息
+    if (!checkUserProfile()) {
+      return;
+    }
+    // 如果信息完整，则选择话题
+    setSelectedTopic(topicId);
   };
 
   // 提交咨询
@@ -1077,15 +1112,15 @@ export default function ProfilePage() {
                   <button
                     key={topic.id}
                     type="button"
-                    onClick={() => setSelectedTopic(topic.id)}
-                    className={`px-3 py-2 text-[13px] font-normal transition-colors flex items-center space-x-1 ${
+                    onClick={() => handleTopicSelect(topic.id)}
+                    className={`px-2 py-1.5 text-[12px] font-normal transition-colors flex items-center space-x-1 flex-1 min-w-[calc(25%-8px)] max-w-[calc(25%-8px)] justify-center ${
                       selectedTopic === topic.id
                         ? 'bg-[rgba(59,130,246,0.4)] text-white'
                         : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
                     }`}
                   >
-                    <span>{topic.icon}</span>
-                    <span>{topic.name}</span>
+                    <span className="text-[10px]">{topic.icon}</span>
+                    <span className="whitespace-nowrap">{topic.name}</span>
                   </button>
                 ))}
               </div>
@@ -1142,6 +1177,85 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* 基础信息引导对话框 */}
+      {showProfileGuideDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white w-full max-w-md">
+            {/* 头部 */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-base font-semibold text-gray-900">
+                {guideType === 'login' ? '请先登录' : '请完善基础信息'}
+              </h3>
+              <button
+                onClick={() => setShowProfileGuideDialog(false)}
+                className="p-1 hover:bg-gray-100 rounded-none"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* 内容 */}
+            <div className="p-4">
+              {guideType === 'login' ? (
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900 font-medium mb-1">登录后才可发起咨询</p>
+                      <p className="text-xs text-gray-600">请先登录账号，以便我们更好地为您提供服务</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <Info className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900 font-medium mb-1">请完善基础信息</p>
+                      <p className="text-xs text-gray-600 mb-2">为了让咨询师更好地了解您，请先完善以下基础信息：</p>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        <li>• 姓名</li>
+                        <li>• 行业</li>
+                        <li>• 连接类型（人找事/事找人/纯交流）</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 底部按钮 */}
+            <div className="flex border-t border-gray-200">
+              <button
+                onClick={() => setShowProfileGuideDialog(false)}
+                className="flex-1 py-3 text-sm text-gray-600 hover:bg-gray-50 border-r border-gray-200"
+              >
+                稍后再说
+              </button>
+              <button
+                onClick={() => {
+                  setShowProfileGuideDialog(false);
+                  if (guideType === 'login') {
+                    // 跳转到登录页面
+                    window.location.href = '/login';
+                  } else {
+                    // 跳转到个人资料页面
+                    window.location.href = '/profile/edit';
+                  }
+                }}
+                className="flex-1 py-3 text-sm text-white bg-[rgba(59,130,246,0.4)] hover:bg-[rgba(59,130,246,0.5)]"
+              >
+                {guideType === 'login' ? '去登录' : '去完善'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 底部导航 */}
       <BottomNav />
