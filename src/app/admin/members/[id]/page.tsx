@@ -18,7 +18,7 @@ const mockMember = {
   joinDate: '2024-01-15',
   status: 'active',
   isFeatured: true,
-  phone: '138****1234',
+  phone: '13800123456',
   email: 'wang@example.com',
   company: '某科技公司',
   position: 'CEO',
