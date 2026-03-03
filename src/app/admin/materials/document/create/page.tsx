@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, Upload, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import dynamic from 'next/dynamic';
 
 // 图标选项
 const iconOptions = [
@@ -26,8 +25,15 @@ const iconOptions = [
   { value: 'rocket', label: '🚀 火箭', icon: '🚀' },
 ];
 
+// 动态导入 React Quill，避免 SSR 问题
+const ReactQuill = dynamic(() => import('react-quill'), {
+  ssr: false,
+  loading: () => <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>,
+});
+
 export default function AdminDocumentCreatePage() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [title, setTitle] = useState('');
   const [icon, setIcon] = useState('');
   const [cover, setCover] = useState<string>('');
@@ -47,6 +53,10 @@ export default function AdminDocumentCreatePage() {
       reader.readAsDataURL(file);
     }
   };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 保存
   const handleSave = () => {
@@ -206,14 +216,18 @@ export default function AdminDocumentCreatePage() {
               文档内容 <span className="text-red-500">*</span>
             </label>
             <div className="bg-gray-50 rounded-none">
-              <ReactQuill
-                theme="snow"
-                value={content}
-                onChange={setContent}
-                modules={modules}
-                placeholder="在这里输入文档内容，支持复制粘贴飞书文档的格式..."
-                style={{ minHeight: '400px' }}
-              />
+              {mounted ? (
+                <ReactQuill
+                  theme="snow"
+                  value={content}
+                  onChange={setContent}
+                  modules={modules}
+                  placeholder="在这里输入文档内容，支持复制粘贴飞书文档的格式..."
+                  style={{ minHeight: '400px' }}
+                />
+              ) : (
+                <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
+              )}
             </div>
             <p className="mt-2 text-xs text-gray-500">
               💡 提示：可以直接从飞书文档复制内容并粘贴到这里，格式会自动保留
