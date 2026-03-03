@@ -229,6 +229,13 @@ export default function VisitDetailPage() {
               </div>
             </div>
           )}
+
+          {/* 加入按钮 */}
+          <div className="flex justify-center pt-4 pb-4">
+            <button className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white text-xs font-normal flex items-center justify-center hover:scale-110 hover:-translate-y-1 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200">
+              加入
+            </button>
+          </div>
         </div>
       </div>
     </div>
