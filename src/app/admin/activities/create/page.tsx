@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, Calendar, MapPin, Users, Clock, Check } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import 'react-quill/dist/quill.snow.css';
 
 // 动态导入 React Quill，避免 SSR 问题
 const ReactQuill = dynamic(() => import('react-quill'), { 
@@ -30,6 +31,20 @@ const availableTags = ['私董会', '名额紧张', '跨界', 'AI', 'AI实战', 
 const getActivityTypeLabel = (type: string) => {
   const option = activityTypeOptions.find(opt => opt.id === type);
   return option ? option.label : type;
+};
+
+// React Quill 工具栏配置
+const quillModules = {
+  toolbar: [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'font': [] }],
+    [{ 'size': ['small', false, 'large', 'huge'] }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    [{ 'align': [] }],
+    ['link', 'clean'],
+  ],
 };
 
 export default function AdminActivityCreatePage() {
@@ -277,18 +292,7 @@ export default function AdminActivityCreatePage() {
                       value={description}
                       onChange={setDescription}
                       placeholder="请输入活动描述..."
-                      modules={{
-                        toolbar: [
-                          [{ 'header': [1, 2, 3, false] }],
-                          ['bold', 'italic', 'underline', 'strike'],
-                          [{ 'color': [] }, { 'background': [] }],
-                          [{ 'font': [] }],
-                          [{ 'size': ['small', false, 'large', 'huge'] }],
-                          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                          [{ 'align': [] }],
-                          ['link', 'clean'],
-                        ],
-                      }}
+                      modules={quillModules}
                     />
                   </div>
                 ) : (
