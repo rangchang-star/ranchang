@@ -557,7 +557,7 @@ export default function ProfilePage() {
         <div className="px-5 pt-[40px] pb-4 space-y-8">
           {/* 顶部导航 */}
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-light text-gray-900">个人中心</h1>
+            <h1 className="text-[31px] font-light text-gray-900">个人中心</h1>
             <div className="flex items-center space-x-2">
               {/* 消息按钮 */}
               <button
@@ -585,9 +585,9 @@ export default function ProfilePage() {
               {/* 弹窗头部 */}
               <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <h3 className="text-[13px] font-semibold text-gray-900">消息通知</h3>
+                  <h3 className="text-[17px] font-semibold text-gray-900">消息通知</h3>
                   {unreadCount > 0 && (
-                    <span className="px-2 py-0.5 bg-red-500 text-white text-[10px] rounded-full">
+                    <span className="px-2 py-0.5 bg-red-500 text-white text-[13px] rounded-full">
                       {unreadCount}
                     </span>
                   )}
@@ -596,7 +596,7 @@ export default function ProfilePage() {
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllAsRead}
-                      className="text-[11px] text-blue-600 hover:text-blue-700"
+                      className="text-[14px] text-blue-600 hover:text-blue-700"
                     >
                       全部已读
                     </button>
@@ -613,7 +613,7 @@ export default function ProfilePage() {
               {/* 消息列表 */}
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <div className="py-8 text-center text-[13px] text-[rgba(0,0,0,0.6)]">
+                  <div className="py-8 text-center text-[17px] text-[rgba(0,0,0,0.6)]">
                     暂无消息
                   </div>
                 ) : (
@@ -635,14 +635,14 @@ export default function ProfilePage() {
                         {getNotificationIcon(notification.type)}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <h4 className={`text-[13px] font-medium text-gray-900 ${!notification.read ? 'font-semibold' : ''}`}>
+                            <h4 className={`text-[17px] font-medium text-gray-900 ${!notification.read ? 'font-semibold' : ''}`}>
                               {notification.title}
                             </h4>
                           </div>
-                          <p className="text-[12px] text-[rgba(0,0,0,0.6)] mb-1 line-clamp-2">
+                          <p className="text-[16px] text-[rgba(0,0,0,0.6)] mb-1 line-clamp-2">
                             {notification.message}
                           </p>
-                          <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                          <p className="text-[14px] text-[rgba(0,0,0,0.4)]">
                             {notification.time}
                           </p>
                         </div>
@@ -659,7 +659,7 @@ export default function ProfilePage() {
               {notifications.length > 0 && (
                 <div className="px-4 py-2 border-t border-[rgba(0,0,0,0.1)]">
                   <button
-                    className="w-full py-2 text-[12px] text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                    className="w-full py-2 text-[16px] text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
                     onClick={() => setShowNotifications(false)}
                   >
                     查看全部消息
@@ -673,7 +673,7 @@ export default function ProfilePage() {
           <div className="p-4 bg-white relative">
             {/* 标签戳 */}
             {userInfo.connectionType && (
-              <div className={`absolute top-0 right-0 px-2 py-0.5 text-[9px] font-medium rounded-bl-md z-10 border-l-2 border-t-2 ${
+              <div className={`absolute top-0 right-0 px-2 py-0.5 text-[16px] font-medium rounded-bl-md z-10 border-l-2 border-t-2 ${
                 userInfo.connectionType === 'personLookingForJob'
                   ? 'bg-[rgba(34,197,94,0.15)] text-gray-600 border-gray-400'
                   : userInfo.connectionType === 'jobLookingForPerson'
@@ -702,12 +702,12 @@ export default function ProfilePage() {
 
               <div className="flex-1 min-w-0">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">{userInfo.name}</h2>
-                  <p className="text-[13px] text-[rgba(0,0,0,0.25)]">{userInfo.age}岁</p>
+                  <h2 className="text-[23px] font-semibold text-gray-900">{userInfo.name}</h2>
+                  <p className="text-[17px] text-[rgba(0,0,0,0.25)]">{userInfo.age}岁</p>
                 </div>
                 {/* 行业标签 */}
                 <div className="mt-2">
-                  <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal line-clamp-1">
+                  <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal line-clamp-1">
                     {userInfo.industry}
                   </span>
                 </div>
@@ -719,29 +719,29 @@ export default function ProfilePage() {
               {userInfo.abilityTags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal line-clamp-1"
+                  className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal line-clamp-1"
                 >
                   {tag}
                 </span>
               ))}
-              <button className="px-2.5 py-1 border border-dashed border-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
+              <button className="px-2.5 py-1 border border-dashed border-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal">
                 +添加
               </button>
             </div>
 
             {/* 资源标签 */}
             <div className="mt-4">
-              <div className="text-[11px] text-[rgba(0,0,0,0.25)] mb-2">资源标签（必填）</div>
+              <div className="text-[14px] text-[rgba(0,0,0,0.25)] mb-2">资源标签（必填）</div>
               <div className="flex flex-wrap gap-2">
                 {userInfo.resourceTags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal line-clamp-1"
+                    className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal line-clamp-1"
                   >
                     {tag}
                   </span>
                 ))}
-                <button className="px-2.5 py-1 border border-dashed border-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal">
+                <button className="px-2.5 py-1 border border-dashed border-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal">
                   +添加
                 </button>
               </div>
@@ -749,8 +749,8 @@ export default function ProfilePage() {
 
             {/* 一句说清你的需要 */}
             <div className="mt-4 p-3 bg-[rgba(0,0,0,0.02)]">
-              <div className="text-[11px] text-[rgba(0,0,0,0.25)] mb-1">一句话说清你的需求</div>
-              <p className="text-[13px] text-gray-900 leading-relaxed line-clamp-3">
+              <div className="text-[14px] text-[rgba(0,0,0,0.25)] mb-1">一句话说清你的需求</div>
+              <p className="text-[17px] text-gray-900 leading-relaxed line-clamp-3">
                 {userInfo.need}
               </p>
             </div>
@@ -761,7 +761,7 @@ export default function ProfilePage() {
                 <Flame className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] text-[rgba(0,0,0,0.25)]">
+                    <span className="text-[14px] text-[rgba(0,0,0,0.25)]">
                       {declarationDirections.find(d => d.id === userInfo.currentDeclaration.direction)?.name}
                     </span>
                     <div className="flex items-center space-x-2">
@@ -773,13 +773,13 @@ export default function ProfilePage() {
                       </button>
                     </div>
                   </div>
-                  <p className="text-[13px] text-gray-900 leading-relaxed line-clamp-2 mb-2">
+                  <p className="text-[17px] text-gray-900 leading-relaxed line-clamp-2 mb-2">
                     {userInfo.currentDeclaration.text}
                   </p>
-                  <p className="text-[11px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2 mb-2">
+                  <p className="text-[14px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2 mb-2">
                     {userInfo.currentDeclaration.summary}
                   </p>
-                  <div className="flex items-center justify-between text-[9px] text-[rgba(0,0,0,0.25)]">
+                  <div className="flex items-center justify-between text-[16px] text-[rgba(0,0,0,0.25)]">
                     <span>{userInfo.currentDeclaration.date}</span>
                     <span>{userInfo.currentDeclaration.views.toLocaleString()}次</span>
                   </div>
@@ -790,7 +790,7 @@ export default function ProfilePage() {
             {/* 编辑按钮 */}
             <div className="mt-4 flex justify-center">
               <Link href="/profile/edit">
-                <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-6 py-2 flex items-center space-x-2">
+                <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[14px] px-6 py-2 flex items-center space-x-2">
                   <Edit className="w-3 h-3" />
                   <span>完善资料</span>
                 </Button>
@@ -802,20 +802,20 @@ export default function ProfilePage() {
           <div className="p-4 bg-[rgba(59,130,246,0.05)] border border-blue-200">
             <div className="flex items-start space-x-2">
               <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-[10px] font-bold">!</span>
+                <span className="text-white text-[13px] font-bold">!</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-[13px] font-semibold text-gray-900 mb-1">完善您的个人资料</h3>
-                <p className="text-[11px] text-[rgba(0,0,0,0.4)] leading-relaxed">
+                <h3 className="text-[17px] font-semibold text-gray-900 mb-1">完善您的个人资料</h3>
+                <p className="text-[14px] text-[rgba(0,0,0,0.4)] leading-relaxed">
                   完善资料后，您的信息将在"发现光亮"页面向其他会员展示，帮助您快速找到匹配的合作伙伴和机会。
                 </p>
                 <div className="mt-2 flex items-center space-x-2">
-                  <span className="text-[10px] text-[rgba(0,0,0,0.4)]">下一步：</span>
-                  <Link href="/profile/edit" className="text-[10px] text-[rgba(0,0,0,0.4)] underline">
+                  <span className="text-[13px] text-[rgba(0,0,0,0.4)]">下一步：</span>
+                  <Link href="/profile/edit" className="text-[13px] text-[rgba(0,0,0,0.4)] underline">
                     完善资料
                   </Link>
-                  <span className="text-[10px] text-[rgba(0,0,0,0.4)]">或</span>
-                  <Link href="/activities" className="text-[10px] text-[rgba(0,0,0,0.4)] underline">
+                  <span className="text-[13px] text-[rgba(0,0,0,0.4)]">或</span>
+                  <Link href="/activities" className="text-[13px] text-[rgba(0,0,0,0.4)] underline">
                     参与活动
                   </Link>
                 </div>
@@ -826,7 +826,7 @@ export default function ProfilePage() {
           {/* 量表结果展示 */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-[26px] font-bold">
                 <span className="text-[rgba(96,165,250,0.6)]">量表</span>
                 <span className="text-blue-400">评估</span>
               </h2>
@@ -838,10 +838,10 @@ export default function ProfilePage() {
                   {/* 量表标题和总分 */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-2">
-                      <span className="text-lg">{getAssessmentIcon(assessment.name)}</span>
+                      <span className="text-[23px]">{getAssessmentIcon(assessment.name)}</span>
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900">{assessment.name}</h3>
-                        <Badge className={`rounded-none font-normal text-[10px] mt-1 ${
+                        <h3 className="text-[18px] font-semibold text-gray-900">{assessment.name}</h3>
+                        <Badge className={`rounded-none font-normal text-[13px] mt-1 ${
                           assessment.level === '优秀' ? 'bg-green-100 text-green-600' : 
                           assessment.level === '良好' ? 'bg-blue-100 text-blue-600' :
                           'bg-yellow-100 text-yellow-600'
@@ -853,7 +853,7 @@ export default function ProfilePage() {
                     <Link
                       href={`/assessment/${assessment.name === '创业心理评估' ? 'entrepreneurial-psychology' : assessment.name === '商业认知评估' ? 'business-cognition' : assessment.name === 'AI认知评估' ? 'ai-cognition' : 'career-mission'}`}
                     >
-                      <Button className="bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.25)] font-normal text-[10px] px-3 py-1 h-7 flex items-center space-x-1">
+                      <Button className="bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.25)] font-normal text-[13px] px-3 py-1 h-7 flex items-center space-x-1">
                         <RotateCcw className="w-3 h-3" />
                         <span>重新测试</span>
                       </Button>
@@ -862,7 +862,7 @@ export default function ProfilePage() {
 
                   {/* 一句话总结 */}
                   <div className="p-3 bg-[rgba(0,0,0,0.02)] mb-3">
-                    <p className="text-[12px] text-gray-700 leading-relaxed">
+                    <p className="text-[16px] text-gray-700 leading-relaxed">
                       {assessment.summary}
                     </p>
                   </div>
@@ -871,7 +871,7 @@ export default function ProfilePage() {
                   <div className="space-y-2">
                     {assessment.dimensions.map((dimension: AssessmentDimension, dimIdx: number) => (
                       <div key={dimIdx} className="space-y-1">
-                        <div className="flex items-center justify-between text-[10px] text-[rgba(0,0,0,0.25)]">
+                        <div className="flex items-center justify-between text-[13px] text-[rgba(0,0,0,0.25)]">
                           <span className="font-medium">{dimension.name}</span>
                           <span>{dimension.score}分</span>
                         </div>
@@ -885,7 +885,7 @@ export default function ProfilePage() {
                             style={{ width: `${dimension.score}%` }}
                           />
                         </div>
-                        <p className="text-[9px] text-[rgba(0,0,0,0.25)] pl-1">
+                        <p className="text-[16px] text-[rgba(0,0,0,0.25)] pl-1">
                           {dimension.description}
                         </p>
                       </div>
@@ -908,7 +908,7 @@ export default function ProfilePage() {
               <div className="relative bg-white border border-[rgba(0,0,0,0.1)] rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
                 {/* 弹窗头部 */}
                 <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between">
-                  <h3 className="text-[13px] font-semibold text-gray-900">活动详情</h3>
+                  <h3 className="text-[17px] font-semibold text-gray-900">活动详情</h3>
                   <button
                     onClick={() => setShowActivityDetail(false)}
                     className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded"
@@ -923,7 +923,7 @@ export default function ProfilePage() {
                   <div>
                     <h4 className="text-[15px] font-bold text-gray-900 mb-2">{selectedActivity.title}</h4>
                     <Badge
-                      className={`rounded-none font-normal text-[11px] ${
+                      className={`rounded-none font-normal text-[14px] ${
                         selectedActivity.status === '待参加'
                           ? 'bg-blue-400 text-white'
                           : selectedActivity.status === '待审核'
@@ -937,15 +937,15 @@ export default function ProfilePage() {
 
                   {/* 活动信息 */}
                   <div className="space-y-2">
-                    <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.6)]">
+                    <div className="flex items-center space-x-2 text-[17px] text-[rgba(0,0,0,0.6)]">
                       <Calendar className="w-4 h-4" />
                       <span>{selectedActivity.date} {selectedActivity.time}</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.6)]">
+                    <div className="flex items-center space-x-2 text-[17px] text-[rgba(0,0,0,0.6)]">
                       <MapPin className="w-4 h-4" />
                       <span>{selectedActivity.location}</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.6)]">
+                    <div className="flex items-center space-x-2 text-[17px] text-[rgba(0,0,0,0.6)]">
                       <Users className="w-4 h-4" />
                       <span>已报名 {selectedActivity.enrolled}/{selectedActivity.participants} 人</span>
                     </div>
@@ -953,8 +953,8 @@ export default function ProfilePage() {
 
                   {/* 活动描述 */}
                   <div>
-                    <h5 className="text-[13px] font-semibold text-gray-900 mb-2">活动介绍</h5>
-                    <p className="text-[13px] text-[rgba(0,0,0,0.6)] leading-relaxed">
+                    <h5 className="text-[17px] font-semibold text-gray-900 mb-2">活动介绍</h5>
+                    <p className="text-[17px] text-[rgba(0,0,0,0.6)] leading-relaxed">
                       {selectedActivity.description}
                     </p>
                   </div>
@@ -963,7 +963,7 @@ export default function ProfilePage() {
                 {/* 弹窗底部 */}
                 <div className="px-4 py-3 border-t border-[rgba(0,0,0,0.1)]">
                   <Button
-                    className="w-full bg-blue-400 hover:bg-blue-500 text-white text-[13px]"
+                    className="w-full bg-blue-400 hover:bg-blue-500 text-white text-[17px]"
                     onClick={() => setShowActivityDetail(false)}
                   >
                     关闭
@@ -977,7 +977,7 @@ export default function ProfilePage() {
           {/* 探访记录 */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-[26px] font-bold">
                 <span className="text-[rgba(96,165,250,0.6)]">探访</span>
                 <span className="text-blue-400">记录</span>
               </h2>
@@ -986,10 +986,10 @@ export default function ProfilePage() {
             <div className="space-y-3">
               {userVisitRecords.length === 0 ? (
                 <div className="p-8 text-center">
-                  <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                  <p className="text-[17px] text-[rgba(0,0,0,0.6)]">
                     暂无探访记录
                   </p>
-                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                  <p className="text-[14px] text-[rgba(0,0,0,0.4)] mt-1">
                     探访记录将在后台探访管理中添加访客后显示
                   </p>
                 </div>
@@ -1011,17 +1011,17 @@ export default function ProfilePage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">
+                      <h3 className="text-[18px] font-semibold text-gray-900 mb-1 line-clamp-2">
                         {record.title}
                       </h3>
-                      <div className="flex items-center space-x-2 text-[10px] text-[rgba(0,0,0,0.25)] mb-2">
+                      <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.25)] mb-2">
                         <span>{record.date}</span>
                         <span>·</span>
-                        <Badge className="rounded-none bg-[rgba(34,197,94,0.15)] text-green-600 font-normal text-[10px]">
+                        <Badge className="rounded-none bg-[rgba(34,197,94,0.15)] text-green-600 font-normal text-[13px]">
                           {record.industry}
                         </Badge>
                         <span>·</span>
-                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px]">
+                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
                           {record.role}
                         </Badge>
                       </div>
@@ -1038,7 +1038,7 @@ export default function ProfilePage() {
                                 unoptimized
                               />
                             </div>
-                            <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[9px]">
+                            <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[16px]">
                               {visitor.skill}
                             </Badge>
                           </div>
@@ -1055,7 +1055,7 @@ export default function ProfilePage() {
           {/* 参与的活动 */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-[26px] font-bold">
                 <span className="text-[rgba(96,165,250,0.6)]">参与</span>
                 <span className="text-blue-400">活动</span>
               </h2>
@@ -1069,7 +1069,7 @@ export default function ProfilePage() {
                 >
                   <div className="flex-1 min-w-0">
                     <h3 
-                      className="text-sm font-semibold text-gray-900 mb-1 line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors"
+                      className="text-[18px] font-semibold text-gray-900 mb-1 line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors"
                       onClick={() => {
                         setSelectedActivity(activity);
                         setShowActivityDetail(true);
@@ -1077,15 +1077,15 @@ export default function ProfilePage() {
                     >
                       {activity.title}
                     </h3>
-                    <div className="flex items-center space-x-2 text-[10px] text-[rgba(0,0,0,0.25)]">
-                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px]">
+                    <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.25)]">
+                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
                         {activity.category}
                       </Badge>
                       <span>{activity.date}</span>
                     </div>
                   </div>
                   <Badge
-                    className={`rounded-none font-normal text-[10px] ml-2 flex-shrink-0 ${
+                    className={`rounded-none font-normal text-[13px] ml-2 flex-shrink-0 ${
                       activity.status === '待参加'
                         ? 'bg-blue-400 text-white'
                         : activity.status === '待审核'
@@ -1103,7 +1103,7 @@ export default function ProfilePage() {
           {/* 我要咨询 */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-[26px] font-bold">
                 <span className="text-[rgba(96,165,250,0.6)]">我要</span>
                 <span className="text-blue-400">咨询</span>
               </h2>
@@ -1113,7 +1113,7 @@ export default function ProfilePage() {
             {/* 话题选择 */}
             <div className="space-y-3 mb-4">
               <div className="flex items-center space-x-2">
-                <span className="text-[12px] text-[rgba(0,0,0,0.6)]">选择话题：</span>
+                <span className="text-[16px] text-[rgba(0,0,0,0.6)]">选择话题：</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {consultationTopics.map((topic) => (
@@ -1121,13 +1121,13 @@ export default function ProfilePage() {
                     key={topic.id}
                     type="button"
                     onClick={() => handleTopicSelect(topic.id)}
-                    className={`px-2 py-1.5 text-[12px] font-normal transition-colors flex items-center space-x-1 flex-1 min-w-[calc(25%-8px)] max-w-[calc(25%-8px)] justify-center ${
+                    className={`px-2 py-1.5 text-[16px] font-normal transition-colors flex items-center space-x-1 flex-1 min-w-[calc(25%-8px)] max-w-[calc(25%-8px)] justify-center ${
                       selectedTopic === topic.id
                         ? 'bg-[rgba(59,130,246,0.4)] text-white'
                         : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
                     }`}
                   >
-                    <span className="text-[10px]">{topic.icon}</span>
+                    <span className="text-[13px]">{topic.icon}</span>
                     <span className="whitespace-nowrap">{topic.name}</span>
                   </button>
                 ))}
@@ -1147,14 +1147,14 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[12px] text-gray-900 mb-2">
+                    <p className="text-[16px] text-gray-900 mb-2">
                       你要咨询的人是<span className="font-semibold">"{consultantInfo.name}"</span>
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {consultantInfo.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-0.5 bg-[rgba(59,130,246,0.1)] text-blue-600 text-[10px] font-medium rounded-full"
+                          className="px-2 py-0.5 bg-[rgba(59,130,246,0.1)] text-blue-600 text-[13px] font-medium rounded-full"
                         >
                           {tag}
                         </span>
@@ -1168,7 +1168,7 @@ export default function ProfilePage() {
                     value={consultationQuestion}
                     onChange={(e) => setConsultationQuestion(e.target.value)}
                     placeholder={consultationTopics.find(t => t.id === selectedTopic)?.placeholder}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[120px] resize-none"
+                    className="w-full px-3 py-2 text-[18px] border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[120px] resize-none"
                   />
                 </div>
                 <Button
@@ -1196,10 +1196,10 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-semibold text-gray-900 line-clamp-1">
+                      <span className="text-[18px] font-semibold text-gray-900 line-clamp-1">
                         {item.label}
                       </span>
-                      <span className="text-[13px] text-[rgba(0,0,0,0.25)] line-clamp-1">
+                      <span className="text-[17px] text-[rgba(0,0,0,0.25)] line-clamp-1">
                         {item.subtitle}
                       </span>
                     </div>
@@ -1218,7 +1218,7 @@ export default function ProfilePage() {
           <div className="bg-white w-full max-w-md">
             {/* 头部 */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-base font-semibold text-gray-900">
+              <h3 className="text-[21px] font-semibold text-gray-900">
                 {guideType === 'login' ? '请先登录' : '请完善基础信息'}
               </h3>
               <button
@@ -1238,8 +1238,8 @@ export default function ProfilePage() {
                       <User className="w-5 h-5 text-blue-400" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-gray-900 font-medium mb-1">登录后才可发起咨询</p>
-                      <p className="text-xs text-gray-600">请先登录账号，以便我们更好地为您提供服务</p>
+                      <p className="text-[18px] text-gray-900 font-medium mb-1">登录后才可发起咨询</p>
+                      <p className="text-[16px] text-gray-600">请先登录账号，以便我们更好地为您提供服务</p>
                     </div>
                   </div>
                 </div>
@@ -1250,9 +1250,9 @@ export default function ProfilePage() {
                       <Info className="w-5 h-5 text-blue-400" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-gray-900 font-medium mb-1">请完善基础信息</p>
-                      <p className="text-xs text-gray-600 mb-2">为了让咨询师更好地了解您，请先完善以下基础信息：</p>
-                      <ul className="text-xs text-gray-600 space-y-1">
+                      <p className="text-[18px] text-gray-900 font-medium mb-1">请完善基础信息</p>
+                      <p className="text-[16px] text-gray-600 mb-2">为了让咨询师更好地了解您，请先完善以下基础信息：</p>
+                      <ul className="text-[16px] text-gray-600 space-y-1">
                         <li>• 姓名</li>
                         <li>• 行业</li>
                         <li>• 连接类型（人找事/事找人/纯交流）</li>
@@ -1267,7 +1267,7 @@ export default function ProfilePage() {
             <div className="flex border-t border-gray-200">
               <button
                 onClick={() => setShowProfileGuideDialog(false)}
-                className="flex-1 py-3 text-sm text-gray-600 hover:bg-gray-50 border-r border-gray-200"
+                className="flex-1 py-3 text-[18px] text-gray-600 hover:bg-gray-50 border-r border-gray-200"
               >
                 稍后再说
               </button>
@@ -1282,7 +1282,7 @@ export default function ProfilePage() {
                     window.location.href = '/profile/edit';
                   }
                 }}
-                className="flex-1 py-3 text-sm text-white bg-[rgba(59,130,246,0.4)] hover:bg-[rgba(59,130,246,0.5)]"
+                className="flex-1 py-3 text-[18px] text-white bg-[rgba(59,130,246,0.4)] hover:bg-[rgba(59,130,246,0.5)]"
               >
                 {guideType === 'login' ? '去登录' : '去完善'}
               </button>

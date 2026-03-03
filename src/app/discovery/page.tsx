@@ -478,7 +478,7 @@ export default function DiscoveryPage() {
 
           {/* Slogan - 蓝色加大字号，加粗 */}
           <div className="px-5 pb-4">
-            <p className="text-[14px] font-bold text-blue-400 leading-relaxed">
+            <p className="text-[18px] font-bold text-blue-400 leading-relaxed">
               只要抓住使命，当年力量如何，现在力量也必定如何。<br />
               35岁才是新的的开始，向前加油不回头！
             </p>
@@ -493,7 +493,7 @@ export default function DiscoveryPage() {
                 placeholder="搜索AI资产、活动、会员..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-[rgba(0,0,0,0.05)] text-[13px] text-gray-900 placeholder-[rgba(0,0,0,0.25)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
+                className="w-full pl-12 pr-4 py-3 bg-[rgba(0,0,0,0.05)] text-[17px] text-gray-900 placeholder-[rgba(0,0,0,0.25)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
               />
             </div>
           </div>
@@ -526,7 +526,7 @@ export default function DiscoveryPage() {
                 >
                   {/* 标签戳 */}
                   {item.tagStamp && (
-                    <div className={`absolute top-0 right-0 px-2 py-0.5 text-[9px] font-medium rounded-bl-md z-10 ${
+                    <div className={`absolute top-0 right-0 px-2 py-0.5 text-[12px] font-medium rounded-bl-md z-10 ${
                       item.tagStamp === 'personLookingForJob'
                         ? 'bg-[rgba(34,197,94,0.15)] text-gray-600 border-l-2 border-t-2 border-gray-400'
                         : 'bg-blue-100 text-gray-600 border-l-2 border-t-2 border-gray-400'
@@ -548,26 +548,26 @@ export default function DiscoveryPage() {
                   <div className="flex-1 min-w-0">
                     {/* 姓名与标签 */}
                     <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-[13px] font-semibold text-gray-900 line-clamp-1">{item.name}</span>
-                      <span className="text-[13px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
+                      <span className="text-[17px] font-semibold text-gray-900 line-clamp-1">{item.name}</span>
+                      <span className="text-[17px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
                     </div>
                     {/* 方形浅灰色标签块 - 纯方形 */}
                     <div className="flex flex-wrap gap-2 mb-2">
                       {item.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-block px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal line-clamp-1"
+                          className="inline-block px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal line-clamp-1"
                         >
                           {tag}
                         </span>
                       ))}
                       {/* 绿色行业标签块 */}
-                      <span className="inline-block px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal line-clamp-1">
+                      <span className="inline-block px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[18px] font-normal line-clamp-1">
                         {item.industry}
                       </span>
                     </div>
                     {/* 个人需求说明 */}
-                    <p className="text-[11px] text-gray-900 leading-relaxed line-clamp-3">
+                    <p className="text-[18px] text-gray-900 leading-relaxed line-clamp-3">
                       {item.need}
                     </p>
                   </div>
@@ -577,7 +577,7 @@ export default function DiscoveryPage() {
             {/* 查看更多灰色色块 - 缩小50% */}
             <div className="mt-4 flex justify-center">
               <button
-                className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal"
+                className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
                 onClick={() => {
                   setModalType('abilities');
                   setShowModal(true);
@@ -619,20 +619,20 @@ export default function DiscoveryPage() {
                     <div className="flex-1 min-w-0">
                       {/* 分类名称和状态图标 */}
                       <div className="flex items-center justify-between mb-1">
-                        <div className="text-[11px] text-[rgba(0,0,0,0.25)]">{item.category}</div>
+                        <div className="text-[18px] text-[rgba(0,0,0,0.25)]">{item.category}</div>
                         {/* 状态图标 - 右上角 */}
                         <ActivityStatusBadge status={item.status} endTime={item.endTime} />
                       </div>
                       {/* 活动主题与副标题（黑色字） */}
-                      <h3 className="text-[13px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                      <h3 className="text-[17px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
                         {item.title}
                       </h3>
-                      <p className="text-[11px] text-gray-900 mb-2 leading-relaxed line-clamp-2">
+                      <p className="text-[18px] text-gray-900 mb-2 leading-relaxed line-clamp-2">
                         {item.subtitle}
                       </p>
                       {/* 活动简介 - 纯方形灰色框 */}
                       <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-2">
-                        <p className="text-[11px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
+                        <p className="text-[18px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
                           {item.description}
                         </p>
                       </div>
@@ -647,11 +647,11 @@ export default function DiscoveryPage() {
                               </Avatar>
                             ))}
                           </div>
-                          <span className="text-[9px] text-[rgba(0,0,0,0.25)]">
+                          <span className="text-[12px] text-[rgba(0,0,0,0.25)]">
                             {item.enrolledCount}人
                           </span>
                         </div>
-                        <div className="flex items-center space-x-2 text-[9px] text-[rgba(0,0,0,0.25)]">
+                        <div className="flex items-center space-x-2 text-[12px] text-[rgba(0,0,0,0.25)]">
                           <span className="line-clamp-1">{item.address.substring(0, 6)}</span>
                           <span>·</span>
                           <span>{item.teaFee.substring(0, 5)}</span>
@@ -665,7 +665,7 @@ export default function DiscoveryPage() {
             {/* 查看更多灰色色块 - 缩小50% */}
             <div className="mt-4 flex justify-center">
               <button
-                className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal"
+                className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
                 onClick={() => {
                   setModalType('activities');
                   setShowModal(true);
@@ -695,7 +695,7 @@ export default function DiscoveryPage() {
                 >
                   {/* 排序 - 圆形，缩小70%，灰色 */}
                   <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-4 font-normal text-[13px] bg-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)]"
+                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-4 font-normal text-[17px] bg-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)]"
                   >
                     {item.rank}
                   </div>
@@ -712,11 +712,11 @@ export default function DiscoveryPage() {
                   {/* 中间文字 */}
                   <div className="flex-1 min-w-0">
                     {/* 内容片花（黑色字） */}
-                    <h3 className="text-[13px] font-semibold text-gray-900 mb-1 line-clamp-2">
+                    <h3 className="text-[17px] font-semibold text-gray-900 mb-1 line-clamp-2">
                       {item.title}
                     </h3>
                     {/* 达人画像与时长（灰色字） */}
-                    <p className="text-[13px] text-[rgba(0,0,0,0.25)] flex items-center">
+                    <p className="text-[17px] text-[rgba(0,0,0,0.25)] flex items-center">
                       {item.profile} · <Timer className="w-3 h-3 mx-1" />{item.duration}
                     </p>
                   </div>
@@ -737,7 +737,7 @@ export default function DiscoveryPage() {
             {/* 查看更多灰色色块 */}
             <div className="mt-4 flex justify-center">
               <button
-                className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[11px] font-normal"
+                className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
                 onClick={() => {
                   setModalType('declarations');
                   setShowModal(true);
@@ -767,11 +767,11 @@ export default function DiscoveryPage() {
               {/* 中间内容 */}
               <div className="flex-1 min-w-0 cursor-pointer">
                 {/* 日期加宣告片花（黑色字） */}
-                <h3 className="text-[13px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                <h3 className="text-[17px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
                   {dailyDeclaration.title}
                 </h3>
                 {/* 年月日与录音时长（灰色字） */}
-                <div className="flex items-center space-x-2 text-[11px] text-[rgba(0,0,0,0.25)]">
+                <div className="flex items-center space-x-2 text-[18px] text-[rgba(0,0,0,0.25)]">
                   <span>{dailyDeclaration.date}</span>
                   <span>·</span>
                   <span className="flex items-center">
@@ -808,7 +808,7 @@ export default function DiscoveryPage() {
             <DialogTitle className="text-base sm:text-lg font-semibold">提示</DialogTitle>
             <DialogDescription className="hidden" />
           </DialogHeader>
-          <div className="text-[13px] sm:text-sm text-gray-600 leading-relaxed text-center max-w-lg">
+          <div className="text-[17px] sm:text-sm text-gray-600 leading-relaxed text-center max-w-lg">
             该用户尚未开启"允许陌生人连接"权限，您可以先了解ta，或让ta主动来找到你。
           </div>
           <div className="flex justify-end mt-5 sm:mt-6 w-full">
@@ -866,8 +866,8 @@ export default function DiscoveryPage() {
                       {/* 内容 */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-1">
-                          <span className="text-[13px] font-semibold text-gray-900">{item.name}</span>
-                          <span className="text-[13px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
+                          <span className="text-[17px] font-semibold text-gray-900">{item.name}</span>
+                          <span className="text-[17px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-1">
                           {item.tags.map((tag) => (
@@ -879,7 +879,7 @@ export default function DiscoveryPage() {
                             </span>
                           ))}
                         </div>
-                        <p className="text-[11px] text-gray-900 line-clamp-2">{item.need}</p>
+                        <p className="text-[18px] text-gray-900 line-clamp-2">{item.need}</p>
                       </div>
                     </div>
                   ))}
@@ -906,9 +906,9 @@ export default function DiscoveryPage() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-[11px] text-[rgba(0,0,0,0.25)] mb-1">{item.category}</div>
-                          <h3 className="text-[13px] font-semibold text-gray-900 mb-1 line-clamp-2">{item.title}</h3>
-                          <p className="text-[11px] text-[rgba(0,0,0,0.25)]">{item.address.substring(0, 8)}</p>
+                          <div className="text-[18px] text-[rgba(0,0,0,0.25)] mb-1">{item.category}</div>
+                          <h3 className="text-[17px] font-semibold text-gray-900 mb-1 line-clamp-2">{item.title}</h3>
+                          <p className="text-[18px] text-[rgba(0,0,0,0.25)]">{item.address.substring(0, 8)}</p>
                         </div>
                       </div>
                     </div>
@@ -935,8 +935,8 @@ export default function DiscoveryPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-[13px] font-semibold text-gray-900 mb-1 line-clamp-2">{item.title}</h3>
-                        <p className="text-[11px] text-[rgba(0,0,0,0.25)]">{item.profile}</p>
+                        <h3 className="text-[17px] font-semibold text-gray-900 mb-1 line-clamp-2">{item.title}</h3>
+                        <p className="text-[18px] text-[rgba(0,0,0,0.25)]">{item.profile}</p>
                       </div>
                       <button
                         className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0 ml-2"
@@ -985,7 +985,7 @@ export default function DiscoveryPage() {
                 >
                   <ArrowLeft className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
                 </Button>
-                <h1 className="text-[13px] font-semibold text-[rgba(0,0,0,0.7)]">大鱼的认知库</h1>
+                <h1 className="text-[17px] font-semibold text-[rgba(0,0,0,0.7)]">大鱼的认知库</h1>
                 <Button
                   variant="ghost"
                   className="p-1.5 h-[26px] w-[26px]"
@@ -1006,12 +1006,12 @@ export default function DiscoveryPage() {
                 >
                   {/* 图标 */}
                   <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center bg-[rgba(0,0,0,0.05)] rounded-none">
-                    <span className="text-[14px]">{getIcon(doc.icon)}</span>
+                    <span className="text-[18px]">{getIcon(doc.icon)}</span>
                   </div>
 
                   {/* 文档标题 */}
                   <div className="flex-1">
-                    <h3 className="text-[11px] text-gray-900 leading-relaxed">
+                    <h3 className="text-[18px] text-gray-900 leading-relaxed">
                       {doc.title}
                     </h3>
                   </div>
@@ -1051,7 +1051,7 @@ export default function DiscoveryPage() {
                 >
                   <ArrowLeft className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
                 </Button>
-                <h1 className="text-[13px] font-semibold text-[rgba(0,0,0,0.7)]">文档详情</h1>
+                <h1 className="text-[17px] font-semibold text-[rgba(0,0,0,0.7)]">文档详情</h1>
                 <Button variant="ghost" onClick={handleDocShare} className="p-1.5">
                   <Share2 className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
                 </Button>
@@ -1077,7 +1077,7 @@ export default function DiscoveryPage() {
                   <h2 className="text-[15px] font-bold text-gray-900 mb-2">
                     {selectedDoc.title}
                   </h2>
-                  <div className="flex items-center space-x-3 text-[11px] text-[rgba(0,0,0,0.4)]">
+                  <div className="flex items-center space-x-3 text-[18px] text-[rgba(0,0,0,0.4)]">
                     <span>{selectedDoc.date}</span>
                     <span>•</span>
                     <span>{selectedDoc.views} 浏览</span>
@@ -1086,7 +1086,7 @@ export default function DiscoveryPage() {
 
                 {/* 描述 */}
                 <div className="py-4">
-                  <h3 className="text-[13px] font-semibold text-gray-900 mb-2">文档简介</h3>
+                  <h3 className="text-[17px] font-semibold text-gray-900 mb-2">文档简介</h3>
                   <p className="text-[12px] text-[rgba(0,0,0,0.6)] leading-relaxed">
                     {selectedDoc.description}
                   </p>

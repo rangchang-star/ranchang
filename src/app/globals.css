@@ -128,7 +128,7 @@
     @apply border-border;
   }
   html {
-    font-size: 1.3rem; /* 放大30% */
+    font-size: 1rem;
   }
   body {
     @apply bg-background text-foreground antialiased;

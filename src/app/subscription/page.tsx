@@ -268,9 +268,9 @@ export default function SubscriptionPage() {
           {/* 顶部标题区 */}
           <div>
             <div className="flex items-center justify-between py-4">
-              <h1 className="text-2xl font-light text-gray-900">点亮事业</h1>
+              <h1 className="text-[31px] font-light text-gray-900">点亮事业</h1>
             </div>
-            <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed">
+            <p className="text-[17px] text-[rgba(0,0,0,0.25)] leading-relaxed">
               {tabDescriptions[activeTab]}
             </p>
           </div>
@@ -317,10 +317,10 @@ export default function SubscriptionPage() {
 
                   {/* 行业标签、时长、日期 */}
                   <div className="flex items-center space-x-2 mb-3">
-                    <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[11px]">
+                    <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[14px]">
                       {visit.industry}
                     </Badge>
-                    <div className="flex items-center space-x-1 text-[11px] text-[rgba(0,0,0,0.25)]">
+                    <div className="flex items-center space-x-1 text-[14px] text-[rgba(0,0,0,0.25)]">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{visit.duration}</span>
                       <span>·</span>
@@ -339,7 +339,7 @@ export default function SubscriptionPage() {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[9px] line-clamp-1">
+                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[12px] line-clamp-1">
                           {visitor.skill}
                         </Badge>
                       </div>
@@ -347,12 +347,12 @@ export default function SubscriptionPage() {
                   </div>
 
                   {/* 标题 */}
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2 leading-tight line-clamp-1">
+                  <h3 className="text-[18px] font-semibold text-gray-900 mb-2 leading-tight line-clamp-1">
                     {visit.title}
                   </h3>
 
                   {/* 走访记录 */}
-                  <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3 mb-3">
+                  <p className="text-[17px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3 mb-3">
                     {visit.record}
                   </p>
 
@@ -362,7 +362,7 @@ export default function SubscriptionPage() {
                       {visit.status.map((status) => (
                         <Badge
                           key={status}
-                          className="rounded-none bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.6)] font-normal text-[10px] line-clamp-1"
+                          className="rounded-none bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.6)] font-normal text-[13px] line-clamp-1"
                         >
                           {status}
                         </Badge>
@@ -376,8 +376,8 @@ export default function SubscriptionPage() {
                       <PlayCircle className="w-4 h-4 text-white fill-white ml-0.5" />
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] text-gray-900 font-medium">走访反馈录音</p>
-                      <p className="text-[9px] text-[rgba(0,0,0,0.25)]">{visit.audioDuration}</p>
+                      <p className="text-[14px] text-gray-900 font-medium">走访反馈录音</p>
+                      <p className="text-[12px] text-[rgba(0,0,0,0.25)]">{visit.audioDuration}</p>
                     </div>
                     <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
                   </div>
@@ -391,8 +391,8 @@ export default function SubscriptionPage() {
                 {/* 顶部信息行 */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <h3 className="text-lg font-light text-gray-900">{salon.period}</h3>
-                    <div className="flex items-center space-x-2 text-[11px] text-[rgba(0,0,0,0.4)]">
+                    <h3 className="text-[23px] font-light text-gray-900">{salon.period}</h3>
+                    <div className="flex items-center space-x-2 text-[14px] text-[rgba(0,0,0,0.4)]">
                       <span>{salon.duration}</span>
                       <span>·</span>
                       <span>{salon.schedule}</span>
@@ -403,19 +403,19 @@ export default function SubscriptionPage() {
                   {/* 圆形蓝色按钮 */}
                   <button
                     onClick={() => setJoinDialogOpen(true)}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white text-xs font-normal flex items-center justify-center hover:scale-110 hover:-translate-y-1 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200"
+                    className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white text-[16px] font-normal flex items-center justify-center hover:scale-110 hover:-translate-y-1 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200"
                   >
                     加入
                   </button>
                 </div>
 
                 {/* 介绍 */}
-                <p className="text-[13px] text-[rgba(0,0,0,0.25)] leading-relaxed mb-4">
+                <p className="text-[17px] text-[rgba(0,0,0,0.25)] leading-relaxed mb-4">
                   {salon.introduction}
                 </p>
 
                 {/* 圈子数字资产产出 */}
-                <h4 className="text-xl font-bold text-blue-400 mb-3">圈子数字资产产出</h4>
+                <h4 className="text-[26px] font-bold text-blue-400 mb-3">圈子数字资产产出</h4>
 
                 {/* 数字资产列表 */}
                 <div className="space-y-3">
@@ -437,18 +437,18 @@ export default function SubscriptionPage() {
                       {/* 资产信息 */}
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
-                          <h5 className="text-xs font-semibold text-gray-900 mb-1">{asset.title}</h5>
-                          <p className="text-[11px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
+                          <h5 className="text-[16px] font-semibold text-gray-900 mb-1">{asset.title}</h5>
+                          <p className="text-[14px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2">
                             {asset.description}
                           </p>
                         </div>
-                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[10px] ml-2 flex-shrink-0">
+                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px] ml-2 flex-shrink-0">
                           {asset.type}
                         </Badge>
                       </div>
 
                       {/* 底部信息 */}
-                      <div className="flex items-center justify-between text-[9px] text-[rgba(0,0,0,0.4)]">
+                      <div className="flex items-center justify-between text-[12px] text-[rgba(0,0,0,0.4)]">
                         <div className="flex items-center space-x-3">
                           <span>{asset.createTime}</span>
                           <span>{asset.size}</span>
@@ -482,14 +482,14 @@ export default function SubscriptionPage() {
                   </div>
                 </button>
                 {/* 时长标签 */}
-                <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-[10px] px-2 py-1 rounded-none">
+                <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-[13px] px-2 py-1 rounded-none">
                   0:10
                 </div>
               </div>
               {/* 标题 */}
               <div className="p-3">
-                <h5 className="text-sm font-semibold text-gray-900 mb-1">互动现场精彩瞬间</h5>
-                <p className="text-[11px] text-[rgba(0,0,0,0.25)]">AI加油圈2026期小组讨论现场实录</p>
+                <h5 className="text-[18px] font-semibold text-gray-900 mb-1">互动现场精彩瞬间</h5>
+                <p className="text-[14px] text-[rgba(0,0,0,0.25)]">AI加油圈2026期小组讨论现场实录</p>
               </div>
             </div>
           </div>
@@ -500,9 +500,9 @@ export default function SubscriptionPage() {
       <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
         <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-5 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-gray-900">
+            <DialogTitle className="text-[23px] font-semibold text-gray-900">
               加入AI加油圈
-              <span className="text-sm font-normal text-[rgba(0,0,0,0.4)] ml-2">
+              <span className="text-[18px] font-normal text-[rgba(0,0,0,0.4)] ml-2">
                 {salon.period}
               </span>
             </DialogTitle>
@@ -510,7 +510,7 @@ export default function SubscriptionPage() {
           </DialogHeader>
 
           {/* 提示信息 */}
-          <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-4">
+          <p className="text-[17px] text-[rgba(0,0,0,0.4)] mb-4">
             您提交申请后，会接到电话沟通，最终以微信通知你申请结果。
           </p>
 
@@ -518,7 +518,7 @@ export default function SubscriptionPage() {
           <div className="space-y-4">
             {/* 姓名 */}
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-gray-700">
+              <label className="text-[17px] font-medium text-gray-700">
                 姓名 <span className="text-red-500">*</span>
               </label>
               <Input
@@ -529,13 +529,13 @@ export default function SubscriptionPage() {
                 className={`rounded-none ${errors.name ? 'border-red-500' : ''}`}
               />
               {errors.name && (
-                <p className="text-[11px] text-red-500">{errors.name}</p>
+                <p className="text-[14px] text-red-500">{errors.name}</p>
               )}
             </div>
 
             {/* 电话号码 */}
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-gray-700">
+              <label className="text-[17px] font-medium text-gray-700">
                 电话号码 <span className="text-red-500">*</span>
               </label>
               <Input
@@ -547,13 +547,13 @@ export default function SubscriptionPage() {
                 className={`rounded-none ${errors.phone ? 'border-red-500' : ''}`}
               />
               {errors.phone && (
-                <p className="text-[11px] text-red-500">{errors.phone}</p>
+                <p className="text-[14px] text-red-500">{errors.phone}</p>
               )}
             </div>
 
             {/* 微信号 */}
             <div className="space-y-2">
-              <label className="text-[13px] font-medium text-gray-700">
+              <label className="text-[17px] font-medium text-gray-700">
                 微信号 <span className="text-red-500">*</span>
               </label>
               <Input
@@ -564,7 +564,7 @@ export default function SubscriptionPage() {
                 className={`rounded-none ${errors.wechat ? 'border-red-500' : ''}`}
               />
               {errors.wechat && (
-                <p className="text-[11px] text-red-500">{errors.wechat}</p>
+                <p className="text-[14px] text-red-500">{errors.wechat}</p>
               )}
             </div>
           </div>
@@ -578,14 +578,14 @@ export default function SubscriptionPage() {
                 setFormData({ name: '', phone: '', wechat: '' });
                 setErrors({ name: '', phone: '', wechat: '' });
               }}
-              className="rounded-none text-[13px] h-9 px-6"
+              className="rounded-none text-[17px] h-9 px-6"
             >
               取消
             </Button>
             <Button
               onClick={handleJoinSubmit}
               disabled={!formData.name || !formData.phone || !formData.wechat}
-              className="rounded-none bg-blue-400 text-white text-[13px] h-9 px-6 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-none bg-blue-400 text-white text-[17px] h-9 px-6 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               确定
             </Button>
