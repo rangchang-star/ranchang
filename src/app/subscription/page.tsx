@@ -300,50 +300,6 @@ export default function SubscriptionPage() {
 
             {/* 探访点亮内容 */}
             <TabsContent value="training" className="space-y-4 mt-6">
-              {/* 探访点亮主图/视频展示区 */}
-              {defaultMediaConfig.visit.url && (
-                <div className="relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
-                  {defaultMediaConfig.visit.type === 'video' ? (
-                    <div className="relative">
-                      <video
-                        ref={visitVideoRef}
-                        src={defaultMediaConfig.visit.url}
-                        className="w-full aspect-video object-cover"
-                        onEnded={() => setPlayingVisitVideo(false)}
-                        playsInline
-                      />
-                      {/* 播放/暂停控制按钮 */}
-                      {!playingVisitVideo && (
-                        <button
-                          onClick={toggleVisitVideo}
-                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30"
-                        >
-                          <div className="w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors">
-                            <PlayCircle className="w-8 h-8 text-white fill-white ml-1" />
-                          </div>
-                        </button>
-                      )}
-                      {playingVisitVideo && (
-                        <button
-                          onClick={toggleVisitVideo}
-                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 hover:bg-opacity-20 transition-colors"
-                        >
-                          <div className="w-16 h-16 rounded-full bg-black bg-opacity-50 flex items-center justify-center hover:bg-opacity-60 transition-colors">
-                            <PauseCircle className="w-8 h-8 text-white" />
-                          </div>
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <img
-                      src={defaultMediaConfig.visit.url!}
-                      alt="探访点亮"
-                      className="w-full aspect-video object-cover"
-                    />
-                  )}
-                </div>
-              )}
-
               {visits.map((visit) => (
                 <Link
                   key={visit.id}
@@ -431,50 +387,6 @@ export default function SubscriptionPage() {
 
             {/* AI加油圈内容 */}
             <TabsContent value="consultation" className="space-y-4 mt-6">
-              {/* AI加油圈主图/视频展示区 */}
-              {defaultMediaConfig.aiCircle.url && (
-                <div className="relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
-                  {defaultMediaConfig.aiCircle.type === 'video' ? (
-                    <div className="relative">
-                      <video
-                        ref={aiCircleVideoRef}
-                        src={defaultMediaConfig.aiCircle.url}
-                        className="w-full aspect-video object-cover"
-                        onEnded={() => setPlayingAiCircleVideo(false)}
-                        playsInline
-                      />
-                      {/* 播放/暂停控制按钮 */}
-                      {!playingAiCircleVideo && (
-                        <button
-                          onClick={toggleAiCircleVideo}
-                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30"
-                        >
-                          <div className="w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors">
-                            <PlayCircle className="w-8 h-8 text-white fill-white ml-1" />
-                          </div>
-                        </button>
-                      )}
-                      {playingAiCircleVideo && (
-                        <button
-                          onClick={toggleAiCircleVideo}
-                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10 hover:bg-opacity-20 transition-colors"
-                        >
-                          <div className="w-16 h-16 rounded-full bg-black bg-opacity-50 flex items-center justify-center hover:bg-opacity-60 transition-colors">
-                            <PauseCircle className="w-8 h-8 text-white" />
-                          </div>
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <img
-                      src={defaultMediaConfig.aiCircle.url!}
-                      alt="AI加油圈"
-                      className="w-full aspect-video object-cover"
-                    />
-                  )}
-                </div>
-              )}
-
               <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors">
                 {/* 顶部信息行 */}
                 <div className="flex items-center justify-between mb-4">
