@@ -1,14 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
+import dynamic from 'next/dynamic';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, MapPin, Calendar, Users, Star, Plus, X } from 'lucide-react';
 import Link from 'next/link';
+
+// 动态导入 React Quill，避免 SSR 问题
+const ReactQuill = dynamic(() => import('react-quill'), {
+  ssr: false,
+  loading: () => <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
+});
 
 // 可用标签
 const availableTags = ['已结束', '进行中', 'AI', '智能制造', '金融投资', '数字化转型', '工业互联网'];
@@ -21,50 +27,9 @@ const mockMembers = [
   { id: '4', name: '陈老师', avatar: '/avatar-4.jpg', abilityTags: ['教育培训', '创业指导'] },
 ];
 
-// 模拟数据（实际项目中应从API获取）
-const mockVisit = {
-  id: '1',
-  date: '2024年3月5日',
-  time: '14:00-16:00',
-  status: 'completed',
-  target: {
-    name: '张总',
-    title: '创始人兼CEO',
-    company: '智能制造科技有限公司',
-    avatar: '/avatar-2.jpg',
-  },
-  purpose: '了解企业数字化转型实践，寻求合作机会',
-  location: '北京市海淀区中关村软件园',
-  participants: 3,
-  outcome: '深入了解对方的产品体系和技术路线，初步达成战略合作意向',
-  keyPoints: [
-    '对方正在构建工业互联网平台，需要供应链整合能力',
-    '双方在技术路线和商业模式上高度契合',
-    '计划下个月进行第二次深入交流',
-    '对方对我们的AI解决方案表现出浓厚兴趣',
-  ],
-  nextSteps: [
-    '3月20日前提交技术方案初稿',
-    '4月初进行第二次拜访',
-    '准备相关案例和参考资料',
-  ],
-  rating: 5,
-  notes: '张总是非常务实的企业家，对技术和市场都有深刻理解。团队氛围很好，执行力强。建议重点关注其产品迭代速度。',
-  images: [
-    'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=300&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&h=200&fit=crop',
-  ],
-  tags: ['已结束', '智能制造', '数字化转型'],
-  visitors: [
-    { id: '1', name: '王姐', avatar: '/avatar-3.jpg', abilityTags: ['HRBP', '团队管理'] },
-    { id: '2', name: '李明', avatar: '/avatar-2.jpg', abilityTags: ['战略', '金融投资'] },
-  ],
-  createdAt: '2024年3月5日 16:30',
-};
-
-export default function AdminVisitEditPage() {
+export default function AdminVisitCreatePage() {
   const router = useRouter();
-  const params = useParams();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // 探访基本信息
@@ -107,45 +72,10 @@ export default function AdminVisitEditPage() {
   // 图片预览
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>(['']);
 
-  // 加载现有数据
+  // 加载完成后允许渲染 Quill
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        // 模拟API调用
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // 解析时间
-        const timeParts = mockVisit.time.split('-');
-        const [start, end] = timeParts;
-
-        setVisitDate(mockVisit.date);
-        setStartTime(start);
-        setEndTime(end);
-        setStatus(mockVisit.status);
-        setTargetName(mockVisit.target.name);
-        setTargetTitle(mockVisit.target.title);
-        setTargetCompany(mockVisit.target.company);
-        setTargetAvatar(mockVisit.target.avatar);
-        setPurpose(mockVisit.purpose);
-        setLocation(mockVisit.location);
-        setParticipants(mockVisit.participants.toString());
-        setOutcome(mockVisit.outcome || '');
-        setNotes(mockVisit.notes || '');
-        setSelectedTags(mockVisit.tags);
-        setRating(mockVisit.rating);
-        setSelectedVisitors(mockVisit.visitors?.map((v) => v.id) || []);
-        setKeyPoints(mockVisit.keyPoints.length > 0 ? mockVisit.keyPoints : ['']);
-        setNextSteps(mockVisit.nextSteps.length > 0 ? mockVisit.nextSteps : ['']);
-        setImageUrls(mockVisit.images.length > 0 ? mockVisit.images : ['']);
-        setImagePreviewUrls(mockVisit.images.length > 0 ? mockVisit.images : ['']);
-      } catch (error) {
-        console.error('加载数据失败:', error);
-        alert('加载数据失败');
-      }
-    };
-
-    loadData();
-  }, [params.id]);
+    setMounted(true);
+  }, []);
 
   // 添加标签
   const handleAddTag = (tag: string) => {
@@ -277,7 +207,7 @@ export default function AdminVisitEditPage() {
 
       // 构造数据
       const visitData = {
-        id: params.id,
+        id: Date.now().toString(),
         date: visitDate,
         time: `${startTime}-${endTime}`,
         status,
@@ -308,24 +238,23 @@ export default function AdminVisitEditPage() {
               }
             : null;
         }).filter(Boolean),
-        createdAt: mockVisit.createdAt,
-        updatedAt: new Date().toLocaleString('zh-CN'),
+        createdAt: new Date().toLocaleString('zh-CN'),
       };
 
-      console.log('更新探访数据:', visitData);
+      console.log('保存探访数据:', visitData);
 
-      // 实际项目中需要调用API更新数据
-      // const response = await fetch(`/api/admin/visits/${params.id}`, {
-      //   method: 'PUT',
+      // 实际项目中需要调用API保存数据
+      // const response = await fetch('/api/admin/visits', {
+      //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify(visitData),
       // });
 
-      alert('探访更新成功！');
+      alert('探访添加成功！');
       router.push('/admin/visits');
     } catch (error) {
-      console.error('更新探访失败:', error);
-      alert('更新探访失败，请重试');
+      console.error('添加探访失败:', error);
+      alert('添加探访失败，请重试');
     } finally {
       setLoading(false);
     }
@@ -344,8 +273,8 @@ export default function AdminVisitEditPage() {
               </Button>
             </Link>
             <div>
-              <h2 className="text-[15px] font-bold text-gray-900 mb-1">编辑探访</h2>
-              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">编辑探访记录信息</p>
+              <h2 className="text-[15px] font-bold text-gray-900 mb-1">添加探访</h2>
+              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">创建新的探访记录</p>
             </div>
           </div>
           <Button onClick={handleSubmit} disabled={loading}>
@@ -606,12 +535,17 @@ export default function AdminVisitEditPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   探访成果描述
                 </label>
-                <textarea
-                  value={outcome}
-                  onChange={(e) => setOutcome(e.target.value)}
-                  placeholder="请描述本次探访的成果和收获..."
-                  className="w-full min-h-[120px] px-3 py-2 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-                />
+                {mounted ? (
+                  <ReactQuill
+                    value={outcome}
+                    onChange={setOutcome}
+                    theme="snow"
+                    placeholder="请描述本次探访的成果和收获..."
+                    className="text-[13px]"
+                  />
+                ) : (
+                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
+                )}
               </div>
 
               {/* 探访笔记 */}
@@ -619,12 +553,17 @@ export default function AdminVisitEditPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   探访笔记
                 </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="请记录探访过程中的重要观察和心得..."
-                  className="w-full min-h-[120px] px-3 py-2 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-                />
+                {mounted ? (
+                  <ReactQuill
+                    value={notes}
+                    onChange={setNotes}
+                    theme="snow"
+                    placeholder="请记录探访过程中的重要观察和心得..."
+                    className="text-[13px]"
+                  />
+                ) : (
+                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
+                )}
               </div>
             </div>
           </div>

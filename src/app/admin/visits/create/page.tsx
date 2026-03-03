@@ -3,18 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
+
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, MapPin, Calendar, Users, Star, Plus, X } from 'lucide-react';
 import Link from 'next/link';
-
-// 动态导入 React Quill，避免 SSR 问题
-const ReactQuill = dynamic(() => import('react-quill'), {
-  ssr: false,
-  loading: () => <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
-});
 
 // 可用标签
 const availableTags = ['已结束', '进行中', 'AI', '智能制造', '金融投资', '数字化转型', '工业互联网'];
@@ -29,7 +23,6 @@ const mockMembers = [
 
 export default function AdminVisitCreatePage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // 探访基本信息
@@ -71,11 +64,6 @@ export default function AdminVisitCreatePage() {
 
   // 图片预览
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>(['']);
-
-  // 加载完成后允许渲染 Quill
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // 添加标签
   const handleAddTag = (tag: string) => {
@@ -535,17 +523,12 @@ export default function AdminVisitCreatePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   探访成果描述
                 </label>
-                {mounted ? (
-                  <ReactQuill
-                    value={outcome}
-                    onChange={setOutcome}
-                    theme="snow"
-                    placeholder="请描述本次探访的成果和收获..."
-                    className="text-[13px]"
-                  />
-                ) : (
-                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
-                )}
+                <textarea
+                  value={outcome}
+                  onChange={(e) => setOutcome(e.target.value)}
+                  placeholder="请描述本次探访的成果和收获..."
+                  className="w-full min-h-[120px] px-3 py-2 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                />
               </div>
 
               {/* 探访笔记 */}
@@ -553,17 +536,12 @@ export default function AdminVisitCreatePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   探访笔记
                 </label>
-                {mounted ? (
-                  <ReactQuill
-                    value={notes}
-                    onChange={setNotes}
-                    theme="snow"
-                    placeholder="请记录探访过程中的重要观察和心得..."
-                    className="text-[13px]"
-                  />
-                ) : (
-                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
-                )}
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="请记录探访过程中的重要观察和心得..."
+                  className="w-full min-h-[120px] px-3 py-2 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                />
               </div>
             </div>
           </div>

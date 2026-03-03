@@ -2,20 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
+
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, Calendar, MapPin, Users, Clock, Check } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import 'react-quill/dist/quill.snow.css';
-
-// 动态导入 React Quill，避免 SSR 问题
-const ReactQuill = dynamic(() => import('react-quill'), { 
-  ssr: false,
-  loading: () => <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
-});
 
 // 活动类型选项
 const activityTypeOptions = [
@@ -33,23 +26,8 @@ const getActivityTypeLabel = (type: string) => {
   return option ? option.label : type;
 };
 
-// React Quill 工具栏配置
-const quillModules = {
-  toolbar: [
-    [{ 'header': [1, 2, 3, false] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ 'color': [] }, { 'background': [] }],
-    [{ 'font': [] }],
-    [{ 'size': ['small', false, 'large', 'huge'] }],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    [{ 'align': [] }],
-    ['link', 'clean'],
-  ],
-};
-
 export default function AdminActivityCreatePage() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -60,10 +38,6 @@ export default function AdminActivityCreatePage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleTagToggle = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -285,19 +259,13 @@ export default function AdminActivityCreatePage() {
                 <h3 className="text-[13px] font-semibold text-gray-900">活动描述</h3>
               </div>
               <div className="p-4">
-                {mounted ? (
-                  <div className="quill-wrapper">
-                    <ReactQuill
-                      theme="snow"
-                      value={description}
-                      onChange={setDescription}
-                      placeholder="请输入活动描述..."
-                      modules={quillModules}
-                    />
-                  </div>
-                ) : (
-                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
-                )}
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="请输入活动描述..."
+                  className="w-full min-h-[200px] px-3 py-2 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                />
+                <p className="text-[11px] text-[rgba(0,0,0,0.5)] mt-1">纯文本输入，不支持富文本格式</p>
               </div>
             </div>
 
@@ -376,8 +344,8 @@ export default function AdminActivityCreatePage() {
 
                   {/* 描述预览 */}
                   {description && (
-                    <div className="text-[13px] text-[rgba(0,0,0,0.6)] line-clamp-3 mb-3">
-                      <div dangerouslySetInnerHTML={{ __html: description }} />
+                    <div className="text-[13px] text-[rgba(0,0,0,0.6)] line-clamp-3 mb-3 whitespace-pre-wrap">
+                      {description}
                     </div>
                   )}
 
