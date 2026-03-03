@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, MessageSquare, LogOut, Bell } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, MessageSquare, LogOut, Bell, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { href: '/admin/activities', label: '活动管理', icon: Calendar },
   { href: '/admin/messages', label: '消息管理', icon: Bell },
   { href: '/admin/consultations', label: '咨询管理', icon: MessageSquare },
+  { href: '/admin/settings', label: '页面设置', icon: Settings },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

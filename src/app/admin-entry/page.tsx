@@ -3,7 +3,7 @@
 import { PageContainer } from '@/components/page-container';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard, Users, Calendar, MessageSquare, Bell, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, MessageSquare, Bell, ArrowRight, Settings } from 'lucide-react';
 
 export default function AdminEntryPage() {
   const adminPages = [
@@ -36,6 +36,12 @@ export default function AdminEntryPage() {
       title: '咨询管理',
       description: '处理用户咨询留言',
       icon: MessageSquare,
+    },
+    {
+      href: '/admin/settings',
+      title: '页面设置',
+      description: '配置各功能页面的展示内容',
+      icon: Settings,
     },
   ];
 
