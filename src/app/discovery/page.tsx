@@ -1011,7 +1011,7 @@ export default function DiscoveryPage() {
 
                   {/* 文档标题 */}
                   <div className="flex-1">
-                    <h3 className="text-[9px] text-gray-900 leading-relaxed">
+                    <h3 className="text-[11px] text-gray-900 leading-relaxed">
                       {doc.title}
                     </h3>
                   </div>
