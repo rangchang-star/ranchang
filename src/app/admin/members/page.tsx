@@ -109,7 +109,7 @@ export default function AdminMembersPage() {
               onClick={() => setSelectedTag('')}
               className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                 selectedTag === ''
-                  ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                  ? 'bg-[rgba(59,130,246,0.4)] text-white'
                   : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
               }`}
             >
@@ -121,7 +121,7 @@ export default function AdminMembersPage() {
                 onClick={() => setSelectedTag(tag)}
                 className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                   selectedTag === tag
-                    ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-white'
                     : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
                 }`}
               >
@@ -181,7 +181,7 @@ export default function AdminMembersPage() {
                       {member.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                          className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
                         >
                           {tag}
                         </span>

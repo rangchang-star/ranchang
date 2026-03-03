@@ -307,7 +307,7 @@ export default function AdminActivitiesPage() {
                 onClick={() => setStatusFilter('all')}
                 className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                   statusFilter === 'all'
-                    ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-white'
                     : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
                 }`}
               >
@@ -317,7 +317,7 @@ export default function AdminActivitiesPage() {
                 onClick={() => setStatusFilter('active')}
                 className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                   statusFilter === 'active'
-                    ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-white'
                     : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
                 }`}
               >
@@ -327,7 +327,7 @@ export default function AdminActivitiesPage() {
                 onClick={() => setStatusFilter('ended')}
                 className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                   statusFilter === 'ended'
-                    ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-white'
                     : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
                 }`}
               >
@@ -348,7 +348,7 @@ export default function AdminActivitiesPage() {
               }}
               className={`px-3 py-1.5 text-[13px] font-normal transition-colors flex items-center space-x-1 ${
                 timeSort !== null
-                  ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                  ? 'bg-[rgba(59,130,246,0.4)] text-white'
                   : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
               }`}
             >
@@ -374,13 +374,13 @@ export default function AdminActivitiesPage() {
                   <div className="flex-1">
                     <h3 className="text-[15px] font-semibold text-gray-900 mb-2">{activity.title}</h3>
                     <div className="flex flex-wrap gap-2 mb-3">
-                      <span className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal">
+                      <span className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal">
                         {getTypeLabel(activity.type)}
                       </span>
                       {activity.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                          className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
                         >
                           {tag}
                         </span>
@@ -465,7 +465,7 @@ export default function AdminActivitiesPage() {
                   {selectedActivity
                     ? `报名审核 - ${mockActivities.find(a => a.id === selectedActivity)?.title}`
                     : '待审核申请'}
-                  <span className="ml-2 px-2 py-0.5 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal">
+                  <span className="ml-2 px-2 py-0.5 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal">
                     {filteredApplications.length}条
                   </span>
                 </h3>
@@ -493,7 +493,7 @@ export default function AdminActivitiesPage() {
                         <h3 className="text-[15px] font-semibold text-gray-900">{application.userName}</h3>
                         <span className={`px-2 py-0.5 text-[11px] font-normal ${
                           application.status === 'pending'
-                            ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                            ? 'bg-[rgba(59,130,246,0.4)] text-white'
                             : application.status === 'approved'
                             ? 'bg-green-100 text-green-600'
                             : 'bg-red-100 text-red-600'

@@ -101,7 +101,7 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
                   {mockMember.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                      className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
                     >
                       {tag}
                     </span>
@@ -149,7 +149,7 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
                 {mockMember.abilityTags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                    className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
                   >
                     {tag}
                   </span>

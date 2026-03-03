@@ -445,12 +445,12 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                 {abilityTags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal relative group"
+                    className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal relative group"
                   >
                     {tag}
                     <button
                       onClick={() => handleTagToggle(tag, 'ability')}
-                      className="ml-1 hover:text-blue-800"
+                      className="ml-1 hover:text-blue-200"
                     >
                       ×
                     </button>
@@ -472,7 +472,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                     onClick={() => handleTagToggle(tag, 'resource')}
                     className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                       resourceTags.includes(tag)
-                        ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border border-blue-400'
+                        ? 'bg-[rgba(59,130,246,0.4)] text-white border border-blue-400'
                         : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] border border-transparent hover:bg-[rgba(0,0,0,0.08)]'
                     }`}
                   >
@@ -496,7 +496,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                     onClick={() => handleTagToggle(tag, 'admin')}
                     className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                       adminTags.includes(tag)
-                        ? 'bg-[rgba(59,130,246,0.4)] text-blue-600 border border-blue-400'
+                        ? 'bg-[rgba(59,130,246,0.4)] text-white border border-blue-400'
                         : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] border border-transparent hover:bg-[rgba(0,0,0,0.08)]'
                     }`}
                   >
