@@ -84,38 +84,38 @@ export default function DigitalAssetsPage() {
     <div className="min-h-screen bg-white pb-20">
       <div className="w-full max-w-md mx-auto">
         {/* 顶部导航 */}
-        <div className="sticky top-0 bg-white z-50 px-5 py-4 border-b border-[rgba(0,0,0,0.05)]">
+        <div className="sticky top-0 bg-white z-50 px-5 py-[10px] border-b border-[rgba(0,0,0,0.05)]">
           <div className="flex items-center justify-between">
             <Link href="/profile">
-              <Button variant="ghost" className="p-2">
-                <ArrowLeft className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+              <Button variant="ghost" className="p-1.5">
+                <ArrowLeft className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
               </Button>
             </Link>
             <h1 className="text-[13px] font-semibold text-[rgba(0,0,0,0.7)]">大鱼的认知库</h1>
             <Link href="/profile">
-              <Button variant="ghost" className="p-2 h-9 w-9">
-                <X className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+              <Button variant="ghost" className="p-1.5 h-[26px] w-[26px]">
+                <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
               </Button>
             </Link>
           </div>
         </div>
 
         {/* 文档列表 */}
-        <div className="px-5 py-4">
+        <div className="px-4 py-3">
           {documents.map((doc) => (
             <Link
               key={doc.id}
               href={`/asset/${doc.id}`}
-              className="flex items-center space-x-3 py-4 border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+              className="flex items-center space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
             >
               {/* 图标 */}
-              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-[rgba(0,0,0,0.05)] rounded-none">
-                <span className="text-xl">{getIcon(doc.icon)}</span>
+              <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center bg-[rgba(0,0,0,0.05)] rounded-none">
+                <span className="text-[14px]">{getIcon(doc.icon)}</span>
               </div>
 
               {/* 文档标题 */}
               <div className="flex-1">
-                <h3 className="text-[13px] text-gray-900 leading-relaxed">
+                <h3 className="text-[9px] text-gray-900 leading-relaxed">
                   {doc.title}
                 </h3>
               </div>
@@ -125,10 +125,10 @@ export default function DigitalAssetsPage() {
 
         {documents.length === 0 && (
           <div className="text-center py-16">
-            <div className="w-16 h-16 bg-[rgba(0,0,0,0.05)] rounded-none flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-[rgba(0,0,0,0.25)]" />
+            <div className="w-[42px] h-[42px] bg-[rgba(0,0,0,0.05)] rounded-none flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-[18px] h-[18px] text-[rgba(0,0,0,0.25)]" />
             </div>
-            <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
+            <p className="text-[9px] text-[rgba(0,0,0,0.4)]">
               暂无文档
             </p>
           </div>
