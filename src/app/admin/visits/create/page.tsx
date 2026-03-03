@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -73,9 +73,9 @@ export default function AdminVisitCreatePage() {
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>(['']);
 
   // 加载完成后允许渲染 Quill
-  useState(() => {
+  useEffect(() => {
     setMounted(true);
-  });
+  }, []);
 
   // 添加标签
   const handleAddTag = (tag: string) => {
