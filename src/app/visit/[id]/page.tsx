@@ -6,6 +6,14 @@ import { ArrowLeft, MapPin, Calendar, Users, Star, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useParams } from 'next/navigation';
 
 // 模拟数据
@@ -50,6 +58,22 @@ export default function VisitDetailPage() {
   const params = useParams();
   const [visit] = useState(mockVisitData);
 
+  // 申请对话框状态
+  const [applyDialogOpen, setApplyDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    wechat: '',
+    needs: '',
+  });
+  const [errors, setErrors] = useState({
+    name: '',
+    phone: '',
+    wechat: '',
+    needs: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -57,6 +81,84 @@ export default function VisitDetailPage() {
         text: visit.outcome,
         url: window.location.href,
       });
+    }
+  };
+
+  // 表单验证
+  const validateForm = (): boolean => {
+    const newErrors = {
+      name: '',
+      phone: '',
+      wechat: '',
+      needs: '',
+    };
+
+    if (!formData.name.trim()) {
+      newErrors.name = '请输入姓名';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = '请输入电话号码';
+    } else if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
+      newErrors.phone = '请输入正确的手机号码';
+    }
+
+    if (!formData.wechat.trim()) {
+      newErrors.wechat = '请输入微信号';
+    }
+
+    if (!formData.needs.trim()) {
+      newErrors.needs = '请填写您的需求';
+    } else if (formData.needs.trim().length < 10) {
+      newErrors.needs = '需求描述至少需要10个字';
+    }
+
+    setErrors(newErrors);
+    return Object.values(newErrors).every((error) => error === '');
+  };
+
+  // 处理表单提交
+  const handleApplySubmit = () => {
+    if (validateForm()) {
+      setIsSubmitting(true);
+
+      // 模拟提交到后台
+      setTimeout(() => {
+        setIsSubmitting(false);
+        setApplyDialogOpen(false);
+
+        // 重置表单
+        setFormData({
+          name: '',
+          phone: '',
+          wechat: '',
+          needs: '',
+        });
+        setErrors({
+          name: '',
+          phone: '',
+          wechat: '',
+          needs: '',
+        });
+
+        // 模拟添加通知到本地存储
+        try {
+          const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+          const newNotification = {
+            id: `visit-apply-${Date.now()}`,
+            type: 'info',
+            title: '探访申请已提交',
+            message: `您已提交对${visit.target.name}的探访申请，请等待审核`,
+            time: new Date().toLocaleString('zh-CN'),
+            read: false,
+          };
+          localStorage.setItem('notifications', JSON.stringify([newNotification, ...notifications]));
+        } catch (error) {
+          console.error('保存通知失败:', error);
+        }
+
+        alert('申请提交成功！我们会尽快审核，请留意通知消息。');
+      }, 1000);
     }
   };
 
@@ -232,12 +334,115 @@ export default function VisitDetailPage() {
 
           {/* 申请按钮 */}
           <div className="flex justify-center pt-4 pb-4">
-            <button className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white text-xs font-normal flex items-center justify-center hover:scale-110 hover:-translate-y-1 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200">
+            <button
+              onClick={() => setApplyDialogOpen(true)}
+              className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white text-xs font-normal flex items-center justify-center hover:scale-110 hover:-translate-y-1 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200"
+            >
               申请
             </button>
           </div>
         </div>
       </div>
+
+      {/* 申请对话框 */}
+      <Dialog open={applyDialogOpen} onOpenChange={setApplyDialogOpen}>
+        <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-5 sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-gray-900">
+              申请探访
+              <span className="text-sm font-normal text-[rgba(0,0,0,0.4)] ml-2">
+                {visit.target.name}
+              </span>
+            </DialogTitle>
+            <DialogDescription className="hidden" />
+          </DialogHeader>
+
+          {/* 提示信息 */}
+          <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-4">
+            您提交申请后，会接到电话沟通，最终以微信通知你申请结果。
+          </p>
+
+          {/* 表单 */}
+          <div className="space-y-4">
+            {/* 姓名 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                姓名 <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="请输入您的姓名"
+                className={errors.name ? 'border-red-400' : ''}
+              />
+              {errors.name && (
+                <p className="text-[11px] text-red-500 mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            {/* 电话 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                电话 <span className="text-red-500">*</span>
+              </label>
+              <Input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="请输入您的手机号码"
+                className={errors.phone ? 'border-red-400' : ''}
+              />
+              {errors.phone && (
+                <p className="text-[11px] text-red-500 mt-1">{errors.phone}</p>
+              )}
+            </div>
+
+            {/* 微信 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                微信号 <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={formData.wechat}
+                onChange={(e) => setFormData({ ...formData, wechat: e.target.value })}
+                placeholder="请输入您的微信号"
+                className={errors.wechat ? 'border-red-400' : ''}
+              />
+              {errors.wechat && (
+                <p className="text-[11px] text-red-500 mt-1">{errors.wechat}</p>
+              )}
+            </div>
+
+            {/* 需求描述 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                您的需求 <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={formData.needs}
+                onChange={(e) => setFormData({ ...formData, needs: e.target.value })}
+                placeholder="请详细描述您的需求，例如：希望了解对方企业的数字化转型经验、寻求合作机会等..."
+                rows={4}
+                className={`w-full px-3 py-2 text-sm border rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  errors.needs ? 'border-red-400' : 'border-gray-300'
+                }`}
+              />
+              {errors.needs && (
+                <p className="text-[11px] text-red-500 mt-1">{errors.needs}</p>
+              )}
+            </div>
+          </div>
+
+          {/* 提交按钮 */}
+          <Button
+            onClick={handleApplySubmit}
+            disabled={isSubmitting}
+            className="w-full bg-blue-400 hover:bg-blue-500 text-white mt-6"
+          >
+            {isSubmitting ? '提交中...' : '确认申请'}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
