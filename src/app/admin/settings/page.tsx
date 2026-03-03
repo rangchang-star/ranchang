@@ -13,7 +13,7 @@ import {
   BarChart, PieChart, Radar, LineChart, X, 
   AlertTriangle, Navigation, Type, Flame, User
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
@@ -102,7 +102,15 @@ const defaultSettings = {
   // 点亮键设置
   ignition: {
     visitSlogan: '探访点亮，看见榜样',
+    visitMedia: {
+      type: 'image' as 'image' | 'video' | null,
+      url: '',
+    },
     aiCircleSlogan: 'AI加油圈，互助成长',
+    aiCircleMedia: {
+      type: 'image' as 'image' | 'video' | null,
+      url: '',
+    },
   },
   // 个人键量表设置
   profile: {
@@ -148,6 +156,12 @@ export default function AdminSettingsPage() {
   const [previewBackground, setPreviewBackground] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [hasChanged, setHasChanged] = useState(false);
+  const [previewVisitMedia, setPreviewVisitMedia] = useState<string | null>(null);
+  const [previewAiCircleMedia, setPreviewAiCircleMedia] = useState<string | null>(null);
+  const [playingVisitVideo, setPlayingVisitVideo] = useState(false);
+  const [playingAiCircleVideo, setPlayingAiCircleVideo] = useState(false);
+  const visitVideoRef = useRef<HTMLVideoElement>(null);
+  const aiCircleVideoRef = useRef<HTMLVideoElement>(null);
 
   // 保存设置 - 第一次确认
   const handleSave = () => {
@@ -248,6 +262,90 @@ export default function AdminSettingsPage() {
   // 音乐预览
   const toggleMusicPreview = () => {
     setPreviewMusic(!previewMusic);
+  };
+
+  // 探访点亮媒体上传
+  const handleVisitMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // 视频大小限制 150MB
+    if (file.type.startsWith('video/') && file.size > 150 * 1024 * 1024) {
+      alert('视频大小不能超过 150MB');
+      return;
+    }
+
+    const isVideo = file.type.startsWith('video/');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setPreviewVisitMedia(result);
+      setSettings(prev => ({
+        ...prev,
+        ignition: {
+          ...prev.ignition,
+          visitMedia: {
+            type: isVideo ? 'video' : 'image',
+            url: result,
+          },
+        },
+      }));
+      setHasChanged(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // AI加油圈媒体上传
+  const handleAiCircleMediaUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // 视频大小限制 150MB
+    if (file.type.startsWith('video/') && file.size > 150 * 1024 * 1024) {
+      alert('视频大小不能超过 150MB');
+      return;
+    }
+
+    const isVideo = file.type.startsWith('video/');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setPreviewAiCircleMedia(result);
+      setSettings(prev => ({
+        ...prev,
+        ignition: {
+          ...prev.ignition,
+          aiCircleMedia: {
+            type: isVideo ? 'video' : 'image',
+            url: result,
+          },
+        },
+      }));
+      setHasChanged(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 切换探访点亮视频播放
+  const toggleVisitVideo = () => {
+    if (playingVisitVideo) {
+      visitVideoRef.current?.pause();
+      setPlayingVisitVideo(false);
+    } else {
+      visitVideoRef.current?.play();
+      setPlayingVisitVideo(true);
+    }
+  };
+
+  // 切换AI加油圈视频播放
+  const toggleAiCircleVideo = () => {
+    if (playingAiCircleVideo) {
+      aiCircleVideoRef.current?.pause();
+      setPlayingAiCircleVideo(false);
+    } else {
+      aiCircleVideoRef.current?.play();
+      setPlayingAiCircleVideo(true);
+    }
   };
 
   // 量表演现形式更改
@@ -797,66 +895,242 @@ export default function AdminSettingsPage() {
                   配置点亮键页面的展示内容
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {/* 探访点亮Slogan */}
+              <CardContent className="space-y-8">
+                {/* 探访点亮配置 */}
                 <div>
-                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    探访点亮 Slogan（灰色文字）
-                  </label>
-                  <Textarea
-                    value={settings.ignition.visitSlogan}
-                    onChange={(e) => {
-                      setSettings(prev => ({
-                        ...prev,
-                        ignition: {
-                          ...prev.ignition,
-                          visitSlogan: e.target.value,
-                        },
-                      }));
-                      setHasChanged(true);
-                    }}
-                    placeholder="请输入探访点亮页面的标语"
-                    className="text-[13px] min-h-[80px]"
-                    maxLength={100}
-                  />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      显示在探访点亮页面，使用灰色文字
-                    </span>
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      {settings.ignition.visitSlogan.length}/100
-                    </span>
+                  <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-[rgba(0,0,0,0.08)]">
+                    <TrendingUp className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-[13px] font-semibold text-gray-900">探访点亮</h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {/* 探访点亮Slogan */}
+                    <div>
+                      <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                        Slogan（灰色文字）
+                      </label>
+                      <Textarea
+                        value={settings.ignition.visitSlogan}
+                        onChange={(e) => {
+                          setSettings(prev => ({
+                            ...prev,
+                            ignition: {
+                              ...prev.ignition,
+                              visitSlogan: e.target.value,
+                            },
+                          }));
+                          setHasChanged(true);
+                        }}
+                        placeholder="请输入探访点亮页面的标语"
+                        className="text-[13px] min-h-[80px]"
+                        maxLength={100}
+                      />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                          显示在探访点亮页面，使用灰色文字
+                        </span>
+                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                          {settings.ignition.visitSlogan.length}/100
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 探访点亮媒体上传 */}
+                    <div>
+                      <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                        配图/视频
+                      </label>
+                      <div className="space-y-3">
+                        <div className="w-full h-48 bg-[rgba(0,0,0,0.02)] border-2 border-dashed border-[rgba(0,0,0,0.1)] rounded-lg overflow-hidden relative">
+                          {previewVisitMedia || settings.ignition.visitMedia.url ? (
+                            <>
+                              {settings.ignition.visitMedia.type === 'video' ? (
+                                <div className="w-full h-full relative">
+                                  <video
+                                    ref={visitVideoRef}
+                                    src={previewVisitMedia || settings.ignition.visitMedia.url}
+                                    className="w-full h-full object-cover"
+                                    onClick={toggleVisitVideo}
+                                  />
+                                  <button
+                                    onClick={toggleVisitVideo}
+                                    className="absolute inset-0 flex items-center justify-center"
+                                  >
+                                    <div className="w-16 h-16 bg-blue-400 rounded-full flex items-center justify-center shadow-lg">
+                                      {playingVisitVideo ? (
+                                        <X className="w-6 h-6 text-white" />
+                                      ) : (
+                                        <Play className="w-6 h-6 text-white fill-white ml-1" />
+                                      )}
+                                    </div>
+                                  </button>
+                                </div>
+                              ) : (
+                                <img
+                                  src={previewVisitMedia || settings.ignition.visitMedia.url}
+                                  alt="探访点亮配图"
+                                  className="w-full h-full object-cover"
+                                />
+                              )}
+                            </>
+                          ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <ImageIcon className="w-12 h-12 text-[rgba(0,0,0,0.3)]" />
+                              <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">未上传图片或视频</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <p className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                              支持 JPG、PNG、MP4 格式，视频最大 150MB
+                            </p>
+                            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                              图片和视频只能上传一个，以最新上传的为准
+                            </p>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*,video/*"
+                            onChange={handleVisitMediaUpload}
+                            className="hidden"
+                            id="visit-media-upload"
+                          />
+                          <label htmlFor="visit-media-upload">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-[12px]"
+                              asChild
+                            >
+                              <span>
+                                <Upload className="w-3 h-3 mr-1" />
+                                上传
+                              </span>
+                            </Button>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* AI加油圈Slogan */}
+                {/* AI加油圈配置 */}
                 <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
-                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    AI加油圈 Slogan（灰色文字）
-                  </label>
-                  <Textarea
-                    value={settings.ignition.aiCircleSlogan}
-                    onChange={(e) => {
-                      setSettings(prev => ({
-                        ...prev,
-                        ignition: {
-                          ...prev.ignition,
-                          aiCircleSlogan: e.target.value,
-                        },
-                      }));
-                      setHasChanged(true);
-                    }}
-                    placeholder="请输入AI加油圈页面的标语"
-                    className="text-[13px] min-h-[80px]"
-                    maxLength={100}
-                  />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      显示在AI加油圈页面，使用灰色文字
-                    </span>
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      {settings.ignition.aiCircleSlogan.length}/100
-                    </span>
+                  <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-[rgba(0,0,0,0.08)]">
+                    <TrendingUp className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-[13px] font-semibold text-gray-900">AI加油圈</h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {/* AI加油圈Slogan */}
+                    <div>
+                      <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                        Slogan（灰色文字）
+                      </label>
+                      <Textarea
+                        value={settings.ignition.aiCircleSlogan}
+                        onChange={(e) => {
+                          setSettings(prev => ({
+                            ...prev,
+                            ignition: {
+                              ...prev.ignition,
+                              aiCircleSlogan: e.target.value,
+                            },
+                          }));
+                          setHasChanged(true);
+                        }}
+                        placeholder="请输入AI加油圈页面的标语"
+                        className="text-[13px] min-h-[80px]"
+                        maxLength={100}
+                      />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                          显示在AI加油圈页面，使用灰色文字
+                        </span>
+                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                          {settings.ignition.aiCircleSlogan.length}/100
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* AI加油圈媒体上传 */}
+                    <div>
+                      <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                        配图/视频
+                      </label>
+                      <div className="space-y-3">
+                        <div className="w-full h-48 bg-[rgba(0,0,0,0.02)] border-2 border-dashed border-[rgba(0,0,0,0.1)] rounded-lg overflow-hidden relative">
+                          {previewAiCircleMedia || settings.ignition.aiCircleMedia.url ? (
+                            <>
+                              {settings.ignition.aiCircleMedia.type === 'video' ? (
+                                <div className="w-full h-full relative">
+                                  <video
+                                    ref={aiCircleVideoRef}
+                                    src={previewAiCircleMedia || settings.ignition.aiCircleMedia.url}
+                                    className="w-full h-full object-cover"
+                                    onClick={toggleAiCircleVideo}
+                                  />
+                                  <button
+                                    onClick={toggleAiCircleVideo}
+                                    className="absolute inset-0 flex items-center justify-center"
+                                  >
+                                    <div className="w-16 h-16 bg-blue-400 rounded-full flex items-center justify-center shadow-lg">
+                                      {playingAiCircleVideo ? (
+                                        <X className="w-6 h-6 text-white" />
+                                      ) : (
+                                        <Play className="w-6 h-6 text-white fill-white ml-1" />
+                                      )}
+                                    </div>
+                                  </button>
+                                </div>
+                              ) : (
+                                <img
+                                  src={previewAiCircleMedia || settings.ignition.aiCircleMedia.url}
+                                  alt="AI加油圈配图"
+                                  className="w-full h-full object-cover"
+                                />
+                              )}
+                            </>
+                          ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <ImageIcon className="w-12 h-12 text-[rgba(0,0,0,0.3)]" />
+                              <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">未上传图片或视频</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <p className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                              支持 JPG、PNG、MP4 格式，视频最大 150MB
+                            </p>
+                            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                              图片和视频只能上传一个，以最新上传的为准
+                            </p>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*,video/*"
+                            onChange={handleAiCircleMediaUpload}
+                            className="hidden"
+                            id="aicircle-media-upload"
+                          />
+                          <label htmlFor="aicircle-media-upload">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-[12px]"
+                              asChild
+                            >
+                              <span>
+                                <Upload className="w-3 h-3 mr-1" />
+                                上传
+                              </span>
+                            </Button>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
