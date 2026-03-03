@@ -277,7 +277,7 @@ export default function AdminActivitiesPage() {
               <Download className="w-4 h-4 mr-2" />
               导出数据
             </Button>
-            <Link href="/admin/activities/create-backup">
+            <Link href="/admin/activities/create">
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 发布活动
