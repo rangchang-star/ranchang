@@ -64,13 +64,18 @@ export default function VisitDetailPage() {
     name: '',
     phone: '',
     wechat: '',
-    needs: '',
+    company: '',
+    position: '',
+    scale: '',
+    industry: '',
+    belief: '',
+    problem: '',
   });
   const [errors, setErrors] = useState({
     name: '',
     phone: '',
     wechat: '',
-    needs: '',
+    industry: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -90,7 +95,7 @@ export default function VisitDetailPage() {
       name: '',
       phone: '',
       wechat: '',
-      needs: '',
+      industry: '',
     };
 
     if (!formData.name.trim()) {
@@ -107,10 +112,8 @@ export default function VisitDetailPage() {
       newErrors.wechat = '请输入微信号';
     }
 
-    if (!formData.needs.trim()) {
-      newErrors.needs = '请填写您的需求';
-    } else if (formData.needs.trim().length < 10) {
-      newErrors.needs = '需求描述至少需要10个字';
+    if (!formData.industry.trim()) {
+      newErrors.industry = '请输入行业';
     }
 
     setErrors(newErrors);
@@ -132,13 +135,18 @@ export default function VisitDetailPage() {
           name: '',
           phone: '',
           wechat: '',
-          needs: '',
+          company: '',
+          position: '',
+          scale: '',
+          industry: '',
+          belief: '',
+          problem: '',
         });
         setErrors({
           name: '',
           phone: '',
           wechat: '',
-          needs: '',
+          industry: '',
         });
 
         // 模拟添加通知到本地存储
@@ -147,8 +155,8 @@ export default function VisitDetailPage() {
           const newNotification = {
             id: `visit-apply-${Date.now()}`,
             type: 'info',
-            title: '探访申请已提交',
-            message: `您已提交对${visit.target.name}的探访申请，请等待审核`,
+            title: '被访申请已提交',
+            message: `您已提交被访申请，请等待审核，我们会尽快与您联系`,
             time: new Date().toLocaleString('zh-CN'),
             read: false,
           };
@@ -349,17 +357,14 @@ export default function VisitDetailPage() {
         <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-5 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-gray-900">
-              申请探访
-              <span className="text-sm font-normal text-[rgba(0,0,0,0.4)] ml-2">
-                {visit.target.name}
-              </span>
+              我需要被探访
             </DialogTitle>
             <DialogDescription className="hidden" />
           </DialogHeader>
 
           {/* 提示信息 */}
           <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-4">
-            您提交申请后，会接到电话沟通，最终以微信通知你申请结果。
+            请填写您的企业信息，说明您希望通过被访者角色解决什么问题，我们会审核后与您联系。
           </p>
 
           {/* 表单 */}
@@ -413,23 +418,82 @@ export default function VisitDetailPage() {
               )}
             </div>
 
-            {/* 需求描述 */}
+            {/* 公司名 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                您的需求 <span className="text-red-500">*</span>
+                公司名称
+              </label>
+              <Input
+                value={formData.company}
+                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                placeholder="请输入您的公司名称"
+              />
+            </div>
+
+            {/* 职位 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                职位
+              </label>
+              <Input
+                value={formData.position}
+                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                placeholder="请输入您的职位"
+              />
+            </div>
+
+            {/* 规模 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                企业规模
+              </label>
+              <Input
+                value={formData.scale}
+                onChange={(e) => setFormData({ ...formData, scale: e.target.value })}
+                placeholder="例如：20-50人、50-100人"
+              />
+            </div>
+
+            {/* 行业 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                行业 <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={formData.industry}
+                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                placeholder="请输入您的行业"
+                className={errors.industry ? 'border-red-400' : ''}
+              />
+              {errors.industry && (
+                <p className="text-[11px] text-red-500 mt-1">{errors.industry}</p>
+              )}
+            </div>
+
+            {/* 信仰 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                信仰
+              </label>
+              <Input
+                value={formData.belief}
+                onChange={(e) => setFormData({ ...formData, belief: e.target.value })}
+                placeholder="如有信仰可填写"
+              />
+            </div>
+
+            {/* 需要解决的问题 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                需要解决的问题
               </label>
               <textarea
-                value={formData.needs}
-                onChange={(e) => setFormData({ ...formData, needs: e.target.value })}
-                placeholder="请详细描述您的需求，例如：希望了解对方企业的数字化转型经验、寻求合作机会等..."
+                value={formData.problem}
+                onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
+                placeholder="请描述您希望通过被访者角色解决什么问题，例如：需要了解行业转型经验、寻找合作伙伴、获取专家建议等..."
                 rows={4}
-                className={`w-full px-3 py-2 text-sm border rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                  errors.needs ? 'border-red-400' : 'border-gray-300'
-                }`}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-              {errors.needs && (
-                <p className="text-[11px] text-red-500 mt-1">{errors.needs}</p>
-              )}
             </div>
           </div>
 
