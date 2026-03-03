@@ -642,7 +642,7 @@ export default function DiscoveryPage() {
                 <img
                   src="/daily-declaration-icon.webp"
                   alt="每日宣告"
-                  className="w-10 h-10 object-contain"
+                  className="w-10 h-10 object-cover"
                 />
               </div>
 
