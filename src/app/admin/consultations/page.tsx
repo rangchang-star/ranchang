@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Edit, CheckCircle, Clock, ChevronUp, ChevronDown, User, X, Briefcase, Calendar, MapPin, Users, Tag, Activity } from 'lucide-react';
+import { Search, Edit, Clock, ChevronUp, ChevronDown, User, X, Briefcase, Users, Tag, Activity } from 'lucide-react';
 
 // 咨询话题配置
 const consultationTopics = [
@@ -102,7 +102,7 @@ const mockUserDetails = {
   },
 };
 
-// 模拟咨询数据
+// 模拟咨询数据（不需要回复字段）
 const mockConsultations = [
   {
     id: '1',
@@ -114,7 +114,6 @@ const mockConsultations = [
     question: '我是做传统制造业的，想引入AI来优化生产线，但不知道从哪里开始，也不知道应该选择什么样的AI工具？',
     submitDate: '2024-03-15 14:30',
     status: 'pending' as ConsultationStatus,
-    reply: null,
   },
   {
     id: '2',
@@ -126,7 +125,6 @@ const mockConsultations = [
     question: '第一次创业失败后，心里一直很焦虑，不知道该不该继续创业，家人也不支持我继续尝试。',
     submitDate: '2024-03-14 10:15',
     status: 'processing' as ConsultationStatus,
-    reply: '失败是创业路上的常态，重要的是从失败中学习。建议先调整心态，寻找同行者支持，可以考虑参加我们的创业支持小组。',
   },
   {
     id: '3',
@@ -138,7 +136,6 @@ const mockConsultations = [
     question: '我们的产品很好，但就是找不到盈利模式，用户愿意用但不愿意付费，应该如何设计合理的商业模式？',
     submitDate: '2024-03-13 16:45',
     status: 'completed' as ConsultationStatus,
-    reply: '建议采用Freemium模式，提供基础功能免费使用，高级功能付费。同时可以考虑增值服务，如培训、定制开发等。',
   },
   {
     id: '4',
@@ -150,7 +147,17 @@ const mockConsultations = [
     question: '我现在在转型期，不太清楚自己的使命是什么，感觉自己没有方向，如何找到自己的使命感？',
     submitDate: '2024-03-12 09:20',
     status: 'processing' as ConsultationStatus,
-    reply: '找到使命感需要深入自我探索。建议回顾自己最有成就感的时刻，思考什么让你感到充满激情和意义。',
+  },
+  {
+    id: '5',
+    userId: '2',
+    userName: '李明',
+    userAvatar: '/avatar-2.jpg',
+    topicId: 'business-logic',
+    topicName: '商业逻辑',
+    question: '我想了解如何进行产品定价，以及如何建立可持续的盈利模式？',
+    submitDate: '2024-03-11 15:30',
+    status: 'pending' as ConsultationStatus,
   },
 ];
 
@@ -483,7 +490,7 @@ export default function AdminConsultationsPage() {
                       </p>
 
                       {/* 状态切换按钮 */}
-                      <div className="flex items-center space-x-2 mb-3">
+                      <div className="flex items-center space-x-2">
                         <span className="text-[12px] text-[rgba(0,0,0,0.5)]">状态：</span>
                         {(['pending', 'processing', 'completed'] as ConsultationStatus[]).map((status) => (
                           <button
@@ -503,21 +510,6 @@ export default function AdminConsultationsPage() {
                           </button>
                         ))}
                       </div>
-
-                      {/* 回复内容 */}
-                      {consult.reply && (
-                        <div className="bg-[rgba(0,0,0,0.03)] p-3 rounded-none">
-                          <div className="flex items-center space-x-1 mb-1">
-                            <CheckCircle className="w-3 h-3 text-green-600" />
-                            <span className="text-[11px] font-medium text-gray-700">
-                              回复
-                            </span>
-                          </div>
-                          <p className="text-[12px] text-[rgba(0,0,0,0.7)] leading-relaxed">
-                            {consult.reply}
-                          </p>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
