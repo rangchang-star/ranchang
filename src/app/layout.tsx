@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Inspector } from 'react-dev-inspector';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { AuthProvider } from '@/contexts/AuthContext';
+import LoginPromptModal from '@/components/login-prompt-modal';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -54,8 +56,11 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={`${inter.variable} antialiased`}>
-        {isDev && <Inspector />}
-        {children}
+        <AuthProvider>
+          {isDev && <Inspector />}
+          {children}
+          <LoginPromptModal />
+        </AuthProvider>
       </body>
     </html>
   );
