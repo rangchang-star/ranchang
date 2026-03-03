@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Flame, Play, User, Timer, Music2, X, List } from 'lucide-react';
+import { Search, Flame, Play, User, Timer, Music2, X, List, Folder } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -635,7 +635,7 @@ export default function DiscoveryPage() {
       {/* 每日宣告 - 固定在底部导航栏上方 */}
       <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40">
         <section>
-          <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer">
+          <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors">
             <div className="flex items-center space-x-3">
               {/* 左侧图标 - 正方形 */}
               <div className="flex-shrink-0">
@@ -647,7 +647,7 @@ export default function DiscoveryPage() {
               </div>
 
               {/* 中间内容 */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 cursor-pointer">
                 {/* 日期加宣告片花（黑色字） */}
                 <h3 className="text-[13px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
                   {dailyDeclaration.title}
@@ -668,10 +668,12 @@ export default function DiscoveryPage() {
                 <Play className="w-3 h-3 text-white fill-white ml-0.5" />
               </button>
 
-              {/* 目录图标 */}
-              <button className="w-7 h-7 bg-[rgba(0,0,0,0.05)] flex items-center justify-center flex-shrink-0 rounded">
-                <List className="w-3.5 h-3.5 text-gray-600" />
-              </button>
+              {/* 资料按钮 */}
+              <Link href="/assets">
+                <button className="w-7 h-7 bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] flex items-center justify-center flex-shrink-0 rounded transition-colors">
+                  <Folder className="w-3.5 h-3.5 text-gray-600" />
+                </button>
+              </Link>
             </div>
           </div>
         </section>
