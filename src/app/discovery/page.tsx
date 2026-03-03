@@ -254,6 +254,7 @@ export default function DiscoveryPage() {
   const [modalType, setModalType] = useState<'abilities' | 'activities' | 'declarations'>('abilities');
   const [trustDialogOpen, setTrustDialogOpen] = useState(false);
   const declarationAudioRefs = useRef<Record<string, HTMLAudioElement>>({});
+  const [discoveryBg, setDiscoveryBg] = useState<string>('/discovery-bg.jpg');
   const router = useRouter();
 
   const toggleMusic = () => {
@@ -304,6 +305,19 @@ export default function DiscoveryPage() {
     audio.volume = 0.3;
     audioRef.current = audio;
 
+    // 从localStorage读取背景图设置
+    try {
+      const settings = localStorage.getItem('pageSettings');
+      if (settings) {
+        const parsedSettings = JSON.parse(settings);
+        if (parsedSettings.discovery?.bgImage) {
+          setDiscoveryBg(parsedSettings.discovery.bgImage);
+        }
+      }
+    } catch (error) {
+      console.error('读取背景图设置失败:', error);
+    }
+
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -313,7 +327,9 @@ export default function DiscoveryPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white pb-14">
+    <div className="min-h-screen pb-14" style={{ backgroundImage: `url(${discoveryBg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+      {/* 白色遮罩层，确保文字清晰可读 */}
+      <div className="min-h-screen bg-white/95 pb-14">
       {/* 可滚动内容区 - 手机H5宽度 */}
       <div className="w-full max-w-md mx-auto">
         {/* 顶部导航 - 标题上方留出两个字高度 */}
@@ -813,6 +829,7 @@ export default function DiscoveryPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -97,6 +97,7 @@ const defaultSettings = {
     slogan: '发现光亮，点亮事业',
     logo: '/logo-ranchang.png',
     music: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    backgroundImage: '/discovery-bg.jpg',
   },
   // 点亮键设置
   ignition: {
@@ -144,6 +145,7 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [previewMusic, setPreviewMusic] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
+  const [previewBackground, setPreviewBackground] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [hasChanged, setHasChanged] = useState(false);
 
@@ -221,6 +223,28 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // 背景图上传处理
+  const handleBackgroundUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // 模拟上传，实际项目中需要上传到服务器
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setPreviewBackground(result);
+        setSettings(prev => ({
+          ...prev,
+          discovery: {
+            ...prev.discovery,
+            backgroundImage: result,
+          },
+        }));
+        setHasChanged(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // 音乐预览
   const toggleMusicPreview = () => {
     setPreviewMusic(!previewMusic);
@@ -264,23 +288,38 @@ export default function AdminSettingsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="bg-[rgba(0,0,0,0.05)] p-1">
-            <TabsTrigger value="navigation" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
-              导航键设置
-            </TabsTrigger>
-            <TabsTrigger value="pageTitles" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
-              页面标题
-            </TabsTrigger>
-            <TabsTrigger value="discovery" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
-              发现键设置
-            </TabsTrigger>
-            <TabsTrigger value="ignition" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
-              点亮键设置
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
-              个人键设置
-            </TabsTrigger>
-          </TabsList>
+          <div className="space-y-4">
+            <div>
+              <p className="text-[11px] font-medium text-[rgba(0,0,0,0.5)] mb-2 uppercase tracking-wider">全局配置</p>
+              <TabsList className="bg-[rgba(0,0,0,0.05)] p-1 w-full">
+                <TabsTrigger value="navigation" className="data-[state=active]:bg-white data-[state=active]:text-blue-600 flex-1">
+                  <Navigation className="w-3 h-3 mr-1" />
+                  导航键
+                </TabsTrigger>
+                <TabsTrigger value="pageTitles" className="data-[state=active]:bg-white data-[state=active]:text-blue-600 flex-1">
+                  <Type className="w-3 h-3 mr-1" />
+                  页面标题
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-[rgba(0,0,0,0.5)] mb-2 uppercase tracking-wider">功能模块</p>
+              <TabsList className="bg-[rgba(0,0,0,0.05)] p-1 w-full">
+                <TabsTrigger value="discovery" className="data-[state=active]:bg-white data-[state=active]:text-blue-600 flex-1">
+                  <Flame className="w-3 h-3 mr-1" />
+                  发现键
+                </TabsTrigger>
+                <TabsTrigger value="ignition" className="data-[state=active]:bg-white data-[state=active]:text-blue-600 flex-1">
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                  点亮键
+                </TabsTrigger>
+                <TabsTrigger value="profile" className="data-[state=active]:bg-white data-[state=active]:text-blue-600 flex-1">
+                  <User className="w-3 h-3 mr-1" />
+                  个人键
+                </TabsTrigger>
+              </TabsList>
+            </div>
+          </div>
 
           {/* 导航键设置 */}
           <TabsContent value="navigation" className="space-y-4">
@@ -500,157 +539,249 @@ export default function AdminSettingsPage() {
               <CardHeader>
                 <CardTitle className="text-[15px] font-semibold">发现键内页配置</CardTitle>
                 <CardDescription className="text-[12px]">
-                  配置发现键页面的展示内容
+                  配置发现键页面的展示内容和样式
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Slogan编辑 */}
+              <CardContent className="space-y-8">
+                {/* 页面基础信息 */}
                 <div>
-                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    页面 Slogan
-                  </label>
-                  <Input
-                    value={settings.discovery.slogan}
-                    onChange={(e) => {
-                      setSettings(prev => ({
-                        ...prev,
-                        discovery: {
-                          ...prev.discovery,
-                          slogan: e.target.value,
-                        },
-                      }));
-                      setHasChanged(true);
-                    }}
-                    placeholder="请输入页面 Slogan"
-                    className="text-[13px]"
-                    maxLength={50}
-                  />
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      显示在发现键页面顶部的标语
-                    </span>
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      {settings.discovery.slogan.length}/50
-                    </span>
+                  <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-[rgba(0,0,0,0.08)]">
+                    <Type className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-[13px] font-semibold text-gray-900">页面基础信息</h3>
                   </div>
-                </div>
-
-                {/* Logo上传 */}
-                <div>
-                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    右侧 Logo
-                  </label>
-                  <div className="flex items-start space-x-4">
-                    <div className="w-20 h-20 bg-[rgba(0,0,0,0.02)] border-2 border-dashed border-[rgba(0,0,0,0.1)] rounded-lg flex items-center justify-center overflow-hidden">
-                      {previewLogo || settings.discovery.logo ? (
-                        <img
-                          src={previewLogo || settings.discovery.logo}
-                          alt="Logo预览"
-                          className="w-full h-full object-contain"
-                        />
-                      ) : (
-                        <ImageIcon className="w-8 h-8 text-[rgba(0,0,0,0.3)]" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                        id="logo-upload"
-                      />
-                      <label htmlFor="logo-upload">
-                        <Button
-                          variant="outline"
-                          className="text-[12px]"
-                          asChild
-                        >
-                          <span>
-                            <Upload className="w-3 h-3 mr-1" />
-                            上传Logo
-                          </span>
-                        </Button>
+                  <div className="space-y-4">
+                    {/* Slogan编辑 */}
+                    <div>
+                      <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                        页面 Slogan
                       </label>
-                      <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">
-                        支持 PNG、JPG、GIF 格式，建议尺寸 200x200px
-                      </p>
+                      <Input
+                        value={settings.discovery.slogan}
+                        onChange={(e) => {
+                          setSettings(prev => ({
+                            ...prev,
+                            discovery: {
+                              ...prev.discovery,
+                              slogan: e.target.value,
+                            },
+                          }));
+                          setHasChanged(true);
+                        }}
+                        placeholder="请输入页面 Slogan"
+                        className="text-[13px]"
+                        maxLength={50}
+                      />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                          显示在发现键页面顶部的标语
+                        </span>
+                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                          {settings.discovery.slogan.length}/50
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Logo上传 */}
+                    <div>
+                      <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                        右侧 Logo
+                      </label>
+                      <div className="flex items-start space-x-4">
+                        <div className="w-20 h-20 bg-[rgba(0,0,0,0.02)] border-2 border-dashed border-[rgba(0,0,0,0.1)] rounded-lg flex items-center justify-center overflow-hidden">
+                          {previewLogo || settings.discovery.logo ? (
+                            <img
+                              src={previewLogo || settings.discovery.logo}
+                              alt="Logo预览"
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <ImageIcon className="w-8 h-8 text-[rgba(0,0,0,0.3)]" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                            className="hidden"
+                            id="logo-upload"
+                          />
+                          <label htmlFor="logo-upload">
+                            <Button
+                              variant="outline"
+                              className="text-[12px]"
+                              asChild
+                            >
+                              <span>
+                                <Upload className="w-3 h-3 mr-1" />
+                                上传Logo
+                              </span>
+                            </Button>
+                          </label>
+                          <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">
+                            支持 PNG、JPG、GIF 格式，建议尺寸 200x200px
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* 音乐上传 */}
+                {/* 视觉元素 */}
                 <div>
-                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    背景音乐
-                  </label>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                          <Music className="w-5 h-5 text-blue-600" />
+                  <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-[rgba(0,0,0,0.08)]">
+                    <ImageIcon className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-[13px] font-semibold text-gray-900">视觉元素</h3>
+                  </div>
+                  <div className="space-y-4">
+                    {/* 背景图上传 */}
+                    <div>
+                      <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                        背景图片
+                      </label>
+                      <div className="space-y-3">
+                        <div className="w-full h-48 bg-[rgba(0,0,0,0.02)] border-2 border-dashed border-[rgba(0,0,0,0.1)] rounded-lg overflow-hidden relative">
+                          {previewBackground || settings.discovery.backgroundImage ? (
+                            <img
+                              src={previewBackground || settings.discovery.backgroundImage}
+                              alt="背景图预览"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <ImageIcon className="w-12 h-12 text-[rgba(0,0,0,0.3)]" />
+                              <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">未上传背景图</p>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[12px] font-medium text-gray-900 truncate">
-                            {settings.discovery.music ? '背景音乐' : '未上传音乐'}
-                          </p>
-                          <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                            {settings.discovery.music ? '已上传' : '支持 MP3 格式'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {settings.discovery.music && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={toggleMusicPreview}
-                            className="text-[12px]"
-                          >
-                            {previewMusic ? (
-                              <>
-                                <X className="w-3 h-3 mr-1" />
-                                停止
-                              </>
-                            ) : (
-                              <>
-                                <Play className="w-3 h-3 mr-1" />
-                                预览
-                              </>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <p className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                              建议尺寸：1920x1080px，支持 JPG、PNG 格式
+                            </p>
+                            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                              背景图将显示在发现页的背景区域
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {(previewBackground || settings.discovery.backgroundImage) && (
+                              <a
+                                href="/discovery"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[12px] text-blue-600 hover:text-blue-700 font-medium"
+                              >
+                                预览效果
+                              </a>
                             )}
-                          </Button>
-                        )}
-                        <input
-                          type="file"
-                          accept="audio/*"
-                          onChange={handleMusicUpload}
-                          className="hidden"
-                          id="music-upload"
-                        />
-                        <label htmlFor="music-upload">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-[12px]"
-                            asChild
-                          >
-                            <span>
-                              <Upload className="w-3 h-3 mr-1" />
-                              更换
-                            </span>
-                          </Button>
-                        </label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleBackgroundUpload}
+                              className="hidden"
+                              id="background-upload"
+                            />
+                            <label htmlFor="background-upload">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-[12px]"
+                                asChild
+                              >
+                                <span>
+                                  <Upload className="w-3 h-3 mr-1" />
+                                  更换背景
+                                </span>
+                              </Button>
+                            </label>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    {/* 音乐预览播放器 */}
-                    {previewMusic && settings.discovery.music && (
-                      <audio
-                        src={settings.discovery.music}
-                        autoPlay
-                        onEnded={() => setPreviewMusic(false)}
-                        className="w-full"
-                      />
-                    )}
+                  </div>
+                </div>
+
+                {/* 交互元素 */}
+                <div>
+                  <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-[rgba(0,0,0,0.08)]">
+                    <Music className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-[13px] font-semibold text-gray-900">交互元素</h3>
+                  </div>
+                  <div className="space-y-4">
+                    {/* 音乐上传 */}
+                    <div>
+                      <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                        背景音乐
+                      </label>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                              <Music className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[12px] font-medium text-gray-900 truncate">
+                                {settings.discovery.music ? '背景音乐' : '未上传音乐'}
+                              </p>
+                              <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                                {settings.discovery.music ? '已上传' : '支持 MP3 格式'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {settings.discovery.music && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={toggleMusicPreview}
+                                className="text-[12px]"
+                              >
+                                {previewMusic ? (
+                                  <>
+                                    <X className="w-3 h-3 mr-1" />
+                                    停止
+                                  </>
+                                ) : (
+                                  <>
+                                    <Play className="w-3 h-3 mr-1" />
+                                    预览
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                            <input
+                              type="file"
+                              accept="audio/*"
+                              onChange={handleMusicUpload}
+                              className="hidden"
+                              id="music-upload"
+                            />
+                            <label htmlFor="music-upload">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-[12px]"
+                                asChild
+                              >
+                                <span>
+                                  <Upload className="w-3 h-3 mr-1" />
+                                  更换
+                                </span>
+                              </Button>
+                            </label>
+                          </div>
+                        </div>
+                        {/* 音乐预览播放器 */}
+                        {previewMusic && settings.discovery.music && (
+                          <audio
+                            src={settings.discovery.music}
+                            autoPlay
+                            onEnded={() => setPreviewMusic(false)}
+                            className="w-full"
+                          />
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -699,7 +830,7 @@ export default function AdminSettingsPage() {
                 </div>
 
                 {/* AI加油圈Slogan */}
-                <div>
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
                   <label className="block text-[13px] font-medium text-gray-900 mb-2">
                     AI加油圈 Slogan（灰色文字）
                   </label>
@@ -730,8 +861,11 @@ export default function AdminSettingsPage() {
                 </div>
 
                 {/* 预览区域 */}
-                <div className="space-y-3 pt-4 border-t border-[rgba(0,0,0,0.1)]">
-                  <p className="text-[12px] font-medium text-gray-900">效果预览</p>
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Eye className="w-4 h-4 text-blue-600" />
+                    <p className="text-[12px] font-medium text-gray-900">效果预览</p>
+                  </div>
                   <div className="p-4 bg-[rgba(0,0,0,0.02)] rounded-lg space-y-3">
                     <div>
                       <p className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1">探访点亮 Slogan：</p>
