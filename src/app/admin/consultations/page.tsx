@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Edit, CheckCircle, Clock } from 'lucide-react';
+import { Search, Edit, CheckCircle, Clock, ChevronUp, ChevronDown, User, X, Briefcase, Calendar, MapPin, Users, Tag, Activity } from 'lucide-react';
 
 // 咨询话题配置
 const consultationTopics = [
@@ -35,6 +35,73 @@ const consultationTopics = [
   },
 ];
 
+// 咨询状态类型
+type ConsultationStatus = 'pending' | 'processing' | 'completed';
+
+// 模拟用户详细信息
+const mockUserDetails = {
+  '1': {
+    id: '1',
+    name: '王芳',
+    avatar: '/avatar-3.jpg',
+    age: 45,
+    gender: '女',
+    phone: '138****8888',
+    email: 'wangfang@example.com',
+    industry: '企业服务',
+    company: 'XX科技有限公司',
+    position: 'HRBP总监',
+    connectionType: 'personLookingForJob',
+    need: '希望找到传统制造业的数字化转型项目机会，用15年HRBP经验帮助企业搭建AI时代的人才培养体系',
+    abilityTags: ['HRBP', '团队管理', '人才发展', '组织优化', '数字化转型'],
+    resourceTags: ['人才', '技术', '品牌'],
+    registerDate: '2024-01-15',
+    lastLoginDate: '2024-03-15',
+    consultationCount: 5,
+    activityCount: 3,
+  },
+  '2': {
+    id: '2',
+    name: '李明',
+    avatar: '/avatar-2.jpg',
+    age: 38,
+    gender: '男',
+    phone: '139****6666',
+    email: 'liming@example.com',
+    industry: '互联网',
+    company: 'YY创业公司',
+    position: 'CEO',
+    connectionType: 'jobLookingForPerson',
+    need: '寻找合伙人，共同推进教育科技项目',
+    abilityTags: ['产品管理', '市场营销', '融资', '团队搭建'],
+    resourceTags: ['资金', '渠道', '品牌'],
+    registerDate: '2024-02-01',
+    lastLoginDate: '2024-03-14',
+    consultationCount: 2,
+    activityCount: 5,
+  },
+  '3': {
+    id: '3',
+    name: '张总',
+    avatar: '/avatar-1.jpg',
+    age: 52,
+    gender: '男',
+    phone: '136****9999',
+    email: 'zhang@example.com',
+    industry: '制造业',
+    company: 'ZZ制造集团',
+    position: '创始人',
+    connectionType: 'personLookingForJob',
+    need: '寻找数字化转型合作伙伴和资源',
+    abilityTags: ['战略规划', '供应链管理', '品牌建设', '数字化转型'],
+    resourceTags: ['资金', '供应链', '场地'],
+    registerDate: '2024-01-20',
+    lastLoginDate: '2024-03-13',
+    consultationCount: 8,
+    activityCount: 10,
+  },
+};
+
 // 模拟咨询数据
 const mockConsultations = [
   {
@@ -46,7 +113,7 @@ const mockConsultations = [
     topicName: 'AI前沿',
     question: '我是做传统制造业的，想引入AI来优化生产线，但不知道从哪里开始，也不知道应该选择什么样的AI工具？',
     submitDate: '2024-03-15 14:30',
-    status: 'pending',
+    status: 'pending' as ConsultationStatus,
     reply: null,
   },
   {
@@ -58,7 +125,7 @@ const mockConsultations = [
     topicName: '创业心理',
     question: '第一次创业失败后，心里一直很焦虑，不知道该不该继续创业，家人也不支持我继续尝试。',
     submitDate: '2024-03-14 10:15',
-    status: 'replied',
+    status: 'processing' as ConsultationStatus,
     reply: '失败是创业路上的常态，重要的是从失败中学习。建议先调整心态，寻找同行者支持，可以考虑参加我们的创业支持小组。',
   },
   {
@@ -70,18 +137,36 @@ const mockConsultations = [
     topicName: '商业逻辑',
     question: '我们的产品很好，但就是找不到盈利模式，用户愿意用但不愿意付费，应该如何设计合理的商业模式？',
     submitDate: '2024-03-13 16:45',
-    status: 'pending',
-    reply: null,
+    status: 'completed' as ConsultationStatus,
+    reply: '建议采用Freemium模式，提供基础功能免费使用，高级功能付费。同时可以考虑增值服务，如培训、定制开发等。',
+  },
+  {
+    id: '4',
+    userId: '1',
+    userName: '王芳',
+    userAvatar: '/avatar-3.jpg',
+    topicId: 'mission-navigation',
+    topicName: '使命导航',
+    question: '我现在在转型期，不太清楚自己的使命是什么，感觉自己没有方向，如何找到自己的使命感？',
+    submitDate: '2024-03-12 09:20',
+    status: 'processing' as ConsultationStatus,
+    reply: '找到使命感需要深入自我探索。建议回顾自己最有成就感的时刻，思考什么让你感到充满激情和意义。',
   },
 ];
 
 export default function AdminConsultationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTopicFilter, setSelectedTopicFilter] = useState<string>('');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('');
   const [editingTopic, setEditingTopic] = useState<string | null>(null);
   const [editingPlaceholder, setEditingPlaceholder] = useState('');
+  const [consultations, setConsultations] = useState(mockConsultations);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [showUserDetailDialog, setShowUserDetailDialog] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  const filteredConsultations = mockConsultations.filter((consult) => {
+  // 过滤咨询
+  const filteredConsultations = consultations.filter((consult) => {
     const matchesSearch =
       consult.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       consult.question.toLowerCase().includes(searchTerm.toLowerCase());
@@ -89,14 +174,23 @@ export default function AdminConsultationsPage() {
     const matchesTopic =
       selectedTopicFilter === '' || consult.topicId === selectedTopicFilter;
 
-    return matchesSearch && matchesTopic;
+    const matchesStatus =
+      selectedStatusFilter === '' || consult.status === selectedStatusFilter;
+
+    return matchesSearch && matchesTopic && matchesStatus;
+  });
+
+  // 排序
+  const sortedConsultations = [...filteredConsultations].sort((a, b) => {
+    const dateA = new Date(a.submitDate).getTime();
+    const dateB = new Date(b.submitDate).getTime();
+    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
   // 编辑引导话术
   const handleSavePlaceholder = (topicId: string) => {
     const topic = consultationTopics.find((t) => t.id === topicId);
     if (topic) {
-      // 实际项目中需要调用API保存
       console.log('保存引导话术:', topicId, editingPlaceholder);
       alert('引导话术保存成功！');
       setEditingTopic(null);
@@ -104,20 +198,44 @@ export default function AdminConsultationsPage() {
     }
   };
 
-  // 获取状态标签
-  const getStatusBadge = (status: string) => {
-    if (status === 'pending') {
-      return (
-        <Badge className="rounded-none bg-yellow-400 text-white font-normal text-[10px]">
-          待处理
-        </Badge>
-      );
-    }
+  // 切换咨询状态
+  const handleStatusChange = (consultId: string, newStatus: ConsultationStatus) => {
+    setConsultations(prev =>
+      prev.map(consult =>
+        consult.id === consultId ? { ...consult, status: newStatus } : consult
+      )
+    );
+  };
+
+  // 获取状态标签配置
+  const getStatusBadge = (status: ConsultationStatus) => {
+    const statusConfig = {
+      pending: { label: '待处理', bg: 'bg-yellow-400' },
+      processing: { label: '处理中', bg: 'bg-blue-400' },
+      completed: { label: '已处理', bg: 'bg-green-400' },
+    };
+    const config = statusConfig[status];
     return (
-      <Badge className="rounded-none bg-green-400 text-white font-normal text-[10px]">
-        已回复
+      <Badge className={`rounded-none ${config.bg} text-white font-normal text-[10px]`}>
+        {config.label}
       </Badge>
     );
+  };
+
+  // 获取连接类型标签
+  const getConnectionTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      personLookingForJob: '人找事',
+      jobLookingForPerson: '事找人',
+      pureExchange: '纯交流',
+    };
+    return typeMap[type] || type;
+  };
+
+  // 显示用户详细信息
+  const showUserDetail = (userId: string) => {
+    setSelectedUserId(userId);
+    setShowUserDetailDialog(true);
   };
 
   return (
@@ -213,34 +331,98 @@ export default function AdminConsultationsPage() {
                 className="pl-10 text-[13px]"
               />
             </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-[13px] text-[rgba(0,0,0,0.6)]">时间排序：</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="flex items-center space-x-1"
+              >
+                {sortOrder === 'asc' ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+                <span>{sortOrder === 'asc' ? '升序' : '降序'}</span>
+              </Button>
+            </div>
           </div>
 
-          {/* 话题筛选 */}
-          <div className="flex items-center space-x-2">
-            <span className="text-[13px] text-[rgba(0,0,0,0.6)]">话题筛选：</span>
-            <button
-              onClick={() => setSelectedTopicFilter('')}
-              className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
-                selectedTopicFilter === ''
-                  ? 'bg-[rgba(59,130,246,0.4)] text-white'
-                  : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
-              }`}
-            >
-              全部
-            </button>
-            {consultationTopics.map((topic) => (
+          {/* 筛选标签 */}
+          <div className="flex items-center flex-wrap gap-3">
+            {/* 话题筛选 */}
+            <div className="flex items-center space-x-2">
+              <span className="text-[13px] text-[rgba(0,0,0,0.6)]">话题：</span>
               <button
-                key={topic.id}
-                onClick={() => setSelectedTopicFilter(topic.id)}
+                onClick={() => setSelectedTopicFilter('')}
                 className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
-                  selectedTopicFilter === topic.id
+                  selectedTopicFilter === ''
                     ? 'bg-[rgba(59,130,246,0.4)] text-white'
                     : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
                 }`}
               >
-                {topic.icon} {topic.name}
+                全部
               </button>
-            ))}
+              {consultationTopics.map((topic) => (
+                <button
+                  key={topic.id}
+                  onClick={() => setSelectedTopicFilter(topic.id)}
+                  className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
+                    selectedTopicFilter === topic.id
+                      ? 'bg-[rgba(59,130,246,0.4)] text-white'
+                      : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                  }`}
+                >
+                  {topic.icon} {topic.name}
+                </button>
+              ))}
+            </div>
+
+            {/* 状态筛选 */}
+            <div className="flex items-center space-x-2">
+              <span className="text-[13px] text-[rgba(0,0,0,0.6)]">状态：</span>
+              <button
+                onClick={() => setSelectedStatusFilter('')}
+                className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
+                  selectedStatusFilter === ''
+                    ? 'bg-[rgba(59,130,246,0.4)] text-white'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+              >
+                全部
+              </button>
+              <button
+                onClick={() => setSelectedStatusFilter('pending')}
+                className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
+                  selectedStatusFilter === 'pending'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-white'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+              >
+                待处理
+              </button>
+              <button
+                onClick={() => setSelectedStatusFilter('processing')}
+                className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
+                  selectedStatusFilter === 'processing'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-white'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+              >
+                处理中
+              </button>
+              <button
+                onClick={() => setSelectedStatusFilter('completed')}
+                className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
+                  selectedStatusFilter === 'completed'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-white'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+              >
+                已处理
+              </button>
+            </div>
           </div>
         </div>
 
@@ -248,36 +430,39 @@ export default function AdminConsultationsPage() {
         <div className="border border-[rgba(0,0,0,0.1)]">
           <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
             <h3 className="text-[13px] font-semibold text-gray-900">
-              咨询列表（{filteredConsultations.length}）
+              咨询列表（{sortedConsultations.length}）
             </h3>
           </div>
           <div className="divide-y divide-[rgba(0,0,0,0.05)]">
-            {filteredConsultations.length === 0 ? (
+            {sortedConsultations.length === 0 ? (
               <div className="p-12 text-center">
                 <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
                   暂无符合条件的咨询
                 </p>
               </div>
             ) : (
-              filteredConsultations.map((consult) => (
+              sortedConsultations.map((consult) => (
                 <div
                   key={consult.id}
                   className="p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
                 >
                   <div className="flex items-start space-x-4">
-                    {/* 用户头像 */}
-                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                    {/* 用户头像（可点击） */}
+                    <button
+                      onClick={() => showUserDetail(consult.userId)}
+                      className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-transparent hover:border-blue-400 transition-colors"
+                    >
                       <img
                         src={consult.userAvatar}
                         alt={consult.userName}
                         className="w-full h-full object-cover"
                       />
-                    </div>
+                    </button>
 
                     <div className="flex-1 min-w-0">
                       {/* 标题行 */}
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 flex-wrap">
                           <h4 className="text-[13px] font-semibold text-gray-900">
                             {consult.userName}
                           </h4>
@@ -296,6 +481,28 @@ export default function AdminConsultationsPage() {
                       <p className="text-[13px] text-[rgba(0,0,0,0.8)] leading-relaxed mb-3">
                         {consult.question}
                       </p>
+
+                      {/* 状态切换按钮 */}
+                      <div className="flex items-center space-x-2 mb-3">
+                        <span className="text-[12px] text-[rgba(0,0,0,0.5)]">状态：</span>
+                        {(['pending', 'processing', 'completed'] as ConsultationStatus[]).map((status) => (
+                          <button
+                            key={status}
+                            onClick={() => handleStatusChange(consult.id, status)}
+                            className={`px-2 py-1 text-[11px] font-normal transition-colors ${
+                              consult.status === status
+                                ? status === 'pending'
+                                  ? 'bg-yellow-400 text-white'
+                                  : status === 'processing'
+                                  ? 'bg-blue-400 text-white'
+                                  : 'bg-green-400 text-white'
+                                : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                            }`}
+                          >
+                            {status === 'pending' ? '待处理' : status === 'processing' ? '处理中' : '已处理'}
+                          </button>
+                        ))}
+                      </div>
 
                       {/* 回复内容 */}
                       {consult.reply && (
@@ -319,6 +526,205 @@ export default function AdminConsultationsPage() {
           </div>
         </div>
       </div>
+
+      {/* 用户详细信息悬浮页面 */}
+      {showUserDetailDialog && selectedUserId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* 头部 */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <User className="w-5 h-5 text-blue-400" />
+                <h3 className="text-base font-semibold text-gray-900">用户详细信息</h3>
+              </div>
+              <button
+                onClick={() => setShowUserDetailDialog(false)}
+                className="p-1 hover:bg-gray-100 rounded-none"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* 内容 */}
+            <div className="p-6 space-y-6">
+              {(() => {
+                const user = mockUserDetails[selectedUserId as keyof typeof mockUserDetails];
+                if (!user) return null;
+                return (
+                  <>
+                    {/* 基本信息 */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-semibold text-gray-900">{user.name}</h4>
+                          <div className="flex items-center space-x-3 mt-1 text-[13px] text-[rgba(0,0,0,0.6)]">
+                            <span>{user.gender}</span>
+                            <span>{user.age}岁</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200"></div>
+
+                    {/* 联系方式 */}
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                        <User className="w-4 h-4 text-blue-400" />
+                        <span>联系方式</span>
+                      </h5>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">手机：</span>
+                          <span className="text-gray-700">{user.phone}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">邮箱：</span>
+                          <span className="text-gray-700">{user.email}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200"></div>
+
+                    {/* 职业信息 */}
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                        <Briefcase className="w-4 h-4 text-blue-400" />
+                        <span>职业信息</span>
+                      </h5>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">公司：</span>
+                          <span className="text-gray-700">{user.company}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">职位：</span>
+                          <span className="text-gray-700">{user.position}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">行业：</span>
+                          <span className="text-gray-700">{user.industry}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">类型：</span>
+                          <Badge className="rounded-none bg-[rgba(59,130,246,0.15)] text-blue-600 font-normal text-[11px]">
+                            {getConnectionTypeLabel(user.connectionType)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200"></div>
+
+                    {/* 需求描述 */}
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                        <Tag className="w-4 h-4 text-blue-400" />
+                        <span>需求描述</span>
+                      </h5>
+                      <p className="text-[13px] text-gray-700 leading-relaxed">
+                        {user.need}
+                      </p>
+                    </div>
+
+                    <div className="border-t border-gray-200"></div>
+
+                    {/* 能力标签 */}
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                        <Users className="w-4 h-4 text-blue-400" />
+                        <span>能力标签</span>
+                      </h5>
+                      <div className="flex flex-wrap gap-2">
+                        {user.abilityTags.map((tag) => (
+                          <Badge
+                            key={tag}
+                            className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.7)] font-normal text-[11px]"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200"></div>
+
+                    {/* 资源标签 */}
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                        <Briefcase className="w-4 h-4 text-blue-400" />
+                        <span>资源标签</span>
+                      </h5>
+                      <div className="flex flex-wrap gap-2">
+                        {user.resourceTags.map((tag) => (
+                          <Badge
+                            key={tag}
+                            className="rounded-none bg-[rgba(34,197,94,0.15)] text-green-600 font-normal text-[11px]"
+                          >
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-200"></div>
+
+                    {/* 账户信息 */}
+                    <div>
+                      <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                        <Activity className="w-4 h-4 text-blue-400" />
+                        <span>账户信息</span>
+                      </h5>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">注册时间：</span>
+                          <span className="text-gray-700">{user.registerDate}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">最后登录：</span>
+                          <span className="text-gray-700">{user.lastLoginDate}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">咨询次数：</span>
+                          <span className="text-gray-700">{user.consultationCount}次</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-[13px]">
+                          <span className="text-[rgba(0,0,0,0.5)] w-16">活动次数：</span>
+                          <span className="text-gray-700">{user.activityCount}次</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* 底部按钮 */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowUserDetailDialog(false)}
+                  className="flex-1"
+                >
+                  关闭
+                </Button>
+                <Button className="flex-1 bg-[rgba(59,130,246,0.4)] hover:bg-[rgba(59,130,246,0.5)]">
+                  查看完整资料
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
