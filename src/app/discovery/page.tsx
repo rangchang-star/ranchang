@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Flame, Play, User, Timer, Music2, X } from 'lucide-react';
+import { Search, Flame, Play, User, Timer, Music2, X, List } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -636,17 +636,13 @@ export default function DiscoveryPage() {
       <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40">
         <section>
           <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer">
-            <div className="flex items-start space-x-4">
-              {/* 图像 - 纯方形，放大30% */}
-              <div className="w-8 h-8 flex-shrink-0 overflow-hidden">
-                <img
-                  src={dailyDeclaration.image}
-                  alt="每日宣告"
-                  className="w-full h-full object-cover"
-                />
+            <div className="flex items-center space-x-3">
+              {/* 左侧金字塔图标 */}
+              <div className="flex-shrink-0 relative">
+                <div className="w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-b-[28px] border-b-blue-400 opacity-80"></div>
               </div>
 
-              {/* 右侧内容 */}
+              {/* 中间内容 */}
               <div className="flex-1 min-w-0">
                 {/* 日期加宣告片花（黑色字） */}
                 <h3 className="text-[13px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
@@ -663,9 +659,14 @@ export default function DiscoveryPage() {
                 </div>
               </div>
 
-              {/* 播放按钮 - 纯方形 */}
-              <button className="w-10 h-10 bg-blue-400 flex items-center justify-center flex-shrink-0">
-                <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+              {/* 播放按钮 - 缩小30% */}
+              <button className="w-7 h-7 bg-blue-400 flex items-center justify-center flex-shrink-0 rounded">
+                <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+              </button>
+
+              {/* 目录图标 */}
+              <button className="w-7 h-7 bg-[rgba(0,0,0,0.05)] flex items-center justify-center flex-shrink-0 rounded">
+                <List className="w-3.5 h-3.5 text-gray-600" />
               </button>
             </div>
           </div>
