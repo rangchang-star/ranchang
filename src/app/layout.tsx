@@ -51,13 +51,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isDev = process.env.NODE_ENV === 'development';
-
   return (
     <html lang="zh-CN">
       <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
-          {isDev && <Inspector />}
           {children}
           <LoginPromptModal />
         </AuthProvider>
