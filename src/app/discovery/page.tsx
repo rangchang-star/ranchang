@@ -450,8 +450,8 @@ export default function DiscoveryPage() {
       <div className="min-h-screen bg-white/95 pb-14">
       {/* 可滚动内容区 - 手机H5宽度 */}
       <div className="w-full max-w-md mx-auto">
-        {/* 顶部导航 - 标题上方留出两个字高度 */}
-        <div className="sticky top-0 bg-white z-50 pt-[60px]">
+        {/* 顶部导航 - 标题上方留出适当空间 */}
+        <div className="sticky top-0 bg-white z-50 pt-[40px]">
           <div className="flex items-center justify-between px-5 pt-4">
             <h1 className="text-2xl font-light text-gray-900">发现光亮</h1>
             {/* Logo + 音乐符号 - 点击播放音乐 */}

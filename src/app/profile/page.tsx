@@ -554,7 +554,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-white pb-14">
       {/* 手机H5宽度 */}
       <div className="w-full max-w-md mx-auto">
-        <div className="px-5 pt-[60px] pb-4 space-y-8">
+        <div className="px-5 pt-[40px] pb-4 space-y-8">
           {/* 顶部导航 */}
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-light text-gray-900">个人中心</h1>
