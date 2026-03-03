@@ -10,9 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Settings, Upload, Music, Image as ImageIcon, 
   Layout, Save, Play, Palette, Eye, TrendingUp,
-  BarChart, PieChart, Radar, LineChart, X
+  BarChart, PieChart, Radar, LineChart, X, 
+  AlertTriangle, Navigation, Type, Flame, User
 } from 'lucide-react';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 // 量表演现形式类型
 type AssessmentDisplayStyle = 'bar' | 'radar' | 'progress' | 'cards' | 'line';
@@ -60,6 +63,35 @@ const assessmentDisplayOptions: AssessmentDisplayConfig[] = [
 
 // 默认设置数据
 const defaultSettings = {
+  // 底部导航键配置
+  navigation: {
+    discovery: {
+      label: '发现光亮',
+      icon: 'flame', // flame图标
+    },
+    ignition: {
+      label: '点亮事业',
+      icon: 'trending-up', // trending-up图标
+    },
+    profile: {
+      label: '个人中心',
+      icon: 'user', // user图标
+    },
+  },
+  // 页面标题配置
+  pageTitles: {
+    discovery: '发现光亮',
+    activities: '活动列表',
+    visit: '探访点亮',
+    assets: '能力资产',
+    declarations: '高燃宣告',
+    connection: '能力连接',
+    consultation: '专家咨询',
+    training: '培训赋能',
+    subscription: 'AI加油圈',
+    notifications: '消息通知',
+    settings: '系统设置',
+  },
   // 发现键设置
   discovery: {
     slogan: '发现光亮，点亮事业',
@@ -88,15 +120,45 @@ const defaultSettings = {
   },
 };
 
+// 获取页面标题的中文标签
+const getPageTitleLabel = (key: string): string => {
+  const labels: Record<string, string> = {
+    discovery: '发现键页面',
+    activities: '活动列表页',
+    visit: '探访点亮页',
+    assets: '能力资产页',
+    declarations: '高燃宣告页',
+    connection: '能力连接页',
+    consultation: '专家咨询页',
+    training: '培训赋能页',
+    subscription: 'AI加油圈页',
+    notifications: '消息通知页',
+    settings: '系统设置页',
+  };
+  return labels[key] || key;
+};
+
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState(defaultSettings);
   const [activeTab, setActiveTab] = useState('discovery');
   const [saving, setSaving] = useState(false);
   const [previewMusic, setPreviewMusic] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [hasChanged, setHasChanged] = useState(false);
 
-  // 保存设置
+  // 保存设置 - 第一次确认
   const handleSave = () => {
+    if (!hasChanged) {
+      alert('没有修改需要保存');
+      return;
+    }
+    setShowConfirmDialog(true);
+  };
+
+  // 二次确认保存
+  const handleConfirmSave = () => {
+    setShowConfirmDialog(false);
     setSaving(true);
     
     // 模拟保存到localStorage
@@ -107,6 +169,7 @@ export default function AdminSettingsPage() {
       setTimeout(() => {
         alert('设置保存成功！');
         setSaving(false);
+        setHasChanged(false);
       }, 500);
     } catch (error) {
       console.error('保存设置失败:', error);
@@ -131,6 +194,7 @@ export default function AdminSettingsPage() {
             logo: result,
           },
         }));
+        setHasChanged(true);
       };
       reader.readAsDataURL(file);
     }
@@ -151,6 +215,7 @@ export default function AdminSettingsPage() {
             music: result,
           },
         }));
+        setHasChanged(true);
       };
       reader.readAsDataURL(file);
     }
@@ -176,6 +241,7 @@ export default function AdminSettingsPage() {
         },
       },
     }));
+    setHasChanged(true);
   };
 
   return (
@@ -199,6 +265,12 @@ export default function AdminSettingsPage() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="bg-[rgba(0,0,0,0.05)] p-1">
+            <TabsTrigger value="navigation" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
+              导航键设置
+            </TabsTrigger>
+            <TabsTrigger value="pageTitles" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
+              页面标题
+            </TabsTrigger>
             <TabsTrigger value="discovery" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
               发现键设置
             </TabsTrigger>
@@ -209,6 +281,218 @@ export default function AdminSettingsPage() {
               个人键设置
             </TabsTrigger>
           </TabsList>
+
+          {/* 导航键设置 */}
+          <TabsContent value="navigation" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[15px] font-semibold">底部导航键配置</CardTitle>
+                <CardDescription className="text-[12px]">
+                  配置首页底部三个导航键的显示内容
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* 发现光亮键 */}
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    <span className="flex items-center space-x-2">
+                      <Flame className="w-4 h-4" />
+                      <span>发现光亮键</span>
+                    </span>
+                  </label>
+                  <Input
+                    value={settings.navigation.discovery.label}
+                    onChange={(e) => {
+                      setSettings(prev => ({
+                        ...prev,
+                        navigation: {
+                          ...prev.navigation,
+                          discovery: {
+                            ...prev.navigation.discovery,
+                            label: e.target.value,
+                          },
+                        },
+                      }));
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入导航键名称"
+                    className="text-[13px]"
+                    maxLength={10}
+                  />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                      第一个导航键，显示火焰图标
+                    </span>
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                      {settings.navigation.discovery.label.length}/10
+                    </span>
+                  </div>
+                </div>
+
+                {/* 点亮事业键 */}
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    <span className="flex items-center space-x-2">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>点亮事业键</span>
+                    </span>
+                  </label>
+                  <Input
+                    value={settings.navigation.ignition.label}
+                    onChange={(e) => {
+                      setSettings(prev => ({
+                        ...prev,
+                        navigation: {
+                          ...prev.navigation,
+                          ignition: {
+                            ...prev.navigation.ignition,
+                            label: e.target.value,
+                          },
+                        },
+                      }));
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入导航键名称"
+                    className="text-[13px]"
+                    maxLength={10}
+                  />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                      第二个导航键，显示趋势图标
+                    </span>
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                      {settings.navigation.ignition.label.length}/10
+                    </span>
+                  </div>
+                </div>
+
+                {/* 个人中心键 */}
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    <span className="flex items-center space-x-2">
+                      <User className="w-4 h-4" />
+                      <span>个人中心键</span>
+                    </span>
+                  </label>
+                  <Input
+                    value={settings.navigation.profile.label}
+                    onChange={(e) => {
+                      setSettings(prev => ({
+                        ...prev,
+                        navigation: {
+                          ...prev.navigation,
+                          profile: {
+                            ...prev.navigation.profile,
+                            label: e.target.value,
+                          },
+                        },
+                      }));
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入导航键名称"
+                    className="text-[13px]"
+                    maxLength={10}
+                  />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                      第三个导航键，显示用户图标
+                    </span>
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                      {settings.navigation.profile.label.length}/10
+                    </span>
+                  </div>
+                </div>
+
+                {/* 预览区域 */}
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <p className="text-[12px] font-medium text-gray-900 mb-3">效果预览</p>
+                  <div className="flex items-center justify-center space-x-6 p-4 bg-[rgba(0,0,0,0.02)] rounded-lg">
+                    <div className="flex flex-col items-center space-y-1">
+                      <div className="w-12 h-12 bg-[rgba(59,130,246,0.1)] rounded-full flex items-center justify-center">
+                        <Flame className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <span className="text-[11px] text-gray-600">{settings.navigation.discovery.label}</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-1">
+                      <div className="w-12 h-12 bg-[rgba(59,130,246,0.1)] rounded-full flex items-center justify-center">
+                        <TrendingUp className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <span className="text-[11px] text-gray-600">{settings.navigation.ignition.label}</span>
+                    </div>
+                    <div className="flex flex-col items-center space-y-1">
+                      <div className="w-12 h-12 bg-[rgba(59,130,246,0.1)] rounded-full flex items-center justify-center">
+                        <User className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <span className="text-[11px] text-gray-600">{settings.navigation.profile.label}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* 页面标题设置 */}
+          <TabsContent value="pageTitles" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[15px] font-semibold">页面标题配置</CardTitle>
+                <CardDescription className="text-[12px]">
+                  配置各主页面左上角的大号文字
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {Object.entries(settings.pageTitles).map(([key, title]) => (
+                  <div key={key} className="space-y-2">
+                    <label className="block text-[13px] font-medium text-gray-900">
+                      {getPageTitleLabel(key)}
+                    </label>
+                    <Input
+                      value={title}
+                      onChange={(e) => {
+                        setSettings(prev => ({
+                          ...prev,
+                          pageTitles: {
+                            ...prev.pageTitles,
+                            [key]: e.target.value,
+                          },
+                        }));
+                        setHasChanged(true);
+                      }}
+                      placeholder="请输入页面标题"
+                      className="text-[13px]"
+                      maxLength={20}
+                    />
+                    <div className="flex justify-between">
+                      <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                        路径: /{key}
+                      </span>
+                      <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                        {title.length}/20
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                {/* 预览区域 */}
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <p className="text-[12px] font-medium text-gray-900 mb-3">效果预览</p>
+                  <div className="space-y-3 p-4 bg-[rgba(0,0,0,0.02)] rounded-lg">
+                    {Object.entries(settings.pageTitles).slice(0, 5).map(([key, title]) => (
+                      <div key={key} className="flex items-center space-x-3">
+                        <Type className="w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+                        <span className="text-[15px] font-semibold text-gray-900">{title}</span>
+                      </div>
+                    ))}
+                    {Object.keys(settings.pageTitles).length > 5 && (
+                      <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                        ... 还有 {Object.keys(settings.pageTitles).length - 5} 个页面
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* 发现键设置 */}
           <TabsContent value="discovery" className="space-y-4">
@@ -227,13 +511,16 @@ export default function AdminSettingsPage() {
                   </label>
                   <Input
                     value={settings.discovery.slogan}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      discovery: {
-                        ...prev.discovery,
-                        slogan: e.target.value,
-                      },
-                    }))}
+                    onChange={(e) => {
+                      setSettings(prev => ({
+                        ...prev,
+                        discovery: {
+                          ...prev.discovery,
+                          slogan: e.target.value,
+                        },
+                      }));
+                      setHasChanged(true);
+                    }}
                     placeholder="请输入页面 Slogan"
                     className="text-[13px]"
                     maxLength={50}
@@ -387,13 +674,16 @@ export default function AdminSettingsPage() {
                   </label>
                   <Textarea
                     value={settings.ignition.visitSlogan}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      ignition: {
-                        ...prev.ignition,
-                        visitSlogan: e.target.value,
-                      },
-                    }))}
+                    onChange={(e) => {
+                      setSettings(prev => ({
+                        ...prev,
+                        ignition: {
+                          ...prev.ignition,
+                          visitSlogan: e.target.value,
+                        },
+                      }));
+                      setHasChanged(true);
+                    }}
                     placeholder="请输入探访点亮页面的标语"
                     className="text-[13px] min-h-[80px]"
                     maxLength={100}
@@ -415,13 +705,16 @@ export default function AdminSettingsPage() {
                   </label>
                   <Textarea
                     value={settings.ignition.aiCircleSlogan}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      ignition: {
-                        ...prev.ignition,
-                        aiCircleSlogan: e.target.value,
-                      },
-                    }))}
+                    onChange={(e) => {
+                      setSettings(prev => ({
+                        ...prev,
+                        ignition: {
+                          ...prev.ignition,
+                          aiCircleSlogan: e.target.value,
+                        },
+                      }));
+                      setHasChanged(true);
+                    }}
                     placeholder="请输入AI加油圈页面的标语"
                     className="text-[13px] min-h-[80px]"
                     maxLength={100}
@@ -629,6 +922,54 @@ export default function AdminSettingsPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* 二次确认对话框 */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="w-[95%] max-w-[400px]">
+          <VisuallyHidden>
+            <DialogTitle>确认保存</DialogTitle>
+          </VisuallyHidden>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-center space-x-3 pb-4 border-b border-[rgba(0,0,0,0.1)]">
+              <div className="w-12 h-12 bg-yellow-50 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold text-gray-900">确认修改</h3>
+                <p className="text-[12px] text-[rgba(0,0,0,0.6)]">
+                  此操作将修改页面配置
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-[13px] text-gray-700 text-center">
+                您确定要保存这些修改吗？
+              </p>
+              <p className="text-[11px] text-[rgba(0,0,0,0.5)] text-center">
+                修改将立即生效，影响页面显示
+              </p>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t border-[rgba(0,0,0,0.1)]">
+              <Button
+                variant="outline"
+                onClick={() => setShowConfirmDialog(false)}
+                className="border-[rgba(0,0,0,0.1)] text-[13px]"
+              >
+                取消
+              </Button>
+              <Button
+                className="bg-blue-400 hover:bg-blue-500 text-white text-[13px]"
+                onClick={handleConfirmSave}
+              >
+                确认保存
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
