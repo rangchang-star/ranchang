@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, FileText, Plus, MoreVertical } from 'lucide-react';
+import { ArrowLeft, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // 模拟数据 - 参考图片中的文档列表
@@ -49,18 +49,6 @@ const mockDocuments = [
     title: '【摆摊老张的江湖生存课】短板、闭环、真功夫',
     icon: 'book',
   },
-  {
-    id: '8',
-    type: 'form',
-    title: '撒商报名表',
-    icon: 'table',
-  },
-  {
-    id: '9',
-    type: 'document',
-    title: '3月4日关于撒商交流纪要',
-    icon: 'note',
-  },
 ];
 
 // 图标映射
@@ -103,17 +91,12 @@ export default function DigitalAssetsPage() {
                 <ArrowLeft className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
               </Button>
             </Link>
-            <h1 className="text-[15px] font-semibold text-gray-900">大鱼的认知库</h1>
-            <div className="flex items-center space-x-2">
-              {/* 新建按钮 */}
+            <h1 className="text-[21px] font-semibold text-blue-600">大鱼的认知库</h1>
+            <Link href="/profile">
               <Button variant="ghost" className="p-2 h-9 w-9">
-                <Plus className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+                <X className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
               </Button>
-              {/* 更多选项按钮 */}
-              <Button variant="ghost" className="p-2 h-9 w-9">
-                <MoreVertical className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
-              </Button>
-            </div>
+            </Link>
           </div>
         </div>
 
