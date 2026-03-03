@@ -637,9 +637,13 @@ export default function DiscoveryPage() {
         <section>
           <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer">
             <div className="flex items-center space-x-3">
-              {/* 左侧金字塔图标 */}
-              <div className="flex-shrink-0 relative">
-                <div className="w-0 h-0 border-l-[16px] border-l-transparent border-r-[16px] border-r-transparent border-b-[28px] border-b-blue-400 opacity-80"></div>
+              {/* 左侧图标 - 正方形 */}
+              <div className="flex-shrink-0">
+                <img
+                  src="/daily-declaration-square.webp"
+                  alt="每日宣告"
+                  className="w-10 h-10 object-cover"
+                />
               </div>
 
               {/* 中间内容 */}
