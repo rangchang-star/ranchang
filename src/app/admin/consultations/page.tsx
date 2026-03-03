@@ -35,6 +35,13 @@ const consultationTopics = [
   },
 ];
 
+// 咨询师信息配置
+const consultantInfo = {
+  name: '大鱼老师',
+  avatar: '/avatar-1.jpg',
+  tags: ['燃场CEO', 'AICG工程师', '心理咨询师', '投资人'],
+};
+
 // 咨询状态类型
 type ConsultationStatus = 'pending' | 'processing' | 'completed';
 
@@ -178,6 +185,11 @@ export default function AdminConsultationsPage() {
     fromStatus: ConsultationStatus;
     toStatus: ConsultationStatus;
   } | null>(null);
+  const [editingConsultant, setEditingConsultant] = useState(false);
+  const [consultantName, setConsultantName] = useState(consultantInfo.name);
+  const [consultantAvatar, setConsultantAvatar] = useState(consultantInfo.avatar);
+  const [consultantTags, setConsultantTags] = useState(consultantInfo.tags);
+  const [newTag, setNewTag] = useState('');
 
   // 过滤咨询
   const filteredConsultations = consultations.filter((consult) => {
@@ -200,6 +212,28 @@ export default function AdminConsultationsPage() {
     const dateB = new Date(b.submitDate).getTime();
     return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
+
+  // 管理咨询师标签
+  const handleAddConsultantTag = () => {
+    if (newTag.trim() && !consultantTags.includes(newTag.trim())) {
+      setConsultantTags([...consultantTags, newTag.trim()]);
+      setNewTag('');
+    }
+  };
+
+  const handleRemoveConsultantTag = (tagToRemove: string) => {
+    setConsultantTags(consultantTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleSaveConsultantInfo = () => {
+    console.log('保存咨询师信息:', {
+      name: consultantName,
+      avatar: consultantAvatar,
+      tags: consultantTags,
+    });
+    alert('咨询师信息保存成功！');
+    setEditingConsultant(false);
+  };
 
   // 编辑引导话术
   const handleSavePlaceholder = (topicId: string) => {
@@ -292,6 +326,160 @@ export default function AdminConsultationsPage() {
             <p className="text-[13px] text-[rgba(0,0,0,0.6)]">管理用户咨询与话题引导话术</p>
           </div>
           <Button>导出数据</Button>
+        </div>
+
+        {/* 咨询师信息管理 */}
+        <div className="border border-[rgba(0,0,0,0.1)]">
+          <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
+            <h3 className="text-[13px] font-semibold text-gray-900">咨询师信息</h3>
+          </div>
+          <div className="p-4">
+            {!editingConsultant ? (
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-blue-400">
+                  <img
+                    src={consultantInfo.avatar}
+                    alt={consultantInfo.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-[13px] font-semibold text-gray-900 mb-2">{consultantInfo.name}</h4>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {consultantInfo.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 bg-[rgba(59,130,246,0.1)] text-blue-600 text-[10px] font-medium rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingConsultant(true);
+                      setConsultantName(consultantInfo.name);
+                      setConsultantAvatar(consultantInfo.avatar);
+                      setConsultantTags(consultantInfo.tags);
+                    }}
+                  >
+                    编辑信息
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-700 mb-2">
+                    咨询师头像
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-400">
+                      <img
+                        src={consultantAvatar}
+                        alt="咨询师头像"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = (e) => {
+                          const file = (e.target as HTMLInputElement).files?.[0];
+                          if (file) {
+                            const url = URL.createObjectURL(file);
+                            setConsultantAvatar(url);
+                          }
+                        };
+                        input.click();
+                      }}
+                    >
+                      上传头像
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-700 mb-2">
+                    咨询师姓名
+                  </label>
+                  <Input
+                    value={consultantName}
+                    onChange={(e) => setConsultantName(e.target.value)}
+                    placeholder="请输入咨询师姓名"
+                    className="text-[13px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-700 mb-2">
+                    标签
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {consultantTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 bg-[rgba(59,130,246,0.1)] text-blue-600 text-[10px] font-medium rounded-full flex items-center space-x-1"
+                      >
+                        <span>{tag}</span>
+                        <button
+                          onClick={() => handleRemoveConsultantTag(tag)}
+                          className="hover:text-blue-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="添加新标签"
+                      className="text-[13px] flex-1"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAddConsultantTag();
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddConsultantTag}
+                    >
+                      添加
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2 pt-2">
+                  <Button size="sm" onClick={handleSaveConsultantInfo}>
+                    保存
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingConsultant(false);
+                      setConsultantName(consultantInfo.name);
+                      setConsultantAvatar(consultantInfo.avatar);
+                      setConsultantTags(consultantInfo.tags);
+                      setNewTag('');
+                    }}
+                  >
+                    取消
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 话题引导话术管理 */}

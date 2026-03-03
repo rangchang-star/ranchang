@@ -261,6 +261,14 @@ const activities = [
 ];
 
 // 咨询话题
+// 咨询师信息
+const consultantInfo = {
+  name: '大鱼老师',
+  avatar: '/avatar-1.jpg',
+  tags: ['燃场CEO', 'AICG工程师', '心理咨询师', '投资人'],
+};
+
+// 咨询话题
 const consultationTopics = [
   {
     id: 'ai-frontier',
@@ -1129,6 +1137,32 @@ export default function ProfilePage() {
             {/* 问题输入 */}
             {selectedTopic && (
               <div className="space-y-3">
+                {/* 咨询师信息 */}
+                <div className="flex items-start space-x-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-blue-400">
+                    <img
+                      src={consultantInfo.avatar}
+                      alt={consultantInfo.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[12px] text-gray-900 mb-2">
+                      你要咨询的人是<span className="font-semibold">"{consultantInfo.name}"</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {consultantInfo.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2 py-0.5 bg-[rgba(59,130,246,0.1)] text-blue-600 text-[10px] font-medium rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <textarea
                     value={consultationQuestion}
