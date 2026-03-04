@@ -101,12 +101,12 @@ const defaultSettings = {
   },
   // 点亮键设置
   ignition: {
-    visitSlogan: '探访点亮，看见榜样',
+    visitSlogan: '探访点亮，每一次探访都是关于商业思维的激烈交锋，是一场关于财务收入与使命践行的从新审视',
     visitMedia: {
       type: 'image' as 'image' | 'video' | null,
       url: '',
     },
-    aiCircleSlogan: 'AI加油圈，互助成长',
+    aiCircleSlogan: 'AI加油圈，为期一年的AI环境高效浸泡池，每周一聚，要求全员产出AI数字资产',
     aiCircleMedia: {
       type: 'image' as 'image' | 'video' | null,
       url: '',

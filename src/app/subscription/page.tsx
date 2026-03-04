@@ -29,8 +29,8 @@ const industryTypes = [
 
 // Tab描述文字（与后台配置的slogan保持一致）
 const tabDescriptions = {
-  training: '探访点亮，看见榜样',
-  consultation: 'AI加油圈，互助成长',
+  training: '探访点亮，每一次探访都是关于商业思维的激烈交锋，是一场关于财务收入与使命践行的从新审视',
+  consultation: 'AI加油圈，为期一年的AI环境高效浸泡池，每周一聚，要求全员产出AI数字资产',
 };
 
 // 默认媒体配置（实际应从后台API获取）
