@@ -453,7 +453,7 @@ export default function DiscoveryPage() {
         {/* 顶部导航 - 标题上方留出适当空间 */}
         <div className="sticky top-0 bg-white z-50 pt-[6px]">
           <div className="flex items-center justify-between px-5">
-            <h1 className="text-[31px] font-light text-gray-900 -mb-4">发现光亮</h1>
+            <h1 className="text-[31px] font-light text-gray-900">发现光亮</h1>
             {/* Logo + 音乐符号 - 点击播放音乐 */}
             <button
               onClick={toggleMusic}
@@ -477,7 +477,7 @@ export default function DiscoveryPage() {
           </div>
 
           {/* Slogan - 蓝色加大字号，加粗 */}
-          <div className="px-5 pb-4">
+          <div className="px-5 pb-4 -mt-4">
             <p className="text-[16px] font-bold text-blue-400 leading-relaxed">
               "燃场app"的使命：建造35岁+的高能信息环境、孵化可落地的高现金流平台。
             </p>
