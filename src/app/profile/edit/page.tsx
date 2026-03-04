@@ -572,14 +572,19 @@ export default function ProfileEditPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">信仰</label>
-                <input
-                  type="text"
+                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">资源能力标签</label>
+                <select
                   value={profile.belief}
                   onChange={(e) => setProfile({ ...profile, belief: e.target.value })}
                   className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.4)]"
-                  placeholder="请输入信仰"
-                />
+                >
+                  <option value="">请选择资源能力标签</option>
+                  {abilityTags.map((tag) => (
+                    <option key={tag} value={tag}>
+                      {tag}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>

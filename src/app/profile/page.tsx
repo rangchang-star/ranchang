@@ -190,7 +190,7 @@ const userInfo = {
   connectionType: 'personLookingForJob', // 人找事/事找人/纯交流
   industry: '企业服务',
   need: '希望找到传统制造业的数字化转型项目机会，用15年HRBP经验帮助企业搭建AI时代的人才培养体系',
-  abilityTags: ['HRBP', '团队管理', '人才发展', '组织优化', '数字化转型'],
+  abilityTags: ['技术落地', '业务咨询', '培训授课', '项目对接', '资源撮合'],
   resourceTags: ['人才', '技术', '品牌'],
   currentDeclaration: {
     direction: 'confidence',
@@ -746,64 +746,69 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* 用户信息卡片 - 前端展示区域 */}
+          {/* 用户信息卡片 */}
           <div className="p-4 bg-white relative">
-            {/* 前端展示标识 - 顶部绿色标签 */}
-            <div className="absolute top-0 left-0 right-0 bg-[rgba(34,197,94,0.15)] px-4 py-2 border-b border-green-200">
-              <div className="flex items-center justify-between">
-                <span className="text-[13px] font-semibold text-green-700">👁 前端展示信息</span>
-                <span className="text-[12px] text-[rgba(0,0,0,0.4)]">以下内容将在发现页展示</span>
+            {/* 标签戳 */}
+            {userInfo.connectionType && (
+              <div className={`absolute top-0 right-0 px-2 py-0.5 text-[14px] font-medium rounded-bl-md z-10 ${
+                userInfo.connectionType === 'personLookingForJob'
+                  ? 'bg-[rgba(34,197,94,0.2)] text-green-700'
+                  : userInfo.connectionType === 'jobLookingForPerson'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-gray-100 text-gray-700'
+              }`}>
+                {connectionType.find(t => t.id === userInfo.connectionType)?.label}
+              </div>
+            )}
+
+            <div className="flex items-start space-x-4">
+              {/* 方形头像 */}
+              <div className="w-20 h-20 flex-shrink-0 overflow-hidden relative rounded-lg">
+                <Image
+                  src={userInfo.avatar}
+                  alt={userInfo.name}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                  unoptimized
+                />
+                <button className="absolute bottom-0 right-0 w-6 h-6 bg-blue-400 flex items-center justify-center rounded-tl-lg rounded-br-lg shadow-md">
+                  <Upload className="w-3 h-3 text-white" />
+                </button>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div>
+                  <h2 className="text-[23px] font-semibold text-gray-900">{userInfo.name}</h2>
+                  <p className="text-[17px] text-[rgba(0,0,0,0.25)]">{userInfo.age}岁</p>
+                </div>
+                {/* 行业标签（必填） */}
+                <div className="mt-2">
+                  <div className="text-[14px] text-gray-400 mb-1">行业标签（必填）</div>
+                  <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal rounded-full">
+                    {userInfo.industry}
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* 内容区域 - 添加顶部间距 */}
-            <div className="mt-8">
-              {/* 标签戳 */}
-              {userInfo.connectionType && (
-                <div className={`absolute top-8 right-4 px-2 py-0.5 text-[14px] font-medium rounded-bl-md z-10 ${
-                  userInfo.connectionType === 'personLookingForJob'
-                    ? 'bg-[rgba(34,197,94,0.2)] text-green-700'
-                    : userInfo.connectionType === 'jobLookingForPerson'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-700'
-                }`}>
-                  {connectionType.find(t => t.id === userInfo.connectionType)?.label}
-                </div>
-              )}
+            {/* 能力标签 */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {userInfo.abilityTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal rounded-full"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
 
-              <div className="flex items-start space-x-4">
-                {/* 方形头像 */}
-                <div className="w-20 h-20 flex-shrink-0 overflow-hidden relative rounded-lg">
-                  <Image
-                    src={userInfo.avatar}
-                    alt={userInfo.name}
-                    width={80}
-                    height={80}
-                    className="w-full h-full object-cover"
-                    unoptimized
-                  />
-                  <button className="absolute bottom-0 right-0 w-6 h-6 bg-blue-400 flex items-center justify-center rounded-tl-lg rounded-br-lg shadow-md">
-                    <Upload className="w-3 h-3 text-white" />
-                  </button>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div>
-                    <h2 className="text-[23px] font-semibold text-gray-900">{userInfo.name}</h2>
-                    <p className="text-[17px] text-[rgba(0,0,0,0.25)]">{userInfo.age}岁</p>
-                  </div>
-                  {/* 行业标签 */}
-                  <div className="mt-2">
-                    <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal rounded-full">
-                      {userInfo.industry}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 能力标签 */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {userInfo.abilityTags.map((tag) => (
+            {/* 资源标签 */}
+            <div className="mt-4">
+              <div className="text-[14px] text-gray-400 mb-2">资源标签（必填）</div>
+              <div className="flex flex-wrap gap-2">
+                {userInfo.resourceTags.map((tag) => (
                   <span
                     key={tag}
                     className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal rounded-full"
@@ -811,101 +816,45 @@ export default function ProfilePage() {
                     {tag}
                   </span>
                 ))}
-                <button className="px-2.5 py-1 border border-dashed border-gray-300 text-gray-400 text-[14px] font-normal rounded-full hover:border-green-400 hover:text-green-600 transition-colors">
-                  +添加
-                </button>
-              </div>
-
-              {/* 资源标签 */}
-              <div className="mt-4">
-                <div className="text-[14px] text-gray-400 mb-2">资源标签（必填）</div>
-                <div className="flex flex-wrap gap-2">
-                  {userInfo.resourceTags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  <button className="px-2.5 py-1 border border-dashed border-gray-300 text-gray-400 text-[14px] font-normal rounded-full hover:border-green-400 hover:text-green-600 transition-colors">
-                    +添加
-                  </button>
-                </div>
-              </div>
-
-              {/* 一句说清你的需要 */}
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <div className="text-[14px] text-gray-400 mb-1">一句话说清你的需求</div>
-                <p className="text-[17px] text-gray-700 leading-relaxed line-clamp-3">
-                  {userInfo.need}
-                </p>
-              </div>
-
-              {/* 当前宣告 */}
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-start space-x-2">
-                  <Flame className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[14px] text-gray-500">
-                        {declarationDirections.find(d => d.id === userInfo.currentDeclaration.direction)?.name}
-                      </span>
-                      <div className="flex items-center space-x-2">
-                        <button className="p-1 hover:bg-gray-200 transition-colors rounded">
-                          <Mic className="w-3 h-3 text-gray-400" />
-                        </button>
-                        <button className="p-1 hover:bg-gray-200 transition-colors rounded">
-                          <PlayCircle className="w-3 h-3 text-gray-400" />
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-[17px] text-gray-700 leading-relaxed line-clamp-2 mb-2">
-                      {userInfo.currentDeclaration.text}
-                    </p>
-                    <p className="text-[14px] text-gray-500 leading-relaxed line-clamp-2 mb-2">
-                      {userInfo.currentDeclaration.summary}
-                    </p>
-                    <div className="flex items-center justify-between text-[14px] text-gray-400">
-                      <span>{userInfo.currentDeclaration.date}</span>
-                      <span>{userInfo.currentDeclaration.views.toLocaleString()}次查看</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 编辑按钮 */}
-              <div className="mt-4 flex justify-center">
-                <Link href="/profile/edit">
-                  <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[14px] px-6 py-2 flex items-center space-x-2 rounded-full">
-                    <Edit className="w-3 h-3" />
-                    <span>完善资料</span>
-                  </Button>
-                </Link>
               </div>
             </div>
-          </div>
 
-          {/* 引导说明 */}
-          <div className="p-4 bg-[rgba(59,130,246,0.05)] border border-blue-200">
-            <div className="flex items-start space-x-2">
-              <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-[13px] font-bold">!</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-[17px] font-semibold text-gray-900 mb-1">完善您的个人资料</h3>
-                <p className="text-[14px] text-[rgba(0,0,0,0.4)] leading-relaxed">
-                  完善资料后，您的信息将在"发现光亮"页面向其他会员展示，帮助您快速找到匹配的合作伙伴和机会。
-                </p>
-                <div className="mt-2 flex items-center space-x-2">
-                  <span className="text-[13px] text-[rgba(0,0,0,0.4)]">下一步：</span>
-                  <Link href="/profile/edit" className="text-[13px] text-[rgba(0,0,0,0.4)] underline">
-                    完善资料
-                  </Link>
-                  <span className="text-[13px] text-[rgba(0,0,0,0.4)]">或</span>
-                  <Link href="/activities" className="text-[13px] text-[rgba(0,0,0,0.4)] underline">
-                    参与活动
-                  </Link>
+            {/* 一句说清你的需要 */}
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <div className="text-[14px] text-gray-400 mb-1">一句话说清你的需求</div>
+              <p className="text-[17px] text-gray-700 leading-relaxed line-clamp-3">
+                {userInfo.need}
+              </p>
+            </div>
+
+            {/* 当前宣告 */}
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <Flame className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[14px] text-gray-500">
+                      {declarationDirections.find(d => d.id === userInfo.currentDeclaration.direction)?.name}
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <button className="p-1 hover:bg-gray-200 transition-colors rounded">
+                        <Mic className="w-3 h-3 text-gray-400" />
+                      </button>
+                      <button className="p-1 hover:bg-gray-200 transition-colors rounded">
+                        <PlayCircle className="w-3 h-3 text-gray-400" />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-[17px] text-gray-700 leading-relaxed line-clamp-2 mb-2">
+                    {userInfo.currentDeclaration.text}
+                  </p>
+                  <p className="text-[14px] text-gray-500 leading-relaxed line-clamp-2 mb-2">
+                    {userInfo.currentDeclaration.summary}
+                  </p>
+                  <div className="flex items-center justify-between text-[14px] text-gray-400">
+                    <span>{userInfo.currentDeclaration.date}</span>
+                    <span>{userInfo.currentDeclaration.views.toLocaleString()}次查看</span>
+                  </div>
                 </div>
               </div>
             </div>
