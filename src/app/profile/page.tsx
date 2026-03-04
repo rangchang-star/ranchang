@@ -217,19 +217,6 @@ const visitRecords = [
     ],
     image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=120&fit=crop',
   },
-  {
-    id: '2',
-    title: '杭州科技创业公司战略规划探访',
-    date: '2024年3月12日',
-    role: '探访人',
-    skill: '组织优化',
-    industry: '战略规划',
-    visitors: [
-      { id: '1', name: '王芳', avatar: '/avatar-3.jpg', skill: '组织优化' },
-      { id: '4', name: '赵芳', avatar: '/avatar-3.jpg', skill: '运营' },
-    ],
-    image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=200&h=120&fit=crop',
-  },
 ];
 
 // 参与的活动
@@ -553,7 +540,7 @@ export default function ProfilePage() {
           {
             icon: TrendingUp,
             label: '探访记录',
-            subtitle: '2次',
+            subtitle: '1次',
             action: 'view-visits',
             route: '/visit/1',
           },
@@ -588,7 +575,7 @@ export default function ProfilePage() {
           {
             icon: TrendingUp,
             label: '探访记录',
-            subtitle: '2次',
+            subtitle: '1次',
             action: 'view-visits',
             route: '/visit/1',
           },
@@ -792,10 +779,11 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* 能力标签 */}
+            {/* 资源标签 */}
             <div className="mt-4">
+              <div className="text-[14px] text-gray-400 mb-2">资源标签（必填）</div>
               <div className="flex flex-wrap gap-2">
-                {userInfo.abilityTags.map((tag) => (
+                {userInfo.resourceTags.map((tag) => (
                   <span
                     key={tag}
                     className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal rounded-full"
@@ -1022,10 +1010,15 @@ export default function ProfilePage() {
           {/* 探访记录 */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-[26px] font-bold">
-                <span className="text-[rgba(96,165,250,0.6)]">探访</span>
-                <span className="text-blue-400">记录</span>
-              </h2>
+              <div className="flex items-center space-x-2">
+                <h2 className="text-[26px] font-bold">
+                  <span className="text-[rgba(96,165,250,0.6)]">探访</span>
+                  <span className="text-blue-400">记录</span>
+                </h2>
+                <span className="text-[13px] text-[rgba(0,0,0,0.25)]">
+                  （只探访案主可见）
+                </span>
+              </div>
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-3">
