@@ -15,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Clock, PlayCircle, TrendingUp, Heart, Mic, Users, X, PauseCircle } from 'lucide-react';
+import { Clock, Play, PlayCircle, TrendingUp, Heart, Mic, Users, X, PauseCircle } from 'lucide-react';
 
 // 商业咨询行业标签
 const industryTypes = [
@@ -317,10 +317,10 @@ export default function SubscriptionPage() {
 
                   {/* 行业标签、时长、日期 */}
                   <div className="flex items-center space-x-2 mb-3">
-                    <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[14px]">
+                    <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
                       {visit.industry}
                     </Badge>
-                    <div className="flex items-center space-x-1 text-[14px] text-[rgba(0,0,0,0.25)]">
+                    <div className="flex items-center space-x-1 text-[13px] text-[rgba(0,0,0,0.25)]">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{visit.duration}</span>
                       <span>·</span>
@@ -352,7 +352,7 @@ export default function SubscriptionPage() {
                   </h3>
 
                   {/* 走访记录 */}
-                  <p className="text-[17px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3 mb-3">
+                  <p className="text-[15px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3 mb-3">
                     {visit.record}
                   </p>
 
@@ -373,7 +373,7 @@ export default function SubscriptionPage() {
                   {/* 走访录音 */}
                   <div className="flex items-center space-x-3 p-3 bg-[rgba(0,0,0,0.03)]">
                     <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0">
-                      <PlayCircle className="w-4 h-4 text-white fill-white ml-0.5" />
+                      <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                     </button>
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] text-gray-900 font-medium">走访反馈录音</p>
@@ -391,8 +391,8 @@ export default function SubscriptionPage() {
                 {/* 顶部信息行 */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <h3 className="text-[23px] font-light text-gray-900">{salon.period}</h3>
-                    <div className="flex items-center space-x-2 text-[14px] text-[rgba(0,0,0,0.4)]">
+                    <h3 className="text-[22px] font-light text-gray-900">{salon.period}</h3>
+                    <div className="flex items-center space-x-2 text-[12px] text-[rgba(0,0,0,0.4)]">
                       <span>{salon.duration}</span>
                       <span>·</span>
                       <span>{salon.schedule}</span>
@@ -478,7 +478,7 @@ export default function SubscriptionPage() {
                 {/* 播放按钮 */}
                 <button className="absolute inset-0 flex items-center justify-center">
                   <div className="w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors">
-                    <PlayCircle className="w-8 h-8 text-white fill-white ml-1" />
+                    <Play className="w-8 h-8 text-white fill-white" />
                   </div>
                 </button>
                 {/* 时长标签 */}

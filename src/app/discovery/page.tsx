@@ -478,7 +478,7 @@ export default function DiscoveryPage() {
 
           {/* Slogan - 蓝色加大字号，加粗 */}
           <div className="px-5 pb-4">
-            <p className="text-[18px] font-bold text-blue-400 leading-relaxed">
+            <p className="text-[16px] font-bold text-blue-400 leading-relaxed">
               只要抓住使命，当年力量如何，现在力量也必定如何。<br />
               35岁才是新的的开始，向前加油不回头！
             </p>
@@ -556,18 +556,18 @@ export default function DiscoveryPage() {
                       {item.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-block px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal line-clamp-1"
+                          className="inline-block px-1.5 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal line-clamp-1"
                         >
                           {tag}
                         </span>
                       ))}
                       {/* 绿色行业标签块 */}
-                      <span className="inline-block px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[18px] font-normal line-clamp-1">
+                      <span className="inline-block px-1.5 py-0.5 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal line-clamp-1">
                         {item.industry}
                       </span>
                     </div>
                     {/* 个人需求说明 */}
-                    <p className="text-[18px] text-gray-900 leading-relaxed line-clamp-3">
+                    <p className="text-[15px] text-gray-900 leading-relaxed line-clamp-3">
                       {item.need}
                     </p>
                   </div>
@@ -624,15 +624,15 @@ export default function DiscoveryPage() {
                         <ActivityStatusBadge status={item.status} endTime={item.endTime} />
                       </div>
                       {/* 活动主题与副标题（黑色字） */}
-                      <h3 className="text-[17px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                      <h3 className="text-[15px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
                         {item.title}
                       </h3>
-                      <p className="text-[18px] text-gray-900 mb-2 leading-relaxed line-clamp-2">
+                      <p className="text-[16px] text-gray-900 mb-2 leading-relaxed line-clamp-2">
                         {item.subtitle}
                       </p>
                       {/* 活动简介 - 纯方形灰色框 */}
                       <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-2">
-                        <p className="text-[18px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
+                        <p className="text-[16px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
                           {item.description}
                         </p>
                       </div>
@@ -716,7 +716,7 @@ export default function DiscoveryPage() {
                       {item.title}
                     </h3>
                     {/* 达人画像与时长（灰色字） */}
-                    <p className="text-[17px] text-[rgba(0,0,0,0.25)] flex items-center">
+                    <p className="text-[15px] text-[rgba(0,0,0,0.25)] flex items-center">
                       {item.profile} · <Timer className="w-3 h-3 mx-1" />{item.duration}
                     </p>
                   </div>
@@ -771,7 +771,7 @@ export default function DiscoveryPage() {
                   {dailyDeclaration.title}
                 </h3>
                 {/* 年月日与录音时长（灰色字） */}
-                <div className="flex items-center space-x-2 text-[18px] text-[rgba(0,0,0,0.25)]">
+                <div className="flex items-center space-x-2 text-[16px] text-[rgba(0,0,0,0.25)]">
                   <span>{dailyDeclaration.date}</span>
                   <span>·</span>
                   <span className="flex items-center">

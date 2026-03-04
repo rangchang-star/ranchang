@@ -17,7 +17,7 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white z-50">
       <div className="max-w-2xl mx-auto">
-        <div className="flex justify-around items-center h-[39px]">
+        <div className="flex justify-around items-center h-14">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -26,7 +26,7 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center space-y-0.5 py-[6px] transition-colors relative ${
+                className={`flex flex-col items-center justify-center space-y-0.5 py-2 transition-colors relative ${
                   item.label === '发现'
                     ? 'pl-10 pr-2'
                     : item.label === '个人'
@@ -36,21 +36,21 @@ export function BottomNav() {
               >
                 {item.icon === SunIcon ? (
                   <Icon
-                    className={`w-[17px] h-[17px] transition-colors ${
+                    className={`w-6 h-6 transition-colors ${
                       isActive ? 'text-blue-400' : 'text-gray-400'
                     }`}
-                    size={17}
+                    size={24}
                   />
                 ) : (
                   <Icon
-                    className={`w-[17px] h-[17px] transition-colors ${
+                    className={`w-6 h-6 transition-colors ${
                       isActive ? 'text-blue-400' : 'text-gray-400'
                     }`}
                     strokeWidth={2}
                   />
                 )}
                 <span
-                  className={`text-[9px] transition-colors ${
+                  className={`text-xs transition-colors ${
                     isActive ? 'text-blue-400' : 'text-gray-400'
                   }`}
                 >
