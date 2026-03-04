@@ -479,7 +479,8 @@ export default function DiscoveryPage() {
           {/* Slogan - 蓝色加大字号，加粗 */}
           <div className="px-5 pb-4">
             <p className="text-[16px] font-bold text-blue-400 leading-relaxed">
-              燃场app的使命：打造35岁+的高能信息环境与孵化可落地的高现金流平台。
+              只要抓住使命，当年力量如何，现在力量也必定如何。<br />
+              35岁才是新的的开始，向前加油不回头！
             </p>
           </div>
 
