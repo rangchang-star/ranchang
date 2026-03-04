@@ -859,7 +859,7 @@ export default function DiscoveryPage() {
                         setShowModal(false);
                         router.push(`/ability/${item.id}`);
                       }}
-                      className="flex items-center space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                      className="flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                     >
                       {/* 头像 */}
                       <div className="flex-shrink-0 w-[60px] h-[60px] overflow-hidden">
@@ -872,13 +872,35 @@ export default function DiscoveryPage() {
                       
                       {/* 内容 */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-[18px] text-gray-900 leading-relaxed line-clamp-2">{item.name}</h3>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-[18px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
+                        {/* 姓名与年龄 */}
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="text-[17px] font-semibold text-gray-900">{item.name}</span>
+                          <span className="text-[17px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
                           {item.isTrusted && (
                             <span className="text-[14px] text-green-600">✓</span>
                           )}
                         </div>
+                        
+                        {/* 标签和行业 */}
+                        <div className="flex flex-wrap gap-2 mb-1">
+                          {item.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="inline-block px-1.5 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal line-clamp-1"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {/* 绿色行业标签块 */}
+                          <span className="inline-block px-1.5 py-0.5 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal line-clamp-1">
+                            {item.industry}
+                          </span>
+                        </div>
+                        
+                        {/* 个人需求说明 */}
+                        <p className="text-[15px] text-gray-900 leading-relaxed line-clamp-2">
+                          {item.need}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -894,7 +916,7 @@ export default function DiscoveryPage() {
                         setShowModal(false);
                         router.push(`/activity/${item.id}`);
                       }}
-                      className="flex items-center space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                      className="flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                     >
                       {/* 图片 */}
                       <div className="flex-shrink-0 w-[60px] h-[60px] overflow-hidden">
@@ -926,7 +948,7 @@ export default function DiscoveryPage() {
                         setShowModal(false);
                         router.push(`/declaration/${item.id}`);
                       }}
-                      className="flex items-center space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                      className="flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                     >
                       {/* 图标 */}
                       <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center bg-[rgba(0,0,0,0.05]">
@@ -986,7 +1008,7 @@ export default function DiscoveryPage() {
                 <div
                   key={doc.id}
                   onClick={() => handleDocClick(doc)}
-                  className="flex items-center space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                  className="flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                 >
                   {/* 图标 */}
                   <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center bg-[rgba(0,0,0,0.05)] rounded-none">
