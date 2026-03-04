@@ -748,7 +748,8 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <div className="flex items-start space-x-4">
+            {/* 第一行：头像 + 姓名 + 年龄 */}
+            <div className="flex items-center space-x-4 mb-3">
               {/* 方形头像 */}
               <div className="w-20 h-20 flex-shrink-0 overflow-hidden relative rounded-lg">
                 <Image
@@ -765,22 +766,23 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex-1 min-w-0">
-                <div>
+                <div className="flex items-baseline space-x-3">
                   <h2 className="text-[23px] font-semibold text-gray-900">{userInfo.name}</h2>
-                </div>
-                {/* 行业标签（必填） */}
-                <div className="mt-2">
-                  <div className="text-[14px] text-gray-400 mb-1">行业标签（必填）</div>
-                  <span className="block w-full px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal">
-                    {userInfo.industry}
-                  </span>
+                  <span className="text-[17px] text-[rgba(0,0,0,0.25)]">{userInfo.age}岁</span>
                 </div>
               </div>
-              <p className="text-[17px] text-[rgba(0,0,0,0.25)]">{userInfo.age}岁</p>
+            </div>
+
+            {/* 第二行：行业标签 */}
+            <div className="mb-3">
+              <div className="text-[14px] text-gray-400 mb-1">行业标签（必填）</div>
+              <span className="block w-full px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal">
+                {userInfo.industry}
+              </span>
             </div>
 
             {/* 资源标签 */}
-            <div className="mt-4">
+            <div className="mb-3">
               <div className="text-[14px] text-gray-400 mb-2">资源标签（必填）</div>
               <div className="flex flex-wrap gap-2">
                 {userInfo.resourceTags.map((tag) => (
