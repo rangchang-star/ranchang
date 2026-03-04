@@ -343,7 +343,6 @@ export default function ProfilePage() {
   const [isSubmittingConsultation, setIsSubmittingConsultation] = useState(false);
   const [showProfileGuideDialog, setShowProfileGuideDialog] = useState(false);
   const [guideType, setGuideType] = useState<'login' | 'profile' | null>(null);
-  const [showDeclarationGuide, setShowDeclarationGuide] = useState(false);
   
   // 量表测试弹窗状态
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
@@ -898,59 +897,6 @@ export default function ProfilePage() {
                   </Link>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* 前端展示信息区域 - 黄色细框 */}
-          <div className="border-2 border-yellow-400 p-4">
-            <div className="text-[13px] text-yellow-600 font-semibold mb-3">
-              前端展示信息
-            </div>
-            {/* 原有的高燃宣告内容 */}
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-[26px] font-bold">
-                  <span className="text-[rgba(96,165,250,0.6)]">当前</span>
-                  <span className="text-blue-400">高燃宣告</span>
-                </h2>
-                <button
-                  onClick={() => setShowDeclarationGuide(true)}
-                  className="text-[13px] text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] flex items-center space-x-1"
-                >
-                  <AlertCircle className="w-3 h-3" />
-                  <span>说明</span>
-                </button>
-              </div>
-              <div className="bg-white border border-[rgba(0,0,0,0.1)] rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[15px] font-semibold text-gray-900">
-                      {declarationDirections.find(d => d.id === userInfo.currentDeclaration.direction)?.name}
-                    </span>
-                    <Badge className="bg-[rgba(59,130,246,0.1)] text-blue-600 rounded-none">
-                      {userInfo.currentDeclaration.views}次查看
-                    </Badge>
-                  </div>
-                </div>
-                <p className="text-[17px] text-gray-900 leading-relaxed line-clamp-2 mb-2">
-                  {userInfo.currentDeclaration.text}
-                </p>
-                <p className="text-[14px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2 mb-2">
-                  {userInfo.currentDeclaration.summary}
-                </p>
-                <div className="flex items-center justify-between text-[16px] text-[rgba(0,0,0,0.25)]">
-                  <span>{userInfo.currentDeclaration.date}</span>
-                  <span>{userInfo.currentDeclaration.views.toLocaleString()}次</span>
-                </div>
-              </div>
-
-            {/* 编辑按钮 */}
-            <div className="mt-4 flex justify-center">
-              <Link href="/profile/edit">
-                <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[14px] px-6 py-2 flex items-center space-x-2">
-                  <Edit className="w-3 h-3" />
-                  <span>完善资料</span>
-                </Button>
-              </Link>
             </div>
           </div>
 
@@ -1586,39 +1532,6 @@ export default function ProfilePage() {
                   </p>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 高燃宣告说明对话框 */}
-      {showDeclarationGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white w-full max-w-md">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-[21px] font-semibold text-gray-900">高燃宣告说明</h3>
-              <button
-                onClick={() => setShowDeclarationGuide(false)}
-                className="p-1 hover:bg-gray-100 rounded-none"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-            <div className="p-4">
-              <p className="text-[17px] text-gray-900 leading-relaxed mb-4">
-                高燃宣告是您展示个人方向和目标的重要方式，其他会员可以通过查看您的宣告来了解您的需求和能力。
-              </p>
-              <p className="text-[17px] text-gray-900 leading-relaxed">
-                您可以选择不同方向的宣告，并为每个方向录制一段语音，让其他会员更直观地了解您的想法。
-              </p>
-            </div>
-            <div className="px-4 py-3 border-t border-gray-200">
-              <button
-                onClick={() => setShowDeclarationGuide(false)}
-                className="w-full py-2.5 text-[17px] bg-blue-400 hover:bg-blue-500 text-white rounded-none"
-              >
-                我知道了
-              </button>
             </div>
           </div>
         </div>
