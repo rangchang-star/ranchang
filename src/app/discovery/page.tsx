@@ -484,7 +484,7 @@ export default function DiscoveryPage() {
           </div>
 
           {/* 搜索框 */}
-          <div className="px-5 pb-4 pt-0">
+          <div className="px-5 pb-2 pt-0">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[rgba(0,0,0,0.25)]" />
               <input
@@ -499,7 +499,7 @@ export default function DiscoveryPage() {
         </div>
 
         {/* 内容区 - 增加栏目间距，增加底部padding避免被固定的每日宣告遮挡 */}
-        <div className="px-5 pt-6 space-y-8 pb-64">
+        <div className="px-5 pt-3 space-y-8 pb-64">
           {/* 能力连接 */}
           <section>
             <div className="flex items-center justify-between mb-4">
