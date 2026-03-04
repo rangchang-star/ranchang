@@ -34,6 +34,25 @@ const resourceTagsOptions = [
   '数据资源', '政府关系', '媒体资源', '合作伙伴', '其他'
 ];
 
+// 能力标签
+const abilityTagsOptions = [
+  '团队管理',
+  '沟通能力',
+  '战略思维',
+  '执行力',
+  '项目管理',
+  '创新思维',
+  '问题解决',
+  '领导力',
+  '学习能力',
+  '跨界整合',
+  '风险控制',
+  '资源整合',
+  '商业谈判',
+  '数据分析',
+  '市场洞察',
+];
+
 // 模拟完整会员数据
 const mockMember = {
   id: '1',
@@ -165,6 +184,11 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
     if (currentTags.includes(tag)) {
       setTags(currentTags.filter((t) => t !== tag));
     } else {
+      // 能力标签和资源标签最多选3个
+      if ((type === 'ability' || type === 'resource') && currentTags.length >= 3) {
+        alert(`${type === 'ability' ? '能力' : '资源'}标签最多选择3个`);
+        return;
+      }
       setTags([...currentTags, tag]);
     }
   };
@@ -197,6 +221,21 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
       isFeatured,
       avatarUrl,
     });
+
+    // 验证必选项
+    const requiredErrors: string[] = [];
+    if (!abilityTags || abilityTags.length === 0) {
+      requiredErrors.push('能力标签（必选）');
+    }
+    if (!resourceTags || resourceTags.length === 0) {
+      requiredErrors.push('资源标签（必选）');
+    }
+
+    if (requiredErrors.length > 0) {
+      alert('请填写必选项：\n' + requiredErrors.join('、'));
+      return;
+    }
+
     alert('会员信息已保存');
     router.back();
   };
@@ -440,31 +479,32 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
 
             {/* 能力标签 */}
             <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900 mb-4">能力标签</h3>
+              <h3 className="text-[13px] font-semibold text-gray-900 mb-4">能力标签 <span className="text-red-500">*</span></h3>
               <div className="flex flex-wrap gap-2">
-                {abilityTags.map((tag) => (
-                  <span
+                {abilityTagsOptions.map((tag) => (
+                  <button
                     key={tag}
-                    className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal relative group"
+                    onClick={() => handleTagToggle(tag, 'ability')}
+                    className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
+                      abilityTags.includes(tag)
+                        ? 'bg-[rgba(59,130,246,0.4)] text-white border border-blue-400'
+                        : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] border border-transparent hover:bg-[rgba(0,0,0,0.08)]'
+                    }`}
                   >
+                    {abilityTags.includes(tag) ? '✓ ' : ''}
                     {tag}
-                    <button
-                      onClick={() => handleTagToggle(tag, 'ability')}
-                      className="ml-1 hover:text-blue-200"
-                    >
-                      ×
-                    </button>
-                  </span>
+                  </button>
                 ))}
               </div>
               <p className="text-[11px] text-[rgba(0,0,0,0.6)] mt-2">
-                当前能力标签：{abilityTags.join('、')}
+                已选择 {abilityTags.length} 个标签（最多3个）：{abilityTags.join('、')}
               </p>
+              <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">前台只显示能力标签</p>
             </div>
 
             {/* 资源标签 */}
             <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900 mb-4">资源标签（最多3个）</h3>
+              <h3 className="text-[13px] font-semibold text-gray-900 mb-4">资源标签（最多3个） <span className="text-red-500">*</span></h3>
               <div className="flex flex-wrap gap-2">
                 {resourceTagsOptions.map((tag) => (
                   <button
@@ -484,6 +524,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
               <p className="text-[11px] text-[rgba(0,0,0,0.6)] mt-2">
                 已选择 {resourceTags.length} 个标签：{resourceTags.join('、')}
               </p>
+              <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">点开会员详细页后才能看到资源标签</p>
             </div>
 
             {/* 后台标签 */}
