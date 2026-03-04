@@ -457,7 +457,7 @@ export default function DiscoveryPage() {
             {/* Logo + 音乐符号 - 点击播放音乐 */}
             <button
               onClick={toggleMusic}
-              className="relative w-[126px] h-[126px] flex items-center justify-center hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+              className="relative w-[126px] h-[126px] flex items-center justify-center transition-colors"
             >
               <img
                 src="/logo-ranchang.png"
