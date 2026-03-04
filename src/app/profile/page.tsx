@@ -338,8 +338,8 @@ export default function ProfilePage() {
   const [expandedAssessments, setExpandedAssessments] = useState<Set<number>>(new Set([0]));
   
   // 咨询相关状态
-  const [selectedTopic, setSelectedTopic] = useState<string>('');
-  const [consultationQuestion, setConsultationQuestion] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState<string>('ai-frontier'); // 默认选择第一个话题
+  const [consultationQuestion, setConsultationQuestion] = useState(''); // 清空初始问题
   const [isSubmittingConsultation, setIsSubmittingConsultation] = useState(false);
   const [showProfileGuideDialog, setShowProfileGuideDialog] = useState(false);
   const [guideType, setGuideType] = useState<'login' | 'profile' | null>(null);
@@ -483,20 +483,14 @@ export default function ProfilePage() {
 
   // 处理话题选择
   const handleTopicSelect = (topicId: string) => {
-    // 先检查基础信息
-    if (!checkUserProfile()) {
-      return;
-    }
-    // 如果信息完整，则选择话题
+    // 切换话题
     setSelectedTopic(topicId);
+    // 清空问题，让用户重新输入
+    setConsultationQuestion('');
   };
 
   // 提交咨询
   const handleSubmitConsultation = async () => {
-    if (!selectedTopic) {
-      alert('请选择咨询话题');
-      return;
-    }
     if (!consultationQuestion.trim()) {
       alert('请输入您的问题');
       return;
@@ -515,7 +509,7 @@ export default function ProfilePage() {
       });
 
       alert('咨询提交成功！我们会尽快回复您。');
-      setSelectedTopic('');
+      // 只清空问题，保持当前话题
       setConsultationQuestion('');
     } catch (error) {
       console.error('提交咨询失败:', error);
@@ -1235,52 +1229,50 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* 问题输入 */}
-            {selectedTopic && (
-              <div className="space-y-3">
-                {/* 咨询师信息 */}
-                <div className="flex items-start space-x-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-blue-400">
-                    <img
-                      src={consultantInfo.avatar}
-                      alt={consultantInfo.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[16px] text-gray-900 mb-2">
-                      你要咨询的人是<span className="font-semibold">"{consultantInfo.name}"</span>
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {consultantInfo.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-0.5 bg-[rgba(59,130,246,0.1)] text-blue-600 text-[13px] font-medium rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <textarea
-                    value={consultationQuestion}
-                    onChange={(e) => setConsultationQuestion(e.target.value)}
-                    placeholder={consultationTopics.find(t => t.id === selectedTopic)?.placeholder}
-                    className="w-full px-3 py-2 text-[18px] border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[120px] resize-none"
+            {/* 问题输入 - 默认显示 */}
+            <div className="space-y-3">
+              {/* 咨询师信息 */}
+              <div className="flex items-start space-x-3">
+                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-blue-400">
+                  <img
+                    src={consultantInfo.avatar}
+                    alt={consultantInfo.name}
+                    className="w-full h-full object-cover"
                   />
                 </div>
-                <Button
-                  onClick={handleSubmitConsultation}
-                  disabled={isSubmittingConsultation}
-                  className="w-full bg-blue-400 hover:bg-blue-500 text-white rounded-none"
-                >
-                  {isSubmittingConsultation ? '提交中...' : '提交咨询'}
-                </Button>
+                <div className="flex-1">
+                  <p className="text-[16px] text-gray-900 mb-2">
+                    你要咨询的人是<span className="font-semibold">"{consultantInfo.name}"</span>
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {consultantInfo.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 bg-[rgba(59,130,246,0.1)] text-blue-600 text-[13px] font-medium rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
-            )}
+
+              <div>
+                <textarea
+                  value={consultationQuestion}
+                  onChange={(e) => setConsultationQuestion(e.target.value)}
+                  placeholder={consultationTopics.find(t => t.id === selectedTopic)?.placeholder}
+                  className="w-full px-3 py-2 text-[18px] border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[120px] resize-none"
+                />
+              </div>
+              <Button
+                onClick={handleSubmitConsultation}
+                disabled={isSubmittingConsultation}
+                className="w-full bg-blue-400 hover:bg-blue-500 text-white rounded-none"
+              >
+                {isSubmittingConsultation ? '提交中...' : '提交咨询'}
+              </Button>
+            </div>
           </div>
 
           {/* 功能菜单 */}
