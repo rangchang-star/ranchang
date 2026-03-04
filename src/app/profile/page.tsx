@@ -793,22 +793,9 @@ export default function ProfilePage() {
             </div>
 
             {/* 能力标签 */}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {userInfo.abilityTags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal rounded-full"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            {/* 资源标签 */}
             <div className="mt-4">
-              <div className="text-[14px] text-gray-400 mb-2">资源标签（必填）</div>
               <div className="flex flex-wrap gap-2">
-                {userInfo.resourceTags.map((tag) => (
+                {userInfo.abilityTags.map((tag) => (
                   <span
                     key={tag}
                     className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal rounded-full"
@@ -821,7 +808,10 @@ export default function ProfilePage() {
 
             {/* 一句说清你的需要 */}
             <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <div className="text-[14px] text-gray-400 mb-1">一句话说清你的需求</div>
+              <div className="flex items-center space-x-2 mb-2">
+                <Info className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                <div className="text-[14px] text-gray-400">一句话说清你的需求</div>
+              </div>
               <p className="text-[17px] text-gray-700 leading-relaxed line-clamp-3">
                 {userInfo.need}
               </p>
