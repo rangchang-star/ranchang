@@ -776,7 +776,7 @@ export default function DiscoveryPage() {
                   {dailyDeclaration.title}
                 </h3>
                 {/* 年月日与录音时长（灰色字） */}
-                <div className="flex items-center space-x-2 text-[16px] text-[rgba(0,0,0,0.25)]">
+                <div className="flex items-center space-x-2 text-[12px] text-[rgba(0,0,0,0.25)]">
                   <span>{dailyDeclaration.date}</span>
                   <span>·</span>
                   <span className="flex items-center">
