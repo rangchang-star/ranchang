@@ -820,10 +820,7 @@ export default function ProfilePage() {
                     </span>
                     <div className="flex items-center space-x-2">
                       <button className="p-1 hover:bg-gray-200 transition-colors rounded">
-                        <Mic className="w-3 h-3 text-gray-400" />
-                      </button>
-                      <button className="p-1 hover:bg-gray-200 transition-colors rounded">
-                        <PlayCircle className="w-3 h-3 text-gray-400" />
+                        <PlayCircle className="w-6 h-6 text-gray-400" />
                       </button>
                     </div>
                   </div>
