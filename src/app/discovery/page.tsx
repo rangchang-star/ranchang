@@ -825,25 +825,50 @@ export default function DiscoveryPage() {
 
       {/* 查看更多悬浮页面 */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
-          <div className="w-[95%] h-[85vh] max-w-[480px] bg-white rounded-lg shadow-xl flex flex-col animate-in zoom-in-95 duration-200">
-            {/* 顶部固定区域 - 标题和关闭按钮 */}
-            <div className="flex-shrink-0 flex items-center justify-between p-3 sm:p-4 border-b border-[rgba(0,0,0,0.05)]">
-              <h3 className="text-sm font-semibold text-gray-900">
-                {modalType === 'abilities' && '更多能力连接'}
-                {modalType === 'activities' && '更多活动'}
-                {modalType === 'declarations' && '更多高燃宣告'}
-              </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors flex-shrink-0"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        <div
+          className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center transition-opacity duration-300 ${
+            showModal ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          {/* 遮罩层 */}
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowModal(false)}
+          />
+
+          {/* 内容容器 */}
+          <div
+            className={`relative w-full max-w-md bg-white max-h-[90vh] overflow-hidden rounded-t-2xl sm:rounded-2xl transition-transform duration-300 ${
+              showModal ? 'translate-y-0' : 'translate-y-full'
+            }`}
+          >
+            {/* 顶部导航 */}
+            <div className="sticky top-0 bg-white z-10 px-5 py-[10px] border-b border-[rgba(0,0,0,0.05)]">
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="ghost"
+                  className="p-1.5"
+                  onClick={() => setShowModal(false)}
+                >
+                  <ArrowLeft className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
+                </Button>
+                <h1 className="text-[17px] font-semibold text-[rgba(0,0,0,0.7)]">
+                  {modalType === 'abilities' && '更多能力连接'}
+                  {modalType === 'activities' && '更多活动'}
+                  {modalType === 'declarations' && '更多高燃宣告'}
+                </h1>
+                <Button
+                  variant="ghost"
+                  className="p-1.5 h-[26px] w-[26px]"
+                  onClick={() => setShowModal(false)}
+                >
+                  <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
+                </Button>
+              </div>
             </div>
 
             {/* 滚动内容区域 */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar">
+            <div className="overflow-y-auto max-h-[calc(90vh-50px)] px-4 py-3">
               {modalType === 'abilities' && (
                 <div className="space-y-3">
                   {connectionItems.map((item) => (
