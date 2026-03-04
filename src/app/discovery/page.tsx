@@ -983,46 +983,22 @@ export default function DiscoveryPage() {
 
       {/* 大鱼的认知库模态框 */}
       {showAssetsModal && (
-        <div
-          className={`fixed inset-0 z-[70] flex items-end sm:items-center justify-center transition-opacity duration-300 ${
-            showAssetsModal ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          {/* 遮罩层 */}
-          <div
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowAssetsModal(false)}
-          />
-
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-3 sm:p-4">
           {/* 内容容器 */}
-          <div
-            className={`relative w-full max-w-md bg-white max-h-[90vh] overflow-hidden rounded-t-2xl sm:rounded-2xl transition-transform duration-300 ${
-              showAssetsModal ? 'translate-y-0' : 'translate-y-full'
-            }`}
-          >
+          <div className="relative w-full max-w-[480px] bg-white max-h-[90vh] rounded-lg shadow-xl flex flex-col overflow-hidden">
             {/* 顶部导航 */}
-            <div className="sticky top-0 bg-white z-10 px-5 py-[10px] border-b border-[rgba(0,0,0,0.05)]">
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  className="p-1.5"
-                  onClick={() => setShowAssetsModal(false)}
-                >
-                  <ArrowLeft className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
-                </Button>
-                <h1 className="text-[17px] font-semibold text-[rgba(0,0,0,0.7)]">大鱼的认知库</h1>
-                <Button
-                  variant="ghost"
-                  className="p-1.5 h-[26px] w-[26px]"
-                  onClick={() => setShowAssetsModal(false)}
-                >
-                  <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
-                </Button>
-              </div>
+            <div className="flex-shrink-0 flex items-center justify-between p-3 sm:p-4 border-b border-[rgba(0,0,0,0.05)]">
+              <h3 className="text-sm font-semibold text-gray-900">大鱼的认知库</h3>
+              <button
+                onClick={() => setShowAssetsModal(false)}
+                className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors flex-shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* 文档列表 */}
-            <div className="overflow-y-auto max-h-[calc(90vh-50px)] px-4 py-3">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar">
               {mockDocuments.map((doc) => (
                 <div
                   key={doc.id}
@@ -1049,42 +1025,27 @@ export default function DiscoveryPage() {
 
       {/* 文档详情模态框 */}
       {isDocModalOpen && selectedDoc && (
-        <div
-          className={`fixed inset-0 z-[80] flex items-end sm:items-center justify-center transition-opacity duration-300 ${
-            isDocModalOpen ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          {/* 遮罩层 */}
-          <div
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setIsDocModalOpen(false)}
-          />
-
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-3 sm:p-4">
           {/* 内容容器 */}
-          <div
-            className={`relative w-full max-w-md bg-white max-h-[90vh] overflow-hidden rounded-t-2xl sm:rounded-2xl transition-transform duration-300 ${
-              isDocModalOpen ? 'translate-y-0' : 'translate-y-full'
-            }`}
-          >
+          <div className="relative w-full max-w-[480px] bg-white max-h-[90vh] rounded-lg shadow-xl flex flex-col overflow-hidden">
             {/* 顶部导航 */}
-            <div className="sticky top-0 bg-white z-10 px-5 py-[10px] border-b border-[rgba(0,0,0,0.05)]">
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  className="p-1.5"
+            <div className="flex-shrink-0 flex items-center justify-between p-3 sm:p-4 border-b border-[rgba(0,0,0,0.05)]">
+              <h3 className="text-sm font-semibold text-gray-900">文档详情</h3>
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" onClick={handleDocShare} className="w-8 h-8 p-0 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors flex-shrink-0">
+                  <Share2 className="w-5 h-5" />
+                </Button>
+                <button
                   onClick={() => setIsDocModalOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors flex-shrink-0"
                 >
-                  <ArrowLeft className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
-                </Button>
-                <h1 className="text-[17px] font-semibold text-[rgba(0,0,0,0.7)]">文档详情</h1>
-                <Button variant="ghost" onClick={handleDocShare} className="p-1.5">
-                  <Share2 className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
-                </Button>
+                  <X className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
             {/* 内容区域 */}
-            <div className="overflow-y-auto max-h-[calc(90vh-50px)]">
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
               {/* 封面图 */}
               {selectedDoc.cover && (
                 <div className="w-full h-56 overflow-hidden">
