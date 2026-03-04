@@ -27,7 +27,7 @@ const mockUserProfile = {
   name: '王姐',
   gender: 'female',
   age: 38,
-  phone: '138****8888',
+  phone: '13800138888',
   email: 'wang***@example.com',
   companyName: '',
   companyScale: '',
@@ -130,10 +130,15 @@ export default function ProfileEditPage() {
   const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>(mockUserProfile.industryTags || []);
   const [customAbility, setCustomAbility] = useState('');
   const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
-  const [isRecording, setIsRecording] = useState(false);
-  const [hasRecorded, setHasRecorded] = useState(false);
+  
+  // 录音相关状态 - 每个类别单独管理
+  const [recordings, setRecordings] = useState<Record<string, { isRecording: boolean; hasRecorded: boolean; audioUrl?: string }>>({});
   const [showDeclarationInput, setShowDeclarationInput] = useState(false);
   const [declarationDescription, setDeclarationDescription] = useState('');
+  
+  // 重录确认对话框
+  const [showReRecordDialog, setShowReRecordDialog] = useState(false);
+  const [directionToReRecord, setDirectionToReRecord] = useState<string | null>(null);
 
   // 工作经历状态
   const [experiences, setExperiences] = useState<Array<{
@@ -156,8 +161,10 @@ export default function ProfileEditPage() {
   const handleDirectionSelect = (directionId: string) => {
     setSelectedDirection(directionId);
     // 切换方向时重置录音状态
-    setIsRecording(false);
-    setHasRecorded(false);
+    setRecordings(prev => ({
+      ...prev,
+      [directionId]: { isRecording: false, hasRecorded: false }
+    }));
     setShowDeclarationInput(false);
     setDeclarationDescription('');
   };
@@ -168,17 +175,51 @@ export default function ProfileEditPage() {
       return;
     }
 
-    if (isRecording) {
+    const currentRecording = recordings[directionId] || { isRecording: false, hasRecorded: false };
+
+    if (currentRecording.hasRecorded) {
+      // 如果已经录制过，弹出确认对话框
+      setDirectionToReRecord(directionId);
+      setShowReRecordDialog(true);
+    } else if (currentRecording.isRecording) {
       // 停止录音
-      setIsRecording(false);
-      setHasRecorded(true);
-      // 录音完成后，显示输入框
-      setShowDeclarationInput(true);
+      setRecordings(prev => ({
+        ...prev,
+        [directionId]: { isRecording: false, hasRecorded: true }
+      }));
     } else {
       // 开始录音
-      setIsRecording(true);
-      setHasRecorded(false);
-      setShowDeclarationInput(false);
+      setRecordings(prev => ({
+        ...prev,
+        [directionId]: { isRecording: true, hasRecorded: false }
+      }));
+    }
+  };
+
+  // 确认重录
+  const confirmReRecord = () => {
+    if (directionToReRecord) {
+      setRecordings(prev => ({
+        ...prev,
+        [directionToReRecord]: { isRecording: true, hasRecorded: false }
+      }));
+      setShowReRecordDialog(false);
+      setDirectionToReRecord(null);
+    }
+  };
+
+  // 取消重录
+  const cancelReRecord = () => {
+    setShowReRecordDialog(false);
+    setDirectionToReRecord(null);
+  };
+
+  // 播放录音
+  const handlePlayRecording = (directionId: string) => {
+    const recording = recordings[directionId];
+    if (recording?.audioUrl) {
+      const audio = new Audio(recording.audioUrl);
+      audio.play();
     }
   };
 
@@ -415,7 +456,7 @@ export default function ProfileEditPage() {
               </Button>
             </Link>
             <h1 className="text-[15px] font-semibold text-gray-900">编辑资料</h1>
-            <Button onClick={handleSave} className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-4 py-1.5">
+            <Button onClick={handleSave} className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-4 py-1.5 text-white">
               保存
             </Button>
           </div>
@@ -545,7 +586,7 @@ export default function ProfileEditPage() {
 
           {/* 来这里的目的 */}
           <div className="space-y-3">
-            <h2 className="text-[13px] font-semibold text-gray-900">来这里的目的 <span className="text-red-400">*</span></h2>
+            <h2 className="text-[13px] font-semibold text-gray-900">来这里的目的（前端展示的角色） <span className="text-red-400">*</span></h2>
             <div className="flex flex-wrap gap-2">
               {['人找事', '事找人', '纯交流'].map((purpose) => (
                 <button
@@ -732,8 +773,7 @@ export default function ProfileEditPage() {
           {/* 宣告方向 */}
           <div className="space-y-3">
             <h2 className="text-[13px] font-semibold text-gray-900">
-              宣告方向
-              <span className="text-[10px] text-[rgba(0,0,0,0.4)] font-normal ml-2">（请勾选你昨天展示的宣告）</span>
+              高燃宣告（请勾选你要前端展示的宣告）
             </h2>
             <div className="grid grid-cols-3 gap-2">
               {directions.map((direction) => (
@@ -760,24 +800,46 @@ export default function ProfileEditPage() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {/* 右下角录音机图标 */}
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDirectionRecord(direction.id);
-                    }}
-                    className={`absolute bottom-1 right-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
-                      selectedDirection === direction.id && isRecording
-                        ? 'bg-red-500 animate-pulse'
-                        : selectedDirection === direction.id && hasRecorded
-                        ? 'bg-green-500'
-                        : selectedDirection === direction.id
-                        ? 'bg-blue-400 hover:bg-blue-500'
-                        : 'bg-gray-300 cursor-not-allowed'
-                    }`}
-                  >
-                    <Mic className="w-3 h-3 text-white" />
-                  </div>
+                  {/* 录音/播放区域 */}
+                  {selectedDirection === direction.id ? (
+                    <>
+                      {/* 播放按钮 - 如果已录制 */}
+                      {recordings[direction.id]?.hasRecorded && (
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePlayRecording(direction.id);
+                          }}
+                          className="absolute bottom-1 right-7 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center cursor-pointer transition-colors hover:bg-green-600"
+                        >
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      )}
+                      
+                      {/* 录音按钮 */}
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDirectionRecord(direction.id);
+                        }}
+                        className={`absolute bottom-1 right-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
+                          recordings[direction.id]?.isRecording
+                            ? 'bg-red-500 animate-pulse'
+                            : recordings[direction.id]?.hasRecorded
+                            ? 'bg-blue-400 hover:bg-blue-500'
+                            : 'bg-blue-400 hover:bg-blue-500'
+                        }`}
+                      >
+                        <Mic className="w-3 h-3 text-white" />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center">
+                      <Mic className="w-3 h-3 text-white" />
+                    </div>
+                  )}
                   <span className="text-[10px] mt-1">{direction.name}</span>
                 </button>
               ))}
@@ -786,10 +848,10 @@ export default function ProfileEditPage() {
             {/* 录音状态提示 */}
             {selectedDirection && (
               <div className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                {isRecording ? (
+                {recordings[selectedDirection]?.isRecording ? (
                   <span className="text-red-500">🔴 正在录音...</span>
-                ) : hasRecorded ? (
-                  <span className="text-green-600">✓ 录音完成，请填写简述</span>
+                ) : recordings[selectedDirection]?.hasRecorded ? (
+                  <span className="text-green-600">✓ 录音完成，可点击播放键试听</span>
                 ) : (
                   <span>点击录音图标开始录音此宣告</span>
                 )}
@@ -918,6 +980,34 @@ export default function ProfileEditPage() {
           </div>
         </div>
       </div>
+
+      {/* 重录确认对话框 */}
+      {showReRecordDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white w-full max-w-sm">
+            <div className="p-4">
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">确认重录</h3>
+              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                重新录音将覆盖之前的录音，确定要继续吗？
+              </p>
+            </div>
+            <div className="flex border-t border-gray-200">
+              <button
+                onClick={cancelReRecord}
+                className="flex-1 py-3 text-[13px] text-[rgba(0,0,0,0.6)] hover:bg-gray-50 border-r border-gray-200"
+              >
+                取消
+              </button>
+              <button
+                onClick={confirmReRecord}
+                className="flex-1 py-3 text-[13px] text-white bg-blue-400 hover:bg-blue-500"
+              >
+                确定
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
