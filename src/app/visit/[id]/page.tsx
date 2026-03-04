@@ -287,14 +287,14 @@ export default function VisitDetailPage() {
                 <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
                   {visit.date} {visit.time}
                 </div>
-                <div className="text-[10px] text-[rgba(0,0,0,0.4)]">拜访时间</div>
+                <div className="text-[9px] text-[rgba(0,0,0,0.4)]">拜访时间</div>
               </div>
             </div>
             <div className="flex items-start space-x-3">
               <MapPin className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <div className="text-[13px] text-[rgba(0,0,0,0.6)]">{visit.location}</div>
-                <div className="text-[10px] text-[rgba(0,0,0,0.4)]">拜访地点</div>
+                <div className="text-[9px] text-[rgba(0,0,0,0.4)]">拜访地点</div>
               </div>
             </div>
             <div className="flex items-start space-x-3">
@@ -303,7 +303,7 @@ export default function VisitDetailPage() {
                 <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
                   {visit.participants} 人参与
                 </div>
-                <div className="text-[10px] text-[rgba(0,0,0,0.4)]">参与人数</div>
+                <div className="text-[9px] text-[rgba(0,0,0,0.4)]">参与人数</div>
               </div>
             </div>
           </div>
