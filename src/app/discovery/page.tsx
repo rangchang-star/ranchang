@@ -534,14 +534,20 @@ export default function DiscoveryPage() {
                     </div>
                   )}
 
-                  {/* 方形头像 - 纯方形 */}
-                  <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden">
+                  {/* 方形头像 - 纯方形，点击跳转到详情页 */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/ability/${item.id}`);
+                    }}
+                    className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden cursor-pointer"
+                  >
                     <img
                       src={item.avatar}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
-                  </div>
+                  </button>
 
                   {/* 中间文字 */}
                   <div className="flex-1 min-w-0">
