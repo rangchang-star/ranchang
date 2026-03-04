@@ -830,86 +830,55 @@ export default function DiscoveryPage() {
 
       {/* 查看更多悬浮页面 */}
       {showModal && (
-        <div
-          className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center transition-opacity duration-300 ${
-            showModal ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          {/* 遮罩层 */}
-          <div
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowModal(false)}
-          />
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
           {/* 内容容器 */}
-          <div
-            className={`relative w-full max-w-md bg-white max-h-[90vh] overflow-hidden rounded-t-2xl sm:rounded-2xl transition-transform duration-300 ${
-              showModal ? 'translate-y-0' : 'translate-y-full'
-            }`}
-          >
+          <div className="relative w-full max-w-[480px] bg-white max-h-[90vh] rounded-lg shadow-xl flex flex-col overflow-hidden">
             {/* 顶部导航 */}
-            <div className="sticky top-0 bg-white z-10 px-5 py-[10px] border-b border-[rgba(0,0,0,0.05)]">
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  className="p-1.5"
-                  onClick={() => setShowModal(false)}
-                >
-                  <ArrowLeft className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
-                </Button>
-                <h1 className="text-[17px] font-semibold text-[rgba(0,0,0,0.7)]">
-                  {modalType === 'abilities' && '更多能力连接'}
-                  {modalType === 'activities' && '更多活动'}
-                  {modalType === 'declarations' && '更多高燃宣告'}
-                </h1>
-                <Button
-                  variant="ghost"
-                  className="p-1.5 h-[26px] w-[26px]"
-                  onClick={() => setShowModal(false)}
-                >
-                  <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
-                </Button>
-              </div>
+            <div className="flex-shrink-0 flex items-center justify-between p-3 sm:p-4 border-b border-[rgba(0,0,0,0.05)]">
+              <h3 className="text-sm font-semibold text-gray-900">
+                {modalType === 'abilities' && '更多能力连接'}
+                {modalType === 'activities' && '更多活动'}
+                {modalType === 'declarations' && '更多高燃宣告'}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors flex-shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* 滚动内容区域 */}
-            <div className="overflow-y-auto max-h-[calc(90vh-50px)] px-4 py-3">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar">
               {modalType === 'abilities' && (
-                <div className="space-y-3">
+                <div>
                   {connectionItems.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center p-3 bg-[rgba(0,0,0,0.02)] cursor-pointer"
                       onClick={() => {
                         setShowModal(false);
                         router.push(`/ability/${item.id}`);
                       }}
+                      className="flex items-center space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                     >
                       {/* 头像 */}
-                      <div className="w-[60px] h-[60px] flex-shrink-0 mr-3 overflow-hidden">
+                      <div className="flex-shrink-0 w-[60px] h-[60px] overflow-hidden">
                         <img
                           src={item.avatar}
                           alt={item.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
+                      
                       {/* 内容 */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <span className="text-[17px] font-semibold text-gray-900">{item.name}</span>
-                          <span className="text-[17px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
+                        <h3 className="text-[18px] text-gray-900 leading-relaxed line-clamp-2">{item.name}</h3>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-[18px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
+                          {item.isTrusted && (
+                            <span className="text-[14px] text-green-600">✓</span>
+                          )}
                         </div>
-                        <div className="flex flex-wrap gap-2 mb-1">
-                          {item.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="inline-block px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[10px]"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                        <p className="text-[18px] text-gray-900 line-clamp-2">{item.need}</p>
                       </div>
                     </div>
                   ))}
@@ -917,28 +886,30 @@ export default function DiscoveryPage() {
               )}
 
               {modalType === 'activities' && (
-                <div className="space-y-3">
+                <div>
                   {activityItems.slice(0, 3).map((item) => (
                     <div
                       key={item.id}
-                      className="p-3 bg-[rgba(0,0,0,0.02)] cursor-pointer"
                       onClick={() => {
                         setShowModal(false);
                         router.push(`/activity/${item.id}`);
                       }}
+                      className="flex items-center space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                     >
-                      <div className="flex items-start">
-                        <div className="w-[60px] h-[60px] flex-shrink-0 mr-3 overflow-hidden">
-                          <img
-                            src={item.image}
-                            alt={item.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[18px] text-[rgba(0,0,0,0.25)] mb-1">{item.category}</div>
-                          <h3 className="text-[17px] font-semibold text-gray-900 mb-1 line-clamp-2">{item.title}</h3>
-                          <p className="text-[18px] text-[rgba(0,0,0,0.25)]">{item.address.substring(0, 8)}</p>
+                      {/* 图片 */}
+                      <div className="flex-shrink-0 w-[60px] h-[60px] overflow-hidden">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      {/* 内容 */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[18px] text-gray-900 leading-relaxed line-clamp-2">{item.title}</h3>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-[18px] text-[rgba(0,0,0,0.25)]">{item.category}</span>
                         </div>
                       </div>
                     </div>
@@ -947,35 +918,42 @@ export default function DiscoveryPage() {
               )}
 
               {modalType === 'declarations' && (
-                <div className="space-y-3">
+                <div>
                   {declarationItems.slice(0, 3).map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center p-3 bg-[rgba(0,0,0,0.02)] cursor-pointer"
                       onClick={() => {
                         setShowModal(false);
                         router.push(`/declaration/${item.id}`);
                       }}
+                      className="flex items-center space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                     >
-                      <div className="w-10 h-10 flex-shrink-0 mr-3 overflow-hidden bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
+                      {/* 图标 */}
+                      <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center bg-[rgba(0,0,0,0.05]">
                         <img
                           src={item.icon}
                           alt={item.iconType}
                           className="w-8 h-8 object-contain"
                         />
                       </div>
+                      
+                      {/* 内容 */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-[17px] font-semibold text-gray-900 mb-1 line-clamp-2">{item.title}</h3>
-                        <p className="text-[18px] text-[rgba(0,0,0,0.25)]">{item.profile}</p>
+                        <h3 className="text-[18px] text-gray-900 leading-relaxed line-clamp-2">{item.title}</h3>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-[18px] text-[rgba(0,0,0,0.25)]">{item.profile}</span>
+                        </div>
                       </div>
+                      
+                      {/* 播放按钮 */}
                       <button
-                        className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0 ml-2"
+                        className="flex-shrink-0 text-blue-400"
                         onClick={(e) => {
                           e.stopPropagation();
                           handlePlayDeclaration(item.id);
                         }}
                       >
-                        <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                        <Play className="w-5 h-5" />
                       </button>
                     </div>
                   ))}
