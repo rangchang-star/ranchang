@@ -348,6 +348,12 @@ export default function ProfilePage() {
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
   
+  // 测试悬浮页面状态
+  const [showTestModal, setShowTestModal] = useState(false);
+  const [currentTestAssessment, setCurrentTestAssessment] = useState<Assessment | null>(null);
+  const [testQuestionIndex, setTestQuestionIndex] = useState(0);
+  const [testAnswers, setTestAnswers] = useState<Record<number, number>>({});
+  
   // 切换量表展开状态
   const toggleAssessmentExpand = (index: number) => {
     setExpandedAssessments(prev => {
@@ -360,13 +366,13 @@ export default function ProfilePage() {
       return newSet;
     });
   };
-  
-  // 处理重新测试点击
+
+  // 处理重新测试按钮点击
   const handleRetestClick = (assessment: Assessment) => {
     setSelectedAssessment(assessment);
     setShowAssessmentModal(true);
   };
-  
+
   // 切换所有量表的展开/收起
   const toggleAllAssessments = () => {
     if (expandedAssessments.size === userInfo.assessments.length) {
@@ -377,6 +383,46 @@ export default function ProfilePage() {
       setExpandedAssessments(new Set(userInfo.assessments.map((_, idx) => idx)));
     }
   };
+
+  // 处理开始测试按钮点击
+  const handleStartTest = () => {
+    setShowAssessmentModal(false);
+    setCurrentTestAssessment(selectedAssessment);
+    setTestQuestionIndex(0);
+    setTestAnswers({});
+    setShowTestModal(true);
+  };
+
+  // 处理测试答案
+  const handleTestAnswer = (questionId: number, value: number) => {
+    setTestAnswers({ ...testAnswers, [questionId]: value });
+    
+    // 自动跳到下一题
+    if (testQuestionIndex < 9) {
+      setTestQuestionIndex(testQuestionIndex + 1);
+    } else {
+      // 最后一题完成，提交测试
+      setTimeout(() => {
+        setShowTestModal(false);
+        // 这里可以添加提交到后端的逻辑
+        alert('测试完成！分数已更新。');
+      }, 500);
+    }
+  };
+
+  // 测试问题数据（简化版）
+  const testQuestions = [
+    { id: 1, question: '当面临一个高风险高回报的机会时，您会怎么做？', options: ['完全不会考虑', '会仔细评估但不太可能', '会投入少量尝试', '会投入部分资源', '会全力以赴'] },
+    { id: 2, question: '您的项目遭遇重大挫折时，您会怎么做？', options: ['立即停止项目', '暂停重新评估', '继续更加谨慎', '积极寻找资金', '调整策略重新出发'] },
+    { id: 3, question: '当需要在有限信息下做决策时，您通常会？', options: ['尽量拖延等待', '依赖他人决策', '根据直觉快速决策', '分析现有信息后决策', '快速决策并应对'] },
+    { id: 4, question: '当团队成员对决策有分歧时，您会？', options: ['回避冲突', '采纳多数意见', '自己决定', '引导讨论共识', '快速决策负责'] },
+    { id: 5, question: '当项目进展缓慢时，您会？', options: ['感到沮丧', '感到焦虑怀疑', '调整心态继续', '主动寻求帮助', '从失败中学习'] },
+    { id: 6, question: '当竞争对手推出更好产品时，您会？', options: ['感到恐慌', '等待对手犯错', '模仿对手产品', '分析对手优势', '把竞争视为动力'] },
+    { id: 7, question: '您如何看待传统模式？', options: ['遵循传统', '传统基础上调整', '考虑创新但担心', '积极探索新模式', '主动颠覆传统'] },
+    { id: 8, question: '当您有创新想法时，您会？', options: ['只是想想', '和少数人讨论', '小范围尝试', '制定计划实施', '立即行动验证'] },
+    { id: 9, question: '团队成员应具备的最重要品质是？', options: ['服从领导', '专业技能强', '有责任心', '有创新精神', '共同价值观'] },
+    { id: 10, question: '当团队成员出现矛盾时，您会？', options: ['回避矛盾', '分别谈话了解', '公开讨论解决', '建立规则预防', '转化为成长机会'] }
+  ];
 
   // 过滤出包含当前用户作为访客的探访记录
   const userVisitRecords = visitRecords.filter((record) =>
@@ -1401,13 +1447,7 @@ export default function ProfilePage() {
               {/* 操作按钮 */}
               <div className="space-y-2">
                 <button
-                  onClick={() => {
-                    // 跳转到量表测试页面
-                    const route = selectedAssessment.name === '创业心理评估' ? 'entrepreneurial-psychology' : 
-                                   selectedAssessment.name === '商业认知评估' ? 'business-cognition' : 
-                                   selectedAssessment.name === 'AI认知评估' ? 'ai-cognition' : 'career-mission';
-                    window.location.href = `/assessment/${route}`;
-                  }}
+                  onClick={handleStartTest}
                   className="w-full bg-blue-400 hover:bg-blue-500 text-white py-2.5 text-[15px] font-normal"
                 >
                   开始重新测试
@@ -1419,6 +1459,87 @@ export default function ProfilePage() {
                   取消
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 测试悬浮页面 */}
+      {showTestModal && currentTestAssessment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* 背景遮罩 */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowTestModal(false)}
+          />
+          
+          {/* 弹窗内容 */}
+          <div className="relative bg-white border border-[rgba(0,0,0,0.1)] rounded-lg shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
+            {/* 弹窗头部 */}
+            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between sticky top-0 bg-white z-10">
+              <div className="flex items-center space-x-2">
+                <h3 className="text-[15px] font-semibold text-gray-900">
+                  {currentTestAssessment.name}
+                </h3>
+                <span className="text-[13px] text-[rgba(0,0,0,0.4)]">
+                  问题 {testQuestionIndex + 1}/{testQuestions.length}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowTestModal(false)}
+                className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded"
+              >
+                <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
+              </button>
+            </div>
+
+            {/* 弹窗内容 */}
+            <div className="p-4 space-y-4">
+              {/* 进度条 */}
+              <div className="w-full bg-[rgba(0,0,0,0.05)] h-1.5 rounded-full overflow-hidden">
+                <div
+                  className="bg-blue-400 h-full transition-all duration-300"
+                  style={{ width: `${((testQuestionIndex + 1) / testQuestions.length) * 100}%` }}
+                />
+              </div>
+
+              {/* 问题 */}
+              {testQuestionIndex < testQuestions.length && (
+                <div className="space-y-3">
+                  <p className="text-[15px] text-gray-900 leading-relaxed">
+                    {testQuestions[testQuestionIndex].question}
+                  </p>
+                  
+                  {/* 选项 */}
+                  <div className="space-y-2">
+                    {testQuestions[testQuestionIndex].options.map((option, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleTestAnswer(testQuestions[testQuestionIndex].id, idx + 1)}
+                        className="w-full text-left px-4 py-3 border border-[rgba(0,0,0,0.1)] rounded-none hover:bg-[rgba(0,0,0,0.02)] hover:border-blue-400 transition-colors text-[15px] text-gray-700"
+                      >
+                        <span className="font-normal text-[rgba(0,0,0,0.4)] mr-2">{['A', 'B', 'C', 'D', 'E'][idx]}.</span>
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 完成提示 */}
+              {testQuestionIndex >= testQuestions.length && (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-green-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h4 className="text-[17px] font-semibold text-gray-900 mb-1">测试完成</h4>
+                  <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
+                    感谢您完成测试，正在生成评估报告...
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
