@@ -95,6 +95,24 @@ const resourceTags = [
   '财务顾问',
 ];
 
+const abilityTags = [
+  '团队管理',
+  '沟通能力',
+  '战略思维',
+  '执行力',
+  '项目管理',
+  '创新思维',
+  '问题解决',
+  '领导力',
+  '学习能力',
+  '跨界整合',
+  '风险控制',
+  '资源整合',
+  '商业谈判',
+  '数据分析',
+  '市场洞察',
+];
+
 const directions = [
   { id: 'confidence', name: '信心', icon: '/icon-confidence.jpg' },
   { id: 'mission', name: '使命', icon: '/icon-mission.jpg' },
@@ -109,7 +127,7 @@ export default function ProfileEditPage() {
   const [selectedIndustryTag, setSelectedIndustryTag] = useState<string>(profile.industryTags[0] || '');
   const [selectedResources, setSelectedResources] = useState<string[]>(profile.resources);
   const [customResource, setCustomResource] = useState('');
-  const [abilityTags, setAbilityTags] = useState<string[]>(mockUserProfile.industryTags || []);
+  const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>(mockUserProfile.industryTags || []);
   const [customAbility, setCustomAbility] = useState('');
   const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
   const [isRecording, setIsRecording] = useState(false);
@@ -179,12 +197,29 @@ export default function ProfileEditPage() {
   };
 
   const handleAbilityTagRemove = (tag: string) => {
-    setAbilityTags(abilityTags.filter((t) => t !== tag));
+    setSelectedAbilityTags(selectedAbilityTags.filter((t) => t !== tag));
+  };
+
+  const handleAbilityTagToggle = (tag: string) => {
+    if (selectedAbilityTags.includes(tag)) {
+      setSelectedAbilityTags(selectedAbilityTags.filter((t) => t !== tag));
+    } else {
+      // 最多选择三个
+      if (selectedAbilityTags.length >= 3) {
+        alert('能力标签最多选择三个');
+        return;
+      }
+      setSelectedAbilityTags([...selectedAbilityTags, tag]);
+    }
   };
 
   const handleAddCustomAbility = () => {
-    if (customAbility && customAbility.trim() && !abilityTags.includes(customAbility.trim())) {
-      setAbilityTags([...abilityTags, customAbility.trim()]);
+    if (customAbility && customAbility.trim() && !selectedAbilityTags.includes(customAbility.trim())) {
+      if (selectedAbilityTags.length >= 3) {
+        alert('能力标签最多选择三个');
+        return;
+      }
+      setSelectedAbilityTags([...selectedAbilityTags, customAbility.trim()]);
       setCustomAbility('');
     }
   };
@@ -230,6 +265,11 @@ export default function ProfileEditPage() {
       requiredErrors.push('一句说清你的需要包含非法字符');
     }
 
+    // 验证能力标签（必选）
+    if (!selectedAbilityTags || selectedAbilityTags.length === 0) {
+      requiredErrors.push('能力标签（必选）');
+    }
+
     // 如果有必选项未填写，显示提示
     if (requiredErrors.length > 0) {
       alert('请填写星号必选项：\n' + requiredErrors.join('、'));
@@ -250,7 +290,7 @@ export default function ProfileEditPage() {
       purpose: selectedPurpose,
       industryTags: selectedIndustryTag ? [selectedIndustryTag] : [],
       resources: selectedResources,
-      abilityTags: abilityTags,
+      abilityTags: selectedAbilityTags,
       directions: selectedDirection ? [selectedDirection] : [],
       declarationDescription,
       updatedAt: new Date().toISOString(),
@@ -598,25 +638,25 @@ export default function ProfileEditPage() {
                 添加
               </button>
             </div>
+            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">点开会员详细页后才能看到资源标签</p>
           </div>
 
           {/* 能力标签 */}
           <div className="space-y-3">
-            <h2 className="text-[13px] font-semibold text-gray-900">能力标签</h2>
+            <h2 className="text-[13px] font-semibold text-gray-900">能力标签 <span className="text-red-400">*</span></h2>
             <div className="flex flex-wrap gap-2">
               {abilityTags.map((tag) => (
-                <span
+                <button
                   key={tag}
-                  className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal line-clamp-1 flex items-center space-x-1"
+                  onClick={() => handleAbilityTagToggle(tag)}
+                  className={`px-2 py-1 text-[10px] border ${
+                    selectedAbilityTags.includes(tag)
+                      ? 'border-blue-400 bg-blue-400/40 text-blue-400'
+                      : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)]'
+                  }`}
                 >
-                  <span>{tag}</span>
-                  <button
-                    onClick={() => handleAbilityTagRemove(tag)}
-                    className="hover:text-red-400"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
+                  {tag}
+                </button>
               ))}
             </div>
             {/* 自定义能力标签输入框 */}
@@ -640,6 +680,7 @@ export default function ProfileEditPage() {
                 添加
               </button>
             </div>
+            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">前台只显示能力标签（最多选3个）</p>
           </div>
 
           {/* 宣告方向 */}
