@@ -6,7 +6,7 @@ import { ArrowLeft, Heart, MessageCircle, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Flame, PlayCircle, Mic } from 'lucide-react';
+import { Flame, PlayCircle } from 'lucide-react';
 import { useParams } from 'next/navigation';
 
 // 模拟数据 - 实际应该从API获取
@@ -200,15 +200,12 @@ export default function ConnectionDetailPage() {
                 <Flame className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                    <span className="text-[11px] text-[rgba(0,0,0,0,0.4)]">
                       {user.currentDeclaration.direction === 'confidence' ? '信心' : ''}
                     </span>
                     <div className="flex items-center space-x-2">
                       <button className="p-1 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
-                        <Mic className="w-4 h-4 text-[rgba(0,0,0,0.4)]" />
-                      </button>
-                      <button className="p-1 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
-                        <PlayCircle className="w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+                        <PlayCircle className="w-8 h-8 text-[rgba(0,0,0,0.4)]" />
                       </button>
                     </div>
                   </div>
