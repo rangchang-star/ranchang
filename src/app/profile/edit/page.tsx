@@ -109,6 +109,8 @@ export default function ProfileEditPage() {
   const [selectedIndustryTag, setSelectedIndustryTag] = useState<string>(profile.industryTags[0] || '');
   const [selectedResources, setSelectedResources] = useState<string[]>(profile.resources);
   const [customResource, setCustomResource] = useState('');
+  const [abilityTags, setAbilityTags] = useState<string[]>(mockUserProfile.industryTags || []);
+  const [customAbility, setCustomAbility] = useState('');
   const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecorded, setHasRecorded] = useState(false);
@@ -176,6 +178,17 @@ export default function ProfileEditPage() {
     }
   };
 
+  const handleAbilityTagRemove = (tag: string) => {
+    setAbilityTags(abilityTags.filter((t) => t !== tag));
+  };
+
+  const handleAddCustomAbility = () => {
+    if (customAbility && customAbility.trim() && !abilityTags.includes(customAbility.trim())) {
+      setAbilityTags([...abilityTags, customAbility.trim()]);
+      setCustomAbility('');
+    }
+  };
+
   const handleSave = () => {
     // 验证必选项
     const requiredErrors: string[] = [];
@@ -237,6 +250,7 @@ export default function ProfileEditPage() {
       purpose: selectedPurpose,
       industryTags: selectedIndustryTag ? [selectedIndustryTag] : [],
       resources: selectedResources,
+      abilityTags: abilityTags,
       directions: selectedDirection ? [selectedDirection] : [],
       declarationDescription,
       updatedAt: new Date().toISOString(),
@@ -579,6 +593,48 @@ export default function ProfileEditPage() {
               />
               <button
                 onClick={handleAddCustomResource}
+                className="px-3 py-2 bg-blue-400 text-white text-[11px] border border-blue-400 hover:bg-blue-500"
+              >
+                添加
+              </button>
+            </div>
+          </div>
+
+          {/* 能力标签 */}
+          <div className="space-y-3">
+            <h2 className="text-[13px] font-semibold text-gray-900">能力标签</h2>
+            <div className="flex flex-wrap gap-2">
+              {abilityTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal line-clamp-1 flex items-center space-x-1"
+                >
+                  <span>{tag}</span>
+                  <button
+                    onClick={() => handleAbilityTagRemove(tag)}
+                    className="hover:text-red-400"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            {/* 自定义能力标签输入框 */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={customAbility}
+                onChange={(e) => setCustomAbility(e.target.value)}
+                className="flex-1 px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
+                placeholder="自定义能力标签"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAddCustomAbility();
+                  }
+                }}
+              />
+              <button
+                onClick={handleAddCustomAbility}
                 className="px-3 py-2 bg-blue-400 text-white text-[11px] border border-blue-400 hover:bg-blue-500"
               >
                 添加
