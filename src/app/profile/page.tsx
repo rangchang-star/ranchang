@@ -334,12 +334,49 @@ export default function ProfilePage() {
   const [showActivityDetail, setShowActivityDetail] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
   
+  // 量表展开状态 - 默认只展开"创业心理评估"
+  const [expandedAssessments, setExpandedAssessments] = useState<Set<number>>(new Set([0]));
+  
   // 咨询相关状态
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [consultationQuestion, setConsultationQuestion] = useState('');
   const [isSubmittingConsultation, setIsSubmittingConsultation] = useState(false);
   const [showProfileGuideDialog, setShowProfileGuideDialog] = useState(false);
   const [guideType, setGuideType] = useState<'login' | 'profile' | null>(null);
+  
+  // 量表测试弹窗状态
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
+  const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+  
+  // 切换量表展开状态
+  const toggleAssessmentExpand = (index: number) => {
+    setExpandedAssessments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+  
+  // 处理重新测试点击
+  const handleRetestClick = (assessment: Assessment) => {
+    setSelectedAssessment(assessment);
+    setShowAssessmentModal(true);
+  };
+  
+  // 切换所有量表的展开/收起
+  const toggleAllAssessments = () => {
+    if (expandedAssessments.size === userInfo.assessments.length) {
+      // 如果全部展开，则全部收起，只保留第一个
+      setExpandedAssessments(new Set([0]));
+    } else {
+      // 否则全部展开
+      setExpandedAssessments(new Set(userInfo.assessments.map((_, idx) => idx)));
+    }
+  };
 
   // 过滤出包含当前用户作为访客的探访记录
   const userVisitRecords = visitRecords.filter((record) =>
@@ -830,69 +867,87 @@ export default function ProfilePage() {
                 <span className="text-[rgba(96,165,250,0.6)]">量表</span>
                 <span className="text-blue-400">评估</span>
               </h2>
+              <button
+                onClick={toggleAllAssessments}
+                className="text-[13px] text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] flex items-center space-x-1"
+              >
+                <span>{expandedAssessments.size === userInfo.assessments.length ? '收起全部' : '展开全部'}</span>
+              </button>
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-5">
-              {userInfo.assessments.map((assessment: Assessment, idx: number) => (
-                <div key={idx} className="p-4 bg-white">
-                  {/* 量表标题和总分 */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-[23px]">{getAssessmentIcon(assessment.name)}</span>
-                      <div>
-                        <h3 className="text-[18px] font-semibold text-gray-900">{assessment.name}</h3>
-                        <Badge className={`rounded-none font-normal text-[13px] mt-1 ${
-                          assessment.level === '优秀' ? 'bg-green-100 text-green-600' : 
-                          assessment.level === '良好' ? 'bg-blue-100 text-blue-600' :
-                          'bg-yellow-100 text-yellow-600'
-                        }`}>
-                          {assessment.level} · {assessment.score}分
-                        </Badge>
+              {userInfo.assessments.map((assessment: Assessment, idx: number) => {
+                const isExpanded = expandedAssessments.has(idx);
+                return (
+                  <div key={idx} className="p-4 bg-white">
+                    {/* 量表标题和总分 */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[23px]">{getAssessmentIcon(assessment.name)}</span>
+                        <div>
+                          <h3 className="text-[18px] font-semibold text-gray-900">{assessment.name}</h3>
+                          <Badge className={`rounded-none font-normal text-[13px] mt-1 ${
+                            assessment.level === '优秀' ? 'bg-green-100 text-green-600' : 
+                            assessment.level === '良好' ? 'bg-blue-100 text-blue-600' :
+                            'bg-yellow-100 text-yellow-600'
+                          }`}>
+                            {assessment.level} · {assessment.score}分
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleRetestClick(assessment)}
+                          className="bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.25)] font-normal text-[13px] px-3 py-1 h-7 flex items-center space-x-1"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          <span>重新测试</span>
+                        </button>
+                        <button
+                          onClick={() => toggleAssessmentExpand(idx)}
+                          className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded transition-colors"
+                        >
+                          <ChevronRight className={`w-4 h-4 text-[rgba(0,0,0,0.25)] transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                        </button>
                       </div>
                     </div>
-                    <Link
-                      href={`/assessment/${assessment.name === '创业心理评估' ? 'entrepreneurial-psychology' : assessment.name === '商业认知评估' ? 'business-cognition' : assessment.name === 'AI认知评估' ? 'ai-cognition' : 'career-mission'}`}
-                    >
-                      <Button className="bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.25)] font-normal text-[13px] px-3 py-1 h-7 flex items-center space-x-1">
-                        <RotateCcw className="w-3 h-3" />
-                        <span>重新测试</span>
-                      </Button>
-                    </Link>
-                  </div>
 
-                  {/* 一句话总结 */}
-                  <div className="p-3 bg-[rgba(0,0,0,0.02)] mb-3">
-                    <p className="text-[16px] text-gray-700 leading-relaxed">
-                      {assessment.summary}
-                    </p>
-                  </div>
+                    {/* 一句话总结 */}
+                    <div className="p-3 bg-[rgba(0,0,0,0.02)] mb-3">
+                      <p className="text-[16px] text-gray-700 leading-relaxed">
+                        {assessment.summary}
+                      </p>
+                    </div>
 
-                  {/* 维度条形图 */}
-                  <div className="space-y-2">
-                    {assessment.dimensions.map((dimension: AssessmentDimension, dimIdx: number) => (
-                      <div key={dimIdx} className="space-y-1">
-                        <div className="flex items-center justify-between text-[13px] text-[rgba(0,0,0,0.25)]">
-                          <span className="font-medium">{dimension.name}</span>
-                          <span>{dimension.score}分</span>
-                        </div>
-                        <div className="w-full bg-[rgba(0,0,0,0.05)] h-2">
-                          <div 
-                            className={`h-2 rounded-none transition-all ${
-                              dimension.score >= 90 ? 'bg-green-500' :
-                              dimension.score >= 80 ? 'bg-blue-500' :
-                              dimension.score >= 70 ? 'bg-yellow-500' : 'bg-orange-500'
-                            }`}
-                            style={{ width: `${dimension.score}%` }}
-                          />
-                        </div>
-                        <p className="text-[16px] text-[rgba(0,0,0,0.25)] pl-1">
-                          {dimension.description}
-                        </p>
+                    {/* 维度条形图 - 根据展开状态显示 */}
+                    {isExpanded && (
+                      <div className="space-y-2">
+                        {assessment.dimensions.map((dimension: AssessmentDimension, dimIdx: number) => (
+                          <div key={dimIdx} className="space-y-1">
+                            <div className="flex items-center justify-between text-[13px] text-[rgba(0,0,0,0.25)]">
+                              <span className="font-medium">{dimension.name}</span>
+                              <span>{dimension.score}分</span>
+                            </div>
+                            <div className="w-full bg-[rgba(0,0,0,0.05)] h-2">
+                              <div 
+                                className={`h-2 rounded-none transition-all ${
+                                  dimension.score >= 90 ? 'bg-green-500' :
+                                  dimension.score >= 80 ? 'bg-blue-500' :
+                                  dimension.score >= 70 ? 'bg-yellow-500' : 'bg-orange-500'
+                                }`}
+                                style={{ width: `${dimension.score}%` }}
+                              />
+                            </div>
+                            <p className="text-[16px] text-[rgba(0,0,0,0.25)] pl-1">
+                              {dimension.description}
+                            </p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
           {/* 活动详情弹窗 */}
@@ -1286,6 +1341,84 @@ export default function ProfilePage() {
               >
                 {guideType === 'login' ? '去登录' : '去完善'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 量表测试弹窗 */}
+      {showAssessmentModal && selectedAssessment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* 背景遮罩 */}
+          <div 
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowAssessmentModal(false)}
+          />
+          
+          {/* 弹窗内容 */}
+          <div className="relative bg-white border border-[rgba(0,0,0,0.1)] rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+            {/* 弹窗头部 */}
+            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between">
+              <h3 className="text-[17px] font-semibold text-gray-900">{selectedAssessment.name} - 重新测试</h3>
+              <button
+                onClick={() => setShowAssessmentModal(false)}
+                className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded"
+              >
+                <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
+              </button>
+            </div>
+
+            {/* 弹窗内容 */}
+            <div className="p-4 space-y-4">
+              {/* 提示信息 */}
+              <div className="p-3 bg-[rgba(59,130,246,0.05)] border border-blue-200">
+                <div className="flex items-start space-x-2">
+                  <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-[15px] text-gray-700 leading-relaxed">
+                    您即将重新测试「{selectedAssessment.name}」。测试需要约10-15分钟，请在安静的环境下完成。
+                  </p>
+                </div>
+              </div>
+
+              {/* 上次测试结果 */}
+              <div>
+                <h4 className="text-[15px] font-semibold text-gray-900 mb-2">上次测试结果</h4>
+                <div className="flex items-center space-x-2 mb-2">
+                  <Badge className={`rounded-none font-normal text-[13px] ${
+                    selectedAssessment.level === '优秀' ? 'bg-green-100 text-green-600' : 
+                    selectedAssessment.level === '良好' ? 'bg-blue-100 text-blue-600' :
+                    'bg-yellow-100 text-yellow-600'
+                  }`}>
+                    {selectedAssessment.level}
+                  </Badge>
+                  <span className="text-[15px] text-[rgba(0,0,0,0.6)]">{selectedAssessment.score}分</span>
+                </div>
+                <p className="text-[15px] text-gray-700 leading-relaxed">
+                  {selectedAssessment.summary}
+                </p>
+              </div>
+
+              {/* 操作按钮 */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    // 跳转到量表测试页面
+                    const route = selectedAssessment.name === '创业心理评估' ? 'entrepreneurial-psychology' : 
+                                   selectedAssessment.name === '商业认知评估' ? 'business-cognition' : 
+                                   selectedAssessment.name === 'AI认知评估' ? 'ai-cognition' : 'career-mission';
+                    window.location.href = `/assessment/${route}`;
+                  }}
+                  className="w-full bg-blue-400 hover:bg-blue-500 text-white py-2.5 text-[15px] font-normal"
+                >
+                  开始重新测试
+                </button>
+                <button
+                  onClick={() => setShowAssessmentModal(false)}
+                  className="w-full bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] py-2.5 text-[15px] font-normal"
+                >
+                  取消
+                </button>
+              </div>
             </div>
           </div>
         </div>
