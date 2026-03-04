@@ -15,11 +15,11 @@ const mockAbilityData = {
     name: '王姐',
     age: 48,
     avatar: '/avatar-1.jpg',
-    tags: ['供应链专家', '数字化转型'],
     industry: '制造业',
     location: '上海',
     tagStamp: 'personLookingForJob', // 人找事
     need: '希望找到传统制造业的数字化项目机会',
+    resources: ['AI技术', '供应链资源', '企业培训'],
     description: '拥有20年制造业供应链管理经验，曾主导过多个大型制造企业的数字化转型项目。熟悉ERP系统实施、供应链优化、成本控制等领域。现寻求相关项目合作机会。',
     experience: [
       { company: '某大型制造企业', position: '供应链总监', duration: '2015-至今' },
@@ -38,11 +38,11 @@ const mockAbilityData = {
     name: '李明',
     age: 52,
     avatar: '/avatar-2.jpg',
-    tags: ['投融资', '战略规划'],
     industry: '金融投资',
     location: '北京',
     tagStamp: 'jobLookingForPerson', // 事找人
     need: '想寻找优质项目对接投资机构',
+    resources: ['资金支持', '人脉资源', '财务顾问'],
     description: '拥有25年金融投资行业经验，曾任职于多家知名投资机构，专注于企业战略规划和投融资业务。擅长帮助企业进行资本运作、战略布局。',
     experience: [
       { company: '某知名投资机构', position: '合伙人', duration: '2010-至今' },
@@ -61,11 +61,11 @@ const mockAbilityData = {
     name: '赵芳',
     age: 45,
     avatar: '/avatar-3.jpg',
-    tags: ['人力资源', '团队管理'],
     industry: '企业服务',
     location: '深圳',
     tagStamp: 'personLookingForJob', // 人找事
     need: '需要搭建企业的人才培养体系',
+    resources: ['企业培训', '人脉资源', '法律咨询'],
     description: '18年人力资源管理经验，曾在多家知名企业担任HRD，擅长人才梯队建设、组织发展、企业文化打造等。',
     experience: [
       { company: '某互联网公司', position: '人力资源总监', duration: '2018-至今' },
@@ -84,11 +84,11 @@ const mockAbilityData = {
     name: '陈伟',
     age: 50,
     avatar: '/avatar-4.jpg',
-    tags: ['市场营销', '品牌建设'],
     industry: '消费零售',
     location: '广州',
     tagStamp: 'jobLookingForPerson', // 事找人
     need: '寻找优质的营销合作项目',
+    resources: ['营销资源', '品牌资源', 'AI技术'],
     description: '20年市场营销经验，曾主导过多个知名品牌的营销战役，擅长品牌建设、市场推广、数字营销等。',
     experience: [
       { company: '某知名品牌', position: '营销总监', duration: '2015-至今' },
@@ -107,11 +107,11 @@ const mockAbilityData = {
     name: '刘芳',
     age: 47,
     avatar: '/avatar-5.jpg',
-    tags: ['财务顾问', '税务筹划'],
     industry: '专业服务',
     location: '杭州',
     tagStamp: 'personLookingForJob', // 人找事
     need: '为企业提供专业的财务咨询服务',
+    resources: ['财务顾问', '税务筹划', '法律咨询'],
     description: '20年财务顾问经验，注册会计师，擅长税务筹划、财务分析、内部控制等，曾服务过多家上市公司。',
     experience: [
       { company: '某会计师事务所', position: '合伙人', duration: '2012-至今' },
@@ -196,17 +196,19 @@ export default function AbilityDetailPage() {
                 <span className="text-sm text-[rgba(0,0,0,0.6)]">{person.location}</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {person.tags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    className="bg-[rgba(59,130,246,0.1)] text-blue-600 text-xs"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
+                {/* 行业标签 - 1个，绿色 */}
                 <Badge className="bg-[rgba(34,197,94,0.15)] text-green-600 text-xs">
                   {person.industry}
                 </Badge>
+                {/* 资源标签 - 3个，蓝色 */}
+                {person.resources && person.resources.slice(0, 3).map((resource) => (
+                  <Badge
+                    key={resource}
+                    className="bg-[rgba(59,130,246,0.1)] text-blue-600 text-xs"
+                  >
+                    {resource}
+                  </Badge>
+                ))}
               </div>
             </div>
           </div>

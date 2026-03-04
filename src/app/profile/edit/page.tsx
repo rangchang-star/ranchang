@@ -135,6 +135,16 @@ export default function ProfileEditPage() {
   const [showDeclarationInput, setShowDeclarationInput] = useState(false);
   const [declarationDescription, setDeclarationDescription] = useState('');
 
+  // 工作经历状态
+  const [experiences, setExperiences] = useState<Array<{
+    company: string;
+    position: string;
+    duration: string;
+  }>>([]);
+
+  // 主要成就状态
+  const [achievements, setAchievements] = useState<string[]>([]);
+
   const handlePurposeSelect = (purpose: string) => {
     setSelectedPurpose(purpose);
   };
@@ -224,6 +234,40 @@ export default function ProfileEditPage() {
     }
   };
 
+  // 添加工作经历
+  const handleAddExperience = () => {
+    setExperiences([...experiences, { company: '', position: '', duration: '' }]);
+  };
+
+  // 更新工作经历
+  const handleUpdateExperience = (index: number, field: 'company' | 'position' | 'duration', value: string) => {
+    const updated = [...experiences];
+    updated[index][field] = value;
+    setExperiences(updated);
+  };
+
+  // 删除工作经历
+  const handleRemoveExperience = (index: number) => {
+    setExperiences(experiences.filter((_, i) => i !== index));
+  };
+
+  // 添加主要成就
+  const handleAddAchievement = () => {
+    setAchievements([...achievements, '']);
+  };
+
+  // 更新主要成就
+  const handleUpdateAchievement = (index: number, value: string) => {
+    const updated = [...achievements];
+    updated[index] = value;
+    setAchievements(updated);
+  };
+
+  // 删除主要成就
+  const handleRemoveAchievement = (index: number) => {
+    setAchievements(achievements.filter((_, i) => i !== index));
+  };
+
   const handleSave = () => {
     // 验证必选项
     const requiredErrors: string[] = [];
@@ -293,6 +337,8 @@ export default function ProfileEditPage() {
       abilityTags: selectedAbilityTags,
       directions: selectedDirection ? [selectedDirection] : [],
       declarationDescription,
+      experiences,
+      achievements,
       updatedAt: new Date().toISOString(),
     };
 
@@ -767,6 +813,108 @@ export default function ProfileEditPage() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* 工作经历 */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[13px] font-semibold text-gray-900">工作经历</h2>
+              <Button
+                onClick={handleAddExperience}
+                className="text-[11px] bg-blue-400 hover:bg-blue-500 text-white px-3 py-1"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                添加
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {experiences.map((exp, index) => (
+                <div key={index} className="p-3 bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">经历 {index + 1}</span>
+                    <button
+                      onClick={() => handleRemoveExperience(index)}
+                      className="text-[rgba(0,0,0,0.4)] hover:text-red-400"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">公司名称</label>
+                    <input
+                      type="text"
+                      value={exp.company}
+                      onChange={(e) => handleUpdateExperience(index, 'company', e.target.value)}
+                      className="w-full px-3 py-2 text-[13px] bg-white border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
+                      placeholder="请输入公司名称"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">职位</label>
+                    <input
+                      type="text"
+                      value={exp.position}
+                      onChange={(e) => handleUpdateExperience(index, 'position', e.target.value)}
+                      className="w-full px-3 py-2 text-[13px] bg-white border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
+                      placeholder="请输入职位"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">时间段</label>
+                    <input
+                      type="text"
+                      value={exp.duration}
+                      onChange={(e) => handleUpdateExperience(index, 'duration', e.target.value)}
+                      className="w-full px-3 py-2 text-[13px] bg-white border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
+                      placeholder="例如：2015-至今"
+                    />
+                  </div>
+                </div>
+              ))}
+              {experiences.length === 0 && (
+                <p className="text-[11px] text-[rgba(0,0,0,0.4)] text-center py-4">
+                  暂无工作经历，点击"添加"按钮添加
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* 主要成就 */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[13px] font-semibold text-gray-900">主要成就</h2>
+              <Button
+                onClick={handleAddAchievement}
+                className="text-[11px] bg-blue-400 hover:bg-blue-500 text-white px-3 py-1"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                添加
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {achievements.map((achievement, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={achievement}
+                    onChange={(e) => handleUpdateAchievement(index, e.target.value)}
+                    className="flex-1 px-3 py-2 text-[13px] bg-white border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
+                    placeholder="请输入主要成就"
+                  />
+                  <button
+                    onClick={() => handleRemoveAchievement(index)}
+                    className="p-2 text-[rgba(0,0,0,0.4)] hover:text-red-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              {achievements.length === 0 && (
+                <p className="text-[11px] text-[rgba(0,0,0,0.4)] text-center py-4">
+                  暂无主要成就，点击"添加"按钮添加
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
