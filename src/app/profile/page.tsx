@@ -767,16 +767,16 @@ export default function ProfilePage() {
               <div className="flex-1 min-w-0">
                 <div>
                   <h2 className="text-[23px] font-semibold text-gray-900">{userInfo.name}</h2>
-                  <p className="text-[17px] text-[rgba(0,0,0,0.25)]">{userInfo.age}岁</p>
                 </div>
                 {/* 行业标签（必填） */}
                 <div className="mt-2">
                   <div className="text-[14px] text-gray-400 mb-1">行业标签（必填）</div>
-                  <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal rounded-full">
+                  <span className="block w-full px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal">
                     {userInfo.industry}
                   </span>
                 </div>
               </div>
+              <p className="text-[17px] text-[rgba(0,0,0,0.25)]">{userInfo.age}岁</p>
             </div>
 
             {/* 资源标签 */}
@@ -786,7 +786,7 @@ export default function ProfilePage() {
                 {userInfo.resourceTags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal rounded-full"
+                    className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal"
                   >
                     {tag}
                   </span>
