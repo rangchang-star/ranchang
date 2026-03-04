@@ -101,7 +101,7 @@ const defaultSettings = {
   },
   // 点亮键设置
   ignition: {
-    visitSlogan: '探访点亮，每一次探访都是关于商业思维的激烈交锋，是一场关于财务收入与使命践行的从新审视',
+    visitSlogan: '每次探访都是商业思维的激烈碰撞，更是一场关于财务收入与使命践行的重新审视....',
     visitMedia: {
       type: 'image' as 'image' | 'video' | null,
       url: '',
