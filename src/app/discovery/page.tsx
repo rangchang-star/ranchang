@@ -813,7 +813,7 @@ export default function DiscoveryPage() {
             <DialogTitle className="text-base sm:text-lg font-semibold">提示</DialogTitle>
             <DialogDescription className="hidden" />
           </DialogHeader>
-          <div className="text-[17px] sm:text-sm text-gray-600 leading-relaxed text-center max-w-lg">
+          <div className="text-[17px] sm:text-sm text-[rgba(0,0,0,0.3)] leading-relaxed text-center max-w-lg">
             该用户尚未开启"允许陌生人连接"权限，您可以先了解ta，或让ta主动来找到你。
           </div>
           <div className="flex justify-end mt-5 sm:mt-6 w-full">

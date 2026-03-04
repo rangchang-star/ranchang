@@ -562,7 +562,7 @@ export default function ActivitiesPage() {
           </DialogHeader>
           {activityToApply && (
             <div className="space-y-4">
-              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
+              <p className="text-[13px] text-[rgba(0,0,0,0.3)]">
                 确定要报名参加以下活动吗？
               </p>
               <div className="p-4 bg-[rgba(0,0,0,0.03)] space-y-2">

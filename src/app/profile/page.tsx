@@ -1332,7 +1332,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex-1">
                       <p className="text-[18px] text-gray-900 font-medium mb-1">登录后才可发起咨询</p>
-                      <p className="text-[16px] text-gray-600">请先登录账号，以便我们更好地为您提供服务</p>
+                      <p className="text-[16px] text-[rgba(0,0,0,0.3)]">请先登录账号，以便我们更好地为您提供服务</p>
                     </div>
                   </div>
                 </div>
@@ -1344,8 +1344,8 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex-1">
                       <p className="text-[18px] text-gray-900 font-medium mb-1">请完善基础信息</p>
-                      <p className="text-[16px] text-gray-600 mb-2">为了让咨询师更好地了解您，请先完善以下基础信息：</p>
-                      <ul className="text-[16px] text-gray-600 space-y-1">
+                      <p className="text-[16px] text-[rgba(0,0,0,0.3)] mb-2">为了让咨询师更好地了解您，请先完善以下基础信息：</p>
+                      <ul className="text-[16px] text-[rgba(0,0,0,0.3)] space-y-1">
                         <li>• 姓名</li>
                         <li>• 行业</li>
                         <li>• 连接类型（人找事/事找人/纯交流）</li>
@@ -1360,7 +1360,7 @@ export default function ProfilePage() {
             <div className="flex border-t border-gray-200">
               <button
                 onClick={() => setShowProfileGuideDialog(false)}
-                className="flex-1 py-3 text-[18px] text-gray-600 hover:bg-gray-50 border-r border-gray-200"
+                className="flex-1 py-3 text-[18px] text-[rgba(0,0,0,0.3)] hover:bg-gray-50 border-r border-gray-200"
               >
                 稍后再说
               </button>
@@ -1412,7 +1412,7 @@ export default function ProfilePage() {
               <div className="p-3 bg-[rgba(59,130,246,0.05)] border border-blue-200">
                 <div className="flex items-start space-x-2">
                   <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-[15px] text-gray-700 leading-relaxed">
+                  <p className="text-[15px] text-[rgba(0,0,0,0.3)] leading-relaxed">
                     您即将重新测试「{selectedAssessment.name}」。测试需要约10-15分钟，请在安静的环境下完成。
                   </p>
                 </div>

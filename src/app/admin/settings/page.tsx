@@ -1345,17 +1345,17 @@ export default function AdminSettingsPage() {
               </div>
               <div>
                 <h3 className="text-[15px] font-semibold text-gray-900">确认修改</h3>
-                <p className="text-[12px] text-[rgba(0,0,0,0.6)]">
+                <p className="text-[12px] text-[rgba(0,0,0,0.3)]">
                   此操作将修改页面配置
                 </p>
               </div>
             </div>
 
             <div className="space-y-3">
-              <p className="text-[13px] text-gray-700 text-center">
+              <p className="text-[13px] text-[rgba(0,0,0,0.3)] text-center">
                 您确定要保存这些修改吗？
               </p>
-              <p className="text-[11px] text-[rgba(0,0,0,0.5)] text-center">
+              <p className="text-[11px] text-[rgba(0,0,0,0.3)] text-center">
                 修改将立即生效，影响页面显示
               </p>
             </div>

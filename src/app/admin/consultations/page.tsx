@@ -756,7 +756,7 @@ export default function AdminConsultationsPage() {
 
             {/* 内容 */}
             <div className="p-6">
-              <p className="text-sm text-gray-700 mb-4">
+              <p className="text-sm text-[rgba(0,0,0,0.3)] mb-4">
                 您要将咨询状态从
                 <span className="mx-1 font-semibold text-gray-900">
                   {statusConfirmInfo.fromStatus === 'pending' ? '待处理' : statusConfirmInfo.fromStatus === 'processing' ? '处理中' : '已处理'}
@@ -769,11 +769,11 @@ export default function AdminConsultationsPage() {
               </p>
               <div className="bg-[rgba(0,0,0,0.03)] p-4 rounded-none">
                 <div className="flex items-center space-x-2 mb-2">
-                  <span className="text-sm text-[rgba(0,0,0,0.5)]">用户：</span>
+                  <span className="text-sm text-[rgba(0,0,0,0.3)]">用户：</span>
                   <span className="text-sm font-medium text-gray-900">{statusConfirmInfo.consultName}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-[rgba(0,0,0,0.5)]">咨询ID：</span>
+                  <span className="text-sm text-[rgba(0,0,0,0.3)]">咨询ID：</span>
                   <span className="text-sm text-gray-700">{statusConfirmInfo.consultId}</span>
                 </div>
               </div>
@@ -783,7 +783,7 @@ export default function AdminConsultationsPage() {
             <div className="flex border-t border-gray-200">
               <button
                 onClick={cancelStatusChange}
-                className="flex-1 py-3 text-sm text-gray-600 hover:bg-gray-50 border-r border-gray-200"
+                className="flex-1 py-3 text-sm text-[rgba(0,0,0,0.3)] hover:bg-gray-50 border-r border-gray-200"
               >
                 取消
               </button>
