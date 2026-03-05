@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, integer, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, text, integer, timestamp, boolean, pgEnum, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // 用户角色枚举
@@ -6,6 +6,9 @@ export const userRoleEnum = pgEnum('user_role', ['user', 'admin']);
 
 // 用户状态枚举
 export const userStatusEnum = pgEnum('user_status', ['active', 'inactive']);
+
+// 标签类型枚举
+export const tagStampEnum = pgEnum('tag_stamp', ['personLookingForJob', 'jobLookingForPerson', 'pureExchange']);
 
 // 活动类型枚举
 export const activityCategoryEnum = pgEnum('activity_category', ['private', 'salon', 'ai']);
@@ -30,9 +33,17 @@ export const users = pgTable('users', {
   nickname: varchar('nickname', { length: 50 }),
   name: varchar('name', { length: 50 }),
   avatar: text('avatar'),
+  age: integer('age'),
   company: varchar('company', { length: 100 }),
   position: varchar('position', { length: 50 }),
+  industry: varchar('industry', { length: 50 }),
   bio: text('bio'),
+  need: text('need'),
+  tagStamp: tagStampEnum('tag_stamp').default('pureExchange'),
+  tags: jsonb('tags').$type<string[]>(),
+  abilityTags: jsonb('ability_tags').$type<string[]>(),
+  resourceTags: jsonb('resource_tags').$type<string[]>(),
+  isTrusted: boolean('is_trusted').default(false),
   role: userRoleEnum('role').default('user'),
   status: userStatusEnum('status').default('active'),
   createdAt: timestamp('created_at').defaultNow().notNull(),

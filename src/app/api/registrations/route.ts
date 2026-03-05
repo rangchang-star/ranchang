@@ -11,28 +11,36 @@ export async function GET(request: NextRequest) {
     const activityId = searchParams.get('activityId');
     const visitId = searchParams.get('visitId');
     
-    let query = db.select({
-      id: registrations.id,
-      userId: registrations.userId,
-      activityId: registrations.activityId,
-      visitId: registrations.visitId,
-      status: registrations.status,
-      paymentStatus: registrations.paymentStatus,
-      createdAt: registrations.createdAt,
-    }).from(registrations).orderBy(desc(registrations.createdAt));
+    const conditions = [];
+    if (userId) conditions.push(eq(registrations.userId, parseInt(userId)));
+    if (activityId) conditions.push(eq(registrations.activityId, parseInt(activityId)));
+    if (visitId) conditions.push(eq(registrations.visitId, parseInt(visitId)));
     
-    // 如果有筛选条件，添加过滤
-    if (userId) {
-      query = query.where(eq(registrations.userId, parseInt(userId)));
+    let result;
+    if (conditions.length > 0) {
+      result = await db.select({
+        id: registrations.id,
+        userId: registrations.userId,
+        activityId: registrations.activityId,
+        visitId: registrations.visitId,
+        status: registrations.status,
+        paymentStatus: registrations.paymentStatus,
+        createdAt: registrations.createdAt,
+      }).from(registrations)
+        .where(and(...conditions))
+        .orderBy(desc(registrations.createdAt));
+    } else {
+      result = await db.select({
+        id: registrations.id,
+        userId: registrations.userId,
+        activityId: registrations.activityId,
+        visitId: registrations.visitId,
+        status: registrations.status,
+        paymentStatus: registrations.paymentStatus,
+        createdAt: registrations.createdAt,
+      }).from(registrations)
+        .orderBy(desc(registrations.createdAt));
     }
-    if (activityId) {
-      query = query.where(eq(registrations.activityId, parseInt(activityId)));
-    }
-    if (visitId) {
-      query = query.where(eq(registrations.visitId, parseInt(visitId)));
-    }
-    
-    const result = await query;
     
     return NextResponse.json({
       success: true,

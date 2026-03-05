@@ -6,10 +6,11 @@ import { eq } from 'drizzle-orm';
 // GET - 获取单个用户详情
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     
     if (isNaN(id)) {
       return NextResponse.json({
@@ -24,9 +25,17 @@ export async function GET(
       nickname: users.nickname,
       name: users.name,
       avatar: users.avatar,
+      age: users.age,
       company: users.company,
       position: users.position,
+      industry: users.industry,
       bio: users.bio,
+      need: users.need,
+      tagStamp: users.tagStamp,
+      tags: users.tags,
+      abilityTags: users.abilityTags,
+      resourceTags: users.resourceTags,
+      isTrusted: users.isTrusted,
       role: users.role,
       status: users.status,
       createdAt: users.createdAt,
@@ -56,10 +65,11 @@ export async function GET(
 // PUT - 更新用户信息
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idParam } = await params;
+    const id = parseInt(idParam);
     
     if (isNaN(id)) {
       return NextResponse.json({
@@ -78,9 +88,17 @@ export async function PUT(
     if (body.nickname !== undefined) updateData.nickname = body.nickname;
     if (body.name !== undefined) updateData.name = body.name;
     if (body.avatar !== undefined) updateData.avatar = body.avatar;
+    if (body.age !== undefined) updateData.age = body.age;
     if (body.company !== undefined) updateData.company = body.company;
     if (body.position !== undefined) updateData.position = body.position;
+    if (body.industry !== undefined) updateData.industry = body.industry;
     if (body.bio !== undefined) updateData.bio = body.bio;
+    if (body.need !== undefined) updateData.need = body.need;
+    if (body.tagStamp !== undefined) updateData.tagStamp = body.tagStamp;
+    if (body.tags !== undefined) updateData.tags = body.tags;
+    if (body.abilityTags !== undefined) updateData.abilityTags = body.abilityTags;
+    if (body.resourceTags !== undefined) updateData.resourceTags = body.resourceTags;
+    if (body.isTrusted !== undefined) updateData.isTrusted = body.isTrusted;
     if (body.password !== undefined) updateData.password = body.password; // 如果更新密码
     
     const result = await db.update(users)
@@ -92,9 +110,17 @@ export async function PUT(
         nickname: users.nickname,
         name: users.name,
         avatar: users.avatar,
+        age: users.age,
         company: users.company,
         position: users.position,
+        industry: users.industry,
         bio: users.bio,
+        need: users.need,
+        tagStamp: users.tagStamp,
+        tags: users.tags,
+        abilityTags: users.abilityTags,
+        resourceTags: users.resourceTags,
+        isTrusted: users.isTrusted,
         role: users.role,
         status: users.status,
         createdAt: users.createdAt,

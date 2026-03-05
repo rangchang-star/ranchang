@@ -9,11 +9,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     
-    let query = db.select().from(activities).orderBy(desc(activities.createdAt));
+    const query = db.select().from(activities).orderBy(desc(activities.createdAt));
     
     // 如果有状态筛选，添加条件
     if (status && status !== 'all') {
-      query = query.where(eq(activities.status, status as any));
+      const result = await query.where(eq(activities.status, status as any));
+      return NextResponse.json({
+        success: true,
+        data: result
+      });
     }
     
     const result = await query;
