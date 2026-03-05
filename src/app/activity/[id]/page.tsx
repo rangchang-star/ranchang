@@ -68,44 +68,71 @@ const ActivityStatusBadge = ({ status, endTime }: { status: string; endTime?: st
   return null;
 };
 
-// 模拟会员数据（真实头像）
-const mockMembers = [
-  { id: '1', name: '王姐', avatar: '/avatar-3.jpg' },
-  { id: '2', name: '李明', avatar: '/avatar-2.jpg' },
-  { id: '3', name: '张总', avatar: '/avatar-1.jpg' },
-  { id: '4', name: '陈老师', avatar: '/avatar-4.jpg' },
-  { id: '5', name: '刘总', avatar: '/avatar-5.jpg' },
-  { id: '6', name: '赵经理', avatar: '/avatar-6.jpg' },
-  { id: '7', name: '孙总', avatar: '/avatar-7.jpg' },
-  { id: '8', name: '周董', avatar: '/avatar-8.jpg' },
-];
-
-// 模拟数据
-const mockActivityData = {
-  id: '1',
-  category: '私董会',
-  title: 'CEO转型期私董会',
-  subtitle: '战略定位与组织重构',
-  description: '邀请10位CEO共同探讨传统企业在AI时代的转型路径，通过深度对话和案例分析，帮助企业在变革中找到新的增长点。本次活动将聚焦于企业战略规划、组织架构调整、人才梯队建设等核心议题。',
-  image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=400&fit=crop',
-  tags: ['私董会', '名额紧张'],
-  enrollments: ['1', '2', '3', '4', '5'], // 存储报名会员ID
-  enrolledCount: 5,
-  maxEnrollments: 15,
-  participants: ['1', '2', '3'], // 存储参与嘉宾ID（只显示头像）
-  address: '北京市朝阳区CBD国贸大厦A座18层',
-  teaFee: 'aa茶水费35元',
-  status: 'ongoing',
-  endTime: '2024-03-15T18:00:00',
-  startDate: '2024年3月20日 14:00-17:00',
-  organizer: '燃场',
-  organizerAvatar: '/logo-ranchang.png',
-};
-
 export default function ActivityDetailPage() {
   const params = useParams();
-  const [activity] = useState(mockActivityData);
+  const [activity, setActivity] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
+
+  // 从 API 加载活动数据
+  useEffect(() => {
+    async function loadActivity() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const id = params.id as string;
+        const response = await fetch(`/api/activities/${id}`);
+
+        if (!response.ok) {
+          throw new Error('加载活动信息失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 将 API 数据转换为前端需要的格式
+          const formattedActivity = {
+            id: data.data.id.toString(),
+            category: data.data.category || '',
+            title: data.data.title || '',
+            subtitle: data.data.subtitle || '',
+            description: data.data.description || '',
+            image: data.data.image || '',
+            tags: [data.data.category || '', '名额紧张'],
+            enrollments: [], // TODO: 从报名表获取
+            enrolledCount: 0, // TODO: 从报名表统计
+            maxEnrollments: data.data.capacity || 0,
+            participants: [], // TODO: 从报名表获取
+            address: data.data.address || '',
+            teaFee: `aa茶水费${data.data.teaFee || 0}元`,
+            status: data.data.status === 'active' ? 'ongoing' : 'ended',
+            endTime: data.data.endDate || '',
+            startDate: data.data.startDate ? new Date(data.data.startDate).toLocaleString('zh-CN', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            }) : '',
+            organizer: '燃场',
+            organizerAvatar: '/logo-ranchang.png',
+          };
+          setActivity(formattedActivity);
+        } else {
+          throw new Error(data.error || '加载活动信息失败');
+        }
+      } catch (err: any) {
+        console.error('加载活动信息失败:', err);
+        setError(err.message || '加载活动信息失败，请稍后重试');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadActivity();
+  }, [params.id]);
 
   const handleEnroll = () => {
     setIsEnrolled(!isEnrolled);
@@ -140,17 +167,28 @@ export default function ActivityDetailPage() {
         </div>
 
         <div className="space-y-6">
-          {/* 活动图片 */}
-          <div className="w-full h-48 overflow-hidden">
-            <img
-              src={activity.image}
-              alt={activity.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          {/* 加载状态和错误状态 */}
+          {isLoading && (
+            <div className="text-center py-20 text-gray-400">加载中...</div>
+          )}
+          
+          {error && (
+            <div className="text-center py-20 text-red-400">{error}</div>
+          )}
 
-          {/* 活动基本信息 */}
-          <div className="px-5 space-y-4">
+          {!isLoading && !error && activity && (
+            <div>
+            {/* 活动图片 */}
+            <div className="w-full h-48 overflow-hidden">
+              <img
+                src={activity.image}
+                alt={activity.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* 活动基本信息 */}
+            <div className="px-5 space-y-4">
             <div>
               <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] font-normal text-[10px] mb-2">
                 {activity.category}
@@ -162,7 +200,7 @@ export default function ActivityDetailPage() {
             {/* 活动标签 */}
             {activity.tags && activity.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {activity.tags.map((tag) => (
+                {activity.tags.map((tag: string) => (
                   <Badge
                     key={tag}
                     className="rounded-none bg-blue-400 text-white font-normal text-[10px] px-2 py-0.5"
@@ -221,22 +259,16 @@ export default function ActivityDetailPage() {
             {(activity as any).participants && (activity as any).participants.length > 0 && (
               <div>
                 <h3 className="text-[15px] font-semibold text-gray-900 mb-3">
-                  参与嘉宾 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">{(activity as any).participants.length} 位嘉宾</span>
+                  参与嘉宾 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">{(activity as any).participants?.length || 0} 位嘉宾</span>
                 </h3>
                 <div className="flex items-center space-x-2">
-                  {(activity as any).participants.slice(0, 8).map((guestId: string) => {
-                    const guest = mockMembers.find(m => m.id === guestId);
-                    if (!guest) return null;
-                    return (
-                      <div key={guestId} className="w-10 h-10 rounded-full overflow-hidden border-2 border-white relative" title={guest.name}>
-                        <img
-                          src={guest.avatar}
-                          alt={guest.name}
-                          className="w-full h-full object-cover"
-                        />
+                  {(activity as any).participants?.slice(0, 8).map((guestId: string) => (
+                    <div key={guestId} className="w-10 h-10 rounded-full overflow-hidden border-2 border-white relative">
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-[10px]">
+                        {guestId.slice(0, 2)}
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -247,22 +279,16 @@ export default function ActivityDetailPage() {
                 参与人员 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">已报名{activity.enrolledCount}/{activity.maxEnrollments}</span>
               </h3>
               <div className="flex items-center space-x-2">
-                {activity.enrollments.slice(0, 8).map((memberId) => {
-                  const member = mockMembers.find(m => m.id === memberId);
-                  if (!member) return null;
-                  return (
-                    <div key={memberId} className="w-8 h-8 rounded-full overflow-hidden border-2 border-white relative" title={member.name}>
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        className="w-full h-full object-cover"
-                      />
+                {activity.enrollments?.slice(0, 8).map((memberId: string) => (
+                  <div key={memberId} className="w-8 h-8 rounded-full overflow-hidden border-2 border-white relative">
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-[10px]">
+                      {memberId.slice(0, 2)}
                     </div>
-                  );
-                })}
-                {activity.enrollments.length > 8 && (
+                  </div>
+                ))}
+                {activity.enrollments?.length > 8 && (
                   <div className="w-8 h-8 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center text-[10px] text-[rgba(0,0,0,0.5)]">
-                    +{activity.enrollments.length - 8}
+                    +{activity.enrollments?.length - 8}
                   </div>
                 )}
               </div>
@@ -280,10 +306,13 @@ export default function ActivityDetailPage() {
                 <div className="text-[11px] text-[rgba(0,0,0,0.4)]">主办方</div>
               </div>
             </div>
-          </div>
+            </div>
+            </div>
+          )}
         </div>
 
         {/* 底部操作栏 */}
+        {!isLoading && !error && activity && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[rgba(0,0,0,0.1)] px-5 py-4">
           <div className="max-w-md mx-auto">
             <Button
@@ -301,6 +330,7 @@ export default function ActivityDetailPage() {
             </Button>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

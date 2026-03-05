@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,30 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Flame, PlayCircle } from 'lucide-react';
 import { useParams } from 'next/navigation';
-
-// 模拟数据 - 实际应该从API获取
-const mockUserData = {
-  id: '1',
-  name: '王姐',
-  age: 48,
-  avatar: '/avatar-1.jpg',
-  tags: ['供应链专家', '数字化转型'],
-  industry: '制造业',
-  tagStamp: 'personLookingForJob',
-  need: '希望找到传统制造业的数字化项目机会，用15年供应链管理经验帮助企业实现智能升级',
-  abilityTags: ['供应链管理', '数字化转型', '流程优化', '团队管理', '战略规划'],
-  resourceTags: ['技术', '人才', '渠道'],
-  currentDeclaration: {
-    direction: 'confidence',
-    text: '用15年供应链管理经验，帮助传统制造业实现数字化转型，让每一家企业都能拥抱AI时代',
-    summary: '基于15年供应链管理经验，专注于传统制造业的数字化转型实践',
-    date: '2024年3月1日',
-    views: 2847,
-  },
-  isLiked: false,
-  followers: 128,
-  following: 56,
-};
 
 const tagStampMap = {
   personLookingForJob: { label: '人找事', description: '我有能力，寻找项目机会' },
@@ -41,8 +17,65 @@ const tagStampMap = {
 
 export default function ConnectionDetailPage() {
   const params = useParams();
-  const [user, setUser] = useState(mockUserData);
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
+
+  // 从 API 加载用户数据
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const id = params.id as string;
+        const response = await fetch(`/api/users/${id}`);
+
+        if (!response.ok) {
+          throw new Error('加载用户信息失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 将 API 数据转换为前端需要的格式
+          const formattedUser = {
+            id: data.data.id.toString(),
+            name: data.data.name || data.data.nickname,
+            age: data.data.age || 0,
+            avatar: data.data.avatar || '/avatar-default.jpg',
+            tags: data.data.tags || [],
+            industry: data.data.industry || '',
+            tagStamp: data.data.tagStamp || 'pureExchange',
+            need: data.data.need || '',
+            abilityTags: data.data.abilityTags || [],
+            resourceTags: data.data.resourceTags || [],
+            currentDeclaration: {
+              direction: 'confidence',
+              text: data.data.need || '',
+              summary: data.data.bio || '',
+              date: new Date(data.data.createdAt).toLocaleDateString('zh-CN'),
+              views: 0,
+            },
+            isLiked: false,
+            followers: 0,
+            following: 0,
+          };
+          setUser(formattedUser);
+        } else {
+          throw new Error(data.error || '加载用户信息失败');
+        }
+      } catch (err: any) {
+        console.error('加载用户信息失败:', err);
+        setError(err.message || '加载用户信息失败，请稍后重试');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadUser();
+  }, [params.id]);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -78,9 +111,18 @@ export default function ConnectionDetailPage() {
         </div>
 
         <div className="px-5 space-y-6">
-          {/* 用户基本信息 */}
+          {/* 加载状态和错误状态 */}
+          {isLoading && (
+            <div className="text-center py-20 text-gray-400">加载中...</div>
+          )}
+          
+          {error && (
+            <div className="text-center py-20 text-red-400">{error}</div>
+          )}
+
+          {!isLoading && !error && user && (
+          <>
           <div className="relative">
-            {/* 标签戳 */}
             <div className={`absolute top-0 right-0 px-3 py-1 text-[11px] font-medium rounded-bl-md z-10 border-l-2 border-t-2 ${
               user.tagStamp === 'personLookingForJob'
                 ? 'bg-[rgba(34,197,94,0.15)] text-gray-600 border-gray-400'
@@ -153,7 +195,7 @@ export default function ConnectionDetailPage() {
           <div>
             <h3 className="text-[15px] font-semibold text-gray-900 mb-3">能力标签</h3>
             <div className="flex flex-wrap gap-2">
-              {user.abilityTags.map((tag) => (
+              {user.abilityTags.map((tag: string) => (
                 <span
                   key={tag}
                   className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[12px] font-normal"
@@ -168,7 +210,7 @@ export default function ConnectionDetailPage() {
           <div>
             <h3 className="text-[15px] font-semibold text-gray-900 mb-3">资源标签</h3>
             <div className="flex flex-wrap gap-2">
-              {user.resourceTags.map((tag) => (
+              {user.resourceTags.map((tag: string) => (
                 <span
                   key={tag}
                   className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[12px] font-normal"
@@ -197,7 +239,7 @@ export default function ConnectionDetailPage() {
                 <Flame className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] text-[rgba(0,0,0,0,0.4)]">
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
                       {user.currentDeclaration.direction === 'confidence' ? '信心' : ''}
                     </span>
                     <div className="flex items-center space-x-2">
@@ -220,6 +262,8 @@ export default function ConnectionDetailPage() {
               </div>
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>
