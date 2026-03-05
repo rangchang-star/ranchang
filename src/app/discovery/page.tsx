@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Flame, Play, User, Timer, Music2, X, List, Folder, Share2, ArrowLeft, ArrowRight, Zap } from 'lucide-react';
+import { Search, Flame, Play, User, Users, Timer, Music2, X, List, Folder, Share2, ArrowLeft, ArrowRight, Zap } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -716,17 +716,10 @@ export default function DiscoveryPage() {
                           {item.description}
                         </p>
                       </div>
-                      {/* 报名人头像、人数、地址、茶水费 */}
+                      {/* 报名人数、地址、茶水费 */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <div className="flex -space-x-2">
-                            {item.enrollments.slice(0, 3).map((avatar, idx) => (
-                              <Avatar key={idx} className="w-6 h-6 border-2 border-white">
-                                <AvatarImage src={avatar} />
-                                <AvatarFallback>用</AvatarFallback>
-                              </Avatar>
-                            ))}
-                          </div>
+                          <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
                           <span className="text-[12px] text-[rgba(0,0,0,0.25)]">
                             {item.enrolledCount}人
                           </span>
@@ -934,8 +927,21 @@ export default function DiscoveryPage() {
                         setShowModal(false);
                         router.push(`/ability/${item.id}`);
                       }}
-                      className="flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                      className="relative flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                     >
+                      {/* 角色标签 - 右上角 */}
+                      {item.tagStamp && (
+                        <div className={`absolute top-[11px] right-0 px-2 py-0.5 text-[12px] font-medium rounded-bl-md z-10 ${
+                          item.tagStamp === 'personLookingForJob'
+                            ? 'bg-[rgba(34,197,94,0.15)] text-gray-600 border-l-2 border-t-2 border-gray-400'
+                            : item.tagStamp === 'jobLookingForPerson'
+                            ? 'bg-blue-100 text-gray-600 border-l-2 border-t-2 border-gray-400'
+                            : 'bg-[rgba(0,0,0,0.05)] text-gray-600 border-l-2 border-t-2 border-gray-400'
+                        }`}>
+                          {item.tagStamp === 'personLookingForJob' ? '人找事' : item.tagStamp === 'jobLookingForPerson' ? '事找人' : '纯交流'}
+                        </div>
+                      )}
+
                       {/* 头像 */}
                       <div className="flex-shrink-0 w-[60px] h-[60px] overflow-hidden">
                         <img
@@ -946,7 +952,7 @@ export default function DiscoveryPage() {
                       </div>
                       
                       {/* 内容 */}
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 pr-16">
                         {/* 姓名与年龄 */}
                         <div className="flex items-center space-x-2 mb-1">
                           <span className="text-[17px] font-semibold text-gray-900">{item.name}</span>

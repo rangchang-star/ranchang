@@ -128,9 +128,6 @@ export default function ConnectionDetailPage() {
 
           {/* 操作按钮 */}
           <div className="flex items-center space-x-3">
-            <Button className="flex-1 bg-blue-400 hover:bg-blue-500 font-normal text-[13px] py-3">
-              关注
-            </Button>
             <Button
               variant="outline"
               onClick={handleLike}
