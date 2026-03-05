@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Save, Calendar, MapPin, Users, Clock, Check } from 'lucide-react';
+import { ArrowLeft, Save, Calendar, MapPin, Users, Clock, Check, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -22,14 +22,14 @@ const availableTags = ['私董会', '名额紧张', '跨界', 'AI', 'AI实战', 
 
 // 模拟会员数据（实际项目中应从API获取）
 const mockMembers = [
-  { id: '1', name: '王姐', avatar: '/avatar-3.jpg' },
-  { id: '2', name: '李明', avatar: '/avatar-2.jpg' },
-  { id: '3', name: '张总', avatar: '/avatar-1.jpg' },
-  { id: '4', name: '陈老师', avatar: '/avatar-4.jpg' },
-  { id: '5', name: '刘总', avatar: '/avatar-5.jpg' },
-  { id: '6', name: '赵经理', avatar: '/avatar-6.jpg' },
-  { id: '7', name: '孙总', avatar: '/avatar-7.jpg' },
-  { id: '8', name: '周董', avatar: '/avatar-8.jpg' },
+  { id: '1', name: '王姐', avatar: '/avatar-3.jpg', bio: 'HRBP专家，20年人力资源经验' },
+  { id: '2', name: '李明', avatar: '/avatar-2.jpg', bio: '战略咨询师，专注企业数字化转型' },
+  { id: '3', name: '张总', avatar: '/avatar-1.jpg', bio: '智能制造领域专家' },
+  { id: '4', name: '陈老师', avatar: '/avatar-4.jpg', bio: '创业导师，投资人' },
+  { id: '5', name: '刘总', avatar: '/avatar-5.jpg', bio: '金融投资专家' },
+  { id: '6', name: '赵经理', avatar: '/avatar-6.jpg', bio: '运营管理专家' },
+  { id: '7', name: '孙总', avatar: '/avatar-7.jpg', bio: '市场营销专家' },
+  { id: '8', name: '周董', avatar: '/avatar-8.jpg', bio: '技术研发专家' },
 ];
 
 // 获取活动类型标签
@@ -49,6 +49,13 @@ export default function AdminActivityCreatePage() {
   const [maxParticipants, setMaxParticipants] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
+  
+  // 自定义嘉宾
+  const [showAddCustomGuest, setShowAddCustomGuest] = useState(false);
+  const [customGuestName, setCustomGuestName] = useState('');
+  const [customGuestBio, setCustomGuestBio] = useState('');
+  const [customGuestAvatar, setCustomGuestAvatar] = useState('');
+  
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
 
@@ -252,7 +259,7 @@ export default function AdminActivityCreatePage() {
 
                 <div>
                   <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    参与人员 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {selectedParticipants.length} 人)</span>
+                    参与嘉宾 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {selectedParticipants.length} 人)</span>
                   </label>
                   <div className="grid grid-cols-4 gap-3">
                     {mockMembers.map((member) => (
@@ -281,7 +288,136 @@ export default function AdminActivityCreatePage() {
                       </button>
                     ))}
                   </div>
+                  
+                  {/* 自定义添加按钮 */}
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCustomGuest(true)}
+                    className="w-full mt-3 p-3 border-2 border-dashed border-[rgba(0,0,0,0.2)] rounded-lg text-[13px] text-[rgba(0,0,0,0.6)] hover:border-[rgba(59,130,246,0.5)] hover:text-blue-400 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>添加自定义嘉宾</span>
+                  </button>
                 </div>
+
+                {/* 自定义嘉宾对话框 */}
+                {showAddCustomGuest && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold">添加自定义嘉宾</h3>
+                        <button
+                          onClick={() => setShowAddCustomGuest(false)}
+                          className="text-[rgba(0,0,0,0.4)] hover:text-[rgba(0,0,0,0.6)]"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      {/* 上传头像 */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          添加头像 <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex items-center space-x-4">
+                          {customGuestAvatar ? (
+                            <img
+                              src={customGuestAvatar}
+                              alt="头像预览"
+                              className="w-16 h-16 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
+                              <span className="text-[13px] text-[rgba(0,0,0,0.4)]">暂无</span>
+                            </div>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const url = URL.createObjectURL(file);
+                                setCustomGuestAvatar(url);
+                              }
+                            }}
+                            className="flex-1 text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* 添加名称 */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          添加名称 <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={customGuestName}
+                          onChange={(e) => setCustomGuestName(e.target.value)}
+                          placeholder="请输入嘉宾名称"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+                      </div>
+
+                      {/* 添加简介 */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          添加简介
+                        </label>
+                        <textarea
+                          value={customGuestBio}
+                          onChange={(e) => setCustomGuestBio(e.target.value)}
+                          placeholder="请输入嘉宾简介"
+                          className="w-full min-h-[80px] px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                        />
+                      </div>
+
+                      {/* 操作按钮 */}
+                      <div className="flex space-x-3 pt-4">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAddCustomGuest(false);
+                            setCustomGuestName('');
+                            setCustomGuestBio('');
+                            setCustomGuestAvatar('');
+                          }}
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-[13px] hover:bg-gray-50 transition-colors"
+                        >
+                          取消
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!customGuestName || !customGuestAvatar) {
+                              alert('请填写名称和上传头像');
+                              return;
+                            }
+
+                            const newGuestId = Date.now().toString();
+                            const newGuest = {
+                              id: newGuestId,
+                              name: customGuestName,
+                              avatar: customGuestAvatar,
+                              bio: customGuestBio,
+                            };
+
+                            mockMembers.push(newGuest);
+                            setSelectedParticipants([...selectedParticipants, newGuestId]);
+                            setShowAddCustomGuest(false);
+                            setCustomGuestName('');
+                            setCustomGuestBio('');
+                            setCustomGuestAvatar('');
+                          }}
+                          className="flex-1 px-4 py-2 bg-blue-400 text-white rounded-md text-[13px] hover:bg-blue-500 transition-colors"
+                        >
+                          确认添加
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-[13px] font-medium text-gray-900 mb-2">
