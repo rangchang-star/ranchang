@@ -14,12 +14,140 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { BottomNav } from '@/components/bottom-nav';
-import { createClient } from '@supabase/supabase-js';
 
-// 初始化 Supabase 客户端
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// 能力连接 - 暂时使用硬编码数据，等数据库配置好后再切换
+const connectionItems = [
+  {
+    id: '1',
+    name: '王建国',
+    age: 45,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_bbf6f195-3b8a-4b54-b64f-6f3bae98e444.jpeg?sign=1804211030-245d720254-0-b74ed079c491b9ed339b093771ad4a259345877e591dd9a7c41080042c5b0bb5',
+    tags: ['精益管理', '供应链优化', '成本控制'],
+    industry: '制造业',
+    tagStamp: 'personLookingForJob',
+    need: '寻找智能制造转型合作伙伴，希望与有数字化改造经验的企业对接',
+    isTrusted: true,
+    position: '运营总监',
+    company: '精密制造集团',
+  },
+  {
+    id: '2',
+    name: '李雪梅',
+    age: 38,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_e261d034-5d7d-4119-9d0c-fdfa90bcdbcc.jpeg?sign=1804211032-29d4f52530-0-fc22688ea885c9e0d9b1a3dc21456c2e957369397efa73e953abad7a18f37c1a',
+    tags: ['团队管理', '培训体系搭建', '课程开发'],
+    industry: '教育咨询',
+    tagStamp: 'personLookingForJob',
+    need: '寻找女性职业发展导师，希望提升领导力和战略思维',
+    isTrusted: true,
+    position: '合伙人',
+    company: '卓越教育咨询',
+  },
+  {
+    id: '3',
+    name: '张志强',
+    age: 42,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_c5921701-ca08-48f7-9889-af89c3b63a24.jpeg?sign=1804211031-6d2ec28685-0-a2001ce035b1e234214d716bfe2fbba38984784350dfbbbc7986a4bed3f8a6e2',
+    tags: ['项目投融资', '政策解读', '海外市场'],
+    industry: '新能源',
+    tagStamp: 'jobLookingForPerson',
+    need: '寻找光伏产业链上下游合作伙伴，有丰富行业资源',
+    isTrusted: false,
+    position: '副总经理',
+    company: '绿色能源科技',
+  },
+  {
+    id: '4',
+    name: '刘美玲',
+    age: 36,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_2e0ade81-a72f-4138-90b2-dcf628e76c47.jpeg?sign=1804211032-1839ddf44e-0-ab2abd6b8fc954483fd7274d14f6a887a4e36394a5482923d464ed21a9380413',
+    tags: ['患者关系管理', '医疗数据分析', '合规运营'],
+    industry: '医疗健康',
+    tagStamp: 'personLookingForJob',
+    need: '希望学习互联网医疗运营经验，拓展线上业务',
+    isTrusted: false,
+    position: '运营经理',
+    company: '康瑞医疗集团',
+  },
+  {
+    id: '5',
+    name: '陈永明',
+    age: 48,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_af5cc0fe-324f-427e-bdeb-546e898b62f6.jpeg?sign=1804211031-65708fd535-0-d43856138aca15c5c8ba06d6a515fa5a2366705a4df51fb95b9a66e244ec31e5',
+    tags: ['投资决策', '财务尽调', '企业估值'],
+    industry: '金融投资',
+    tagStamp: 'jobLookingForPerson',
+    need: '寻找优质成长型企业投资机会，资金规模5000万',
+    isTrusted: true,
+    position: '创始人兼CEO',
+    company: '永明投资管理',
+  },
+  {
+    id: '6',
+    name: '赵丽娜',
+    age: 40,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_47e0f5ad-6b79-478b-af48-3c8629aadf23.jpeg?sign=1804211046-b450875ec6-0-721112335d177e7449e7a28fcfc4287f5245a2eac8324a03caa77bbeddc08fd9',
+    tags: ['品牌策划', '数字营销', '内容创意'],
+    industry: '品牌营销',
+    tagStamp: 'personLookingForJob',
+    need: '寻求品牌升级案例分享，希望与资深品牌顾问交流',
+    isTrusted: false,
+    position: '创意总监',
+    company: '蓝海品牌策划',
+  },
+  {
+    id: '7',
+    name: '吴建华',
+    age: 52,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_34d509dd-d51a-4a72-a0c7-eac172cf785e.jpeg?sign=1804211046-488f8307be-0-cba7bb7116abe4c8093c833e0fba75ccf50de9c8b6922e7ad1f274e131e54de9',
+    tags: ['工程管理', '成本控制', '技术攻关'],
+    industry: '建筑工程',
+    tagStamp: 'jobLookingForPerson',
+    need: '寻找绿色建筑技术合作伙伴，有多个在建项目',
+    isTrusted: false,
+    position: '总工程师',
+    company: '宏达建筑工程',
+  },
+  {
+    id: '8',
+    name: '周晓红',
+    age: 35,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_6dbc7c6d-7be2-4882-9374-7524bafeb004.jpeg?sign=1804211046-e9a4a35be8-0-0c000c4e11d33e9afe13da09a1fd624fa4872dca29ef3c4082b70739eef6cb60',
+    tags: ['电商运营', '数据分析', '供应链管理'],
+    industry: '电子商务',
+    tagStamp: 'personLookingForJob',
+    need: '希望学习跨境电商运营，拓展海外市场',
+    isTrusted: false,
+    position: '运营总监',
+    company: '尚品电商',
+  },
+  {
+    id: '9',
+    name: '黄文博',
+    age: 44,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_8f147e12-97fd-4a3a-910c-c01210b51992.jpeg?sign=1804211048-a56add5fc0-0-25e517d0da0fdfded0338138db1912845f6e2a98ccf93a98cedfa2ca18f4ffeb',
+    tags: ['算法研发', '产品规划', '技术落地'],
+    industry: '人工智能',
+    tagStamp: 'jobLookingForPerson',
+    need: '寻找AI应用场景合作伙伴，有丰富技术积累',
+    isTrusted: true,
+    position: '技术总监',
+    company: '智源科技',
+  },
+  {
+    id: '10',
+    name: '林芳',
+    age: 39,
+    avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_76511fd7-7e41-4832-9927-9e43805e6e69.jpeg?sign=1804211046-eb24a4c27d-0-c751e5ceac171fa9e3bf3321967ef31a828a276e01a534a388e407ea6864b931',
+    tags: ['人才招聘', '培训发展', '绩效管理'],
+    industry: '人力资源',
+    tagStamp: 'personLookingForJob',
+    need: '希望学习企业人才发展战略，提升组织能力',
+    isTrusted: false,
+    position: '合伙人',
+    company: '金领人力咨询',
+  },
+];
 
 // 音频URL - 奇异恩典纯乐器（使用公共资源）
 const AMAZING_GRACE_AUDIO = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
@@ -306,48 +434,6 @@ export default function DiscoveryPage() {
   const [showAssetsModal, setShowAssetsModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<typeof mockDocuments[0] | null>(null);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
-
-  // 从数据库获取的用户数据
-  const [connectionItems, setConnectionItems] = useState<any[]>([]);
-
-  // 从 Supabase 获取用户数据
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('status', 'active')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('获取用户数据失败:', error);
-          return;
-        }
-
-        // 转换数据格式以匹配前端组件
-        const formattedUsers = data.map(user => ({
-          id: user.id,
-          name: user.name,
-          age: user.age,
-          avatar: user.avatar,
-          tags: user.ability_tags || [],
-          industry: user.industry,
-          tagStamp: user.connection_type === '能力连接' ? 'personLookingForJob' : 'jobLookingForPerson',
-          need: user.need,
-          isTrusted: user.is_featured || false,
-          position: user.position,
-          company: user.company,
-        }));
-
-        setConnectionItems(formattedUsers);
-      } catch (error) {
-        console.error('获取用户数据异常:', error);
-      }
-    };
-
-    fetchUsers();
-  }, []);
 
   const toggleMusic = () => {
     if (!audioRef.current) return;
