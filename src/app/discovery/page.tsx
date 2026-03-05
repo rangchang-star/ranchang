@@ -14,65 +14,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { BottomNav } from '@/components/bottom-nav';
+import { createClient } from '@supabase/supabase-js';
 
-// 能力连接
-const connectionItems = [
-  {
-    id: '1',
-    name: '王姐',
-    age: 48,
-    avatar: '/avatar-1.jpg',
-    tags: ['供应链专家', '数字化转型'],
-    industry: '制造业',
-    tagStamp: 'personLookingForJob', // 人找事
-    need: '希望找到传统制造业的数字化项目机会',
-    isTrusted: true, // 是否被信任
-  },
-  {
-    id: '2',
-    name: '李明',
-    age: 52,
-    avatar: '/avatar-2.jpg',
-    tags: ['投融资', '战略规划'],
-    industry: '金融投资',
-    tagStamp: 'jobLookingForPerson', // 事找人
-    need: '想寻找优质项目对接投资机构',
-    isTrusted: false, // 未信任
-  },
-  {
-    id: '3',
-    name: '赵芳',
-    age: 45,
-    avatar: '/avatar-3.jpg',
-    tags: ['人力资源', '团队管理'],
-    industry: '企业服务',
-    tagStamp: 'personLookingForJob', // 人找事
-    need: '需要搭建企业的人才培养体系',
-    isTrusted: true,
-  },
-  {
-    id: '4',
-    name: '陈伟',
-    age: 50,
-    avatar: '/avatar-4.jpg',
-    tags: ['市场营销', '品牌建设'],
-    industry: '消费零售',
-    tagStamp: 'jobLookingForPerson', // 事找人
-    need: '寻找优质的营销合作项目',
-    isTrusted: false,
-  },
-  {
-    id: '5',
-    name: '刘芳',
-    age: 47,
-    avatar: '/avatar-5.jpg',
-    tags: ['财务顾问', '税务筹划'],
-    industry: '专业服务',
-    tagStamp: 'personLookingForJob', // 人找事
-    need: '为企业提供专业的财务咨询服务',
-    isTrusted: true,
-  },
-];
+// 初始化 Supabase 客户端
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // 音频URL - 奇异恩典纯乐器（使用公共资源）
 const AMAZING_GRACE_AUDIO = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
@@ -359,6 +306,48 @@ export default function DiscoveryPage() {
   const [showAssetsModal, setShowAssetsModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<typeof mockDocuments[0] | null>(null);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+
+  // 从数据库获取的用户数据
+  const [connectionItems, setConnectionItems] = useState<any[]>([]);
+
+  // 从 Supabase 获取用户数据
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('获取用户数据失败:', error);
+          return;
+        }
+
+        // 转换数据格式以匹配前端组件
+        const formattedUsers = data.map(user => ({
+          id: user.id,
+          name: user.name,
+          age: user.age,
+          avatar: user.avatar,
+          tags: user.ability_tags || [],
+          industry: user.industry,
+          tagStamp: user.connection_type === '能力连接' ? 'personLookingForJob' : 'jobLookingForPerson',
+          need: user.need,
+          isTrusted: user.is_featured || false,
+          position: user.position,
+          company: user.company,
+        }));
+
+        setConnectionItems(formattedUsers);
+      } catch (error) {
+        console.error('获取用户数据异常:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const toggleMusic = () => {
     if (!audioRef.current) return;
