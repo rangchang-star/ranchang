@@ -95,6 +95,13 @@ export default function AdminVisitEditPage() {
   // 访客选择
   const [selectedVisitors, setSelectedVisitors] = useState<string[]>([]);
 
+  // 自定义访客
+  const [showAddCustomVisitor, setShowAddCustomVisitor] = useState(false);
+  const [customVisitorName, setCustomVisitorName] = useState('');
+  const [customVisitorIntro, setCustomVisitorIntro] = useState('');
+  const [customVisitorAvatar, setCustomVisitorAvatar] = useState('');
+  const [customMemberId, setCustomMemberId] = useState('');
+
   // 关键点（动态数组）
   const [keyPoints, setKeyPoints] = useState<string[]>(['']);
 
@@ -157,6 +164,15 @@ export default function AdminVisitEditPage() {
   // 移除标签
   const handleRemoveTag = (tag: string) => {
     setSelectedTags(selectedTags.filter((t) => t !== tag));
+  };
+
+  // 自定义标签
+  const [customTag, setCustomTag] = useState('');
+  const handleAddCustomTag = () => {
+    if (customTag.trim() && !selectedTags.includes(customTag.trim())) {
+      setSelectedTags([...selectedTags, customTag.trim()]);
+      setCustomTag('');
+    }
   };
 
   // 添加访客
@@ -567,7 +583,136 @@ export default function AdminVisitEditPage() {
                       ))}
                   </div>
                 </div>
+
+                {/* 自定义访客按钮 */}
+                <button
+                  type="button"
+                  onClick={() => setShowAddCustomVisitor(true)}
+                  className="w-full mt-2 p-2 border-2 border-dashed border-[rgba(0,0,0,0.2)] rounded-lg text-[13px] text-[rgba(0,0,0,0.6)] hover:border-[rgba(59,130,246,0.5)] hover:text-blue-400 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>添加自定义访客</span>
+                </button>
               </div>
+
+              {/* 自定义访客对话框 */}
+              {showAddCustomVisitor && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">添加自定义访客</h3>
+                      <button
+                        onClick={() => setShowAddCustomVisitor(false)}
+                        className="text-[rgba(0,0,0,0.4)] hover:text-[rgba(0,0,0,0.6)]"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* 上传头像 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        头像 <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex items-center space-x-4">
+                        {customVisitorAvatar ? (
+                          <Image
+                            src={customVisitorAvatar}
+                            alt="头像预览"
+                            width={64}
+                            height={64}
+                            className="w-16 h-16 rounded-full object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
+                            <span className="text-[13px] text-[rgba(0,0,0,0.4)]">暂无</span>
+                          </div>
+                        )}
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const url = URL.createObjectURL(file);
+                              setCustomVisitorAvatar(url);
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 姓名 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        姓名 <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        value={customVisitorName}
+                        onChange={(e) => setCustomVisitorName(e.target.value)}
+                        placeholder="请输入姓名"
+                      />
+                    </div>
+
+                    {/* 介绍 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        介绍
+                      </label>
+                      <textarea
+                        value={customVisitorIntro}
+                        onChange={(e) => setCustomVisitorIntro(e.target.value)}
+                        placeholder="请输入介绍"
+                        className="w-full min-h-[80px] px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                      />
+                    </div>
+
+                    {/* 操作按钮 */}
+                    <div className="flex space-x-3 pt-4">
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          setShowAddCustomVisitor(false);
+                          setCustomVisitorName('');
+                          setCustomVisitorIntro('');
+                          setCustomVisitorAvatar('');
+                        }}
+                      >
+                        取消
+                      </Button>
+                      <Button
+                        className="flex-1"
+                        onClick={() => {
+                          if (!customVisitorName || !customVisitorAvatar) {
+                            alert('请填写姓名和上传头像');
+                            return;
+                          }
+
+                          const newMemberId = Date.now().toString();
+                          const newMember = {
+                            id: newMemberId,
+                            name: customVisitorName,
+                            avatar: customVisitorAvatar,
+                            abilityTags: customVisitorIntro ? [customVisitorIntro] : [],
+                          };
+
+                          mockMembers.push(newMember);
+                          setSelectedVisitors([...selectedVisitors, newMemberId]);
+                          setShowAddCustomVisitor(false);
+                          setCustomVisitorName('');
+                          setCustomVisitorIntro('');
+                          setCustomVisitorAvatar('');
+                        }}
+                      >
+                        确认添加
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -751,7 +896,7 @@ export default function AdminVisitEditPage() {
               <h3 className="text-[13px] font-semibold text-gray-900">标签</h3>
             </div>
             <div className="p-4 space-y-3">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center flex-wrap gap-2">
                 <span className="text-[13px] text-[rgba(0,0,0,0.6)]">可用标签：</span>
                 {availableTags.map((tag) => (
                   <button
@@ -786,6 +931,20 @@ export default function AdminVisitEditPage() {
                   ))}
                 </div>
               )}
+              <div className="flex items-center space-x-2 pt-2 border-t border-[rgba(0,0,0,0.05)]">
+                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">自定义标签：</span>
+                <Input
+                  value={customTag}
+                  onChange={(e) => setCustomTag(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddCustomTag()}
+                  placeholder="输入标签名称"
+                  className="w-48 h-8 text-[13px]"
+                />
+                <Button size="sm" onClick={handleAddCustomTag}>
+                  <Plus className="w-4 h-4 mr-1" />
+                  添加
+                </Button>
+              </div>
             </div>
           </div>
         </div>
