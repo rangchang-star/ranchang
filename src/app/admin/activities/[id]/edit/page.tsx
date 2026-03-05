@@ -53,6 +53,7 @@ const fetchActivity = (id: string) => {
       maxParticipants: 12,
       tags: ['私董会', '名额紧张'],
       status: 'ongoing',
+      teaFee: 'aa茶水费35元',
       description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。我们将围绕"如何利用过往经验"、"如何降低试错成本"等话题展开讨论。',
       imageUrl: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=200&fit=crop',
       participants: ['1', '2', '3', '4', '5'], // 参与人员ID列表
@@ -69,6 +70,7 @@ const fetchActivity = (id: string) => {
       maxParticipants: 30,
       tags: ['跨界', 'AI'],
       status: 'ongoing',
+      teaFee: 'aa茶水费40元',
       description: '邀请不同领域的专家分享AI在各行业的应用实践，促进跨界交流与合作。适合对AI商业化感兴趣的朋友参与。',
       imageUrl: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=200&fit=crop',
     },
@@ -84,6 +86,7 @@ const fetchActivity = (id: string) => {
       maxParticipants: 30,
       tags: ['AI实战', '工作坊'],
       status: 'ended',
+      teaFee: 'aa茶水费50元',
       description: '全天候AI工具实战培训，从工具选型到场景落地，帮你快速掌握AI辅助工作的核心技能。',
       imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=200&fit=crop',
     },
@@ -99,6 +102,7 @@ const fetchActivity = (id: string) => {
       maxParticipants: 15,
       tags: ['工作坊', '即将开始'],
       status: 'ongoing',
+      teaFee: '',
       description: '为35+职场人提供转型指导，涵盖简历优化、面试技巧、行业分析等内容，帮助你顺利实现职业转型。',
       imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=200&fit=crop',
     },
@@ -119,6 +123,7 @@ export default function AdminActivityEditPage() {
   const [location, setLocation] = useState('');
   const [type, setType] = useState('private');
   const [maxParticipants, setMaxParticipants] = useState('');
+  const [teaFee, setTeaFee] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   
@@ -143,6 +148,7 @@ export default function AdminActivityEditPage() {
       setLocation(activity.location);
       setType(activity.type);
       setMaxParticipants(activity.maxParticipants.toString());
+      setTeaFee((activity as any).teaFee || '');
       setSelectedTags(activity.tags);
       setSelectedParticipants((activity as any).participants || []);
       setDescription(activity.description);
@@ -182,6 +188,8 @@ export default function AdminActivityEditPage() {
       location,
       type,
       maxParticipants: parseInt(maxParticipants),
+      teaFee,
+      participants: selectedParticipants,
       tags: selectedTags,
       description,
       imageUrl,
@@ -356,6 +364,19 @@ export default function AdminActivityEditPage() {
                     placeholder="例如：30"
                     value={maxParticipants}
                     onChange={(e) => setMaxParticipants(e.target.value)}
+                    className="text-[13px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    茶水费 <span className="text-[rgba(0,0,0,0.5)] font-normal">(选填)</span>
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="例如：aa茶水费35元"
+                    value={teaFee}
+                    onChange={(e) => setTeaFee(e.target.value)}
                     className="text-[13px]"
                   />
                 </div>

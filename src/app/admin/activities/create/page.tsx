@@ -47,6 +47,7 @@ export default function AdminActivityCreatePage() {
   const [location, setLocation] = useState('');
   const [type, setType] = useState('private');
   const [maxParticipants, setMaxParticipants] = useState('');
+  const [teaFee, setTeaFee] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   
@@ -89,6 +90,8 @@ export default function AdminActivityCreatePage() {
       location,
       type,
       maxParticipants: parseInt(maxParticipants),
+      teaFee,
+      participants: selectedParticipants,
       tags: selectedTags,
       description,
       imageUrl,
@@ -253,6 +256,19 @@ export default function AdminActivityCreatePage() {
                     placeholder="例如：30"
                     value={maxParticipants}
                     onChange={(e) => setMaxParticipants(e.target.value)}
+                    className="text-[13px]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    茶水费 <span className="text-[rgba(0,0,0,0.5)] font-normal">(选填)</span>
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="例如：aa茶水费35元"
+                    value={teaFee}
+                    onChange={(e) => setTeaFee(e.target.value)}
                     className="text-[13px]"
                   />
                 </div>
