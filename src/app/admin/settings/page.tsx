@@ -127,6 +127,11 @@ const defaultSettings = {
       displayStyle: 'progress' as AssessmentDisplayStyle,
     },
   },
+  // 联系信息配置
+  contactInfo: {
+    message: '此功能暂时关闭，需要对接人与资源联系"燃场app"工作人员。',
+    contact: 'v:13023699913',
+  },
 };
 
 // 获取页面标题的中文标签
@@ -566,6 +571,81 @@ export default function AdminSettingsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* 联系信息配置 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[15px] font-semibold">联系信息配置</CardTitle>
+                <CardDescription className="text-[12px]">
+                  配置会员发起连接时的联系提示信息
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    提示信息
+                  </label>
+                  <Textarea
+                    value={settings.contactInfo.message}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          message: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入提示信息"
+                    className="min-h-[100px] text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户点击"发起连接"时显示的提示文本
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    联系方式
+                  </label>
+                  <Input
+                    value={settings.contactInfo.contact}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          contact: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入联系方式"
+                    className="text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户需要联系时的具体联系方式
+                  </p>
+                </div>
+
+                {/* 预览 */}
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Eye className="w-4 h-4 text-blue-600" />
+                    <p className="text-[12px] font-medium text-gray-900">效果预览</p>
+                  </div>
+                  <div className="p-4 bg-[rgba(0,0,0,0.02)] rounded-lg">
+                    <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-2">
+                      {settings.contactInfo.message || '暂未设置'}
+                    </p>
+                    <p className="text-[13px] text-blue-600">
+                      {settings.contactInfo.contact || '暂未设置'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* 页面标题设置 */}
@@ -625,6 +705,81 @@ export default function AdminSettingsPage() {
                         ... 还有 {Object.keys(settings.pageTitles).length - 5} 个页面
                       </p>
                     )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 联系信息配置 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[15px] font-semibold">联系信息配置</CardTitle>
+                <CardDescription className="text-[12px]">
+                  配置会员发起连接时的联系提示信息
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    提示信息
+                  </label>
+                  <Textarea
+                    value={settings.contactInfo.message}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          message: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入提示信息"
+                    className="min-h-[100px] text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户点击"发起连接"时显示的提示文本
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    联系方式
+                  </label>
+                  <Input
+                    value={settings.contactInfo.contact}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          contact: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入联系方式"
+                    className="text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户需要联系时的具体联系方式
+                  </p>
+                </div>
+
+                {/* 预览 */}
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Eye className="w-4 h-4 text-blue-600" />
+                    <p className="text-[12px] font-medium text-gray-900">效果预览</p>
+                  </div>
+                  <div className="p-4 bg-[rgba(0,0,0,0.02)] rounded-lg">
+                    <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-2">
+                      {settings.contactInfo.message || '暂未设置'}
+                    </p>
+                    <p className="text-[13px] text-blue-600">
+                      {settings.contactInfo.contact || '暂未设置'}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -880,6 +1035,81 @@ export default function AdminSettingsPage() {
                         )}
                       </div>
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 联系信息配置 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[15px] font-semibold">联系信息配置</CardTitle>
+                <CardDescription className="text-[12px]">
+                  配置会员发起连接时的联系提示信息
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    提示信息
+                  </label>
+                  <Textarea
+                    value={settings.contactInfo.message}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          message: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入提示信息"
+                    className="min-h-[100px] text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户点击"发起连接"时显示的提示文本
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    联系方式
+                  </label>
+                  <Input
+                    value={settings.contactInfo.contact}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          contact: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入联系方式"
+                    className="text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户需要联系时的具体联系方式
+                  </p>
+                </div>
+
+                {/* 预览 */}
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Eye className="w-4 h-4 text-blue-600" />
+                    <p className="text-[12px] font-medium text-gray-900">效果预览</p>
+                  </div>
+                  <div className="p-4 bg-[rgba(0,0,0,0.02)] rounded-lg">
+                    <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-2">
+                      {settings.contactInfo.message || '暂未设置'}
+                    </p>
+                    <p className="text-[13px] text-blue-600">
+                      {settings.contactInfo.contact || '暂未设置'}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -1157,6 +1387,81 @@ export default function AdminSettingsPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* 联系信息配置 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[15px] font-semibold">联系信息配置</CardTitle>
+                <CardDescription className="text-[12px]">
+                  配置会员发起连接时的联系提示信息
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    提示信息
+                  </label>
+                  <Textarea
+                    value={settings.contactInfo.message}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          message: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入提示信息"
+                    className="min-h-[100px] text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户点击"发起连接"时显示的提示文本
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    联系方式
+                  </label>
+                  <Input
+                    value={settings.contactInfo.contact}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          contact: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入联系方式"
+                    className="text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户需要联系时的具体联系方式
+                  </p>
+                </div>
+
+                {/* 预览 */}
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Eye className="w-4 h-4 text-blue-600" />
+                    <p className="text-[12px] font-medium text-gray-900">效果预览</p>
+                  </div>
+                  <div className="p-4 bg-[rgba(0,0,0,0.02)] rounded-lg">
+                    <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-2">
+                      {settings.contactInfo.message || '暂未设置'}
+                    </p>
+                    <p className="text-[13px] text-blue-600">
+                      {settings.contactInfo.contact || '暂未设置'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* 个人键设置 */}
@@ -1323,6 +1628,81 @@ export default function AdminSettingsPage() {
                         <li>• 折线图：适合展示历史变化趋势，追踪发展</li>
                       </ul>
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 联系信息配置 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[15px] font-semibold">联系信息配置</CardTitle>
+                <CardDescription className="text-[12px]">
+                  配置会员发起连接时的联系提示信息
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    提示信息
+                  </label>
+                  <Textarea
+                    value={settings.contactInfo.message}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          message: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入提示信息"
+                    className="min-h-[100px] text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户点击"发起连接"时显示的提示文本
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    联系方式
+                  </label>
+                  <Input
+                    value={settings.contactInfo.contact}
+                    onChange={(e) => {
+                      setSettings({
+                        ...settings,
+                        contactInfo: {
+                          ...settings.contactInfo,
+                          contact: e.target.value
+                        }
+                      });
+                      setHasChanged(true);
+                    }}
+                    placeholder="请输入联系方式"
+                    className="text-[13px]"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                    用户需要联系时的具体联系方式
+                  </p>
+                </div>
+
+                {/* 预览 */}
+                <div className="pt-4 border-t border-[rgba(0,0,0,0.1)]">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Eye className="w-4 h-4 text-blue-600" />
+                    <p className="text-[12px] font-medium text-gray-900">效果预览</p>
+                  </div>
+                  <div className="p-4 bg-[rgba(0,0,0,0.02)] rounded-lg">
+                    <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-2">
+                      {settings.contactInfo.message || '暂未设置'}
+                    </p>
+                    <p className="text-[13px] text-blue-600">
+                      {settings.contactInfo.contact || '暂未设置'}
+                    </p>
                   </div>
                 </div>
               </CardContent>

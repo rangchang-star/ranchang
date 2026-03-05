@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { BottomNav } from '@/components/bottom-nav';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { useState, useEffect } from 'react';
 
 // 模拟数据
 const mockAbilityData = {
@@ -131,6 +134,26 @@ export default function AbilityDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  const [contactInfo, setContactInfo] = useState({
+    message: '此功能暂时关闭，需要对接人与资源联系"燃场app"工作人员。',
+    contact: 'v:13023699913',
+  });
+
+  // 从 localStorage 读取联系信息
+  useEffect(() => {
+    try {
+      const settings = localStorage.getItem('pageSettings');
+      if (settings) {
+        const parsedSettings = JSON.parse(settings);
+        if (parsedSettings.contactInfo) {
+          setContactInfo(parsedSettings.contactInfo);
+        }
+      }
+    } catch (error) {
+      console.error('读取联系信息失败:', error);
+    }
+  }, []);
 
   const person = mockAbilityData[id as keyof typeof mockAbilityData];
 
@@ -288,13 +311,47 @@ export default function AbilityDetailPage() {
 
           {/* 操作按钮 */}
           <div className="space-y-3 pt-4 border-t border-[rgba(0,0,0,0.05)]">
-            <Button className="w-full bg-blue-400 hover:bg-blue-500 text-white">
+            <Button 
+              className="w-full bg-blue-400 hover:bg-blue-500 text-white"
+              onClick={() => setShowContactDialog(true)}
+            >
               <MessageSquare className="w-4 h-4 mr-2" />
               发起连接
             </Button>
           </div>
         </div>
       </div>
+
+      {/* 联系提示对话框 */}
+      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+        <DialogContent className="w-[95%] max-w-[400px] p-6">
+          <VisuallyHidden>
+            <DialogTitle>联系提示</DialogTitle>
+          </VisuallyHidden>
+          
+          <div className="space-y-4">
+            <div className="text-center">
+              <MessageSquare className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">
+                功能暂时关闭
+              </h3>
+              <p className="text-[13px] text-[rgba(0,0,0,0.6)] leading-relaxed">
+                {contactInfo.message}
+              </p>
+              <p className="text-[13px] text-blue-600 mt-2 font-medium">
+                {contactInfo.contact}
+              </p>
+            </div>
+
+            <Button
+              className="w-full bg-blue-400 hover:bg-blue-500 text-white"
+              onClick={() => setShowContactDialog(false)}
+            >
+              我知道了
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>
