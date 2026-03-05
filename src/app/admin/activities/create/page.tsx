@@ -20,6 +20,18 @@ const activityTypeOptions = [
 // 可用标签
 const availableTags = ['私董会', '名额紧张', '跨界', 'AI', 'AI实战', '工作坊', '已结束'];
 
+// 模拟会员数据（实际项目中应从API获取）
+const mockMembers = [
+  { id: '1', name: '王姐', avatar: '/avatar-3.jpg' },
+  { id: '2', name: '李明', avatar: '/avatar-2.jpg' },
+  { id: '3', name: '张总', avatar: '/avatar-1.jpg' },
+  { id: '4', name: '陈老师', avatar: '/avatar-4.jpg' },
+  { id: '5', name: '刘总', avatar: '/avatar-5.jpg' },
+  { id: '6', name: '赵经理', avatar: '/avatar-6.jpg' },
+  { id: '7', name: '孙总', avatar: '/avatar-7.jpg' },
+  { id: '8', name: '周董', avatar: '/avatar-8.jpg' },
+];
+
 // 获取活动类型标签
 const getActivityTypeLabel = (type: string) => {
   const option = activityTypeOptions.find(opt => opt.id === type);
@@ -36,6 +48,7 @@ export default function AdminActivityCreatePage() {
   const [type, setType] = useState('private');
   const [maxParticipants, setMaxParticipants] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
 
@@ -44,6 +57,14 @@ export default function AdminActivityCreatePage() {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
     } else {
       setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  const handleToggleParticipant = (memberId: string) => {
+    if (selectedParticipants.includes(memberId)) {
+      setSelectedParticipants(selectedParticipants.filter((id) => id !== memberId));
+    } else {
+      setSelectedParticipants([...selectedParticipants, memberId]);
     }
   };
 
@@ -227,6 +248,39 @@ export default function AdminActivityCreatePage() {
                     onChange={(e) => setMaxParticipants(e.target.value)}
                     className="text-[13px]"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
+                    参与人员 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {selectedParticipants.length} 人)</span>
+                  </label>
+                  <div className="grid grid-cols-4 gap-3">
+                    {mockMembers.map((member) => (
+                      <button
+                        key={member.id}
+                        onClick={() => handleToggleParticipant(member.id)}
+                        className={`flex flex-col items-center space-y-2 p-3 rounded-lg border-2 transition-all ${
+                          selectedParticipants.includes(member.id)
+                            ? 'border-blue-400 bg-blue-50'
+                            : 'border-[rgba(0,0,0,0.1)] hover:border-[rgba(59,130,246,0.3)]'
+                        }`}
+                      >
+                        <div className="relative">
+                          <img
+                            src={member.avatar}
+                            alt={member.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          {selectedParticipants.includes(member.id) && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center">
+                              <Check className="w-3 h-3 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-[rgba(0,0,0,0.8)]">{member.name}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>

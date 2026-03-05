@@ -68,6 +68,18 @@ const ActivityStatusBadge = ({ status, endTime }: { status: string; endTime?: st
   return null;
 };
 
+// 模拟会员数据（真实头像）
+const mockMembers = [
+  { id: '1', name: '王姐', avatar: '/avatar-3.jpg' },
+  { id: '2', name: '李明', avatar: '/avatar-2.jpg' },
+  { id: '3', name: '张总', avatar: '/avatar-1.jpg' },
+  { id: '4', name: '陈老师', avatar: '/avatar-4.jpg' },
+  { id: '5', name: '刘总', avatar: '/avatar-5.jpg' },
+  { id: '6', name: '赵经理', avatar: '/avatar-6.jpg' },
+  { id: '7', name: '孙总', avatar: '/avatar-7.jpg' },
+  { id: '8', name: '周董', avatar: '/avatar-8.jpg' },
+];
+
 // 模拟数据
 const mockActivityData = {
   id: '1',
@@ -76,18 +88,9 @@ const mockActivityData = {
   subtitle: '战略定位与组织重构',
   description: '邀请10位CEO共同探讨传统企业在AI时代的转型路径，通过深度对话和案例分析，帮助企业在变革中找到新的增长点。本次活动将聚焦于企业战略规划、组织架构调整、人才梯队建设等核心议题。',
   image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=400&fit=crop',
-  enrollments: [
-    'https://api.dicebear.com/7.x/micah/svg?seed=p1',
-    'https://api.dicebear.com/7.x/micah/svg?seed=p2',
-    'https://api.dicebear.com/7.x/micah/svg?seed=p3',
-    'https://api.dicebear.com/7.x/micah/svg?seed=p4',
-    'https://api.dicebear.com/7.x/micah/svg?seed=p5',
-    'https://api.dicebear.com/7.x/micah/svg?seed=p6',
-    'https://api.dicebear.com/7.x/micah/svg?seed=p7',
-    'https://api.dicebear.com/7.x/micah/svg?seed=p8',
-  ],
+  enrollments: ['1', '2', '3', '4', '5', '6', '7', '8'], // 存储会员ID
   enrolledCount: 8,
-  maxEnrollments: 12,
+  maxEnrollments: 15,
   address: '北京市朝阳区CBD国贸大厦A座18层',
   teaFee: 'aa茶水费35元',
   status: 'ongoing',
@@ -185,7 +188,7 @@ export default function ActivityDetailPage() {
                 <Users className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <div className="text-[13px] text-gray-900">
-                    {activity.enrolledCount}/{activity.maxEnrollments}人已报名
+                    已报名{activity.enrolledCount}/{activity.maxEnrollments}人
                   </div>
                 </div>
               </div>
@@ -200,17 +203,23 @@ export default function ActivityDetailPage() {
 
             {/* 参与人员 */}
             <div>
-              <h3 className="text-[15px] font-semibold text-gray-900 mb-3">参与人员</h3>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-3">
+                参与人员 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">已报名{activity.enrolledCount}/{activity.maxEnrollments}</span>
+              </h3>
               <div className="flex items-center space-x-2">
-                {activity.enrollments.slice(0, 8).map((avatar, idx) => (
-                  <div key={idx} className="w-8 h-8 rounded-full overflow-hidden border-2 border-white">
-                    <img
-                      src={avatar}
-                      alt={`参与者${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
+                {activity.enrollments.slice(0, 8).map((memberId) => {
+                  const member = mockMembers.find(m => m.id === memberId);
+                  if (!member) return null;
+                  return (
+                    <div key={memberId} className="w-8 h-8 rounded-full overflow-hidden border-2 border-white relative" title={member.name}>
+                      <img
+                        src={member.avatar}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  );
+                })}
                 {activity.enrollments.length > 8 && (
                   <div className="w-8 h-8 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center text-[10px] text-[rgba(0,0,0,0.5)]">
                     +{activity.enrollments.length - 8}
