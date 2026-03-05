@@ -89,9 +89,10 @@ const mockActivityData = {
   description: '邀请10位CEO共同探讨传统企业在AI时代的转型路径，通过深度对话和案例分析，帮助企业在变革中找到新的增长点。本次活动将聚焦于企业战略规划、组织架构调整、人才梯队建设等核心议题。',
   image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=400&fit=crop',
   tags: ['私董会', '名额紧张'],
-  enrollments: ['1', '2', '3', '4', '5', '6', '7', '8'], // 存储会员ID
-  enrolledCount: 8,
+  enrollments: ['1', '2', '3', '4', '5'], // 存储报名会员ID
+  enrolledCount: 5,
   maxEnrollments: 15,
+  participants: ['1', '2', '3'], // 存储参与嘉宾ID（只显示头像）
   address: '北京市朝阳区CBD国贸大厦A座18层',
   teaFee: 'aa茶水费35元',
   status: 'ongoing',
@@ -216,7 +217,31 @@ export default function ActivityDetailPage() {
               </div>
             </div>
 
-            {/* 参与人员 */}
+            {/* 参与嘉宾 */}
+            {(activity as any).participants && (activity as any).participants.length > 0 && (
+              <div>
+                <h3 className="text-[15px] font-semibold text-gray-900 mb-3">
+                  参与嘉宾 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">{(activity as any).participants.length} 位嘉宾</span>
+                </h3>
+                <div className="flex items-center space-x-2">
+                  {(activity as any).participants.slice(0, 8).map((guestId: string) => {
+                    const guest = mockMembers.find(m => m.id === guestId);
+                    if (!guest) return null;
+                    return (
+                      <div key={guestId} className="w-10 h-10 rounded-full overflow-hidden border-2 border-white relative" title={guest.name}>
+                        <img
+                          src={guest.avatar}
+                          alt={guest.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 参与人员（报名用户） */}
             <div>
               <h3 className="text-[15px] font-semibold text-gray-900 mb-3">
                 参与人员 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">已报名{activity.enrolledCount}/{activity.maxEnrollments}</span>
