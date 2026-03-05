@@ -292,10 +292,6 @@ export default function AbilityDetailPage() {
               <MessageSquare className="w-4 h-4 mr-2" />
               发起连接
             </Button>
-            <Button variant="outline" className="w-full">
-              <Heart className="w-4 h-4 mr-2" />
-              关注
-            </Button>
           </div>
         </div>
       </div>
