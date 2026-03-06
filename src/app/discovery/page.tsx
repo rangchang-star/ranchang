@@ -18,6 +18,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Zap,
+  RefreshCw,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -594,13 +595,14 @@ export default function DiscoveryPage() {
               </div>
               <div className="mt-4 flex justify-center">
                 <button
-                  className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
+                  className="flex items-center space-x-1 px-1.5 py-0.75 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
                   onClick={() => {
                     setModalType("abilities");
                     setShowModal(true);
                   }}
                 >
-                  查看更多
+                  <RefreshCw className="w-4 h-4" />
+                  <span>更多</span>
                 </button>
               </div>
             </section>
@@ -699,13 +701,14 @@ export default function DiscoveryPage() {
               </div>
               <div className="mt-4 flex justify-center">
                 <button
-                  className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
+                  className="flex items-center space-x-1 px-1.5 py-0.75 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
                   onClick={() => {
                     setModalType("activities");
                     setShowModal(true);
                   }}
                 >
-                  查看更多
+                  <RefreshCw className="w-4 h-4" />
+                  <span>更多</span>
                 </button>
               </div>
             </section>
@@ -770,13 +773,14 @@ export default function DiscoveryPage() {
               {/* 查看更多灰色色块 */}
               <div className="mt-4 flex justify-center">
                 <button
-                  className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
+                  className="flex items-center space-x-1 px-1.5 py-0.75 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
                   onClick={() => {
                     setModalType("declarations");
                     setShowModal(true);
                   }}
                 >
-                  查看更多
+                  <RefreshCw className="w-4 h-4" />
+                  <span>更多</span>
                 </button>
               </div>
             </section>
