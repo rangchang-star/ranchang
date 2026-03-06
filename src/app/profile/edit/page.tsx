@@ -183,14 +183,19 @@ function ProfileEditContent() {
     }
   }, [isLoggedIn, user]);
   
-  // 录音相关状态 - 每个类别单独管理
-  const [recordings, setRecordings] = useState<Record<string, { isRecording: boolean; hasRecorded: boolean; audioUrl?: string }>>({});
-  const [showDeclarationInput, setShowDeclarationInput] = useState(false);
-  const [declarationDescription, setDeclarationDescription] = useState('');
+  // 高燃宣告数据结构 - 每个方向独立管理主题、简介、音频
+  const [declarations, setDeclarations] = useState<Record<string, {
+    theme: string;          // 宣告主题
+    description: string;    // 宣告简介
+    audioUrl?: string;      // 音频URL
+    isRecording: boolean;   // 是否正在录音
+    hasRecorded: boolean;   // 是否已录制
+  }>>({});
   
   // 重录确认对话框
   const [showReRecordDialog, setShowReRecordDialog] = useState(false);
   const [directionToReRecord, setDirectionToReRecord] = useState<string | null>(null);
+  const [actionType, setActionType] = useState<'reRecord' | 'delete' | null>(null);
 
   // 工作经历状态
   const [experiences, setExperiences] = useState<Array<{
@@ -212,13 +217,7 @@ function ProfileEditContent() {
 
   const handleDirectionSelect = (directionId: string) => {
     setSelectedDirection(directionId);
-    // 切换方向时重置录音状态
-    setRecordings(prev => ({
-      ...prev,
-      [directionId]: { isRecording: false, hasRecorded: false }
-    }));
-    setShowDeclarationInput(false);
-    setDeclarationDescription('');
+    // 切换方向时不需要重置录音状态，保留之前的录音
   };
 
   const handleDirectionRecord = (directionId: string) => {
@@ -227,23 +226,32 @@ function ProfileEditContent() {
       return;
     }
 
-    const currentRecording = recordings[directionId] || { isRecording: false, hasRecorded: false };
+    const currentDeclaration = declarations[directionId] || { theme: '', description: '', isRecording: false, hasRecorded: false };
 
-    if (currentRecording.hasRecorded) {
-      // 如果已经录制过，弹出确认对话框
+    if (currentDeclaration.hasRecorded) {
+      // 如果已经录制过，弹出确认对话框（重录）
       setDirectionToReRecord(directionId);
+      setActionType('reRecord');
       setShowReRecordDialog(true);
-    } else if (currentRecording.isRecording) {
+    } else if (currentDeclaration.isRecording) {
       // 停止录音
-      setRecordings(prev => ({
+      setDeclarations(prev => ({
         ...prev,
-        [directionId]: { isRecording: false, hasRecorded: true }
+        [directionId]: { 
+          ...prev[directionId],
+          isRecording: false, 
+          hasRecorded: true 
+        }
       }));
     } else {
       // 开始录音
-      setRecordings(prev => ({
+      setDeclarations(prev => ({
         ...prev,
-        [directionId]: { isRecording: true, hasRecorded: false }
+        [directionId]: { 
+          ...prev[directionId],
+          isRecording: true, 
+          hasRecorded: false 
+        }
       }));
     }
   };
@@ -251,28 +259,80 @@ function ProfileEditContent() {
   // 确认重录
   const confirmReRecord = () => {
     if (directionToReRecord) {
-      setRecordings(prev => ({
+      setDeclarations(prev => ({
         ...prev,
-        [directionToReRecord]: { isRecording: true, hasRecorded: false }
+        [directionToReRecord]: { 
+          ...prev[directionToReRecord],
+          isRecording: true, 
+          hasRecorded: false 
+        }
       }));
       setShowReRecordDialog(false);
       setDirectionToReRecord(null);
+      setActionType(null);
     }
   };
 
-  // 取消重录
-  const cancelReRecord = () => {
+  // 取消操作
+  const cancelAction = () => {
     setShowReRecordDialog(false);
     setDirectionToReRecord(null);
+    setActionType(null);
+  };
+
+  // 确认删除
+  const confirmDelete = () => {
+    if (directionToReRecord) {
+      setDeclarations(prev => ({
+        ...prev,
+        [directionToReRecord]: { 
+          ...prev[directionToReRecord],
+          audioUrl: undefined,
+          hasRecorded: false 
+        }
+      }));
+      setShowReRecordDialog(false);
+      setDirectionToReRecord(null);
+      setActionType(null);
+    }
   };
 
   // 播放录音
   const handlePlayRecording = (directionId: string) => {
-    const recording = recordings[directionId];
-    if (recording?.audioUrl) {
-      const audio = new Audio(recording.audioUrl);
+    const declaration = declarations[directionId];
+    if (declaration?.audioUrl) {
+      const audio = new Audio(declaration.audioUrl);
       audio.play();
     }
+  };
+
+  // 删除录音
+  const handleDeleteRecording = (directionId: string) => {
+    setDirectionToReRecord(directionId);
+    setActionType('delete');
+    setShowReRecordDialog(true);
+  };
+
+  // 更新宣告主题
+  const updateDeclarationTheme = (directionId: string, theme: string) => {
+    setDeclarations(prev => ({
+      ...prev,
+      [directionId]: { 
+        ...prev[directionId],
+        theme 
+      }
+    }));
+  };
+
+  // 更新宣告简介
+  const updateDeclarationDescription = (directionId: string, description: string) => {
+    setDeclarations(prev => ({
+      ...prev,
+      [directionId]: { 
+        ...prev[directionId],
+        description 
+      }
+    }));
   };
 
   const handleResourceToggle = (resource: string) => {
@@ -443,7 +503,7 @@ function ProfileEditContent() {
       resources: selectedResources,
       abilityTags: selectedAbilityTags,
       directions: selectedDirection ? [selectedDirection] : [],
-      declarationDescription,
+      declarations, // 保存高燃宣告数据（包含每个方向的主题、简介、音频）
       experiences,
       achievements,
       updatedAt: new Date().toISOString(),
@@ -453,35 +513,21 @@ function ProfileEditContent() {
     try {
       localStorage.setItem('userProfile', JSON.stringify(fullProfile));
 
-      // 同时也保存到userDeclarations（兼容旧的宣告数据结构）
-      const declarationData = {
-        id: `decl-${Date.now()}`,
-        rank: 1,
-        icon: `/icon-${selectedDirection}.jpg`,
-        iconType: directions.find(d => d.id === selectedDirection)?.name || '信心',
-        title: profile.declaration || '我的宣告',
-        summary: declarationDescription || '基于个人经验，为行业贡献力量',
-        duration: '5:00', // 默认时长
-        image: profile.avatar,
-        publishDate: new Date().toLocaleDateString('zh-CN'),
-        views: 0,
-        likes: 0,
-        comments: 0,
-      };
+      // 保存宣告数据（新的数据结构）
+      const declarationsArray = directions.map(dir => {
+        const decl = declarations[dir.id] || { theme: '', description: '', hasRecorded: false };
+        return {
+          id: dir.id,
+          name: dir.name,
+          icon: dir.icon,
+          theme: decl.theme,
+          description: decl.description,
+          audioUrl: decl.audioUrl,
+          hasRecorded: decl.hasRecorded,
+        };
+      });
 
-      // 获取现有宣告数据并添加新宣告
-      const existingDeclarations = JSON.parse(localStorage.getItem('userDeclarations') || '[]');
-      if (!Array.isArray(existingDeclarations)) {
-        // 如果不是数组，初始化为空数组
-        localStorage.setItem('userDeclarations', JSON.stringify([declarationData]));
-      } else {
-        // 检查是否已存在（通过title判断）
-        const exists = existingDeclarations.some((d: any) => d.title === declarationData.title);
-        if (!exists) {
-          existingDeclarations.unshift(declarationData);
-          localStorage.setItem('userDeclarations', JSON.stringify(existingDeclarations));
-        }
-      }
+      localStorage.setItem('userDeclarations', JSON.stringify(declarationsArray));
 
       // 触发自定义事件，通知其他页面更新
       window.dispatchEvent(new StorageEvent('storage', {
@@ -492,7 +538,7 @@ function ProfileEditContent() {
 
       window.dispatchEvent(new StorageEvent('storage', {
         key: 'userDeclarations',
-        newValue: JSON.stringify(existingDeclarations),
+        newValue: JSON.stringify(declarationsArray),
         storageArea: window.localStorage,
       }));
 
@@ -871,106 +917,133 @@ function ProfileEditContent() {
             <h2 className="text-[13px] font-semibold text-gray-900">
               高燃宣告（请勾选你要前端展示的宣告）
             </h2>
-            <div className="grid grid-cols-3 gap-2">
+            {/* 宣告方向列表 */}
+            <div className="space-y-4">
               {directions.map((direction) => (
-                <button
+                <div
                   key={direction.id}
-                  onClick={() => handleDirectionSelect(direction.id)}
-                  className={`relative flex flex-col items-center p-2 border ${
+                  className={`space-y-3 p-3 border ${
                     selectedDirection === direction.id
-                      ? 'border-blue-400 bg-blue-400/40'
+                      ? 'border-blue-400 bg-blue-400/10'
                       : 'border-[rgba(0,0,0,0.1)]'
                   }`}
                 >
-                  {/* 左上角勾选框 */}
-                  <div className="absolute top-1 left-1 w-4 h-4 border-2 border-blue-400 flex items-center justify-center">
+                  {/* 宣告方向标题和勾选 */}
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => handleDirectionSelect(direction.id)}
+                      className="flex items-center space-x-2"
+                    >
+                      <div className="w-4 h-4 border-2 border-blue-400 flex items-center justify-center">
+                        {selectedDirection === direction.id && (
+                          <Check className="w-3 h-3 text-blue-400" />
+                        )}
+                      </div>
+                      <div className="w-8 h-8 relative">
+                        <img
+                          src={direction.icon}
+                          alt={direction.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-[12px] font-semibold">{direction.name}</span>
+                    </button>
+                    
+                    {/* 音频控制按钮 */}
                     {selectedDirection === direction.id && (
-                      <Check className="w-3 h-3 text-blue-400" />
+                      <div className="flex items-center space-x-2 ml-auto">
+                        {/* 播放按钮 */}
+                        {declarations[direction.id]?.hasRecorded && (
+                          <button
+                            onClick={() => handlePlayRecording(direction.id)}
+                            className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center hover:bg-green-600 transition-colors"
+                            title="播放录音"
+                          >
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </button>
+                        )}
+                        
+                        {/* 录音按钮 */}
+                        <button
+                          onClick={() => handleDirectionRecord(direction.id)}
+                          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+                            declarations[direction.id]?.isRecording
+                              ? 'bg-red-500 animate-pulse'
+                              : 'bg-blue-400 hover:bg-blue-500'
+                          }`}
+                          title={declarations[direction.id]?.hasRecorded ? "重新录音" : "开始录音"}
+                        >
+                          <Mic className="w-3 h-3 text-white" />
+                        </button>
+                        
+                        {/* 删除按钮 */}
+                        {declarations[direction.id]?.hasRecorded && (
+                          <button
+                            onClick={() => handleDeleteRecording(direction.id)}
+                            className="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center hover:bg-gray-500 transition-colors"
+                            title="删除录音"
+                          >
+                            <X className="w-3 h-3 text-white" />
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
-                  {/* 图标 */}
-                  <div className="w-10 h-10 mb-1 relative">
-                    <img
-                      src={direction.icon}
-                      alt={direction.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {/* 录音/播放区域 */}
-                  {selectedDirection === direction.id ? (
-                    <>
-                      {/* 播放按钮 - 如果已录制 */}
-                      {recordings[direction.id]?.hasRecorded && (
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePlayRecording(direction.id);
-                          }}
-                          className="absolute bottom-1 right-7 w-5 h-5 rounded-full bg-green-500 flex items-center justify-center cursor-pointer transition-colors hover:bg-green-600"
-                        >
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        </div>
-                      )}
-                      
-                      {/* 录音按钮 */}
-                      <div
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDirectionRecord(direction.id);
-                        }}
-                        className={`absolute bottom-1 right-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
-                          recordings[direction.id]?.isRecording
-                            ? 'bg-red-500 animate-pulse'
-                            : recordings[direction.id]?.hasRecorded
-                            ? 'bg-blue-400 hover:bg-blue-500'
-                            : 'bg-blue-400 hover:bg-blue-500'
-                        }`}
-                      >
-                        <Mic className="w-3 h-3 text-white" />
+                  
+                  {/* 选中状态下的输入框 */}
+                  {selectedDirection === direction.id && (
+                    <div className="space-y-2 pl-7 animate-in slide-in-from-top-2 duration-200">
+                      {/* 宣告主题 */}
+                      <div>
+                        <label className="text-[11px] text-[rgba(0,0,0,0.4)] block mb-1">
+                          宣告主题 <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={declarations[direction.id]?.theme || ''}
+                          onChange={(e) => updateDeclarationTheme(direction.id, e.target.value)}
+                          className="w-full px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
+                          placeholder="请输入宣告主题（不超过50字）"
+                          maxLength={50}
+                        />
                       </div>
-                    </>
-                  ) : (
-                    <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center">
-                      <Mic className="w-3 h-3 text-white" />
+                      
+                      {/* 宣告简介 */}
+                      <div>
+                        <label className="text-[11px] text-[rgba(0,0,0,0.4)] block mb-1">
+                          宣告简介 <span className="text-red-400">*</span>
+                        </label>
+                        <textarea
+                          value={declarations[direction.id]?.description || ''}
+                          onChange={(e) => updateDeclarationDescription(direction.id, e.target.value)}
+                          className="w-full px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none placeholder-[rgba(0,0,0,0.3)]"
+                          rows={3}
+                          placeholder="请输入宣告简介（不少于20字）"
+                          minLength={20}
+                          maxLength={200}
+                        />
+                        <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
+                          {(declarations[direction.id]?.description || '').length}/200
+                        </p>
+                      </div>
+                      
+                      {/* 录音状态提示 */}
+                      <div className="text-[10px] text-[rgba(0,0,0,0.4)]">
+                        {declarations[direction.id]?.isRecording ? (
+                          <span className="text-red-500">🔴 正在录音...</span>
+                        ) : declarations[direction.id]?.hasRecorded ? (
+                          <span className="text-green-600">✓ 录音完成，可点击播放键试听</span>
+                        ) : (
+                          <span>点击录音图标开始录制此宣告的音频</span>
+                        )}
+                      </div>
                     </div>
                   )}
-                  <span className="text-[10px] mt-1">{direction.name}</span>
-                </button>
+                </div>
               ))}
             </div>
-
-            {/* 录音状态提示 */}
-            {selectedDirection && (
-              <div className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                {recordings[selectedDirection]?.isRecording ? (
-                  <span className="text-red-500">🔴 正在录音...</span>
-                ) : recordings[selectedDirection]?.hasRecorded ? (
-                  <span className="text-green-600">✓ 录音完成，可点击播放键试听</span>
-                ) : (
-                  <span>点击录音图标开始录音此宣告</span>
-                )}
-              </div>
-            )}
-
-            {/* 宣告简述输入框 - 只有勾选并录音后才显示 */}
-            {showDeclarationInput && selectedDirection && (
-              <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
-                <label className="text-[11px] text-[rgba(0,0,0,0.4)] block">此宣告简述（不少于20字）</label>
-                <textarea
-                  value={declarationDescription}
-                  onChange={(e) => setDeclarationDescription(e.target.value)}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none placeholder-[rgba(0,0,0,0.3)]"
-                  rows={3}
-                  placeholder="请输入此宣告的简述..."
-                  minLength={20}
-                />
-                <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
-                  {declarationDescription.length}/20+
-                </p>
-              </div>
-            )}
           </div>
 
           {/* 工作经历 */}
@@ -1077,26 +1150,33 @@ function ProfileEditContent() {
         </div>
       </div>
 
-      {/* 重录确认对话框 */}
+      {/* 确认操作对话框 */}
       {showReRecordDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="bg-white w-full max-w-sm">
             <div className="p-4">
-              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">确认重录</h3>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">
+                {actionType === 'delete' ? '确认删除' : '确认重录'}
+              </h3>
               <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                重新录音将覆盖之前的录音，确定要继续吗？
+                {actionType === 'delete' 
+                  ? '确定要删除这条录音吗？删除后将无法恢复。'
+                  : '重新录音将覆盖之前的录音，确定要继续吗？'
+                }
               </p>
             </div>
             <div className="flex border-t border-gray-200">
               <button
-                onClick={cancelReRecord}
+                onClick={cancelAction}
                 className="flex-1 py-3 text-[13px] text-[rgba(0,0,0,0.6)] hover:bg-gray-50 border-r border-gray-200"
               >
                 取消
               </button>
               <button
-                onClick={confirmReRecord}
-                className="flex-1 py-3 text-[13px] text-white bg-blue-400 hover:bg-blue-500"
+                onClick={actionType === 'delete' ? confirmDelete : confirmReRecord}
+                className={`flex-1 py-3 text-[13px] text-white ${
+                  actionType === 'delete' ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-400 hover:bg-blue-500'
+                }`}
               >
                 确定
               </button>
