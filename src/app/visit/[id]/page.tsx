@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, Calendar, Users, Star, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,47 +16,59 @@ import {
 } from '@/components/ui/dialog';
 import { useParams } from 'next/navigation';
 
-// 模拟数据
-const mockVisitData = {
-  id: '1',
-  date: '2024年3月5日',
-  time: '14:00-16:00',
-  status: 'completed',
-  target: {
-    name: '张总',
-    title: '创始人兼CEO',
-    company: '智能制造科技有限公司',
-    industry: '智能制造',
-    avatar: '/avatar-2.jpg',
-    tags: ['人工智能', '工业互联网', '数字化转型'],
-  },
-  purpose: '了解企业数字化转型实践，寻求合作机会',
-  location: '北京市海淀区中关村软件园',
-  participants: 3,
-  outcome: '深入了解对方的产品体系和技术路线，初步达成战略合作意向',
-  keyPoints: [
-    '对方正在构建工业互联网平台，需要供应链整合能力',
-    '双方在技术路线和商业模式上高度契合',
-    '计划下个月进行第二次深入交流',
-    '对方对我们的AI解决方案表现出浓厚兴趣',
-  ],
-  nextSteps: [
-    '3月20日前提交技术方案初稿',
-    '4月初进行第二次拜访',
-    '准备相关案例和参考资料',
-  ],
-  rating: 5,
-  notes: '张总是非常务实的企业家，对技术和市场都有深刻理解。团队氛围很好，执行力强。建议重点关注其产品迭代速度。',
-  images: [
-    'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=300&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&h=200&fit=crop',
-  ],
-  createdAt: '2024年3月5日 16:30',
-};
-
 export default function VisitDetailPage() {
   const params = useParams();
-  const [visit] = useState(mockVisitData);
+  const [visit, setVisit] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 从 API 加载探访数据
+  useEffect(() => {
+    async function loadVisit() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const id = params.id as string;
+        const response = await fetch(`/api/visits/${id}`);
+
+        if (!response.ok) {
+          throw new Error('加载探访信息失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setVisit(data.data);
+        } else {
+          throw new Error(data.error || '加载探访信息失败');
+        }
+      } catch (err: any) {
+        console.error('加载探访信息失败:', err);
+        setError(err.message || '加载探访信息失败');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadVisit();
+  }, [params.id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
+        <div className="text-gray-400">加载中...</div>
+      </div>
+    );
+  }
+
+  if (error || !visit) {
+    return (
+      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
+        <div className="text-red-400">{error || '探访信息不存在'}</div>
+      </div>
+    );
+  }
 
   // 申请对话框状态
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);

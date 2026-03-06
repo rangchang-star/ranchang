@@ -289,6 +289,26 @@ export class MockDatabase {
     return mockUsers.filter(user => userIds.includes(user.id));
   }
 
+  // 获取所有探访
+  static getVisits() {
+    return mockVisits;
+  }
+
+  // 根据 ID 获取探访
+  static getVisitById(id: string) {
+    return mockVisits.find(visit => visit.id === id);
+  }
+
+  // 获取所有高燃宣告
+  static getDeclarations() {
+    return mockDeclarations;
+  }
+
+  // 根据 ID 获取高燃宣告
+  static getDeclarationById(id: string) {
+    return mockDeclarations.find(declaration => declaration.id === id);
+  }
+
   // 创建用户
   static createUser(userData: any) {
     const newId = Math.max(...mockUsers.map(u => u.id)) + 1;
@@ -406,3 +426,105 @@ export class MockDatabase {
     return true;
   }
 }
+
+// 探访数据
+export const mockVisits = [
+  {
+    id: '1',
+    title: '上海某制造业企业数字化转型探访',
+    industry: '企业转型',
+    duration: '4小时',
+    date: '2024年3月15日',
+    visitors: [
+      { name: '陈永明', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_af5cc0fe-324f-427e-bdeb-546e898b62f6.jpeg?sign=1804211031-65708fd535-0-d43856138aca15c5c8ba06d6a515fa5a2366705a4df51fb95b9a66e244ec31e5', skill: '战略' },
+      { name: '李雪梅', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_e261d034-5d7d-4119-9d0c-fdfa90bcdbcc.jpeg?sign=1804211032-29d4f52530-0-fc22688ea885c9e0d9b1a3dc21456c2e957369397efa73e953abad7a18f37c1a', skill: '营销' },
+      { name: '张志强', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_c5921701-ca08-48f7-9889-af89c3b63a24.jpeg?sign=1804211031-6d2ec28685-0-a2001ce035b1e234214d716bfe2fbba38984784350dfbbbc7986a4bed3f8a6e2', skill: '产品' },
+    ],
+    record: '企业面临数字化转型的关键阶段，传统生产模式效率低下，需要从设备智能化、流程数字化、管理信息化三个维度进行全面改造。本次走访重点了解企业当前痛点，制定分阶段转型方案。',
+    status: ['组织优化', '战略规划', '产品创新'],
+    audioDuration: '5:23',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=200&fit=crop',
+    createdAt: '2024-03-15T16:30:00Z',
+  },
+  {
+    id: '2',
+    title: '杭州科技创业公司战略规划探访',
+    industry: '战略规划',
+    duration: '3.5小时',
+    date: '2024年3月12日',
+    visitors: [
+      { name: '赵丽娜', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_47e0f5ad-6b79-478b-af48-3c8629aadf23.jpeg?sign=1804211046-b450875ec6-0-721112335d177e7449e7a28fcfc4287f5245a2eac8324a03caa77bbeddc08fd9', skill: '运营' },
+      { name: '陈永明', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_af5cc0fe-324f-427e-bdeb-546e898b62f6.jpeg?sign=1804211031-65708fd535-0-d43856138aca15c5c8ba06d6a515fa5a2366705a4df51fb95b9a66e244ec31e5', skill: '战略' },
+    ],
+    record: '创业公司快速发展期面临战略选择，需要在A轮融资、市场扩张、产品迭代之间找到平衡点。通过深度访谈，明确未来6个月的优先级，建立关键指标体系。',
+    status: ['市场拓展', '资本运作'],
+    audioDuration: '4:15',
+    image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400&h=200&fit=crop',
+    createdAt: '2024-03-12T16:00:00Z',
+  },
+  {
+    id: '3',
+    title: '广州连锁企业组织优化探访',
+    industry: '组织优化',
+    duration: '5小时',
+    date: '2024年3月10日',
+    visitors: [
+      { name: '张志强', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_c5921701-ca08-48f7-9889-af89c3b63a24.jpeg?sign=1804211031-6d2ec28685-0-a2001ce035b1e234214d716bfe2fbba38984784350dfbbbc7986a4bed3f8a6e2', skill: '管理' },
+      { name: '李雪梅', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_e261d034-5d7d-4119-9d0c-fdfa90bcdbcc.jpeg?sign=1804211032-29d4f52530-0-fc22688ea885c9e0d9b1a3dc21456c2e957369397efa73e953abad7a18f37c1a', skill: '渠道' },
+      { name: '陈永明', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_af5cc0fe-324f-427e-bdeb-546e898b62f6.jpeg?sign=1804211031-65708fd535-0-d43856138aca15c5c8ba06d6a515fa5a2366705a4df51fb95b9a66e244ec31e5', skill: '战略' },
+    ],
+    record: '连锁门店快速扩张后，组织架构和管理体系跟不上发展节奏，跨区域协同困难。重点考察门店运营流程，设计标准化管理体系和人才培训机制。',
+    status: ['组织优化', '市场拓展', '产品创新'],
+    audioDuration: '6:30',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=200&fit=crop',
+    createdAt: '2024-03-10T17:00:00Z',
+  },
+];
+
+// 高燃宣告数据
+export const mockDeclarations = [
+  {
+    id: '1',
+    rank: 1,
+    icon: '/icon-confidence.jpg',
+    iconType: '信心',
+    title: '用AI重塑传统制造业',
+    profile: '制造专家',
+    duration: '5:23',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    createdAt: '2024-03-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    rank: 2,
+    icon: '/icon-mission.jpg',
+    iconType: '使命',
+    title: '35+创业者的破局之路',
+    profile: '连续创业者',
+    duration: '8:15',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    createdAt: '2024-03-02T00:00:00Z',
+  },
+  {
+    id: '3',
+    rank: 3,
+    icon: '/icon-self.jpg',
+    iconType: '自我',
+    title: '从HR到企业合伙人',
+    profile: '战略顾问',
+    duration: '6:42',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+    createdAt: '2024-03-03T00:00:00Z',
+  },
+  {
+    id: '4',
+    rank: 4,
+    icon: '/icon-opponent.jpg',
+    iconType: '对手',
+    title: 'AI时代的产品思维',
+    profile: '产品总监',
+    duration: '7:30',
+    audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+    createdAt: '2024-03-04T00:00:00Z',
+  },
+];

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
@@ -44,57 +44,6 @@ const defaultMediaConfig = {
     url: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&h=340&fit=crop',
   },
 };
-
-// 探访点亮内容
-const visits = [
-  {
-    id: '1',
-    title: '上海某制造业企业数字化转型探访',
-    industry: '企业转型',
-    duration: '4小时',
-    date: '2024年3月15日',
-    visitors: [
-      { name: '陈永明', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_af5cc0fe-324f-427e-bdeb-546e898b62f6.jpeg?sign=1804211031-65708fd535-0-d43856138aca15c5c8ba06d6a515fa5a2366705a4df51fb95b9a66e244ec31e5', skill: '战略' },
-      { name: '李雪梅', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_e261d034-5d7d-4119-9d0c-fdfa90bcdbcc.jpeg?sign=1804211032-29d4f52530-0-fc22688ea885c9e0d9b1a3dc21456c2e957369397efa73e953abad7a18f37c1a', skill: '营销' },
-      { name: '张志强', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_c5921701-ca08-48f7-9889-af89c3b63a24.jpeg?sign=1804211031-6d2ec28685-0-a2001ce035b1e234214d716bfe2fbba38984784350dfbbbc7986a4bed3f8a6e2', skill: '产品' },
-    ],
-    record: '企业面临数字化转型的关键阶段，传统生产模式效率低下，需要从设备智能化、流程数字化、管理信息化三个维度进行全面改造。本次走访重点了解企业当前痛点，制定分阶段转型方案。',
-    status: ['组织优化', '战略规划', '产品创新'],
-    audioDuration: '5:23',
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=200&fit=crop',
-  },
-  {
-    id: '2',
-    title: '杭州科技创业公司战略规划探访',
-    industry: '战略规划',
-    duration: '3.5小时',
-    date: '2024年3月12日',
-    visitors: [
-      { name: '赵丽娜', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_47e0f5ad-6b79-478b-af48-3c8629aadf23.jpeg?sign=1804211046-b450875ec6-0-721112335d177e7449e7a28fcfc4287f5245a2eac8324a03caa77bbeddc08fd9', skill: '运营' },
-      { name: '陈永明', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_af5cc0fe-324f-427e-bdeb-546e898b62f6.jpeg?sign=1804211031-65708fd535-0-d43856138aca15c5c8ba06d6a515fa5a2366705a4df51fb95b9a66e244ec31e5', skill: '战略' },
-    ],
-    record: '创业公司快速发展期面临战略选择，需要在A轮融资、市场扩张、产品迭代之间找到平衡点。通过深度访谈，明确未来6个月的优先级，建立关键指标体系。',
-    status: ['市场拓展', '资本运作'],
-    audioDuration: '4:15',
-    image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400&h=200&fit=crop',
-  },
-  {
-    id: '3',
-    title: '广州连锁企业组织优化探访',
-    industry: '组织优化',
-    duration: '5小时',
-    date: '2024年3月10日',
-    visitors: [
-      { name: '张志强', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_c5921701-ca08-48f7-9889-af89c3b63a24.jpeg?sign=1804211031-6d2ec28685-0-a2001ce035b1e234214d716bfe2fbba38984784350dfbbbc7986a4bed3f8a6e2', skill: '管理' },
-      { name: '李雪梅', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_e261d034-5d7d-4119-9d0c-fdfa90bcdbcc.jpeg?sign=1804211032-29d4f52530-0-fc22688ea885c9e0d9b1a3dc21456c2e957369397efa73e953abad7a18f37c1a', skill: '渠道' },
-      { name: '陈永明', avatar: 'https://coze-coding-project.tos.coze.site/coze_storage_7612179044355801123/image/generate_image_af5cc0fe-324f-427e-bdeb-546e898b62f6.jpeg?sign=1804211031-65708fd535-0-d43856138aca15c5c8ba06d6a515fa5a2366705a4df51fb95b9a66e244ec31e5', skill: '战略' },
-    ],
-    record: '连锁门店快速扩张后，组织架构和管理体系跟不上发展节奏，跨区域协同困难。重点考察门店运营流程，设计标准化管理体系和人才培训机制。',
-    status: ['组织优化', '市场拓展', '产品创新'],
-    audioDuration: '6:30',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=200&fit=crop',
-  },
-];
 
 // 沙龙内容
 const salon = {
@@ -148,6 +97,55 @@ export default function SubscriptionPage() {
   // 视频refs
   const visitVideoRef = useRef<HTMLVideoElement>(null);
   const aiCircleVideoRef = useRef<HTMLVideoElement>(null);
+
+  // 探访数据加载
+  const [visits, setVisits] = useState<any[]>([]);
+  const [isLoadingVisits, setIsLoadingVisits] = useState(false);
+  const [visitsError, setVisitsError] = useState<string | null>(null);
+
+  // 从 API 加载探访数据
+  useEffect(() => {
+    async function loadVisits() {
+      try {
+        setIsLoadingVisits(true);
+        setVisitsError(null);
+
+        const response = await fetch('/api/visits');
+
+        if (!response.ok) {
+          throw new Error('加载探访信息失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 将 API 数据转换为前端需要的格式
+          const formattedVisits = data.data.map((visit: any) => ({
+            id: visit.id.toString(),
+            title: visit.title || '',
+            industry: visit.industry || '',
+            duration: visit.duration || '',
+            date: visit.date || '',
+            visitors: visit.visitors || [],
+            record: visit.record || '',
+            status: visit.status || [],
+            audioDuration: visit.audioDuration || '',
+            image: visit.image || '',
+          }));
+          setVisits(formattedVisits);
+        } else {
+          throw new Error(data.error || '加载探访信息失败');
+        }
+      } catch (err: any) {
+        console.error('加载探访信息失败:', err);
+        setVisitsError(err.message || '加载探访信息失败');
+      } finally {
+        setIsLoadingVisits(false);
+      }
+    }
+
+    loadVisits();
+  }, []);
 
   // 加入表单状态
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
@@ -299,90 +297,103 @@ export default function SubscriptionPage() {
             </TabsList>
 
             {/* 探访点亮内容 */}
+            {/* 探访点亮内容 */}
             <TabsContent value="training" className="space-y-4 mt-6">
-              {visits.map((visit) => (
-                <Link
-                  key={visit.id}
-                  href={`/visit/${visit.id}`}
-                  className="block p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
-                >
-                  {/* 图片 */}
-                  <div className="mb-3 overflow-hidden">
-                    <img
-                      src={visit.image}
-                      alt={visit.title}
-                      className="w-full h-44 object-cover"
-                    />
-                  </div>
-
-                  {/* 行业标签、时长、日期 */}
-                  <div className="flex items-center space-x-2 mb-3">
-                    <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
-                      {visit.industry}
-                    </Badge>
-                    <div className="flex items-center space-x-1 text-[13px] text-[rgba(0,0,0,0.25)]">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{visit.duration}</span>
-                      <span>·</span>
-                      <span>{visit.date}</span>
+              {isLoadingVisits ? (
+                <div className="text-center py-12 text-gray-400">加载中...</div>
+              ) : visitsError ? (
+                <div className="text-center py-12 text-red-400">{visitsError}</div>
+              ) : visits.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">暂无探访内容</div>
+              ) : (
+                visits.map((visit) => (
+                  <div
+                    key={visit.id}
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.location.href = `/visit/${visit.id}`;
+                      }
+                    }}
+                    className="block p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                  >
+                    {/* 图片 */}
+                    <div className="mb-3 overflow-hidden">
+                      <img
+                        src={visit.image}
+                        alt={visit.title}
+                        className="w-full h-44 object-cover"
+                      />
                     </div>
-                  </div>
 
-                  {/* 探访人头像和标签 */}
-                  <div className="flex items-center space-x-4 mb-3">
-                    {visit.visitors.slice(0, 3).map((visitor, idx) => (
-                      <div key={idx} className="flex flex-col items-center">
-                        <div className="w-10 h-10 rounded-full overflow-hidden mb-1">
-                          <img
-                            src={visitor.avatar}
-                            alt={visitor.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[12px] line-clamp-1">
-                          {visitor.skill}
-                        </Badge>
+                    {/* 行业标签、时长、日期 */}
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
+                        {visit.industry}
+                      </Badge>
+                      <div className="flex items-center space-x-1 text-[13px] text-[rgba(0,0,0,0.25)]">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{visit.duration}</span>
+                        <span>·</span>
+                        <span>{visit.date}</span>
                       </div>
-                    ))}
-                  </div>
+                    </div>
 
-                  {/* 标题 */}
-                  <h3 className="text-[18px] font-semibold text-gray-900 mb-2 leading-tight line-clamp-1">
-                    {visit.title}
-                  </h3>
-
-                  {/* 走访记录 */}
-                  <p className="text-[15px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3 mb-3">
-                    {visit.record}
-                  </p>
-
-                  {/* 状态标签 */}
-                  <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-3">
-                    <div className="flex flex-wrap gap-2">
-                      {visit.status.map((status) => (
-                        <Badge
-                          key={status}
-                          className="rounded-none bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.6)] font-normal text-[13px] line-clamp-1"
-                        >
-                          {status}
-                        </Badge>
+                    {/* 探访人头像和标签 */}
+                    <div className="flex items-center space-x-4 mb-3">
+                      {visit.visitors.slice(0, 3).map((visitor, idx) => (
+                        <div key={idx} className="flex flex-col items-center">
+                          <div className="w-10 h-10 rounded-full overflow-hidden mb-1">
+                            <img
+                              src={visitor.avatar}
+                              alt={visitor.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[12px] line-clamp-1">
+                            {visitor.skill}
+                          </Badge>
+                        </div>
                       ))}
                     </div>
-                  </div>
 
-                  {/* 走访录音 */}
-                  <div className="flex items-center space-x-3 p-3 bg-[rgba(0,0,0,0.03)]">
-                    <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0">
-                      <Play className="w-4 h-4 text-white fill-white ml-0.5" />
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] text-gray-900 font-medium">走访反馈录音</p>
-                      <p className="text-[12px] text-[rgba(0,0,0,0.25)]">{visit.audioDuration}</p>
+                    {/* 标题 */}
+                    <h3 className="text-[18px] font-semibold text-gray-900 mb-2 leading-tight line-clamp-1">
+                      {visit.title}
+                    </h3>
+
+                    {/* 走访记录 */}
+                    <p className="text-[15px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3 mb-3">
+                      {visit.record}
+                    </p>
+
+                    {/* 状态标签 */}
+                    <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-3">
+                      <div className="flex flex-wrap gap-2">
+                        {visit.status.map((status) => (
+                          <Badge
+                            key={status}
+                            className="rounded-none bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.6)] font-normal text-[13px] line-clamp-1"
+                          >
+                            {status}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                    <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
+
+                    {/* 走访录音 */}
+                    <div className="flex items-center space-x-3 p-3 bg-[rgba(0,0,0,0.03)]">
+                      <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0">
+                        <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] text-gray-900 font-medium">走访反馈录音</p>
+                        <p className="text-[12px] text-[rgba(0,0,0,0.25)]">{visit.audioDuration}</p>
+                      </div>
+                      <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
+                    </div>
                   </div>
-                </Link>
-              ))}
+                ))
+              )}
             </TabsContent>
 
             {/* AI加油圈内容 */}

@@ -8,33 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useParams } from 'next/navigation';
 
-// 模拟数据
-const mockDeclarationData = {
-  id: '1',
-  rank: 1,
-  icon: '/icon-confidence.jpg',
-  iconType: '信心',
-  title: '用AI重塑传统制造业',
-  profile: '制造专家',
-  duration: '5:23',
-  audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-  image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=400&fit=crop',
-  content: '我是一名制造业的供应链专家，从事这个行业已经15年了。最近我开始思考，传统制造业如何能够拥抱AI时代的变革。通过深入学习和实践，我发现AI不仅仅是一个工具，更是一种思维方式。我的目标是用AI技术重塑传统制造业的生产流程和管理模式，让每一家制造企业都能在数字化转型的浪潮中找到自己的位置。',
-  creator: {
-    name: '王姐',
-    avatar: '/avatar-1.jpg',
-    industry: '制造业',
-    tags: ['供应链专家', '数字化转型'],
-  },
-  publishDate: '2024年3月1日',
-  views: 2847,
-  likes: 156,
-  shares: 89,
-};
-
 export default function DeclarationDetailPage() {
   const params = useParams();
-  const [declaration] = useState(mockDeclarationData);
+  const [declaration, setDeclaration] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -42,6 +20,38 @@ export default function DeclarationDetailPage() {
   const [duration, setDuration] = useState(323); // 5:23 = 323秒
   const [isLiked, setIsLiked] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // 从 API 加载宣告数据
+  useEffect(() => {
+    async function loadDeclaration() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const id = params.id as string;
+        const response = await fetch(`/api/declarations/${id}`);
+
+        if (!response.ok) {
+          throw new Error('加载宣告信息失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setDeclaration(data.data);
+        } else {
+          throw new Error(data.error || '加载宣告信息失败');
+        }
+      } catch (err: any) {
+        console.error('加载宣告信息失败:', err);
+        setError(err.message || '加载宣告信息失败');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadDeclaration();
+  }, [params.id]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -58,6 +68,22 @@ export default function DeclarationDetailPage() {
       }
     };
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
+        <div className="text-gray-400">加载中...</div>
+      </div>
+    );
+  }
+
+  if (error || !declaration) {
+    return (
+      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
+        <div className="text-red-400">{error || '宣告信息不存在'}</div>
+      </div>
+    );
+  }
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {

@@ -509,7 +509,7 @@ export default function DiscoveryPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/ability/${item.id}`);
+                      router.push(`/connection/${item.id}`);
                     }}
                     className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden cursor-pointer"
                   >
