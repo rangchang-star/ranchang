@@ -140,30 +140,45 @@ export default function AdminActivityEditPage() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title || !date || !startTime || !endTime || !location || !maxParticipants) {
       alert('请填写所有必填字段');
       return;
     }
 
-    console.log('保存活动:', {
-      id: activityId,
-      title,
-      date,
-      startTime,
-      endTime,
-      location,
-      type,
-      maxParticipants: parseInt(maxParticipants),
-      teaFee,
-      participants: selectedParticipants,
-      tags: selectedTags,
-      description,
-      imageUrl,
-    });
+    try {
+      // 调用API保存活动
+      const response = await fetch(`/api/activities/${activityId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          subtitle: description?.substring(0, 50) || '',
+          category: type,
+          imageUrl,
+          description,
+          address: location,
+          startDate: `${date}T${startTime}`,
+          endDate: `${date}T${endTime}`,
+          maxParticipants: parseInt(maxParticipants),
+          teaFee: parseFloat(teaFee) || 0,
+          status: 'active',
+        }),
+      });
 
-    alert('活动已更新');
-    router.push('/admin/activities');
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '保存活动失败');
+      }
+
+      alert('活动已更新');
+      router.push('/admin/activities');
+    } catch (error: any) {
+      console.error('保存活动失败:', error);
+      alert(`保存失败：${error.message}`);
+    }
   };
 
   // 计算当前已报名人数（默认为0）

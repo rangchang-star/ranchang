@@ -100,35 +100,18 @@ export default function SubscriptionPage() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        // 先尝试从localStorage读取
-        const localSettings = localStorage.getItem('pageSettings');
-        if (localSettings) {
-          const parsed = JSON.parse(localSettings);
-          if (parsed.ignition) {
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data.ignition) {
             setTabDescriptions({
-              training: parsed.ignition.visitSlogan,
-              consultation: parsed.ignition.aiCircleSlogan,
+              training: data.data.ignition.visitSlogan,
+              consultation: data.data.ignition.aiCircleSlogan,
             });
             setMediaConfig({
-              visit: parsed.ignition.visitMedia || defaultMediaConfig.visit,
-              aiCircle: parsed.ignition.aiCircleMedia || defaultMediaConfig.aiCircle,
+              visit: data.data.ignition.visitMedia || defaultMediaConfig.visit,
+              aiCircle: data.data.ignition.aiCircleMedia || defaultMediaConfig.aiCircle,
             });
-          }
-        } else {
-          // 如果localStorage没有，则从API获取
-          const response = await fetch('/api/settings');
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data.ignition) {
-              setTabDescriptions({
-                training: data.data.ignition.visitSlogan,
-                consultation: data.data.ignition.aiCircleSlogan,
-              });
-              setMediaConfig({
-                visit: data.data.ignition.visitMedia || defaultMediaConfig.visit,
-                aiCircle: data.data.ignition.aiCircleMedia || defaultMediaConfig.aiCircle,
-              });
-            }
           }
         }
       } catch (error) {

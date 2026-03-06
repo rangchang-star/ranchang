@@ -202,26 +202,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const handleSave = () => {
-    console.log('保存会员信息:', {
-      id: memberId,
-      name,
-      age,
-      connectionType,
-      industry,
-      need,
-      abilityTags,
-      resourceTags,
-      adminTags,
-      phone,
-      email,
-      company,
-      position,
-      faith,
-      isFeatured,
-      avatarUrl,
-    });
-
+  const handleSave = async () => {
     // 验证必选项
     const requiredErrors: string[] = [];
     if (!abilityTags || abilityTags.length === 0) {
@@ -236,8 +217,41 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
       return;
     }
 
-    alert('会员信息已保存');
-    router.back();
+    try {
+      // 调用API保存会员信息
+      const response = await fetch(`/api/users/${memberId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          age,
+          avatar: avatarUrl,
+          tagStamp: connectionType,
+          industry,
+          need,
+          abilityTags,
+          resourceTags,
+          phone,
+          email,
+          company,
+          position,
+          isFeatured,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '保存会员信息失败');
+      }
+
+      alert('会员信息已保存');
+      router.back();
+    } catch (error: any) {
+      console.error('保存会员信息失败:', error);
+      alert(`保存失败：${error.message}`);
+    }
   };
 
   const handleDelete = () => {

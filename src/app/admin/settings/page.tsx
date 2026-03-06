@@ -178,23 +178,34 @@ export default function AdminSettingsPage() {
   };
 
   // 二次确认保存
-  const handleConfirmSave = () => {
+  const handleConfirmSave = async () => {
     setShowConfirmDialog(false);
     setSaving(true);
-    
-    // 模拟保存到localStorage
+
     try {
-      localStorage.setItem('pageSettings', JSON.stringify(settings));
-      
+      // 调用API保存设置
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '保存设置失败');
+      }
+
+      const data = await response.json();
+
       // 保存成功提示
-      setTimeout(() => {
-        alert('设置保存成功！');
-        setSaving(false);
-        setHasChanged(false);
-      }, 500);
-    } catch (error) {
+      alert('设置保存成功！');
+      setSaving(false);
+      setHasChanged(false);
+    } catch (error: any) {
       console.error('保存设置失败:', error);
-      alert('保存失败，请重试');
+      alert(`保存失败：${error.message}`);
       setSaving(false);
     }
   };

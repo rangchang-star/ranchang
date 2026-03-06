@@ -79,3 +79,70 @@ export async function GET(
     }, { status: 500 });
   }
 }
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+
+    // 验证必填字段
+    if (!body.title || !body.startDate || !body.endDate || !body.address) {
+      return NextResponse.json({
+        success: false,
+        error: '请填写所有必填字段'
+      }, { status: 400 });
+    }
+
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, activities } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
+
+        // 更新活动数据
+        await db.update(activities)
+          .set({
+            title: body.title,
+            subtitle: body.subtitle || '',
+            category: body.category || '私董会',
+            image: body.imageUrl || '',
+            description: body.description || '',
+            address: body.address,
+            startDate: new Date(body.startDate),
+            endDate: new Date(body.endDate),
+            capacity: parseInt(body.maxParticipants) || 12,
+            teaFee: parseFloat(body.teaFee) || 0,
+            status: body.status || 'active',
+            updatedAt: new Date(),
+          })
+          .where(eq(activities.id, parseInt(id)));
+
+        return NextResponse.json({
+          success: true,
+          message: '活动更新成功',
+          data: { id: parseInt(id) }
+        });
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
+      }
+    }
+
+    // 使用模拟数据库更新
+    MockDatabase.updateActivity(parseInt(id), body);
+
+    return NextResponse.json({
+      success: true,
+      message: '活动更新成功',
+      data: { id: parseInt(id) }
+    });
+  } catch (error: any) {
+    console.error('更新活动失败:', error);
+    return NextResponse.json({
+      success: false,
+      error: '更新活动失败'
+    }, { status: 500 });
+  }
+}

@@ -227,24 +227,13 @@ export default function DiscoveryPage() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        // 先尝试从localStorage读取
-        const localSettings = localStorage.getItem('pageSettings');
-        if (localSettings) {
-          const parsed = JSON.parse(localSettings);
-          setPageSettings(parsed);
-          if (parsed.discovery?.music) {
-            setAudioUrl(parsed.discovery.music);
-          }
-        } else {
-          // 如果localStorage没有，则从API获取
-          const response = await fetch('/api/settings');
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-              setPageSettings(data.data);
-              if (data.data.discovery?.music) {
-                setAudioUrl(data.data.discovery.music);
-              }
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setPageSettings(data.data);
+            if (data.data.discovery?.music) {
+              setAudioUrl(data.data.discovery.music);
             }
           }
         }

@@ -78,3 +78,73 @@ export async function GET(
     }, { status: 500 });
   }
 }
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+
+    // 验证必填字段
+    if (!body.name || !body.phone) {
+      return NextResponse.json({
+        success: false,
+        error: '请填写姓名和手机号'
+      }, { status: 400 });
+    }
+
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, users } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
+
+        // 更新用户数据
+        await db.update(users)
+          .set({
+            name: body.name,
+            nickname: body.nickname || body.name,
+            avatar: body.avatar || '',
+            age: parseInt(body.age) || 0,
+            company: body.company || '',
+            position: body.position || '',
+            industry: body.industry || '',
+            bio: body.bio || '',
+            need: body.need || '',
+            tagStamp: body.tagStamp || 'pureExchange',
+            tags: body.tags || [],
+            abilityTags: body.abilityTags || [],
+            resourceTags: body.resourceTags || [],
+            isTrusted: body.isTrusted || false,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, parseInt(id)));
+
+        return NextResponse.json({
+          success: true,
+          message: '用户信息更新成功',
+          data: { id: parseInt(id) }
+        });
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
+      }
+    }
+
+    // 使用模拟数据库更新
+    MockDatabase.updateUser(parseInt(id), body);
+
+    return NextResponse.json({
+      success: true,
+      message: '用户信息更新成功',
+      data: { id: parseInt(id) }
+    });
+  } catch (error: any) {
+    console.error('更新用户信息失败:', error);
+    return NextResponse.json({
+      success: false,
+      error: '更新用户信息失败'
+    }, { status: 500 });
+  }
+}

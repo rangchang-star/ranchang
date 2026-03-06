@@ -1649,6 +1649,20 @@ export class MockDatabase {
     return mockActivities[index];
   }
 
+  // 更新探访信息
+  static updateVisit(id: string, updates: any) {
+    const index = mockVisits.findIndex(v => v.id === id);
+    if (index === -1) {
+      return null;
+    }
+    mockVisits[index] = {
+      ...mockVisits[index],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    return mockVisits[index];
+  }
+
   // 删除用户
   static deleteUser(id: number) {
     const index = mockUsers.findIndex(u => u.id === id);

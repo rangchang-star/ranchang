@@ -305,31 +305,26 @@ export default function AdminVisitEditPage() {
 
     setLoading(true);
     try {
-      // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
       // 构造数据
+      const industry = selectedTags.find(tag =>
+        ['企业服务', '金融投资', '制造业', '教育培训', '医疗健康',
+         '消费零售', '房地产', '互联网', '人工智能', '新能源',
+         '汽车行业', '物流运输', '传媒娱乐', '农业', '政府公共',
+         '法律咨询', '建筑设计', '化工环保', '通信', '其他'].includes(tag)
+      ) || '';
+
       const visitData = {
-        id: params.id,
+        title: `${visitDate} ${industry}探访`,
         date: visitDate,
-        time: `${startTime}-${endTime}`,
-        status,
-        target: {
-          name: targetName,
-          title: targetTitle,
-          company: targetCompany,
-          avatar: targetAvatar,
-        },
-        purpose,
         location,
-        participants: participants ? parseInt(participants) : 0,
+        industry,
+        record: purpose,
         outcome,
         keyPoints: keyPoints.filter((kp) => kp.trim()),
         nextSteps: nextSteps.filter((ns) => ns.trim()),
-        rating,
         notes,
+        rating,
         images: imageUrls.filter((url) => url.trim()),
-        tags: selectedTags,
         visitors: selectedVisitors.map((memberId) => {
           const member = mockMembers.find((m) => m.id === memberId);
           return member
@@ -337,28 +332,31 @@ export default function AdminVisitEditPage() {
                 id: member.id,
                 name: member.name,
                 avatar: member.avatar,
-                abilityTags: member.abilityTags,
+                skill: member.abilityTags?.[0] || '',
               }
             : null;
         }).filter(Boolean),
-        createdAt: mockVisit.createdAt,
-        updatedAt: new Date().toLocaleString('zh-CN'),
       };
 
-      console.log('更新探访数据:', visitData);
+      // 调用API保存
+      const response = await fetch(`/api/visits/${params.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(visitData),
+      });
 
-      // 实际项目中需要调用API更新数据
-      // const response = await fetch(`/api/admin/visits/${params.id}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(visitData),
-      // });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '保存探访失败');
+      }
 
       alert('探访更新成功！');
       router.push('/admin/visits');
-    } catch (error) {
+    } catch (error: any) {
       console.error('更新探访失败:', error);
-      alert('更新探访失败，请重试');
+      alert(`更新探访失败：${error.message}`);
     } finally {
       setLoading(false);
     }
