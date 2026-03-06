@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/auth-context';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut, ChevronDown, ChevronUp } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -227,6 +227,30 @@ const activities = [
     participants: 30,
     enrolled: 20,
   },
+  {
+    id: '3',
+    title: '创业者心理建设工作坊',
+    date: '2024年3月22日',
+    time: '14:00-16:00',
+    location: '上海·徐汇',
+    status: '已参加',
+    category: '工作坊',
+    description: '帮助创业者建立强大的心理素质，应对创业过程中的各种挑战。通过专业指导和同伴支持，提升创业成功率。',
+    participants: 25,
+    enrolled: 20,
+  },
+  {
+    id: '4',
+    title: '商业认知提升沙龙',
+    date: '2024年4月5日',
+    time: '19:00-21:00',
+    location: '深圳·南山',
+    status: '已参加',
+    category: '沙龙',
+    description: '通过案例分析和小组讨论，提升商业洞察力和决策能力。分享实战经验，拓展商业视野。',
+    participants: 35,
+    enrolled: 30,
+  },
 ];
 
 // 咨询话题
@@ -327,6 +351,7 @@ export default function ProfilePage() {
   const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
   const [showActivityDetail, setShowActivityDetail] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
+  const [activitiesExpanded, setActivitiesExpanded] = useState(false);
   
   // 量表展开状态 - 默认只展开"创业心理评估"
   const [expandedAssessments, setExpandedAssessments] = useState<Set<number>>(new Set([0]));
@@ -1229,32 +1254,62 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* 功能菜单 */}
-          <div className="space-y-3">
-            {menuItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.route}
-                className="w-full p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors flex items-center"
+          {/* 参与活动 */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-[26px] font-bold">
+                  <span className="text-[rgba(96,165,250,0.6)]">参与</span>
+                  <span className="text-blue-400">活动</span>
+                </h2>
+              </div>
+              {/* 展开/收起按钮 */}
+              <button
+                onClick={() => setActivitiesExpanded(!activitiesExpanded)}
+                className="text-blue-400 hover:text-blue-500 transition-colors"
               >
-                <div className="flex items-center space-x-4 flex-1">
-                  <div className="w-10 h-10 bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
-                    <item.icon className="w-5 h-5 text-[rgba(0,0,0,0.25)]" />
+                {activitiesExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+            </div>
+            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+            <div className="space-y-3">
+              {activities.slice(0, activitiesExpanded ? activities.length : 2).map((activity) => (
+                <Link
+                  key={activity.id}
+                  href={`/activity/${activity.id}`}
+                  className="block p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+                >
+                  {/* 标题和状态 */}
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-[18px] font-semibold text-gray-900 flex-1 mr-2 line-clamp-1">
+                      {activity.title}
+                    </h3>
+                    <Badge className="rounded-none bg-green-100 text-green-600 font-normal text-[13px] flex-shrink-0">
+                      {activity.status}
+                    </Badge>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[18px] font-semibold text-gray-900 line-clamp-1">
-                        {item.label}
-                      </span>
-                      <span className="text-[17px] text-[rgba(0,0,0,0.25)] line-clamp-1">
-                        {item.subtitle}
-                      </span>
+                  {/* 描述 */}
+                  <p className="text-[15px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2 mb-2">
+                    {activity.description}
+                  </p>
+                  {/* 时间、地点、人数 */}
+                  <div className="flex items-center space-x-3 text-[13px] text-[rgba(0,0,0,0.4)]">
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{activity.date}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{activity.location}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Users className="w-3.5 h-3.5" />
+                      <span>{activity.participants}人</span>
                     </div>
                   </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-[rgba(0,0,0,0.25)] ml-3 flex-shrink-0" />
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
