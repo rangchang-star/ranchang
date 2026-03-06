@@ -10,10 +10,11 @@ import {
   User, Calendar, Target, UserCheck, Filter, ChevronRight,
   MessageSquare, Clock, Bell, ArrowUp, ArrowDown, ChevronUp
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Textarea } from '@/components/ui/textarea';
+import { MockDatabase } from '@/lib/mock-database';
 
 // 申请类型定义
 type ApplicationType = 'activity' | 'visit' | 'boardMember' | 'visitTarget';
@@ -31,88 +32,6 @@ interface Application {
   status: 'pending' | 'approved' | 'rejected';
   applyTime: string;
 }
-
-// 模拟申请数据
-const mockApplications: Application[] = [
-  // 活动申请
-  {
-    id: 'act-1',
-    type: 'activity',
-    applicantName: '张三',
-    applicantPhone: '13800123456',
-    applicantCompany: '某科技公司',
-    applicantPosition: 'CEO',
-    targetId: '1',
-    targetName: '转型期私董会',
-    reason: '希望参与私董会，获得更多创业指导',
-    status: 'pending',
-    applyTime: '2024-04-05 10:30',
-  },
-  {
-    id: 'act-2',
-    type: 'activity',
-    applicantName: '李四',
-    applicantPhone: '13900135678',
-    applicantCompany: '某制造企业',
-    applicantPosition: '总经理',
-    targetId: '2',
-    targetName: '跨界沙龙：AI时代的商业创新',
-    reason: '数字化转型需要同行交流',
-    status: 'pending',
-    applyTime: '2024-04-05 14:20',
-  },
-  // 探访申请
-  {
-    id: 'visit-1',
-    type: 'visit',
-    applicantName: '王五',
-    applicantPhone: '13700139012',
-    applicantCompany: '某咨询公司',
-    applicantPosition: '合伙人',
-    targetId: '3',
-    targetName: '张姐 - 转型成功案例',
-    reason: '想学习转型的经验和方法',
-    status: 'pending',
-    applyTime: '2024-04-06 09:15',
-  },
-  {
-    id: 'visit-2',
-    type: 'visit',
-    applicantName: '赵六',
-    applicantPhone: '13600133456',
-    applicantCompany: '某创业公司',
-    applicantPosition: '创始人',
-    targetId: '4',
-    targetName: '李哥 - AI应用先锋',
-    reason: '了解AI在企业落地的实践',
-    status: 'approved',
-    applyTime: '2024-04-01 11:00',
-  },
-  // 私董会案主申请
-  {
-    id: 'bm-1',
-    type: 'boardMember',
-    applicantName: '孙七',
-    applicantPhone: '13500137890',
-    applicantCompany: '某新能源公司',
-    applicantPosition: '董事长',
-    reason: '希望成为案主，获得同行深度建议',
-    status: 'pending',
-    applyTime: '2024-04-06 15:30',
-  },
-  // 被探访案主申请
-  {
-    id: 'vt-1',
-    type: 'visitTarget',
-    applicantName: '周八',
-    applicantPhone: '13400131122',
-    applicantCompany: '某医疗健康公司',
-    applicantPosition: 'CEO',
-    reason: '愿意分享转型经验，帮助同行',
-    status: 'pending',
-    applyTime: '2024-04-07 08:45',
-  },
-];
 
 // 会员标签
 const memberTags = [
@@ -149,16 +68,59 @@ const typeConfig = {
 };
 
 export default function AdminMessagesPage() {
-  const [applications, setApplications] = useState<Application[]>(mockApplications);
+  const [applications, setApplications] = useState<Application[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<'all' | ApplicationType>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [timeSort, setTimeSort] = useState<'asc' | 'desc' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   // 消息发送相关状态
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [messageContent, setMessageContent] = useState('');
+
+  // 加载申请数据
+  useEffect(() => {
+    async function loadApplications() {
+      try {
+        setIsLoading(true);
+
+        // 加载活动申请
+        const activityApplications = MockDatabase.getActivityApplications();
+        const activities = MockDatabase.getActivities();
+        const users = MockDatabase.getUsers();
+
+        // 转换为统一的申请格式
+        const formattedApplications: Application[] = activityApplications.map(app => {
+          const activity = activities.find(a => String(a.id) === app.activityId);
+          const user = users.find(u => String(u.id) === app.userId);
+
+          return {
+            id: app.id,
+            type: 'activity',
+            applicantName: user?.name || '未知',
+            applicantPhone: user?.phone || '未知',
+            applicantCompany: user?.company || '',
+            applicantPosition: user?.position || '',
+            targetName: activity?.title || '',
+            targetId: app.activityId,
+            reason: app.reason || '',
+            status: app.status as 'pending' | 'approved' | 'rejected',
+            applyTime: app.applyTime,
+          };
+        });
+
+        setApplications(formattedApplications);
+      } catch (error) {
+        console.error('加载申请数据失败:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadApplications();
+  }, []);
 
   // 获取待审核数量
   const getPendingCount = (type?: ApplicationType) => {
@@ -185,6 +147,15 @@ export default function AdminMessagesPage() {
 
   // 审批处理
   const handleApprove = (applicationId: string) => {
+    // 调用 MockDatabase 审核方法
+    const result = MockDatabase.reviewActivityApplication(applicationId, 'approved');
+    
+    if (!result) {
+      alert('审核失败');
+      return;
+    }
+
+    // 更新前端状态
     const updatedApplications = applications.map((app) =>
       app.id === applicationId ? { ...app, status: 'approved' as const } : app
     );
@@ -196,12 +167,24 @@ export default function AdminMessagesPage() {
       addNotification({
         type: 'success',
         title: `申请已通过`,
-        content: `您的${typeConfig[application.type].label}申请已通过`,
+        content: `您报名的「${application.targetName}」活动申请已通过审核`,
+        time: new Date().toLocaleString('zh-CN'),
+        read: false,
+        actionUrl: `/activity/${application.targetId}`,
       });
     }
   };
 
   const handleReject = (applicationId: string) => {
+    // 调用 MockDatabase 审核方法
+    const result = MockDatabase.reviewActivityApplication(applicationId, 'rejected');
+    
+    if (!result) {
+      alert('审核失败');
+      return;
+    }
+
+    // 更新前端状态
     const updatedApplications = applications.map((app) =>
       app.id === applicationId ? { ...app, status: 'rejected' as const } : app
     );
@@ -213,7 +196,10 @@ export default function AdminMessagesPage() {
       addNotification({
         type: 'error',
         title: `申请未通过`,
-        content: `您的${typeConfig[application.type].label}申请未通过`,
+        content: `您报名的「${application.targetName}」活动申请未通过审核`,
+        time: new Date().toLocaleString('zh-CN'),
+        read: false,
+        actionUrl: `/activity/${application.targetId}`,
       });
     }
   };
@@ -223,7 +209,16 @@ export default function AdminMessagesPage() {
     try {
       const stored = localStorage.getItem('notifications');
       const existing = stored ? JSON.parse(stored) : [];
-      localStorage.setItem('notifications', JSON.stringify([notification, ...existing]));
+      
+      // 为通知添加ID和时间
+      const newNotification = {
+        id: `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        ...notification,
+        time: notification.time || new Date().toLocaleString('zh-CN'),
+        read: notification.read !== undefined ? notification.read : false,
+      };
+      
+      localStorage.setItem('notifications', JSON.stringify([newNotification, ...existing]));
     } catch (error) {
       console.error('保存通知失败:', error);
     }

@@ -938,6 +938,35 @@ export const mockActivityRegistrations = [
   { activityId: '5', userId: '29', status: 'approved', registeredAt: '2024-03-20T14:00:00Z' },
 ];
 
+// ==================== 活动报名申请数据 ====================
+export const mockActivityApplications = [
+  // 待审核的报名申请
+  {
+    id: 'app-1',
+    activityId: '1',
+    userId: '21',
+    reason: '希望学习AI技术在传统企业中的应用经验',
+    status: 'pending',
+    applyTime: '2024-04-10T10:00:00Z',
+  },
+  {
+    id: 'app-2',
+    activityId: '3',
+    userId: '24',
+    reason: '对企业数字化转型很感兴趣，想交流经验',
+    status: 'pending',
+    applyTime: '2024-04-10T14:30:00Z',
+  },
+  {
+    id: 'app-3',
+    activityId: '4',
+    userId: '28',
+    reason: '想学习AI实战应用技巧',
+    status: 'pending',
+    applyTime: '2024-04-11T09:15:00Z',
+  },
+];
+
 // ==================== 探访项目数据 ====================
 export const mockVisits = [
   {
@@ -1986,5 +2015,82 @@ export class MockDatabase {
   // 获取某个活动的参与记录
   static getActivityRegistrationsByActivityId(activityId: string) {
     return mockActivityRegistrations.filter(r => r.activityId === activityId);
+  }
+
+  // 获取用户对某个活动的报名状态
+  static getUserActivityRegistrationStatus(userId: string, activityId: string) {
+    const registration = mockActivityRegistrations.find(
+      r => r.userId === userId && r.activityId === activityId
+    );
+    return registration ? registration.status : null;
+  }
+
+  // 创建活动报名申请
+  static createActivityApplication(applicationData: {
+    activityId: string;
+    userId: string;
+    reason: string;
+  }) {
+    const newApplication = {
+      id: `app-${Date.now()}`,
+      ...applicationData,
+      status: 'pending',
+      applyTime: new Date().toISOString(),
+    };
+    mockActivityApplications.push(newApplication);
+    return newApplication;
+  }
+
+  // 获取所有活动报名申请
+  static getActivityApplications() {
+    return mockActivityApplications;
+  }
+
+  // 获取某个活动的报名申请
+  static getActivityApplicationsByActivityId(activityId: string) {
+    return mockActivityApplications.filter(app => app.activityId === activityId);
+  }
+
+  // 获取某个用户的报名申请
+  static getActivityApplicationsByUserId(userId: string) {
+    return mockActivityApplications.filter(app => app.userId === userId);
+  }
+
+  // 审核报名申请
+  static reviewActivityApplication(
+    applicationId: string,
+    status: 'approved' | 'rejected',
+    adminId?: string
+  ) {
+    // 更新申请状态
+    const application = mockActivityApplications.find(app => app.id === applicationId);
+    if (!application) {
+      return null;
+    }
+    application.status = status;
+
+    // 如果通过审核，创建参与记录
+    if (status === 'approved') {
+      const existingRegistration = mockActivityRegistrations.find(
+        r => r.userId === application.userId && r.activityId === application.activityId
+      );
+      if (!existingRegistration) {
+        mockActivityRegistrations.push({
+          activityId: application.activityId,
+          userId: application.userId,
+          status: 'approved',
+          registeredAt: new Date().toISOString(),
+        });
+      } else {
+        existingRegistration.status = 'approved';
+      }
+    }
+
+    return application;
+  }
+
+  // 获取待审核的活动申请
+  static getPendingActivityApplications() {
+    return mockActivityApplications.filter(app => app.status === 'pending');
   }
 }

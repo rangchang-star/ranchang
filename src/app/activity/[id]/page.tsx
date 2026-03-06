@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Clock, Users, Calendar, Share2, Heart } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, Users, Calendar, Share2, Heart, Check, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -77,7 +77,7 @@ export default function ActivityDetailPage() {
   const [activity, setActivity] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollmentStatus, setEnrollmentStatus] = useState<'pending' | 'approved' | 'rejected' | 'completed' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 从 API 加载活动数据
@@ -152,6 +152,28 @@ export default function ActivityDetailPage() {
     loadActivity();
   }, [params.id]);
 
+  // 加载用户报名状态
+  useEffect(() => {
+    if (!user || !activity) return;
+
+    const userId = user.id;
+    const activityId = activity.id;
+
+    async function loadEnrollmentStatus() {
+      try {
+        const response = await fetch(`/api/activities/${activityId}/enrollment-status?userId=${userId}`);
+        const data = await response.json();
+        if (data.success) {
+          setEnrollmentStatus(data.data.status);
+        }
+      } catch (err) {
+        console.error('加载报名状态失败:', err);
+      }
+    }
+
+    loadEnrollmentStatus();
+  }, [user, activity, isLoggedIn]);
+
   const handleEnroll = async () => {
     // 登录验证
     if (!isLoggedIn || !user) {
@@ -175,14 +197,15 @@ export default function ActivityDetailPage() {
           userId: user.id,
           userName: user.name || user.nickname,
           userPhone: user.phone,
+          reason: '希望参加活动',
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setIsEnrolled(true);
-        alert('报名成功！');
+        setEnrollmentStatus('pending');
+        alert('报名申请已提交，请等待审核');
       } else {
         throw new Error(data.error || '报名失败');
       }
@@ -372,20 +395,54 @@ export default function ActivityDetailPage() {
         {/* 底部操作栏 */}
         {!isLoading && !error && activity && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[rgba(0,0,0,0.1)] px-5 py-4">
-          <div className="max-w-md mx-auto">
-            <Button
-              onClick={handleEnroll}
-              disabled={activity.status === 'ended' || isEnrolled || isSubmitting}
-              className={`w-full font-normal text-[13px] py-3 ${
-                isEnrolled
-                  ? 'bg-green-400 hover:bg-green-500'
-                  : activity.status === 'ended'
-                  ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-blue-400 hover:bg-blue-500'
-              }`}
-            >
-              {isSubmitting ? '提交中...' : isEnrolled ? '已报名' : activity.status === 'ended' ? '活动已结束' : '立即报名'}
-            </Button>
+          <div className="max-w-md mx-auto space-y-3">
+            {/* 审核中状态 */}
+            {enrollmentStatus === 'pending' && (
+              <div className="flex items-center justify-center space-x-2 px-4 py-3 bg-yellow-50 border border-yellow-200">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+                <span className="text-[13px] font-medium text-yellow-700">审核中</span>
+              </div>
+            )}
+
+            {/* 已通过状态 */}
+            {enrollmentStatus === 'approved' && (
+              <div className="flex items-center justify-center space-x-2 px-4 py-3 bg-green-50 border border-green-200">
+                <Check className="w-4 h-4 text-green-500" />
+                <span className="text-[13px] font-medium text-green-700">通过审核</span>
+              </div>
+            )}
+
+            {/* 已拒绝状态 */}
+            {enrollmentStatus === 'rejected' && (
+              <div className="flex items-center justify-between space-x-3">
+                <div className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-red-50 border border-red-200">
+                  <XCircle className="w-4 h-4 text-red-500" />
+                  <span className="text-[13px] font-medium text-red-700">审核未通过</span>
+                </div>
+                <Button
+                  onClick={handleEnroll}
+                  disabled={isSubmitting}
+                  className="bg-blue-400 hover:bg-blue-500 text-white font-normal text-[13px] py-3 px-6"
+                >
+                  {isSubmitting ? '提交中...' : '重新报名'}
+                </Button>
+              </div>
+            )}
+
+            {/* 未报名或已完成状态 */}
+            {!enrollmentStatus && (
+              <Button
+                onClick={handleEnroll}
+                disabled={activity.status === 'ended' || isSubmitting}
+                className={`w-full font-normal text-[13px] py-3 ${
+                  activity.status === 'ended'
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-blue-400 hover:bg-blue-500'
+                }`}
+              >
+                {isSubmitting ? '提交中...' : activity.status === 'ended' ? '活动已结束' : '立即报名'}
+              </Button>
+            )}
           </div>
         </div>
         )}
