@@ -1662,6 +1662,30 @@ export const mockDocuments = [
     views: 1678,
     status: 'published',
   },
+  {
+    id: '6',
+    type: 'document',
+    title: '【商业工具箱】出去干仗必须有合手的兵器',
+    icon: 'box',
+    description: '工欲善其事，必先利其器。本文整理了创业者必备的实用工具和资源，让你的工作效率倍增。',
+    content: '',
+    cover: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&h=400&fit=crop',
+    date: '2025-03-10',
+    views: 1256,
+    status: 'published',
+  },
+  {
+    id: '7',
+    type: 'document',
+    title: '【摆摊老张的江湖生存课】短板、闭环、真功夫',
+    icon: 'book',
+    description: '一个普通摆摊老张的生存智慧，揭示了商业的本质：认识短板、构建闭环、练就真功夫。',
+    content: '',
+    cover: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=400&fit=crop',
+    date: '2025-03-15',
+    views: 2345,
+    status: 'published',
+  },
 ];
 
 // ==================== 模拟数据库操作类 ====================
