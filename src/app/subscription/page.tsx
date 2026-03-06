@@ -340,7 +340,7 @@ export default function SubscriptionPage() {
 
                     {/* 探访人头像和标签 */}
                     <div className="flex items-center space-x-4 mb-3">
-                      {visit.visitors.slice(0, 3).map((visitor, idx) => (
+                      {visit.visitors.slice(0, 3).map((visitor: any, idx: number) => (
                         <div key={idx} className="flex flex-col items-center">
                           <div className="w-10 h-10 rounded-full overflow-hidden mb-1">
                             <img
@@ -369,7 +369,7 @@ export default function SubscriptionPage() {
                     {/* 状态标签 */}
                     <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-3">
                       <div className="flex flex-wrap gap-2">
-                        {visit.status.map((status) => (
+                        {visit.status.map((status: string) => (
                           <Badge
                             key={status}
                             className="rounded-none bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.6)] font-normal text-[13px] line-clamp-1"

@@ -290,7 +290,7 @@ export default function DeclarationDetailPage() {
                   {declaration.creator.industry}
                 </div>
                 <div className="flex items-center space-x-1 mt-1">
-                  {declaration.creator.tags.map((tag) => (
+                  {declaration.creator.tags.map((tag: string) => (
                     <span
                       key={tag}
                       className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]"

@@ -278,7 +278,7 @@ export default function VisitDetailPage() {
                   {visit.target.title} · {visit.target.company}
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {visit.target.tags.map((tag) => (
+                  {visit.target.tags.map((tag: string) => (
                     <span
                       key={tag}
                       className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]"
@@ -336,7 +336,7 @@ export default function VisitDetailPage() {
           <div>
             <h2 className="text-[13px] font-semibold text-gray-900 mb-2">关键要点</h2>
             <ul className="space-y-1.5">
-              {visit.keyPoints.map((point, index) => (
+              {visit.keyPoints.map((point: string, index: number) => (
                 <li key={index} className="flex items-start text-[13px] text-gray-700">
                   <span className="w-1.5 h-1.5 bg-blue-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
                   <span>{point}</span>
@@ -349,7 +349,7 @@ export default function VisitDetailPage() {
           <div>
             <h2 className="text-[13px] font-semibold text-gray-900 mb-2">下一步计划</h2>
             <ul className="space-y-1.5">
-              {visit.nextSteps.map((step, index) => (
+              {visit.nextSteps.map((step: string, index: number) => (
                 <li key={index} className="flex items-start text-[13px] text-gray-700">
                   <span className="w-1.5 h-1.5 bg-green-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
                   <span>{step}</span>
@@ -384,7 +384,7 @@ export default function VisitDetailPage() {
             <div>
               <h2 className="text-[13px] font-semibold text-gray-900 mb-2">现场照片</h2>
               <div className="grid grid-cols-2 gap-2">
-                {visit.images.map((image, index) => (
+                {visit.images.map((image: string, index: number) => (
                   <div key={index} className="w-full h-32 overflow-hidden">
                     <img
                       src={image}
