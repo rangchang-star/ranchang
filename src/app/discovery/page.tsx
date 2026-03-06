@@ -281,10 +281,20 @@ export default function DiscoveryPage() {
             tagStamp: user.tagStamp || 'pureExchange',
             need: user.need || '',
             isTrusted: user.isTrusted || false,
+            isFeatured: user.isFeatured || false, // 保留 isFeatured 字段用于排序
             position: user.position || '',
             company: user.company || '',
           }));
-          setConnectionItems(formattedUsers);
+
+          // 排序逻辑：指定用户在前，非指定用户随机排列在后
+          const featuredUsers = formattedUsers.filter((user: any) => user.isFeatured);
+          const regularUsers = formattedUsers.filter((user: any) => !user.isFeatured);
+
+          // 对非指定用户进行随机排列
+          const shuffledRegularUsers = regularUsers.sort(() => Math.random() - 0.5);
+
+          // 合并：指定用户在前，随机用户在后
+          setConnectionItems([...featuredUsers, ...shuffledRegularUsers]);
         }
 
         if (activitiesData.success) {

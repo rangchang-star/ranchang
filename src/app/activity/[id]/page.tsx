@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useParams } from 'next/navigation';
+import { useAuth } from '@/contexts/auth-context';
+import { useLoginModal } from '@/contexts/login-modal-context-v2';
 
 // 倒计时 Hook
 const useCountdown = (endTime: string | undefined) => {
@@ -70,10 +72,13 @@ const ActivityStatusBadge = ({ status, endTime }: { status: string; endTime?: st
 
 export default function ActivityDetailPage() {
   const params = useParams();
+  const { user, isLoggedIn } = useAuth();
+  const { showLoginModal } = useLoginModal();
   const [activity, setActivity] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 从 API 加载活动数据
   useEffect(() => {
@@ -134,8 +139,46 @@ export default function ActivityDetailPage() {
     loadActivity();
   }, [params.id]);
 
-  const handleEnroll = () => {
-    setIsEnrolled(!isEnrolled);
+  const handleEnroll = async () => {
+    // 登录验证
+    if (!isLoggedIn || !user) {
+      showLoginModal();
+      return;
+    }
+
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+
+      // 调用报名API
+      const response = await fetch('/api/activities/enroll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          activityId: activity.id,
+          userId: user.id,
+          userName: user.name || user.nickname,
+          userPhone: user.phone,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsEnrolled(true);
+        alert('报名成功！');
+      } else {
+        throw new Error(data.error || '报名失败');
+      }
+    } catch (err: any) {
+      console.error('报名失败:', err);
+      alert(err.message || '报名失败，请稍后重试');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleShare = () => {
@@ -317,7 +360,7 @@ export default function ActivityDetailPage() {
           <div className="max-w-md mx-auto">
             <Button
               onClick={handleEnroll}
-              disabled={activity.status === 'ended' || isEnrolled}
+              disabled={activity.status === 'ended' || isEnrolled || isSubmitting}
               className={`w-full font-normal text-[13px] py-3 ${
                 isEnrolled
                   ? 'bg-green-400 hover:bg-green-500'
@@ -326,7 +369,7 @@ export default function ActivityDetailPage() {
                   : 'bg-blue-400 hover:bg-blue-500'
               }`}
             >
-              {isEnrolled ? '已报名' : activity.status === 'ended' ? '活动已结束' : '立即报名'}
+              {isSubmitting ? '提交中...' : isEnrolled ? '已报名' : activity.status === 'ended' ? '活动已结束' : '立即报名'}
             </Button>
           </div>
         </div>

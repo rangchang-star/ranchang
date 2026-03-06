@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Play, Pause, Calendar, MapPin, Users, Clock, Star } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Calendar, MapPin, Users, Clock, Star, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,9 +15,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useParams } from 'next/navigation';
+import { useAuth } from '@/contexts/auth-context';
+import { useLoginModal } from '@/contexts/login-modal-context-v2';
 
 export default function VisitDetailPage() {
   const params = useParams();
+  const { user, isLoggedIn } = useAuth();
+  const { showLoginModal } = useLoginModal();
   const [visit, setVisit] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +30,7 @@ export default function VisitDetailPage() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 申请对话框状态
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
@@ -134,7 +139,37 @@ export default function VisitDetailPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: visit.title,
+        text: `${visit.title} - ${visit.record}`,
+        url: window.location.href,
+      });
+    } else {
+      // 降级方案：复制链接
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert('链接已复制到剪贴板！');
+      }).catch(() => {
+        alert('复制失败，请手动复制浏览器地址栏的链接');
+      });
+    }
+  };
+
   const handleOpenDialog = () => {
+    // 登录验证
+    if (!isLoggedIn || !user) {
+      showLoginModal();
+      return;
+    }
+
+    // 自动填充用户信息
+    setFormData({
+      name: user.name || user.nickname || '',
+      phone: user.phone || '',
+      wechat: '',
+    });
+
     setJoinDialogOpen(true);
   };
 
@@ -195,12 +230,43 @@ export default function VisitDetailPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
-      console.log('提交申请:', formData);
-      setJoinDialogOpen(false);
-      setFormData({ name: '', phone: '', wechat: '' });
-      setErrors({ name: '', phone: '', wechat: '' });
+      try {
+        setIsSubmitting(true);
+
+        // 调用API提交申请
+        const response = await fetch('/api/visits/apply', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            visitId: visit.id,
+            userId: user?.id,
+            userName: formData.name,
+            userPhone: formData.phone,
+            userWechat: formData.wechat,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          console.log('提交申请:', formData);
+          alert('申请提交成功！我们将尽快与您联系');
+          setJoinDialogOpen(false);
+          setFormData({ name: '', phone: '', wechat: '' });
+          setErrors({ name: '', phone: '', wechat: '' });
+        } else {
+          throw new Error(data.error || '提交申请失败');
+        }
+      } catch (err: any) {
+        console.error('提交申请失败:', err);
+        alert(err.message || '提交申请失败，请稍后重试');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -232,7 +298,9 @@ export default function VisitDetailPage() {
               </Button>
             </Link>
             <h1 className="text-[15px] font-semibold text-gray-900">探访点亮</h1>
-            <div className="w-10" />
+            <Button variant="ghost" onClick={handleShare} className="p-2">
+              <Share2 className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+            </Button>
           </div>
         </div>
 
@@ -538,14 +606,16 @@ export default function VisitDetailPage() {
             <Button
               variant="outline"
               onClick={handleCloseDialog}
+              disabled={isSubmitting}
             >
               取消
             </Button>
             <Button
               onClick={handleSubmit}
+              disabled={isSubmitting}
               className="bg-blue-400 hover:bg-blue-500 text-white"
             >
-              提交申请
+              {isSubmitting ? '提交中...' : '提交申请'}
             </Button>
           </div>
         </DialogContent>
