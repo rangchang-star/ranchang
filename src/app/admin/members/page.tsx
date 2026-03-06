@@ -4,70 +4,63 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Edit, Eye, ShieldCheck, Shield } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-// 可用标签（用于搜索）
-const availableTags = ['普通', '私董案主', '探访主', '学员', '小组成员'];
-
-// 模拟会员数据
-const mockMembers = [
-  {
-    id: '1',
-    name: '王姐',
-    age: 48,
-    avatar: '/avatar-3.jpg',
-    level: '活跃会员',
-    tags: ['普通', '私董案主'],
-    industry: '企业服务',
-    joinDate: '2024-01-15',
-    status: 'active',
-    isFeatured: true,
-  },
-  {
-    id: '2',
-    name: '李明',
-    age: 52,
-    avatar: '/avatar-2.jpg',
-    level: '智囊团',
-    tags: ['私董案主', '探访主'],
-    industry: '金融投资',
-    joinDate: '2024-02-20',
-    status: 'active',
-    isFeatured: true,
-  },
-  {
-    id: '3',
-    name: '张总',
-    age: 45,
-    avatar: '/avatar-1.jpg',
-    level: '种子会员',
-    tags: ['学员', '小组成员'],
-    industry: '制造业',
-    joinDate: '2024-03-01',
-    status: 'active',
-    isFeatured: false,
-  },
-  {
-    id: '4',
-    name: '陈老师',
-    age: 50,
-    avatar: '/avatar-4.jpg',
-    level: '种子会员',
-    tags: ['探访主', '学员'],
-    industry: '教育培训',
-    joinDate: '2024-03-10',
-    status: 'inactive',
-    isFeatured: false,
-  },
-];
+// 会员数据类型
+interface Member {
+  id: string;
+  name: string;
+  age: number;
+  avatar: string;
+  level: string;
+  tags: string[];
+  industry: string;
+  joinDate: string;
+  status: string;
+  isFeatured: boolean;
+}
 
 export default function AdminMembersPage() {
+  const [members, setMembers] = useState<Member[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
 
-  const filteredMembers = mockMembers.filter((member) => {
+  // 从 API 加载会员数据
+  useEffect(() => {
+    async function loadMembers() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/admin/api/members');
+
+        if (!response.ok) {
+          throw new Error('加载会员数据失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setMembers(data.data);
+        } else {
+          throw new Error(data.error || '加载会员数据失败');
+        }
+      } catch (err: any) {
+        console.error('加载会员数据失败:', err);
+        setError(err.message || '加载会员数据失败');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadMembers();
+  }, []);
+
+  const filteredMembers = members.filter((member) => {
     const matchesSearch =
       member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.level.toLowerCase().includes(searchTerm.toLowerCase());
@@ -76,6 +69,11 @@ export default function AdminMembersPage() {
 
     return matchesSearch && matchesTag;
   });
+
+  // 收集所有可用的标签
+  const availableTags = Array.from(
+    new Set(members.flatMap((member) => member.tags))
+  );
 
   return (
     <AdminLayout>
@@ -97,16 +95,18 @@ export default function AdminMembersPage() {
                 placeholder="搜索会员姓名、等级..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={isLoading}
                 className="pl-10 text-[13px]"
               />
             </div>
           </div>
 
           {/* 标签筛选 */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-wrap gap-2">
             <span className="text-[13px] text-[rgba(0,0,0,0.6)]">标签筛选：</span>
             <button
               onClick={() => setSelectedTag('')}
+              disabled={isLoading}
               className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                 selectedTag === ''
                   ? 'bg-[rgba(59,130,246,0.4)] text-white'
@@ -119,6 +119,7 @@ export default function AdminMembersPage() {
               <button
                 key={tag}
                 onClick={() => setSelectedTag(tag)}
+                disabled={isLoading}
                 className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                   selectedTag === tag
                     ? 'bg-[rgba(59,130,246,0.4)] text-white'
@@ -131,7 +132,22 @@ export default function AdminMembersPage() {
           </div>
         </div>
 
+        {/* 加载状态 */}
+        {isLoading && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">加载中...</p>
+          </div>
+        )}
+
+        {/* 错误状态 */}
+        {error && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-red-500">{error}</p>
+          </div>
+        )}
+
         {/* 会员列表 */}
+        {!isLoading && !error && (
         <div className="border border-[rgba(0,0,0,0.1)]">
           <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
             <h3 className="text-[13px] font-semibold text-gray-900">
@@ -211,7 +227,6 @@ export default function AdminMembersPage() {
                 </div>
               </div>
             ))}
-
             {filteredMembers.length === 0 && (
               <div className="py-12 text-center">
                 <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
@@ -221,6 +236,7 @@ export default function AdminMembersPage() {
             )}
           </div>
         </div>
+        )}
       </div>
     </AdminLayout>
   );

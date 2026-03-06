@@ -4,85 +4,99 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Edit, Eye, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-// 可用标签（用于搜索）
-const availableTags = ['已结束', '进行中', 'AI', '智能制造', '金融投资', '数字化转型'];
-
-// 模拟探访数据
-const mockVisits = [
-  {
-    id: '1',
-    date: '2024年3月5日',
-    time: '14:00-16:00',
-    status: 'completed',
-    target: {
-      name: '张总',
-      title: '创始人兼CEO',
-      company: '智能制造科技有限公司',
-      avatar: '/avatar-2.jpg',
-    },
-    purpose: '了解企业数字化转型实践，寻求合作机会',
-    location: '北京市海淀区中关村软件园',
-    participants: 3,
-    rating: 5,
-    tags: ['已结束', '智能制造', '数字化转型'],
-    createdAt: '2024年3月5日 16:30',
-  },
-  {
-    id: '2',
-    date: '2024年3月8日',
-    time: '10:00-12:00',
-    status: 'completed',
-    target: {
-      name: '李总',
-      title: '董事长',
-      company: '投资管理有限公司',
-      avatar: '/avatar-1.jpg',
-    },
-    purpose: '探讨AI在投资领域的应用场景',
-    location: '上海市浦东新区陆家嘴',
-    participants: 5,
-    rating: 4,
-    tags: ['已结束', 'AI', '金融投资'],
-    createdAt: '2024年3月8日 12:30',
-  },
-  {
-    id: '3',
-    date: '2024年3月15日',
-    time: '09:30-11:30',
-    status: 'completed',
-    target: {
-      name: '王总',
-      title: 'CEO',
-      company: '工业互联网技术有限公司',
-      avatar: '/avatar-3.jpg',
-    },
-    purpose: '学习工业互联网平台建设经验',
-    location: '深圳市南山区科技园',
-    participants: 4,
-    rating: 5,
-    tags: ['已结束', 'AI', '智能制造'],
-    createdAt: '2024年3月15日 11:30',
-  },
-];
+// 探访数据类型
+interface Visit {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  status: string;
+  target: {
+    name: string;
+    title: string;
+    company: string;
+    avatar: string;
+  };
+  purpose: string;
+  location: string;
+  participants: number;
+  rating: number;
+  tags: string[];
+  industry: string;
+  duration: string;
+  visitors: any[];
+  record: string;
+  audioDuration: string;
+  audioUrl: string;
+  image: string;
+  outcome: string;
+  keyPoints: string[];
+  nextSteps: string[];
+  notes: string;
+  images: string[];
+  views: number;
+  likes: number;
+  createdAt: string;
+}
 
 export default function AdminVisitsPage() {
+  const [visits, setVisits] = useState<Visit[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
 
-  const filteredVisits = mockVisits.filter((visit) => {
+  // 从 API 加载探访数据
+  useEffect(() => {
+    async function loadVisits() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/admin/api/visits');
+
+        if (!response.ok) {
+          throw new Error('加载探访数据失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setVisits(data.data);
+        } else {
+          throw new Error(data.error || '加载探访数据失败');
+        }
+      } catch (err: any) {
+        console.error('加载探访数据失败:', err);
+        setError(err.message || '加载探访数据失败');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadVisits();
+  }, []);
+
+  const filteredVisits = visits.filter((visit) => {
     const matchesSearch =
-      visit.target.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      visit.target.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      visit.purpose.toLowerCase().includes(searchTerm.toLowerCase());
+      visit.target?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      visit.target?.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      visit.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      visit.purpose?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesTag = selectedTag === '' || visit.tags.includes(selectedTag);
 
     return matchesSearch && matchesTag;
   });
+
+  // 收集所有可用的标签
+  const availableTags = Array.from(
+    new Set(visits.flatMap((visit) => visit.tags))
+  );
 
   return (
     <AdminLayout>
@@ -109,16 +123,18 @@ export default function AdminVisitsPage() {
                 placeholder="搜索探访对象、公司、目的..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={isLoading}
                 className="pl-10 text-[13px]"
               />
             </div>
           </div>
 
           {/* 标签筛选 */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-wrap gap-2">
             <span className="text-[13px] text-[rgba(0,0,0,0.6)]">标签筛选：</span>
             <button
               onClick={() => setSelectedTag('')}
+              disabled={isLoading}
               className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                 selectedTag === ''
                   ? 'bg-[rgba(59,130,246,0.4)] text-white'
@@ -131,6 +147,7 @@ export default function AdminVisitsPage() {
               <button
                 key={tag}
                 onClick={() => setSelectedTag(tag)}
+                disabled={isLoading}
                 className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
                   selectedTag === tag
                     ? 'bg-[rgba(59,130,246,0.4)] text-white'
@@ -143,7 +160,22 @@ export default function AdminVisitsPage() {
           </div>
         </div>
 
+        {/* 加载状态 */}
+        {isLoading && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">加载中...</p>
+          </div>
+        )}
+
+        {/* 错误状态 */}
+        {error && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-red-500">{error}</p>
+          </div>
+        )}
+
         {/* 探访列表 */}
+        {!isLoading && !error && (
         <div className="border border-[rgba(0,0,0,0.1)]">
           <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
             <h3 className="text-[13px] font-semibold text-gray-900">
@@ -235,6 +267,7 @@ export default function AdminVisitsPage() {
             )}
           </div>
         </div>
+        )}
       </div>
     </AdminLayout>
   );

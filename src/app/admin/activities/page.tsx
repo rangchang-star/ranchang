@@ -4,120 +4,92 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Edit, Trash2, Users, Calendar, MapPin, CheckCircle, XCircle, Download, ArrowUpDown, Search, Clock } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-const mockActivities = [
-  {
-    id: '1',
-    title: '转型期私董会',
-    date: '2024-04-10',
-    time: '14:00-17:00',
-    location: '上海·静安',
-    type: 'private',
-    enrolled: 8,
-    max: 12,
-    tags: ['私董会', '名额紧张'],
-    status: 'active',
-    pendingApplications: 3,
-  },
-  {
-    id: '2',
-    title: '跨界沙龙：AI时代的商业创新',
-    date: '2024-04-15',
-    time: '19:00-21:00',
-    location: '北京·朝阳',
-    type: 'salon',
-    enrolled: 20,
-    max: 30,
-    tags: ['跨界', 'AI'],
-    status: 'active',
-    pendingApplications: 5,
-  },
-  {
-    id: '3',
-    title: 'AI实战赋能营（第一期）',
-    date: '2024-04-20',
-    time: '09:00-17:00',
-    location: '深圳·南山',
-    type: 'ai',
-    enrolled: 25,
-    max: 30,
-    tags: ['AI实战', '工作坊'],
-    status: 'active',
-    pendingApplications: 2,
-  },
-  {
-    id: '4',
-    title: '数字化转型分享会',
-    date: '2024-03-15',
-    time: '14:00-16:00',
-    location: '线上',
-    type: 'salon',
-    enrolled: 45,
-    max: 50,
-    tags: ['已结束'],
-    status: 'ended',
-    pendingApplications: 0,
-  },
-];
+// 活动数据类型
+interface Activity {
+  id: string;
+  title: string;
+  subtitle: string;
+  date: string;
+  time: string;
+  location: string;
+  type: string;
+  enrolled: number;
+  max: number;
+  tags: string[];
+  status: string;
+  pendingApplications: number;
+  category: string;
+  description: string;
+  image: string;
+  address: string;
+  capacity: number;
+  teaFee: number;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
-const mockApplications = [
-  {
-    id: 'app-1',
-    activityId: '1',
-    userName: '张三',
-    userPhone: '13800123456',
-    userCompany: '某科技公司',
-    userPosition: 'CEO',
-    reason: '希望参与私董会，获得更多创业指导',
-    status: 'pending',
-    applyTime: '2024-04-05 10:30',
-  },
-  {
-    id: 'app-2',
-    activityId: '1',
-    userName: '李四',
-    userPhone: '13900135678',
-    userCompany: '某制造企业',
-    userPosition: '总经理',
-    reason: '数字化转型需要同行交流',
-    status: 'pending',
-    applyTime: '2024-04-05 14:20',
-  },
-  {
-    id: 'app-3',
-    activityId: '1',
-    userName: '王五',
-    userPhone: '13700139012',
-    userCompany: '某咨询公司',
-    userPosition: '合伙人',
-    reason: '了解最新AI应用趋势',
-    status: 'pending',
-    applyTime: '2024-04-06 09:15',
-  },
-  {
-    id: 'app-4',
-    activityId: '2',
-    userName: '赵六',
-    userPhone: '13600133456',
-    userCompany: '某创业公司',
-    userPosition: '创始人',
-    reason: '拓展人脉资源',
-    status: 'approved',
-    applyTime: '2024-04-01 11:00',
-  },
-];
+// 报名申请类型
+interface Application {
+  id: string;
+  activityId: string;
+  userName: string;
+  userPhone: string;
+  userCompany: string;
+  userPosition: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  applyTime: string;
+}
+
+const mockApplications: Application[] = []; // 暂时为空，等待后续从API获取
 
 export default function AdminActivitiesPage() {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'ended'>('all');
   const [timeSort, setTimeSort] = useState<'asc' | 'desc' | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
   const [showApplications, setShowApplications] = useState(false);
-  const [applications, setApplications] = useState(mockApplications);
+  const [applications, setApplications] = useState<Application[]>(mockApplications);
 
-  const filteredActivities = mockActivities
+  // 从 API 加载活动数据
+  useEffect(() => {
+    async function loadActivities() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/admin/api/activities');
+
+        if (!response.ok) {
+          throw new Error('加载活动数据失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setActivities(data.data);
+        } else {
+          throw new Error(data.error || '加载活动数据失败');
+        }
+      } catch (err: any) {
+        console.error('加载活动数据失败:', err);
+        setError(err.message || '加载活动数据失败');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadActivities();
+  }, []);
+
+  const filteredActivities = activities
     .filter((activity) => activity.title.toLowerCase().includes(searchTerm.toLowerCase()))
     .filter((activity) => {
       if (statusFilter === 'all') return true;
@@ -151,7 +123,7 @@ export default function AdminActivitiesPage() {
     setApplications(updatedApplications);
 
     const app = applications.find(a => a.id === applicationId);
-    const activity = mockActivities.find(a => a.id === app?.activityId);
+    const activity = activities.find(a => a.id === app?.activityId);
 
     updateLocalStorage(applicationId, 'approved');
 
@@ -177,7 +149,7 @@ export default function AdminActivitiesPage() {
     setApplications(updatedApplications);
 
     const app = applications.find(a => a.id === applicationId);
-    const activity = mockActivities.find(a => a.id === app?.activityId);
+    const activity = activities.find(a => a.id === app?.activityId);
 
     updateLocalStorage(applicationId, 'rejected');
 
@@ -197,10 +169,10 @@ export default function AdminActivitiesPage() {
     try {
       const storedActivities = localStorage.getItem('activities');
       if (storedActivities) {
-        const activities = JSON.parse(storedActivities);
+        const storedActivitiesList = JSON.parse(storedActivities);
         const app = applications.find(a => a.id === applicationId);
         if (app) {
-          const activity = activities.find((a: any) => a.id === app.activityId);
+          const activity = storedActivitiesList.find((a: any) => a.id === app.activityId);
           if (activity) {
             if (!activity.applications) {
               activity.applications = [];
@@ -209,7 +181,7 @@ export default function AdminActivitiesPage() {
             if (existingApp) {
               existingApp.status = status;
             }
-            localStorage.setItem('activities', JSON.stringify(activities));
+            localStorage.setItem('activities', JSON.stringify(storedActivitiesList));
           }
         }
       }
@@ -358,6 +330,22 @@ export default function AdminActivitiesPage() {
           </div>
         </div>
 
+        {/* 加载状态 */}
+        {isLoading && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">加载中...</p>
+          </div>
+        )}
+
+        {/* 错误状态 */}
+        {error && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-red-500">{error}</p>
+          </div>
+        )}
+
+        {/* 活动列表 */}
+        {!isLoading && !error && (
         <div className="border border-[rgba(0,0,0,0.1)]">
           <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
             <h3 className="text-[13px] font-semibold text-gray-900">
@@ -456,6 +444,7 @@ export default function AdminActivitiesPage() {
             ))}
           </div>
         </div>
+        )}
 
         {showApplications && (
           <div className="border border-[rgba(0,0,0,0.1)]">
@@ -463,7 +452,7 @@ export default function AdminActivitiesPage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-[13px] font-semibold text-gray-900">
                   {selectedActivity
-                    ? `报名审核 - ${mockActivities.find(a => a.id === selectedActivity)?.title}`
+                    ? `报名审核 - ${activities.find((a: any) => a.id === selectedActivity)?.title}`
                     : '待审核申请'}
                   <span className="ml-2 px-2 py-0.5 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal">
                     {filteredApplications.length}条
