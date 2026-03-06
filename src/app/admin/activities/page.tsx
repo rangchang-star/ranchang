@@ -32,21 +32,6 @@ interface Activity {
   updatedAt: string;
 }
 
-// 报名申请类型
-interface Application {
-  id: string;
-  activityId: string;
-  userName: string;
-  userPhone: string;
-  userCompany: string;
-  userPosition: string;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected';
-  applyTime: string;
-}
-
-const mockApplications: Application[] = []; // 暂时为空，等待后续从API获取
-
 export default function AdminActivitiesPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,9 +39,6 @@ export default function AdminActivitiesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'ended'>('all');
   const [timeSort, setTimeSort] = useState<'asc' | 'desc' | null>(null);
-  const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
-  const [showApplications, setShowApplications] = useState(false);
-  const [applications, setApplications] = useState<Application[]>(mockApplications);
 
   // 从 API 加载活动数据
   useEffect(() => {
@@ -101,94 +83,6 @@ export default function AdminActivitiesPage() {
       const dateB = new Date(b.date).getTime();
       return timeSort === 'asc' ? dateA - dateB : dateB - dateA;
     });
-
-  const filteredApplications = selectedActivity
-    ? applications.filter((app) => app.activityId === selectedActivity)
-    : applications.filter((app) => app.status === 'pending');
-
-  const addNotification = (notification: any) => {
-    try {
-      const stored = localStorage.getItem('notifications');
-      const existing = stored ? JSON.parse(stored) : [];
-      localStorage.setItem('notifications', JSON.stringify([notification, ...existing]));
-    } catch (error) {
-      console.error('保存通知失败:', error);
-    }
-  };
-
-  const handleApprove = (applicationId: string) => {
-    const updatedApplications = applications.map((app) =>
-      app.id === applicationId ? { ...app, status: 'approved' as const } : app
-    );
-    setApplications(updatedApplications);
-
-    const app = applications.find(a => a.id === applicationId);
-    const activity = activities.find(a => a.id === app?.activityId);
-
-    updateLocalStorage(applicationId, 'approved');
-
-    addNotification({
-      id: `approval-${Date.now()}`,
-      type: 'success',
-      title: '报名审核通过',
-      message: `您报名的「${activity?.title || '活动'}」已通过审核，请按时参加`,
-      time: new Date().toLocaleString('zh-CN'),
-      read: false,
-      actionUrl: `/activity/${app?.activityId}`,
-    });
-
-    alert('已通过申请');
-  };
-
-  const handleReject = (applicationId: string) => {
-    if (!confirm('确定要拒绝此申请吗？')) return;
-
-    const updatedApplications = applications.map((app) =>
-      app.id === applicationId ? { ...app, status: 'rejected' as const } : app
-    );
-    setApplications(updatedApplications);
-
-    const app = applications.find(a => a.id === applicationId);
-    const activity = activities.find(a => a.id === app?.activityId);
-
-    updateLocalStorage(applicationId, 'rejected');
-
-    addNotification({
-      id: `rejection-${Date.now()}`,
-      type: 'error',
-      title: '报名审核未通过',
-      message: `您报名的「${activity?.title || '活动'}」未通过审核，如有疑问请联系客服`,
-      time: new Date().toLocaleString('zh-CN'),
-      read: false,
-    });
-
-    alert('已拒绝申请');
-  };
-
-  const updateLocalStorage = (applicationId: string, status: 'approved' | 'rejected') => {
-    try {
-      const storedActivities = localStorage.getItem('activities');
-      if (storedActivities) {
-        const storedActivitiesList = JSON.parse(storedActivities);
-        const app = applications.find(a => a.id === applicationId);
-        if (app) {
-          const activity = storedActivitiesList.find((a: any) => a.id === app.activityId);
-          if (activity) {
-            if (!activity.applications) {
-              activity.applications = [];
-            }
-            const existingApp = activity.applications.find((a: any) => a.id === applicationId);
-            if (existingApp) {
-              existingApp.status = status;
-            }
-            localStorage.setItem('activities', JSON.stringify(storedActivitiesList));
-          }
-        }
-      }
-    } catch (error) {
-      console.error('更新localStorage失败:', error);
-    }
-  };
 
   const getTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -387,22 +281,17 @@ export default function AdminActivitiesPage() {
                         编辑
                       </Button>
                     </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedActivity(activity.id);
-                        setShowApplications(true);
-                      }}
-                    >
-                      <Users className="w-4 h-4 mr-1" />
-                      报名
-                      {activity.pendingApplications > 0 && (
-                        <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-normal">
-                          {activity.pendingApplications}
-                        </span>
-                      )}
-                    </Button>
+                    <Link href={`/admin/activities/${activity.id}/registrations`}>
+                      <Button variant="outline" size="sm">
+                        <Users className="w-4 h-4 mr-1" />
+                        报名
+                        {activity.pendingApplications > 0 && (
+                          <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-normal">
+                            {activity.pendingApplications}
+                          </span>
+                        )}
+                      </Button>
+                    </Link>
                     <Button variant="outline" size="sm" className="text-blue-600 border-blue-400 hover:bg-blue-50 hover:border-blue-500">
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -444,93 +333,6 @@ export default function AdminActivitiesPage() {
             ))}
           </div>
         </div>
-        )}
-
-        {showApplications && (
-          <div className="border border-[rgba(0,0,0,0.1)]">
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <div className="flex items-center justify-between">
-                <h3 className="text-[13px] font-semibold text-gray-900">
-                  {selectedActivity
-                    ? `报名审核 - ${activities.find((a: any) => a.id === selectedActivity)?.title}`
-                    : '待审核申请'}
-                  <span className="ml-2 px-2 py-0.5 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal">
-                    {filteredApplications.length}条
-                  </span>
-                </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowApplications(false);
-                    setSelectedActivity(null);
-                  }}
-                >
-                  关闭
-                </Button>
-              </div>
-            </div>
-            <div className="divide-y divide-[rgba(0,0,0,0.05)]">
-              {filteredApplications.map((application) => (
-                <div
-                  key={application.id}
-                  className="p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="text-[15px] font-semibold text-gray-900">{application.userName}</h3>
-                        <span className={`px-2 py-0.5 text-[11px] font-normal ${
-                          application.status === 'pending'
-                            ? 'bg-[rgba(59,130,246,0.4)] text-white'
-                            : application.status === 'approved'
-                            ? 'bg-green-100 text-green-600'
-                            : 'bg-red-100 text-red-600'
-                        }`}>
-                          {application.status === 'pending' ? '待审核' : application.status === 'approved' ? '已通过' : '已拒绝'}
-                        </span>
-                      </div>
-                      <div className="text-[13px] text-[rgba(0,0,0,0.6)] space-y-1">
-                        <p>电话: {application.userPhone}</p>
-                        <p>公司: {application.userCompany}</p>
-                        <p>职位: {application.userPosition}</p>
-                        <p>申请时间: {application.applyTime}</p>
-                      </div>
-                      <div className="mt-2 p-2 bg-[rgba(0,0,0,0.02)] text-[13px]">
-                        <span className="font-medium text-gray-900">申请理由: </span>
-                        <span className="text-[rgba(0,0,0,0.6)]">{application.reason}</span>
-                      </div>
-                    </div>
-                  </div>
-                  {application.status === 'pending' && (
-                    <div className="flex items-center justify-end space-x-2 mt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleReject(application.id)}
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        拒绝
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleApprove(application.id)}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-1" />
-                        通过
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {filteredApplications.length === 0 && (
-                <div className="text-center py-8 text-[rgba(0,0,0,0.6)] text-[13px]">
-                  暂无申请记录
-                </div>
-              )}
-            </div>
-          </div>
         )}
       </div>
     </AdminLayout>

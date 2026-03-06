@@ -1977,4 +1977,14 @@ export class MockDatabase {
     }
     return document;
   }
+
+  // 获取所有活动参与记录
+  static getActivityRegistrations() {
+    return mockActivityRegistrations;
+  }
+
+  // 获取某个活动的参与记录
+  static getActivityRegistrationsByActivityId(activityId: string) {
+    return mockActivityRegistrations.filter(r => r.activityId === activityId);
+  }
 }
