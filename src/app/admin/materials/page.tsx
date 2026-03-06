@@ -4,61 +4,8 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Edit, Trash2, Search, Volume2, FileText, Image, Settings } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-// 每日宣告数据
-const mockDailyDeclarations = [
-  {
-    id: '1',
-    date: '2024-03-01',
-    title: '每日宣告：重塑自我，迎接新挑战',
-    duration: '3:15',
-    image: '/daily-declaration-square.webp',
-    audio: 'https://example.com/audio/1.mp3',
-    status: 'published',
-  },
-  {
-    id: '2',
-    date: '2024-03-02',
-    title: '每日宣告：拥抱变化，持续成长',
-    duration: '2:45',
-    image: '/daily-declaration-square.webp',
-    audio: 'https://example.com/audio/2.mp3',
-    status: 'published',
-  },
-];
-
-// 大鱼认知库数据
-const mockDocuments = [
-  {
-    id: '1',
-    title: '【新时代来了】用5条AI指令挽救一位创业者',
-    icon: 'robot',
-    cover: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop',
-    date: '2025-01-15',
-    views: 1234,
-    status: 'published',
-  },
-  {
-    id: '2',
-    title: '【闭环思维】摆脱单点能力陷阱',
-    icon: 'loop',
-    cover: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=400&fit=crop',
-    date: '2025-02-01',
-    views: 856,
-    status: 'published',
-  },
-  {
-    id: '3',
-    title: '【创业刺客】趋势与红利是两回事',
-    icon: 'target',
-    cover: 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=400&fit=crop',
-    date: '2025-02-10',
-    views: 2156,
-    status: 'published',
-  },
-];
 
 // 图标选项
 const iconOptions = [
@@ -77,12 +24,34 @@ const iconOptions = [
 ];
 
 export default function AdminMaterialsPage() {
-  const [activeTab, setActiveTab] = useState<'daily' | 'documents' | 'settings'>('daily');
+  const [activeTab, setActiveTab] = useState<'daily' | 'documents' | 'settings'>('documents');
   const [searchTerm, setSearchTerm] = useState('');
   const [libraryTitle, setLibraryTitle] = useState('大鱼的认知库');
   const [selectedIcon, setSelectedIcon] = useState('');
-  const [documents, setDocuments] = useState(mockDocuments);
-  const [declarations, setDeclarations] = useState(mockDailyDeclarations);
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 从 API 加载文档数据
+  useEffect(() => {
+    loadDocuments();
+  }, []);
+
+  const loadDocuments = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/documents');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setDocuments(data.data);
+        }
+      }
+    } catch (error) {
+      console.error('加载文档失败:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 保存设置
   const handleSaveSettings = () => {
@@ -92,29 +61,32 @@ export default function AdminMaterialsPage() {
   };
 
   // 删除文档
-  const handleDeleteDocument = (id: string) => {
+  const handleDeleteDocument = async (id: string) => {
     if (!confirm('确定要删除这个文档吗？')) return;
-    const updatedDocuments = documents.filter((doc) => doc.id !== id);
-    setDocuments(updatedDocuments);
-    alert('文档已删除');
-  };
-
-  // 删除宣告
-  const handleDeleteDeclaration = (id: string) => {
-    if (!confirm('确定要删除这个每日宣告吗？')) return;
-    const updatedDeclarations = declarations.filter((dec) => dec.id !== id);
-    setDeclarations(updatedDeclarations);
-    alert('每日宣告已删除');
+    try {
+      const response = await fetch(`/api/documents/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          alert('文档已删除');
+          loadDocuments(); // 重新加载文档列表
+        } else {
+          alert(data.error || '删除失败');
+        }
+      } else {
+        alert('删除失败');
+      }
+    } catch (error) {
+      console.error('删除文档失败:', error);
+      alert('删除失败');
+    }
   };
 
   // 过滤文档
   const filteredDocuments = documents.filter((doc) =>
     doc.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // 过滤宣告
-  const filteredDeclarations = declarations.filter((dec) =>
-    dec.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -165,90 +137,8 @@ export default function AdminMaterialsPage() {
         {/* 每日宣告管理 */}
         {activeTab === 'daily' && (
           <div>
-            {/* 操作栏 */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    placeholder="搜索每日宣告..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
-                  />
-                </div>
-              </div>
-              <Link href="/admin/materials/daily/create">
-                <Button className="bg-blue-400 hover:bg-blue-500 text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  添加宣告
-                </Button>
-              </Link>
-            </div>
-
-            {/* 每日宣告列表 */}
-            <div className="bg-white border border-gray-200 rounded-none">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">日期</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">标题</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">图片</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">时长</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">状态</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredDeclarations.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-8 text-gray-500">
-                        暂无每日宣告
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredDeclarations.map((declaration) => (
-                      <tr key={declaration.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 text-sm text-gray-700">{declaration.date}</td>
-                        <td className="py-3 px-4 text-sm text-gray-900 font-medium">{declaration.title}</td>
-                        <td className="py-3 px-4">
-                          <img
-                            src={declaration.image}
-                            alt="封面"
-                            className="w-10 h-10 object-cover"
-                          />
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray-600 flex items-center">
-                          <Volume2 className="w-3 h-3 mr-1" />
-                          {declaration.duration}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700">
-                            已发布
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center space-x-2">
-                            <Link href={`/admin/materials/daily/${declaration.id}/edit`}>
-                              <Button variant="ghost" size="sm">
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteDeclaration(declaration.id)}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+            <div className="text-center py-8 text-gray-500">
+              每日宣告功能暂未开放
             </div>
           </div>
         )}

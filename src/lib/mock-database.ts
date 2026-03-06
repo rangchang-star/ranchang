@@ -1487,6 +1487,183 @@ export const mockDeclarations = [
   },
 ];
 
+// ==================== 大鱼认知库文档数据 ====================
+export const mockDocuments = [
+  {
+    id: '1',
+    type: 'document',
+    title: '【新时代来了】用5条AI指令挽救一位创业者',
+    icon: 'robot',
+    description: '在AI时代，传统创业者面临巨大挑战。本文将介绍5条实用的AI指令，帮助你重新定义业务模式，提高效率，实现转型升级。',
+    content: `【新时代来了】用5条AI指令挽救一位创业者
+
+什么正在遮住你的眼睛？让在趋势中焦虑，失去目标方向？
+
+• 是不是觉得钱越来越难赚？
+• 是不是觉得一夜之间自己的经验和能力无法变现了？
+• 是不是让AI趋势搞的焦虑且失眠？
+• 是不是失去了"远方的目标"？
+
+我是大鱼，一名"追风者"
+
+从08年首次风口摘金房车双手，再到互联网、自媒体，我每次都抓住了时代趋势的大腿，如果抓风口变现以百万每次作为衡量指标，我都做到了！
+
+我现在要做的事情：用AI营销低成本、高效率、高数据化、高质量的去解决商业问题！
+
+我的认知结构如下，很简单：
+
+• 一切变现的基础是你的能力特长；
+• 赛道决定收入量级，而赛道的门槛是你的能力特长决定的；
+• 趋势与红利要分开看，趋势决定赛道方向，红利是赛道早期的狼少肉多；
+• 趋势是能力的放大器，时机对了，演艺速成班毕业也能当明星。
+• 最重要的一点，认识到自己是普通人，分清妄想、梦想与理想。
+
+"打工、创业、守业"
+
+围绕"趋势、赛道、能力特长"多做深度思考，主脑不立，枝蔓难修。
+
+如果你是通过其他渠道获取的盗版内容，也同样欢迎你来付费支持正版。
+
+你可以收获的是：进入一个全部都是付费用户的微信群，大鱼哥在群里负责解答问题。
+
+【新时代来了】用5条AI指令挽救一位创业者
+
+茶局上的"创业狂人"
+
+那天，朋友请我喝茶，聊得正嗨，突然杀进来一哥们。哥们是我朋友的发小，他说之前参加过我一期私董会，比较服气我的商业项目"批作业式的"暴力拆案法。
+
+狂人开始输出：咔咔咔兴奋地讲他的新创业idea——"食药同源政策下，把中药与茶饮结合，目标是保健茶饮类的霸王茶姬"。一会儿讲打造爆款，一会讲招商加盟前景有多好，80%的时间都是他在输出，趋势有多好、市场需求有多大、商机有多爆炸……
+
+过程中：我给我朋友发了一条微信，"你哥们儿，上头了"
+
+三个问题，测试"创业泡泡"
+
+过程中我打断了他，问了了三个问题：
+
+1、"这事儿都有谁在干？"
+2、"你的资源和特长与这件事有什么关系？"
+3、"这件事的最小MVP闭环你打算怎么跑？"
+
+他的回答我就不细说了，典型的顾左言他还自信满满。在北京管理创投基金那些年，这种状态的我见多了。创业者一上头，"前面就是万丈深渊，他也觉得自己能飞过去。"
+
+"替补"上场，遇见趋势
+
+回去后，我不想花太多时间分析他的项目。因为我心里已经有了N条判断他项目商业闭环不成立的逻辑。
+
+出于礼貌，这个作业还得批啊！
+
+那时候,还是2025年初，国内还没有这么多大模型，ChatGPT属于早期，我是第一批付费用户，批这个作业的时候，当时正好赶上chatgpt联网搜索的插件上线，我用训练好的AI结合这个"在线搜索"功能，只用了2分钟就把作业批好了，从确定市场分析框架到桌面调研,再到市场初探研究，再到结合创业者资源制定商业定位，这次AI的进化让我吃惊，实时搜索大大提高了效率与使用场景。我觉得我又走到趋势上了。
+
+现在，大模型百家争鸣，2026一个"龙虾"杀疯了技术圈。未来已来。。。
+
+批作业，划重点，踩刹车
+
+其中有两条AI分析让他走心了，决定放弃这次创业。
+
+一个是AI对这次创业成本的计算大大超出他的设想，另一个是本次创业中"必要资源链"有重大缺口，无法闭环。
+
+创业项目开始的时候就有存在问题很正常，但有两点不能忽视，一个是"计算器"层面的问题，一个是"商业闭环"层面的问题。如果被无视，必是惨淡收场。
+
+「2026年：我的目标是挑战100天用AI批50份商业作业」，大家如果有商业议题，可找我报名！
+
+条件如下：
+
+|议题征集|
+
+1、商业议题征集，直接发送508827369@qq.com;
+2、根据投递情况,排列先后顺序,与案主私下沟通, 确保案例背后言之有物;
+3、排期线上交流或直播间交流，后期对案例紧密跟踪,协助落地。
+
+兰塞姆定律
+
+如果一个人的临终反思能够提前50年，世界上会有一半的人成为伟人！
+
+所以，为什么讲上面的故事？
+
+因为管理创投基金与做私董会这些年，看到了太多的年轻人凭着一腔热血就扎进了创业的洪流中，有的激起过水花，而大部分人已无人记得，甚至还背负了高额的负债，陷在生活的泥沼中。事后问他们为什么那么义无反顾，回答不过八字："机遇当前，趋势使然"。
+
+其实我也在寻找答案，从变现的角度来衡量，抓住了几次风口，收入颇丰，但我却没有成为被风口带飞的猪。为什么那？我一直在反思。
+
+直到最近，我才得到一个清晰的答案，因为我是普通人！
+
+所以，我的这套资料是写给普通人的，天才请绕行。
+
+思考题：创业到底是为了实现人生目标的以终为始？还是抢滩风口红利的以始定终？
+
+这个思考，请你看我全部资料后回答我！我的邮箱508827369@qq.com。每一封邮件我都会认真回复！
+
+我相信很多人会百度查询"兰塞姆定律"，这也是我的习惯，发现新的知识点绝不放过。
+
+如果你已经明白了兰塞姆定律，那么请抓住当下，别在50年后懊恼自己错过了时代的机遇。
+
+我学习完兰塞姆定律后，问了我自己下面的问题？
+
+*我的特长是什么，如何变现？
+*我的使命是什么，如何找到内驱力？
+*我事业的方向指向哪里，我工作的意义到底是什么？
+
+后来我又学习到一个知识点：天时、地利、人和后面还有两个字，就是"神助"，我们不要迷信，这里的神助大家可以简单的理解为第一性原理。这里不多赘述。
+
+接下来，我们的交流将围绕"第一性原理"展开。内容不烧脑，但需要你开悟！
+
+还有一句话：
+
+新时代来了，不要拿着旧地图去寻找新大陆、没有目标的船，所有的风都是逆风。`,
+    cover: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop',
+    date: '2025-01-15',
+    views: 1234,
+    status: 'published',
+  },
+  {
+    id: '2',
+    type: 'document',
+    title: '【闭环思维】摆脱单点能力陷阱',
+    icon: 'loop',
+    description: '很多创业者陷入单点能力的陷阱，只擅长某一方面而忽视了整体。闭环思维帮助你构建完整的商业闭环，实现可持续发展。',
+    content: '',
+    cover: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=400&fit=crop',
+    date: '2025-02-01',
+    views: 856,
+    status: 'published',
+  },
+  {
+    id: '3',
+    type: 'document',
+    title: '【创业刺客】趋势与红利是两回事',
+    icon: 'target',
+    description: '不要被表面的趋势迷惑。真正的红利往往隐藏在趋势背后。本文教你如何辨别趋势与真正的商业机会。',
+    content: '',
+    cover: 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=400&fit=crop',
+    date: '2025-02-10',
+    views: 2156,
+    status: 'published',
+  },
+  {
+    id: '4',
+    type: 'document',
+    title: '【"能力"过期了】给自己一次机会，20分钟找回特长',
+    icon: 'refresh',
+    description: '时代在变，曾经的特长可能不再适用。但每个人都有独特的潜力。本文带你找回你的核心竞争力。',
+    content: '',
+    cover: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop',
+    date: '2025-02-20',
+    views: 943,
+    status: 'published',
+  },
+  {
+    id: '5',
+    type: 'document',
+    title: '【干就完了】错位竞争5连招',
+    icon: 'zap',
+    description: '在红海中如何脱颖而出？错位竞争是关键。本文分享5个实用的错位竞争策略，助你找到蓝海市场。',
+    content: '',
+    cover: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=400&fit=crop',
+    date: '2025-03-01',
+    views: 1678,
+    status: 'published',
+  },
+];
+
 // ==================== 模拟数据库操作类 ====================
 export class MockDatabase {
   // 获取所有用户
@@ -1717,5 +1894,63 @@ export class MockDatabase {
       declaration.views = (declaration.views || 0) + 1;
     }
     return declaration;
+  }
+
+  // 获取所有文档
+  static getDocuments() {
+    return mockDocuments;
+  }
+
+  // 根据 ID 获取文档
+  static getDocumentById(id: string) {
+    return mockDocuments.find(doc => doc.id === id);
+  }
+
+  // 创建文档
+  static createDocument(documentData: any) {
+    const newId = (mockDocuments.length + 1).toString();
+    const newDocument = {
+      id: newId,
+      ...documentData,
+      views: 0,
+      status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    mockDocuments.push(newDocument);
+    return newDocument;
+  }
+
+  // 更新文档
+  static updateDocument(id: string, updates: any) {
+    const index = mockDocuments.findIndex(doc => doc.id === id);
+    if (index === -1) {
+      return null;
+    }
+    mockDocuments[index] = {
+      ...mockDocuments[index],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    return mockDocuments[index];
+  }
+
+  // 删除文档
+  static deleteDocument(id: string) {
+    const index = mockDocuments.findIndex(doc => doc.id === id);
+    if (index === -1) {
+      return false;
+    }
+    mockDocuments.splice(index, 1);
+    return true;
+  }
+
+  // 增加文档浏览量
+  static incrementDocumentViews(id: string) {
+    const document = mockDocuments.find(doc => doc.id === id);
+    if (document) {
+      document.views = (document.views || 0) + 1;
+    }
+    return document;
   }
 }
