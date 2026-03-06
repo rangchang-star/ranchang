@@ -1253,64 +1253,6 @@ export default function ProfilePage() {
               </Button>
             </div>
           </div>
-
-          {/* 参与活动 */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center space-x-2">
-                <h2 className="text-[26px] font-bold flex items-center">
-                  <span className="text-[rgba(96,165,250,0.6)]">参与</span>
-                  <span className="text-blue-400">活动</span>
-                  <button
-                    onClick={() => setActivitiesExpanded(!activitiesExpanded)}
-                    className="ml-2 p-0 text-blue-400 hover:text-blue-500 transition-colors bg-transparent border-none cursor-pointer"
-                    style={{ padding: 0, border: 'none', background: 'transparent' }}
-                  >
-                    {activitiesExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                  </button>
-                </h2>
-              </div>
-            </div>
-            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
-            <div className="space-y-3">
-              {activities.slice(0, activitiesExpanded ? activities.length : 2).map((activity) => (
-                <Link
-                  key={activity.id}
-                  href={`/activity/${activity.id}`}
-                  className="block p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
-                >
-                  {/* 标题和状态 */}
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-[18px] font-semibold text-gray-900 flex-1 mr-2 line-clamp-1">
-                      {activity.title}
-                    </h3>
-                    <Badge className="rounded-none bg-green-100 text-green-600 font-normal text-[13px] flex-shrink-0">
-                      {activity.status}
-                    </Badge>
-                  </div>
-                  {/* 描述 */}
-                  <p className="text-[15px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-2 mb-2">
-                    {activity.description}
-                  </p>
-                  {/* 时间、地点、人数 */}
-                  <div className="flex items-center space-x-3 text-[13px] text-[rgba(0,0,0,0.4)]">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{activity.date}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>{activity.location}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Users className="w-3.5 h-3.5" />
-                      <span>{activity.participants}人</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 
