@@ -576,71 +576,13 @@ export default function ProfilePage() {
         }
 
         // 动态生成menuItems，"我的宣告"数量从localStorage读取
-        const items: MenuItem[] = [
-          {
-            icon: Flame,
-            label: '我的宣告',
-            subtitle: `${count}条`,
-            action: 'view-declarations',
-            route: '/declarations',
-          },
-          {
-            icon: TrendingUp,
-            label: '探访记录',
-            subtitle: '1次',
-            action: 'view-visits',
-            route: '/visit/1',
-          },
-          {
-            icon: Award,
-            label: '数字资产',
-            subtitle: '2个',
-            action: 'view-assets',
-            route: '/assets',
-          },
-          {
-            icon: Briefcase,
-            label: '参与活动',
-            subtitle: '2个',
-            action: 'view-activities',
-            route: '/activities',
-          },
-        ];
+        const items: MenuItem[] = [];
 
         setMenuItems(items);
       } catch (error) {
         console.error('Failed to load declaration count:', error);
         // 如果加载失败，使用默认值
-        const items: MenuItem[] = [
-          {
-            icon: Flame,
-            label: '我的宣告',
-            subtitle: '0条',
-            action: 'view-declarations',
-            route: '/declarations',
-          },
-          {
-            icon: TrendingUp,
-            label: '探访记录',
-            subtitle: '1次',
-            action: 'view-visits',
-            route: '/visit/1',
-          },
-          {
-            icon: Award,
-            label: '数字资产',
-            subtitle: '2个',
-            action: 'view-assets',
-            route: '/assets',
-          },
-          {
-            icon: Briefcase,
-            label: '参与活动',
-            subtitle: '2个',
-            action: 'view-activities',
-            route: '/activities',
-          },
-        ];
+        const items: MenuItem[] = [];
         setMenuItems(items);
       }
     };
