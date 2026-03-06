@@ -301,7 +301,7 @@ export default function DiscoveryPage() {
             maxEnrollments: activity.capacity || 0,
             address: activity.address || '',
             teaFee: `aa茶水费${activity.teaFee || 0}元`,
-            status: activity.status === 'active' ? 'ongoing' : 'ended',
+            status: (activity.status === 'active' || activity.status === 'upcoming') ? 'ongoing' : 'ended',
             endTime: activity.endDate || '',
           }));
           setActivityItems(formattedActivities);
