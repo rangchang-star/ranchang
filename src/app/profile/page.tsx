@@ -1195,7 +1195,7 @@ export default function ProfilePage() {
                     key={topic.id}
                     type="button"
                     onClick={() => handleTopicSelect(topic.id)}
-                    className={`px-2 py-1.5 text-[16px] font-normal transition-colors flex items-center space-x-1 flex-1 min-w-[calc(25%-8px)] max-w-[calc(25%-8px)] justify-center ${
+                    className={`px-2 py-1.5 text-[15px] font-normal transition-colors flex items-center space-x-1 flex-1 min-w-[calc(25%-8px)] max-w-[calc(25%-8px)] justify-center ${
                       selectedTopic === topic.id
                         ? 'bg-[rgba(59,130,246,0.4)] text-white'
                         : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
@@ -1241,7 +1241,7 @@ export default function ProfilePage() {
                   value={consultationQuestion}
                   onChange={(e) => setConsultationQuestion(e.target.value)}
                   placeholder={consultationTopics.find(t => t.id === selectedTopic)?.placeholder}
-                  className="w-full px-3 py-2 text-[18px] border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[120px] resize-none"
+                  className="w-full px-3 py-2 text-[15px] placeholder:text-[rgba(0,0,0,0.3)] border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[120px] resize-none"
                 />
               </div>
               <Button
