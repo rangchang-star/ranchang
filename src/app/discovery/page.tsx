@@ -27,52 +27,6 @@ const dailyDeclaration = {
   duration: '3:15',
 };
 
-// 页面设置
-const [pageSettings, setPageSettings] = useState({
-  discovery: {
-    slogan: '发现光亮，点亮事业',
-    logo: '/logo-ranchang.png',
-    music: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-    backgroundImage: '/discovery-bg.jpg',
-  },
-});
-
-// 音频URL - 从API获取
-const [audioUrl, setAudioUrl] = useState('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
-
-// 从API加载页面设置
-useEffect(() => {
-  const loadSettings = async () => {
-    try {
-      // 先尝试从localStorage读取
-      const localSettings = localStorage.getItem('pageSettings');
-      if (localSettings) {
-        const parsed = JSON.parse(localSettings);
-        setPageSettings(parsed);
-        if (parsed.discovery?.music) {
-          setAudioUrl(parsed.discovery.music);
-        }
-      } else {
-        // 如果localStorage没有，则从API获取
-        const response = await fetch('/api/settings');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setPageSettings(data.data);
-            if (data.data.discovery?.music) {
-              setAudioUrl(data.data.discovery.music);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('加载设置失败:', error);
-    }
-  };
-
-  loadSettings();
-}, []);
-
 // 大鱼的认知库文档数据
 const mockDocuments = [
   {
@@ -244,6 +198,20 @@ export default function DiscoveryPage() {
   const declarationAudioRefs = useRef<Record<string, HTMLAudioElement>>({});
   const [discoveryBg, setDiscoveryBg] = useState<string>('/discovery-bg.jpg');
   const router = useRouter();
+
+  // 页面设置state
+  const [pageSettings, setPageSettings] = useState({
+    discovery: {
+      slogan: '发现光亮，点亮事业',
+      logo: '/logo-ranchang.png',
+      music: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+      backgroundImage: '/discovery-bg.jpg',
+    },
+  });
+
+  // 音频URL state
+  const [audioUrl, setAudioUrl] = useState('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+
   const [showAssetsModal, setShowAssetsModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<typeof mockDocuments[0] | null>(null);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
@@ -254,6 +222,39 @@ export default function DiscoveryPage() {
   const [declarationItems, setDeclarationItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 从API加载页面设置
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        // 先尝试从localStorage读取
+        const localSettings = localStorage.getItem('pageSettings');
+        if (localSettings) {
+          const parsed = JSON.parse(localSettings);
+          setPageSettings(parsed);
+          if (parsed.discovery?.music) {
+            setAudioUrl(parsed.discovery.music);
+          }
+        } else {
+          // 如果localStorage没有，则从API获取
+          const response = await fetch('/api/settings');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+              setPageSettings(data.data);
+              if (data.data.discovery?.music) {
+                setAudioUrl(data.data.discovery.music);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('加载设置失败:', error);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   // 从 API 加载数据
   useEffect(() => {

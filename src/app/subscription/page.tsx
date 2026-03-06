@@ -39,18 +39,6 @@ const defaultMediaConfig = {
   },
 };
 
-// Tab描述文字（从后台API加载）
-const [tabDescriptions, setTabDescriptions] = useState({
-  training: '每次探访都是商业思维的激烈碰撞，更是一场关于财务收入与使命践行的重新审视....',
-  consultation: 'AI加油圈，为期一年的AI环境高效浸泡池，每周一聚，要求全员产出AI数字资产',
-});
-
-// 媒体配置（从后台API加载）
-const [mediaConfig, setMediaConfig] = useState({
-  visit: defaultMediaConfig.visit,
-  aiCircle: defaultMediaConfig.aiCircle,
-});
-
 // 沙龙内容
 const salon = {
   id: '1',
@@ -95,6 +83,18 @@ const salon = {
 
 export default function SubscriptionPage() {
   const [activeTab, setActiveTab] = useState<'training' | 'consultation'>('training');
+
+  // Tab描述文字（从后台API加载）
+  const [tabDescriptions, setTabDescriptions] = useState({
+    training: '每次探访都是商业思维的激烈碰撞，更是一场关于财务收入与使命践行的重新审视....',
+    consultation: 'AI加油圈，为期一年的AI环境高效浸泡池，每周一聚，要求全员产出AI数字资产',
+  });
+
+  // 媒体配置（从后台API加载）
+  const [mediaConfig, setMediaConfig] = useState({
+    visit: defaultMediaConfig.visit,
+    aiCircle: defaultMediaConfig.aiCircle,
+  });
 
   // 从API加载页面设置
   useEffect(() => {
