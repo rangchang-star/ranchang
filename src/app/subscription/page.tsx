@@ -464,7 +464,7 @@ export default function SubscriptionPage() {
                 </div>
 
                 {/* 介绍 */}
-                <p className="text-[17px] text-[rgba(0,0,0,0.25)] leading-relaxed mb-4">
+                <p className="text-[17px] font-light text-[rgba(0,0,0,0.7)] leading-relaxed mb-4">
                   {salon.introduction}
                 </p>
 
