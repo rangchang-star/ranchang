@@ -42,8 +42,8 @@ const defaultMediaConfig = {
 // 沙龙内容
 const salon = {
   id: '1',
-  period: '2026期',
-  introduction: '定期举行的深度沙龙，汇集行业精英，共同探讨AI时代的商业机会与挑战，通过小组协作产出高价值的数字资产。',
+  period: '2026年度AI 圈',
+  introduction: '定期相聚深度沟通，各行伙伴共同探讨AI时代的商业机会与最新热点方向，组织小组协作，人人产出高价值的数字资产。',
   duration: '一年',
   schedule: '每周五 19:00',
   limit: '限15人',
@@ -447,8 +447,6 @@ export default function SubscriptionPage() {
                   <div className="flex items-center space-x-3">
                     <h3 className="text-[22px] font-light text-gray-900">{salon.period}</h3>
                     <div className="flex items-center space-x-2 text-[12px] text-[rgba(0,0,0,0.4)]">
-                      <span>{salon.duration}</span>
-                      <span>·</span>
                       <span>{salon.schedule}</span>
                       <span>·</span>
                       <span>{salon.limit}</span>
