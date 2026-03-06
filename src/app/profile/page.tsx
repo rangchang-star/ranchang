@@ -1263,7 +1263,8 @@ export default function ProfilePage() {
                   <span className="text-blue-400">活动</span>
                   <button
                     onClick={() => setActivitiesExpanded(!activitiesExpanded)}
-                    className="ml-2 text-blue-400 hover:text-blue-500 transition-colors"
+                    className="ml-2 p-0 text-blue-400 hover:text-blue-500 transition-colors bg-transparent border-none cursor-pointer"
+                    style={{ padding: 0, border: 'none', background: 'transparent' }}
                   >
                     {activitiesExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                   </button>
