@@ -8,7 +8,9 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users } from 'lucide-react';
+import { LoginModal } from '@/components/login-modal';
+import { useAuth } from '@/contexts/auth-context';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogIn, LogOut } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -316,6 +318,10 @@ const getAssessmentIcon = (name: string) => {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { user, isLoggedIn, login, logout } = useAuth();
+  
+  // 登录模态框状态
+  const [showLoginModal, setShowLoginModal] = useState(false);
   
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -617,33 +623,67 @@ export default function ProfilePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white pb-14">
-      {/* 手机H5宽度 */}
-      <div className="w-full max-w-md mx-auto">
-        <div className="px-5 pt-[10px] pb-4 space-y-8">
-          {/* 顶部导航 */}
-          <div className="flex items-center justify-between">
-            <h1 className="text-[31px] font-light text-gray-900">个人中心</h1>
-            <div className="flex items-center space-x-2">
-              {/* 消息按钮 */}
-              <button
-                className="relative p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors"
-                onClick={() => setShowNotifications(!showNotifications)}
-              >
-                <Bell className="w-5 h-5 text-blue-400" />
-                {/* 红点 */}
-                {unreadCount > 0 ? (
-                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
-                ) : (
-                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-gray-300 rounded-full border-2 border-white" />
-                )}
-              </button>
-              {/* 设置按钮 */}
-              <Link href="/settings" className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
-                <Settings className="w-5 h-5 text-blue-400" />
-              </Link>
+    <>
+      {/* 登录模态框 */}
+      <LoginModal 
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={login}
+      />
+
+      {/* 未登录状态 */}
+      {!isLoggedIn ? (
+        <div className="min-h-screen bg-white pb-14 flex flex-col items-center justify-center">
+          <div className="w-full max-w-md mx-auto px-5 text-center">
+            <div className="mb-8">
+              <h1 className="text-[31px] font-light text-gray-900 mb-4">个人中心</h1>
+              <p className="text-[17px] text-[rgba(0,0,0,0.6)]">
+                请登录以查看您的个人信息
+              </p>
             </div>
+
+            <Button
+              onClick={() => setShowLoginModal(true)}
+              className="w-full bg-blue-400 hover:bg-blue-500 text-white text-[18px] py-6"
+            >
+              <LogIn className="w-5 h-5 mr-2" />
+              登录
+            </Button>
           </div>
+        </div>
+      ) : (
+        /* 已登录状态 */
+        <div className="min-h-screen bg-white pb-14">
+          {/* 手机H5宽度 */}
+          <div className="w-full max-w-md mx-auto">
+            <div className="px-5 pt-[10px] pb-4 space-y-8">
+              {/* 顶部导航 */}
+              <div className="flex items-center justify-between">
+                <h1 className="text-[31px] font-light text-gray-900">个人中心</h1>
+                <div className="flex items-center space-x-2">
+                  {/* 消息按钮 */}
+                  <button
+                    className="relative p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors"
+                    onClick={() => setShowNotifications(!showNotifications)}
+                  >
+                    <Bell className="w-5 h-5 text-blue-400" />
+                    {/* 红点 */}
+                    {unreadCount > 0 ? (
+                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                    ) : (
+                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-gray-300 rounded-full border-2 border-white" />
+                    )}
+                  </button>
+                  {/* 退出登录按钮 */}
+                  <button
+                    onClick={logout}
+                    className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors"
+                    title="退出登录"
+                  >
+                    <LogOut className="w-5 h-5 text-red-400" />
+                  </button>
+                </div>
+              </div>
 
           {/* 消息弹窗 */}
           {showNotifications && (
@@ -1495,5 +1535,7 @@ export default function ProfilePage() {
       {/* 底部导航 */}
       <BottomNav />
     </div>
+      )}
+    </>
   );
 }

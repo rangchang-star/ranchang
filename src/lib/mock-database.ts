@@ -5,8 +5,8 @@
 export const mockUsers = [
   {
     id: 1,
-    phone: '138****0001',
-    password: '$2b$10$abc123...', // bcrypt 加密的密码
+    phone: '13023699913',
+    password: '',
     nickname: '张明',
     name: '张明',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',

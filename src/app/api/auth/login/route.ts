@@ -1,66 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/supabase/connection';
-import { users } from '@/storage/database/supabase/schema';
-import { eq } from 'drizzle-orm';
+import { MockDatabase } from '@/lib/mock-database';
 import bcrypt from 'bcrypt';
 
+// POST - 用户登录
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { phone, password } = body;
 
-    if (!phone || !password) {
+    // 验证必填字段
+    if (!phone) {
       return NextResponse.json({
         success: false,
-        error: '手机号和密码不能为空'
+        error: '手机号不能为空'
       }, { status: 400 });
     }
 
-    // 查找用户
-    const result = await db.select().from(users).where(eq(users.phone, phone));
+    // 从模拟数据库获取用户
+    const users = MockDatabase.getUsers();
+    const user = users.find(u => u.phone === phone);
 
-    if (result.length === 0) {
+    // 用户不存在
+    if (!user) {
       return NextResponse.json({
         success: false,
-        error: '手机号或密码错误'
+        error: '用户不存在'
       }, { status: 401 });
     }
-
-    const user = result[0];
 
     // 验证密码
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      return NextResponse.json({
-        success: false,
-        error: '手机号或密码错误'
-      }, { status: 401 });
+    // 如果密码为空，则允许登录（特殊处理）
+    if (password && password !== '') {
+      // 使用 bcrypt 验证密码
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return NextResponse.json({
+          success: false,
+          error: '密码错误'
+        }, { status: 401 });
+      }
     }
 
-    // 检查用户状态
-    if (user.status !== 'active') {
-      return NextResponse.json({
-        success: false,
-        error: '账号已被禁用'
-      }, { status: 403 });
-    }
-
-    // 不返回密码字段
+    // 登录成功，返回用户信息（不包含密码）
     const { password: _, ...userWithoutPassword } = user;
 
     return NextResponse.json({
       success: true,
       data: {
         user: userWithoutPassword,
-        token: 'mock-token-' + Date.now() // 实际项目中应该使用JWT
+        message: '登录成功'
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('登录失败:', error);
     return NextResponse.json({
       success: false,
-      error: '登录失败'
+      error: '登录失败，请重试'
     }, { status: 500 });
   }
 }

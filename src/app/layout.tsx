@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inspector } from 'react-dev-inspector';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/auth-context';
 import LoginPromptModal from '@/components/login-prompt-modal';
 
 const inter = Inter({
@@ -56,7 +56,6 @@ export default function RootLayout({
       <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
           {children}
-          <LoginPromptModal />
         </AuthProvider>
       </body>
     </html>
