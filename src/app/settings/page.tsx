@@ -2,18 +2,35 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronRight, Shield, HelpCircle, LogOut, LayoutDashboard } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Shield, HelpCircle, LogOut, LayoutDashboard, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { user, isLoggedIn, logout } = useAuth();
+  const router = useRouter();
+
+  // 如果未登录，重定向到登录
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500">请先登录</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogout = () => {
     if (confirm('确定要退出登录吗？')) {
       setIsLoggingOut(true);
-      // 这里应该调用退出登录API
-      console.log('退出登录');
-      window.location.href = '/login';
+      // 调用 AuthProvider 的 logout 方法
+      logout();
+      // 重定向到首页
+      router.push('/');
     }
   };
 
@@ -34,6 +51,22 @@ export default function SettingsPage() {
         </div>
 
         <div className="px-5 space-y-6">
+          {/* 用户信息卡片 */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <Avatar className="w-12 h-12">
+                <AvatarImage src={user?.avatar} alt={user?.name} />
+                <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h3 className="text-[15px] font-semibold text-gray-900">{user?.name || user?.nickname}</h3>
+                <p className="text-[13px] text-[rgba(0,0,0,0.5)]">{user?.phone}</p>
+              </div>
+              <div className="text-[11px] px-2 py-1 bg-blue-100 text-blue-600 rounded">
+                ID: {user?.id}
+              </div>
+            </div>
+          </div>
           {/* 账号设置 */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
@@ -41,7 +74,7 @@ export default function SettingsPage() {
               <h2 className="text-[15px] font-semibold text-gray-900">账号设置</h2>
             </div>
             <div className="divide-y divide-[rgba(0,0,0,0.05)]">
-              <Link href="/profile/edit" className="flex items-center justify-between py-4 hover:bg-[rgba(0,0,0,0.02)]">
+              <Link href={`/profile/edit?id=${user?.id}`} className="flex items-center justify-between py-4 hover:bg-[rgba(0,0,0,0.02)]">
                 <span className="text-[13px] text-gray-900">编辑个人资料</span>
                 <ChevronRight className="w-5 h-5 text-[rgba(0,0,0,0.3)]" />
               </Link>
