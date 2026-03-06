@@ -8,9 +8,8 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LoginModal } from '@/components/login-modal';
 import { useAuth } from '@/contexts/auth-context';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogIn, LogOut } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -299,10 +298,7 @@ const getAssessmentIcon = (name: string) => {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isLoggedIn, login, logout } = useAuth();
-  
-  // 登录模态框状态
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user, isLoggedIn, logout } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -645,35 +641,17 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* 登录模态框 */}
-      <LoginModal 
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onLoginSuccess={login}
-      />
-
-      {/* 未登录状态 */}
-      {!isLoggedIn ? (
-        <div className="min-h-screen bg-white pb-14 flex flex-col items-center justify-center">
-          <div className="w-full max-w-md mx-auto px-5 text-center">
-            <div className="mb-8">
-              <h1 className="text-[31px] font-light text-gray-900 mb-4">个人中心</h1>
-              <p className="text-[17px] text-[rgba(0,0,0,0.6)]">
-                请登录以查看您的个人信息
-              </p>
-            </div>
-
-            <Button
-              onClick={() => setShowLoginModal(true)}
-              className="w-full bg-blue-400 hover:bg-blue-500 text-white text-[18px] py-6"
-            >
-              <LogIn className="w-5 h-5 mr-2" />
-              登录
-            </Button>
+      {/* 未登录状态 - 重定向到登录页面 */}
+      {!isLoggedIn && (
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-500">正在跳转到登录页面...</p>
           </div>
         </div>
-      ) : (
-        /* 已登录状态 */
+      )}
+
+      {/* 已登录状态 */}
+      {isLoggedIn && (
         <div className="min-h-screen bg-white pb-14">
           {/* 手机H5宽度 */}
           <div className="w-full max-w-md mx-auto">

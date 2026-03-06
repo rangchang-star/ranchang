@@ -3,7 +3,8 @@ import { Inspector } from 'react-dev-inspector';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
-import LoginPromptModal from '@/components/login-prompt-modal';
+import { LoginModalProvider } from '@/contexts/login-modal-context-v2';
+import { GlobalLoginModal } from '@/components/global-login-modal';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -46,6 +47,21 @@ export const metadata: Metadata = {
   },
 };
 
+function RootLayoutContent({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <AuthProvider>
+      <LoginModalProvider>
+        <GlobalLoginModal />
+        {children}
+      </LoginModalProvider>
+    </AuthProvider>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -54,9 +70,9 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={`${inter.variable} antialiased`}>
-        <AuthProvider>
+        <RootLayoutContent>
           {children}
-        </AuthProvider>
+        </RootLayoutContent>
       </body>
     </html>
   );
