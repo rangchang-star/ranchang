@@ -291,12 +291,19 @@ function ProfileEditContent() {
   };
 
   const handleAddCustomResource = () => {
-    if (customResource && customResource.trim() && !selectedResources.includes(customResource.trim())) {
+    const trimmed = customResource.trim();
+    if (trimmed && !selectedResources.includes(trimmed)) {
+      // 检查长度限制（最多4个汉字）
+      if (trimmed.length > 4) {
+        alert('资源标签最多4个汉字');
+        return;
+      }
+      // 最多选择三个
       if (selectedResources.length >= 3) {
         alert('资源标签最多选择三个');
         return;
       }
-      setSelectedResources([...selectedResources, customResource.trim()]);
+      setSelectedResources([...selectedResources, trimmed]);
       setCustomResource('');
     }
   };
@@ -319,12 +326,19 @@ function ProfileEditContent() {
   };
 
   const handleAddCustomAbility = () => {
-    if (customAbility && customAbility.trim() && !selectedAbilityTags.includes(customAbility.trim())) {
+    const trimmed = customAbility.trim();
+    if (trimmed && !selectedAbilityTags.includes(trimmed)) {
+      // 检查长度限制（最多4个汉字）
+      if (trimmed.length > 4) {
+        alert('能力标签最多4个汉字');
+        return;
+      }
+      // 最多选择三个
       if (selectedAbilityTags.length >= 3) {
         alert('能力标签最多选择三个');
         return;
       }
-      setSelectedAbilityTags([...selectedAbilityTags, customAbility.trim()]);
+      setSelectedAbilityTags([...selectedAbilityTags, trimmed]);
       setCustomAbility('');
     }
   };
@@ -769,8 +783,9 @@ function ProfileEditContent() {
                 type="text"
                 value={customResource}
                 onChange={(e) => setCustomResource(e.target.value)}
+                maxLength={4}
                 className="flex-1 px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
-                placeholder="自定义资源标签"
+                placeholder="自定义资源标签（最多4字）"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     handleAddCustomResource();
@@ -830,8 +845,9 @@ function ProfileEditContent() {
                 type="text"
                 value={customAbility}
                 onChange={(e) => setCustomAbility(e.target.value)}
+                maxLength={4}
                 className="flex-1 px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
-                placeholder="自定义能力标签"
+                placeholder="自定义能力标签（最多4字）"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     handleAddCustomAbility();
