@@ -27,12 +27,6 @@ const industryTypes = [
   '资本运作',
 ];
 
-// Tab描述文字（与后台配置的slogan保持一致）
-const tabDescriptions = {
-  training: '每次探访都是商业思维的激烈碰撞，更是一场关于财务收入与使命践行的重新审视....',
-  consultation: 'AI加油圈，为期一年的AI环境高效浸泡池，每周一聚，要求全员产出AI数字资产',
-};
-
 // 默认媒体配置（实际应从后台API获取）
 const defaultMediaConfig = {
   visit: {
@@ -44,6 +38,18 @@ const defaultMediaConfig = {
     url: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&h=340&fit=crop',
   },
 };
+
+// Tab描述文字（从后台API加载）
+const [tabDescriptions, setTabDescriptions] = useState({
+  training: '每次探访都是商业思维的激烈碰撞，更是一场关于财务收入与使命践行的重新审视....',
+  consultation: 'AI加油圈，为期一年的AI环境高效浸泡池，每周一聚，要求全员产出AI数字资产',
+});
+
+// 媒体配置（从后台API加载）
+const [mediaConfig, setMediaConfig] = useState({
+  visit: defaultMediaConfig.visit,
+  aiCircle: defaultMediaConfig.aiCircle,
+});
 
 // 沙龙内容
 const salon = {
@@ -89,6 +95,49 @@ const salon = {
 
 export default function SubscriptionPage() {
   const [activeTab, setActiveTab] = useState<'training' | 'consultation'>('training');
+
+  // 从API加载页面设置
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        // 先尝试从localStorage读取
+        const localSettings = localStorage.getItem('pageSettings');
+        if (localSettings) {
+          const parsed = JSON.parse(localSettings);
+          if (parsed.ignition) {
+            setTabDescriptions({
+              training: parsed.ignition.visitSlogan,
+              consultation: parsed.ignition.aiCircleSlogan,
+            });
+            setMediaConfig({
+              visit: parsed.ignition.visitMedia || defaultMediaConfig.visit,
+              aiCircle: parsed.ignition.aiCircleMedia || defaultMediaConfig.aiCircle,
+            });
+          }
+        } else {
+          // 如果localStorage没有，则从API获取
+          const response = await fetch('/api/settings');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data.ignition) {
+              setTabDescriptions({
+                training: data.data.ignition.visitSlogan,
+                consultation: data.data.ignition.aiCircleSlogan,
+              });
+              setMediaConfig({
+                visit: data.data.ignition.visitMedia || defaultMediaConfig.visit,
+                aiCircle: data.data.ignition.aiCircleMedia || defaultMediaConfig.aiCircle,
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('加载设置失败:', error);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   // 视频播放控制状态
   const [playingVisitVideo, setPlayingVisitVideo] = useState(false);

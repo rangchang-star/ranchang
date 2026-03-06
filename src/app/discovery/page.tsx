@@ -15,9 +15,6 @@ import {
 } from '@/components/ui/dialog';
 import { BottomNav } from '@/components/bottom-nav';
 
-// 音频URL - 奇异恩典纯乐器（使用公共资源）
-const AMAZING_GRACE_AUDIO = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-
 // 活动推荐（已改为从 API 加载）
 
 // 高燃宣告（已改为从 API 加载）
@@ -29,6 +26,52 @@ const dailyDeclaration = {
   title: '每日宣告：重塑自我，迎接新挑战',
   duration: '3:15',
 };
+
+// 页面设置
+const [pageSettings, setPageSettings] = useState({
+  discovery: {
+    slogan: '发现光亮，点亮事业',
+    logo: '/logo-ranchang.png',
+    music: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    backgroundImage: '/discovery-bg.jpg',
+  },
+});
+
+// 音频URL - 从API获取
+const [audioUrl, setAudioUrl] = useState('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+
+// 从API加载页面设置
+useEffect(() => {
+  const loadSettings = async () => {
+    try {
+      // 先尝试从localStorage读取
+      const localSettings = localStorage.getItem('pageSettings');
+      if (localSettings) {
+        const parsed = JSON.parse(localSettings);
+        setPageSettings(parsed);
+        if (parsed.discovery?.music) {
+          setAudioUrl(parsed.discovery.music);
+        }
+      } else {
+        // 如果localStorage没有，则从API获取
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setPageSettings(data.data);
+            if (data.data.discovery?.music) {
+              setAudioUrl(data.data.discovery.music);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('加载设置失败:', error);
+    }
+  };
+
+  loadSettings();
+}, []);
 
 // 大鱼的认知库文档数据
 const mockDocuments = [
@@ -369,7 +412,7 @@ export default function DiscoveryPage() {
   };
 
   useEffect(() => {
-    const audio = new Audio(AMAZING_GRACE_AUDIO);
+    const audio = new Audio(audioUrl);
     audio.loop = true;
     audio.volume = 0.3;
     audioRef.current = audio;
@@ -411,7 +454,7 @@ export default function DiscoveryPage() {
               className="relative w-[126px] h-[126px] flex items-center justify-center transition-colors"
             >
               <img
-                src="/logo-ranchang.png"
+                src={pageSettings.discovery.logo}
                 alt="燃场Logo"
                 className="w-[90px] h-[90px] object-contain"
               />
@@ -430,7 +473,7 @@ export default function DiscoveryPage() {
           {/* Slogan - 蓝色加大字号，加粗 */}
           <div className="px-5 pb-4">
             <p className="text-[16px] font-bold text-blue-400 leading-relaxed">
-              "燃场app"的使命：建造35岁+的高能信息环境、孵化可落地的高现金流平台。
+              {pageSettings.discovery.slogan}
             </p>
           </div>
 
