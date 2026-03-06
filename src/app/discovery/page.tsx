@@ -896,7 +896,7 @@ export default function DiscoveryPage() {
 
               {modalType === 'activities' && (
                 <div>
-                  {activityItems.slice(0, 3).map((item) => (
+                  {activityItems.map((item) => (
                     <div
                       key={item.id}
                       onClick={() => {
@@ -913,7 +913,7 @@ export default function DiscoveryPage() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      
+
                       {/* 内容 */}
                       <div className="flex-1 min-w-0">
                         <h3 className="text-[18px] text-gray-900 leading-relaxed line-clamp-2">{item.title}</h3>
