@@ -34,7 +34,6 @@ const mockUserProfile = {
   companyName: '',
   companyScale: '',
   companyPosition: '',
-  belief: '',
   purpose: '人找事', // 人找事/事找人/纯交流
   industry: '制造业',
   industryTags: ['供应链', '智能制造', '数字化转型'],
@@ -146,7 +145,6 @@ function ProfileEditContent() {
       companyName: user.company || '',
       companyScale: '',
       companyPosition: user.position || '',
-      belief: '',
       purpose: getPurposeFromTagStamp(user.tagStamp),
       industry: user.industry || mockUserProfile.industry,
       industryTags: user.abilityTags || mockUserProfile.industryTags,
@@ -638,21 +636,6 @@ function ProfileEditContent() {
                   className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
                   placeholder="请输入公司职位"
                 />
-              </div>
-              <div>
-                <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">资源能力标签</label>
-                <select
-                  value={profile.belief}
-                  onChange={(e) => setProfile({ ...profile, belief: e.target.value })}
-                  className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.4)]"
-                >
-                  <option value="">请选择资源能力标签</option>
-                  {abilityTags.map((tag) => (
-                    <option key={tag} value={tag}>
-                      {tag}
-                    </option>
-                  ))}
-                </select>
               </div>
             </div>
           </div>
