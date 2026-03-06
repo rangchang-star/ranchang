@@ -847,7 +847,7 @@ export default function DiscoveryPage() {
                       key={item.id}
                       onClick={() => {
                         setShowModal(false);
-                        router.push(`/ability/${item.id}`);
+                        router.push(`/connection/${item.id}`);
                       }}
                       className="relative flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                     >
