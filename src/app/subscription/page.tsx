@@ -15,7 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Clock, Play, PlayCircle, TrendingUp, Heart, Mic, Users, X, PauseCircle } from 'lucide-react';
+import { Clock, Play, PlayCircle, TrendingUp, Heart, Mic, Users, X, PauseCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
 // 商业咨询行业标签
 const industryTypes = [
@@ -430,9 +430,9 @@ export default function SubscriptionPage() {
                   {visits.length > 2 && (
                     <button
                       onClick={() => setVisitsExpanded(!visitsExpanded)}
-                      className="w-full py-2.5 text-center text-[15px] text-blue-400 hover:text-blue-500 transition-colors"
+                      className="w-full py-2.5 flex items-center justify-center text-blue-400 hover:text-blue-500 transition-colors"
                     >
-                      {visitsExpanded ? '收起' : '查看更多'}
+                      {visitsExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </button>
                   )}
                 </React.Fragment>
