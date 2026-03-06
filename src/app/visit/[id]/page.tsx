@@ -54,23 +54,7 @@ export default function VisitDetailPage() {
     loadVisit();
   }, [params.id]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
-        <div className="text-gray-400">加载中...</div>
-      </div>
-    );
-  }
-
-  if (error || !visit) {
-    return (
-      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
-        <div className="text-red-400">{error || '探访信息不存在'}</div>
-      </div>
-    );
-  }
-
-  // 申请对话框状态
+  // 申请对话框状态（必须在条件判断之前）
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -91,6 +75,22 @@ export default function VisitDetailPage() {
     problem: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
+        <div className="text-gray-400">加载中...</div>
+      </div>
+    );
+  }
+
+  if (error || !visit) {
+    return (
+      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
+        <div className="text-red-400">{error || '探访信息不存在'}</div>
+      </div>
+    );
+  }
 
   // 从本地存储同步用户信息
   const loadUserInfo = () => {

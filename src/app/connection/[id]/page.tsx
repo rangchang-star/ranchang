@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Heart, MessageCircle, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,12 @@ export default function ConnectionDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
+
+  // 使用 useMemo 计算 tagStamp，确保在条件渲染之前计算
+  const tagStamp = useMemo(() => {
+    if (!user) return null;
+    return tagStampMap[user.tagStamp as keyof typeof tagStampMap];
+  }, [user]);
 
   // 从 API 加载用户数据
   useEffect(() => {
@@ -83,7 +89,7 @@ export default function ConnectionDetailPage() {
 
   const handleShare = () => {
     // 实现分享功能
-    if (navigator.share) {
+    if (navigator.share && user) {
       navigator.share({
         title: user.name,
         text: user.need,
@@ -91,8 +97,6 @@ export default function ConnectionDetailPage() {
       });
     }
   };
-
-  const tagStamp = tagStampMap[user.tagStamp as keyof typeof tagStampMap];
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -115,7 +119,7 @@ export default function ConnectionDetailPage() {
           {isLoading && (
             <div className="text-center py-20 text-gray-400">加载中...</div>
           )}
-          
+
           {error && (
             <div className="text-center py-20 text-red-400">{error}</div>
           )}
