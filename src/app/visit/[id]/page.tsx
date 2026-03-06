@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Calendar, Users, Star, Share2 } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Calendar, MapPin, Users, Clock, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { useParams } from 'next/navigation';
 
 export default function VisitDetailPage() {
@@ -21,6 +21,24 @@ export default function VisitDetailPage() {
   const [visit, setVisit] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // 申请对话框状态
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    wechat: '',
+  });
+  const [errors, setErrors] = useState({
+    name: '',
+    phone: '',
+    wechat: '',
+  });
 
   // 从 API 加载探访数据
   useEffect(() => {
@@ -54,27 +72,137 @@ export default function VisitDetailPage() {
     loadVisit();
   }, [params.id]);
 
-  // 申请对话框状态（必须在条件判断之前）
-  const [applyDialogOpen, setApplyDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    wechat: '',
-    company: '',
-    position: '',
-    scale: '',
-    industry: '',
-    belief: '',
-    problem: '',
-  });
-  const [errors, setErrors] = useState({
-    name: '',
-    phone: '',
-    wechat: '',
-    industry: '',
-    problem: '',
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // 音频播放控制
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+      audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+      audioRef.current.addEventListener('ended', handleEnded);
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+        audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        audioRef.current.removeEventListener('ended', handleEnded);
+      }
+    };
+  }, []);
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+      setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setProgress(0);
+    setCurrentTime(0);
+  };
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const seekTime = (parseFloat(e.target.value) / 100) * duration;
+    if (audioRef.current) {
+      audioRef.current.currentTime = seekTime;
+    }
+    setCurrentTime(seekTime);
+    setProgress(parseFloat(e.target.value));
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleOpenDialog = () => {
+    setJoinDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setJoinDialogOpen(false);
+    setFormData({ name: '', phone: '', wechat: '' });
+    setErrors({ name: '', phone: '', wechat: '' });
+  };
+
+  const validatePhone = (phone: string): boolean => {
+    const phoneRegex = /^1[3-9]\d{9}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors = {
+      name: '',
+      phone: '',
+      wechat: '',
+    };
+
+    let isValid = true;
+
+    if (!formData.name.trim()) {
+      newErrors.name = '请输入姓名';
+      isValid = false;
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = '请输入电话号码';
+      isValid = false;
+    } else if (!validatePhone(formData.phone)) {
+      newErrors.phone = '请输入正确的11位手机号码';
+      isValid = false;
+    }
+
+    if (!formData.wechat.trim()) {
+      newErrors.wechat = '请输入微信号';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleInputChange = (field: keyof typeof formData) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [field]: e.target.value,
+    });
+    if (errors[field]) {
+      setErrors({
+        ...errors,
+        [field]: '',
+      });
+    }
+  };
+
+  const handleSubmit = () => {
+    if (validateForm()) {
+      console.log('提交申请:', formData);
+      setJoinDialogOpen(false);
+      setFormData({ name: '', phone: '', wechat: '' });
+      setErrors({ name: '', phone: '', wechat: '' });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -92,479 +220,334 @@ export default function VisitDetailPage() {
     );
   }
 
-  // 从本地存储同步用户信息
-  const loadUserInfo = () => {
-    try {
-      const userInfo = localStorage.getItem('userInfo');
-      if (userInfo) {
-        const info = JSON.parse(userInfo);
-        setFormData((prev) => ({
-          ...prev,
-          name: info.name || prev.name,
-          phone: info.phone || prev.phone,
-          wechat: info.wechat || prev.wechat,
-          company: info.company || prev.company,
-          position: info.position || prev.position,
-          scale: info.scale || prev.scale,
-          industry: info.industry || prev.industry,
-          belief: info.belief || prev.belief,
-        }));
-      }
-    } catch (error) {
-      console.error('加载用户信息失败:', error);
-    }
-  };
-
-  // 打开对话框时加载用户信息
-  const handleOpenDialog = () => {
-    loadUserInfo();
-    setApplyDialogOpen(true);
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: `探访记录 - ${visit.target.name}`,
-        text: visit.outcome,
-        url: window.location.href,
-      });
-    }
-  };
-
-  // 表单验证
-  const validateForm = (): boolean => {
-    const newErrors = {
-      name: '',
-      phone: '',
-      wechat: '',
-      industry: '',
-      problem: '',
-    };
-
-    if (!formData.name.trim()) {
-      newErrors.name = '请输入姓名';
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = '请输入电话号码';
-    } else if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
-      newErrors.phone = '请输入正确的手机号码';
-    }
-
-    if (!formData.wechat.trim()) {
-      newErrors.wechat = '请输入微信号';
-    }
-
-    if (!formData.industry.trim()) {
-      newErrors.industry = '请输入行业';
-    }
-
-    if (!formData.problem.trim()) {
-      newErrors.problem = '请填写需要解决的问题';
-    } else if (formData.problem.trim().length < 10) {
-      newErrors.problem = '问题描述至少需要10个字';
-    }
-
-    setErrors(newErrors);
-    return Object.values(newErrors).every((error) => error === '');
-  };
-
-  // 处理表单提交
-  const handleApplySubmit = () => {
-    if (validateForm()) {
-      setIsSubmitting(true);
-
-      // 模拟提交到后台
-      setTimeout(() => {
-        setIsSubmitting(false);
-
-        // 保存用户信息到本地存储，以便下次自动填充
-        const userInfo = {
-          name: formData.name,
-          phone: formData.phone,
-          wechat: formData.wechat,
-          company: formData.company,
-          position: formData.position,
-          scale: formData.scale,
-          industry: formData.industry,
-          belief: formData.belief,
-        };
-        localStorage.setItem('userInfo', JSON.stringify(userInfo));
-
-        setApplyDialogOpen(false);
-
-        // 重置表单（保留加载的用户信息）
-        setFormData((prev) => ({
-          ...prev,
-          problem: '',
-        }));
-        setErrors({
-          name: '',
-          phone: '',
-          wechat: '',
-          industry: '',
-          problem: '',
-        });
-
-        // 模拟添加通知到本地存储
-        try {
-          const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
-          const newNotification = {
-            id: `visit-apply-${Date.now()}`,
-            type: 'info',
-            title: '被访申请已提交',
-            message: `您已提交被访申请，请等待审核，我们会尽快与您联系`,
-            time: new Date().toLocaleString('zh-CN'),
-            read: false,
-          };
-          localStorage.setItem('notifications', JSON.stringify([newNotification, ...notifications]));
-        } catch (error) {
-          console.error('保存通知失败:', error);
-        }
-
-        alert('申请提交成功！我们会尽快审核，请留意通知消息。');
-      }, 1000);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-white pb-14">
+    <div className="min-h-screen bg-white">
       <div className="w-full max-w-md mx-auto">
         {/* 顶部导航 */}
-        <div className="sticky top-0 bg-white z-50 px-5 py-4">
+        <div className="sticky top-0 bg-white z-50 px-5 py-4 border-b border-[rgba(0,0,0,0.05)]">
           <div className="flex items-center justify-between">
-            <Link href="/profile">
+            <Link href="/subscription">
               <Button variant="ghost" className="p-2">
                 <ArrowLeft className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
               </Button>
             </Link>
-            <h1 className="text-[15px] font-semibold text-gray-900">探访记录</h1>
-            <Button variant="ghost" onClick={handleShare} className="p-2">
-              <Share2 className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
-            </Button>
+            <h1 className="text-[15px] font-semibold text-gray-900">探访点亮</h1>
+            <div className="w-10" />
           </div>
         </div>
 
-        <div className="px-5 space-y-5">
-          {/* 状态标签 */}
-          <div className="flex items-center justify-between">
-            <Badge
-              className={`rounded-none font-normal text-[11px] ${
-                visit.status === 'completed'
-                  ? 'bg-green-400 text-white'
-                  : 'bg-yellow-400 text-black'
-              }`}
-            >
-              {visit.status === 'completed' ? '已完成' : '进行中'}
-            </Badge>
-            <span className="text-[10px] text-[rgba(0,0,0,0.4)]">
-              记录时间：{visit.createdAt}
-            </span>
-          </div>
-
-          {/* 拜访对象 */}
-          <div className="p-4 bg-[rgba(0,0,0,0.02)]">
-            <h2 className="text-[13px] font-semibold text-gray-900 mb-3">拜访对象</h2>
-            <div className="flex items-start space-x-3">
-              <Avatar className="w-12 h-12">
-                <AvatarImage src={visit.target.avatar} alt={visit.target.name} />
-                <AvatarFallback>{visit.target.name[0]}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
-                  {visit.target.name}
-                </div>
-                <div className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1">
-                  {visit.target.title} · {visit.target.company}
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {visit.target.tags.map((tag: string) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
+        <div className="space-y-6">
+          {/* 封面主图 */}
+          <div className="relative w-full h-64 overflow-hidden">
+            <img
+              src={visit.image}
+              alt={visit.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-5">
+              <Badge className="rounded-none bg-blue-400 text-white font-normal text-[12px] mb-2">
+                {visit.industry}
+              </Badge>
             </div>
           </div>
 
-          {/* 拜访信息 */}
-          <div className="space-y-3">
-            <div className="flex items-start space-x-3">
-              <Calendar className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                  {visit.date} {visit.time}
-                </div>
-                <div className="text-[9px] text-[rgba(0,0,0,0.4)]">拜访时间</div>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <MapPin className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <div className="text-[13px] text-[rgba(0,0,0,0.6)]">{visit.location}</div>
-                <div className="text-[9px] text-[rgba(0,0,0,0.4)]">拜访地点</div>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <Users className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                  {visit.participants} 人参与
-                </div>
-                <div className="text-[9px] text-[rgba(0,0,0,0.4)]">参与人数</div>
-              </div>
-            </div>
-          </div>
-
-          {/* 拜访目的 */}
-          <div>
-            <h2 className="text-[13px] font-semibold text-gray-900 mb-2">拜访目的</h2>
-            <p className="text-[13px] text-gray-700 leading-relaxed">{visit.purpose}</p>
-          </div>
-
-          {/* 拜访成果 */}
-          <div>
-            <h2 className="text-[13px] font-semibold text-gray-900 mb-2">拜访成果</h2>
-            <p className="text-[13px] text-gray-700 leading-relaxed">{visit.outcome}</p>
-          </div>
-
-          {/* 关键要点 */}
-          <div>
-            <h2 className="text-[13px] font-semibold text-gray-900 mb-2">关键要点</h2>
-            <ul className="space-y-1.5">
-              {visit.keyPoints.map((point: string, index: number) => (
-                <li key={index} className="flex items-start text-[13px] text-gray-700">
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* 下一步计划 */}
-          <div>
-            <h2 className="text-[13px] font-semibold text-gray-900 mb-2">下一步计划</h2>
-            <ul className="space-y-1.5">
-              {visit.nextSteps.map((step: string, index: number) => (
-                <li key={index} className="flex items-start text-[13px] text-gray-700">
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* 备注 */}
-          <div>
-            <h2 className="text-[13px] font-semibold text-gray-900 mb-2">备注</h2>
-            <p className="text-[13px] text-gray-700 leading-relaxed">{visit.notes}</p>
-          </div>
-
-          {/* 评分 */}
-          <div>
-            <h2 className="text-[13px] font-semibold text-gray-900 mb-2">本次评分</h2>
-            <div className="flex items-center space-x-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`w-5 h-5 ${
-                    star <= visit.rating ? 'fill-yellow-400 text-yellow-400' : 'text-[rgba(0,0,0,0.1)]'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* 照片 */}
-          {visit.images.length > 0 && (
+          <div className="px-5 space-y-6">
+            {/* 标题和基本信息 */}
             <div>
-              <h2 className="text-[13px] font-semibold text-gray-900 mb-2">现场照片</h2>
-              <div className="grid grid-cols-2 gap-2">
-                {visit.images.map((image: string, index: number) => (
-                  <div key={index} className="w-full h-32 overflow-hidden">
-                    <img
-                      src={image}
-                      alt={`照片${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+              <h2 className="text-[22px] font-semibold text-gray-900 mb-3 leading-tight">
+                {visit.title}
+              </h2>
+              <div className="flex flex-wrap gap-2 text-[13px] text-[rgba(0,0,0,0.6)]">
+                <div className="flex items-center space-x-1">
+                  <Clock className="w-4 h-4" />
+                  <span>{visit.duration}</span>
+                </div>
+                <span>·</span>
+                <div className="flex items-center space-x-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>{visit.date}</span>
+                </div>
+                <span>·</span>
+                <span>{visit.views || 0} 浏览</span>
+              </div>
+            </div>
+
+            {/* 被访者信息 */}
+            <div className="p-4 bg-[rgba(0,0,0,0.02)]">
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-3">被访者</h3>
+              <div className="flex items-center space-x-3">
+                <Avatar className="w-12 h-12">
+                  <AvatarImage src={visit.target.avatar} alt={visit.target.name} />
+                  <AvatarFallback>{visit.target.name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
+                    {visit.target.name}
+                  </div>
+                  <div className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1">
+                    {visit.target.title} · {visit.target.company}
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {visit.target.tags.map((tag: string) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 拜访信息 */}
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <Calendar className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                    {visit.date} {visit.time}
+                  </div>
+                  <div className="text-[9px] text-[rgba(0,0,0,0.4)]">拜访时间</div>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <MapPin className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">{visit.location}</div>
+                  <div className="text-[9px] text-[rgba(0,0,0,0.4)]">拜访地点</div>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <Users className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                    {visit.participants} 人参与
+                  </div>
+                  <div className="text-[9px] text-[rgba(0,0,0,0.4)]">参与人数</div>
+                </div>
+              </div>
+            </div>
+
+            {/* 探访人 */}
+            <div>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-3">探访人</h3>
+              <div className="flex items-start space-x-3">
+                {visit.visitors.map((visitor: any, i: number) => (
+                  <div key={i} className="flex flex-col items-center">
+                    <Avatar className="w-10 h-10 mb-1">
+                      <AvatarImage src={visitor.avatar} alt={visitor.name} />
+                      <AvatarFallback>{visitor.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="text-[10px] text-[rgba(0,0,0,0.6)] text-center w-12 truncate">
+                      {visitor.name}
+                    </div>
+                    <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] font-normal text-[10px] mt-0.5">
+                      {visitor.skill}
+                    </Badge>
                   </div>
                 ))}
               </div>
             </div>
-          )}
 
-          {/* 申请按钮 */}
-          <div className="flex justify-center pt-4 pb-4">
-            <button
-              onClick={handleOpenDialog}
-              className="px-6 py-2 rounded-none bg-gradient-to-br from-blue-400 to-blue-500 text-white text-sm font-normal hover:scale-105 hover:-translate-y-0.5 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200"
-            >
-              申请成为被访者
-            </button>
+            {/* 走访记录 */}
+            <div>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">走访记录</h3>
+              <p className="text-[13px] text-gray-700 leading-relaxed">{visit.record}</p>
+            </div>
+
+            {/* 拜访成果 */}
+            <div>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">拜访成果</h3>
+              <p className="text-[13px] text-gray-700 leading-relaxed">{visit.outcome}</p>
+            </div>
+
+            {/* 关键要点 */}
+            <div>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">关键要点</h3>
+              <ul className="space-y-1.5">
+                {visit.keyPoints.map((point: string, index: number) => (
+                  <li key={index} className="flex items-start text-[13px] text-gray-700">
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* 下一步计划 */}
+            <div>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">下一步计划</h3>
+              <ul className="space-y-1.5">
+                {visit.nextSteps.map((step: string, index: number) => (
+                  <li key={index} className="flex items-start text-[13px] text-gray-700">
+                    <span className="w-1.5 h-1.5 bg-green-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* 备注 */}
+            <div>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">备注</h3>
+              <p className="text-[13px] text-gray-700 leading-relaxed">{visit.notes}</p>
+            </div>
+
+            {/* 评分 */}
+            <div>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">本次评分</h3>
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`w-5 h-5 ${
+                      star <= visit.rating ? 'fill-yellow-400 text-yellow-400' : 'text-[rgba(0,0,0,0.1)]'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* 照片 */}
+            {visit.images && visit.images.length > 0 && (
+              <div>
+                <h3 className="text-[15px] font-semibold text-gray-900 mb-2">现场照片</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {visit.images.map((image: string, index: number) => (
+                    <div key={index} className="w-full h-32 overflow-hidden">
+                      <img
+                        src={image}
+                        alt={`照片${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 走访录音 */}
+            {visit.audioUrl && (
+              <div>
+                <h3 className="text-[15px] font-semibold text-gray-900 mb-2">走访反馈录音</h3>
+                <div className="p-4 bg-[rgba(0,0,0,0.02)]">
+                  <div className="mb-4">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={progress}
+                      onChange={handleSeek}
+                      className="w-full h-1 bg-[rgba(0,0,0,0.1)] rounded-lg appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, #60a5fa ${progress}%, rgba(0,0,0,0.1) ${progress}%)`,
+                      }}
+                    />
+                    <div className="flex justify-between text-[10px] text-[rgba(0,0,0,0.4)] mt-1">
+                      <span>{formatTime(currentTime)}</span>
+                      <span>{formatTime(duration)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <Button
+                      onClick={togglePlay}
+                      className="w-14 h-14 bg-blue-400 hover:bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0"
+                    >
+                      {isPlaying ? (
+                        <Pause className="w-6 h-6 text-white" />
+                      ) : (
+                        <Play className="w-6 h-6 text-white ml-1" />
+                      )}
+                    </Button>
+                    <div className="flex-1">
+                      <p className="text-[14px] text-gray-900 font-medium">走访反馈录音</p>
+                      <p className="text-[12px] text-[rgba(0,0,0,0.4)]">
+                        {visit.audioDuration || formatTime(duration)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 申请成为被访者 */}
+            <div className="flex justify-center pt-4 pb-4">
+              <button
+                onClick={handleOpenDialog}
+                className="px-6 py-2 rounded-none bg-gradient-to-br from-blue-400 to-blue-500 text-white text-sm font-normal hover:scale-105 hover:-translate-y-0.5 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200"
+              >
+                申请成为被访者
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* 隐藏的音频元素 */}
+        {visit.audioUrl && (
+          <audio ref={audioRef} src={visit.audioUrl} />
+        )}
       </div>
 
       {/* 申请对话框 */}
-      <Dialog open={applyDialogOpen} onOpenChange={setApplyDialogOpen}>
-        <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-5 sm:p-6">
+      <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-gray-900">
-              我需要被探访
-            </DialogTitle>
-            <DialogDescription className="hidden" />
+            <DialogTitle>申请成为被访者</DialogTitle>
+            <DialogDescription>
+              填写以下信息，我们将尽快与您联系
+            </DialogDescription>
           </DialogHeader>
-
-          {/* 提示信息 */}
-          <p className="text-[13px] text-[rgba(0,0,0,0.4)] mb-4">
-            请填写您的企业信息，说明您希望通过被访者角色解决什么问题，我们会审核后与您联系。
-          </p>
-
-          {/* 表单 */}
-          <div className="space-y-4">
-            {/* 姓名 */}
+          <div className="space-y-4 py-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                姓名 <span className="text-red-500">*</span>
-              </label>
               <Input
+                placeholder="姓名"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="请输入您的姓名"
-                className={errors.name ? 'border-red-400' : ''}
+                onChange={handleInputChange('name')}
+                className={errors.name ? 'border-red-500' : ''}
               />
               {errors.name && (
-                <p className="text-[11px] text-red-500 mt-1">{errors.name}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
               )}
             </div>
-
-            {/* 电话 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                电话 <span className="text-red-500">*</span>
-              </label>
               <Input
-                type="tel"
+                placeholder="电话号码"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="请输入您的手机号码"
-                className={errors.phone ? 'border-red-400' : ''}
+                onChange={handleInputChange('phone')}
+                className={errors.phone ? 'border-red-500' : ''}
               />
               {errors.phone && (
-                <p className="text-[11px] text-red-500 mt-1">{errors.phone}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
               )}
             </div>
-
-            {/* 微信 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                微信号 <span className="text-red-500">*</span>
-              </label>
               <Input
+                placeholder="微信号"
                 value={formData.wechat}
-                onChange={(e) => setFormData({ ...formData, wechat: e.target.value })}
-                placeholder="请输入您的微信号"
-                className={errors.wechat ? 'border-red-400' : ''}
+                onChange={handleInputChange('wechat')}
+                className={errors.wechat ? 'border-red-500' : ''}
               />
               {errors.wechat && (
-                <p className="text-[11px] text-red-500 mt-1">{errors.wechat}</p>
-              )}
-            </div>
-
-            {/* 公司名 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                公司名称
-              </label>
-              <Input
-                value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                placeholder="请输入您的公司名称"
-              />
-            </div>
-
-            {/* 职位 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                职位
-              </label>
-              <Input
-                value={formData.position}
-                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                placeholder="请输入您的职位"
-              />
-            </div>
-
-            {/* 规模 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                企业规模
-              </label>
-              <Input
-                value={formData.scale}
-                onChange={(e) => setFormData({ ...formData, scale: e.target.value })}
-                placeholder="例如：20-50人、50-100人"
-              />
-            </div>
-
-            {/* 行业 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                行业 <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={formData.industry}
-                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                placeholder="请输入您的行业"
-                className={errors.industry ? 'border-red-400' : ''}
-              />
-              {errors.industry && (
-                <p className="text-[11px] text-red-500 mt-1">{errors.industry}</p>
-              )}
-            </div>
-
-            {/* 信仰 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                信仰
-              </label>
-              <Input
-                value={formData.belief}
-                onChange={(e) => setFormData({ ...formData, belief: e.target.value })}
-                placeholder="如有信仰可填写"
-              />
-            </div>
-
-            {/* 需要解决的问题 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                需要解决的问题 <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                value={formData.problem}
-                onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
-                placeholder="请描述您希望通过被访者角色解决什么问题，例如：需要了解行业转型经验、寻找合作伙伴、获取专家建议等..."
-                rows={4}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-              {errors.problem && (
-                <p className="mt-1 text-xs text-red-500">{errors.problem}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.wechat}</p>
               )}
             </div>
           </div>
-
-          {/* 提交按钮 */}
-          <Button
-            onClick={handleApplySubmit}
-            disabled={isSubmitting}
-            className="w-full bg-blue-400 hover:bg-blue-500 text-white mt-6"
-          >
-            {isSubmitting ? '提交中...' : '确认申请'}
-          </Button>
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseDialog}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              className="bg-blue-400 hover:bg-blue-500 text-white"
+            >
+              提交申请
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
