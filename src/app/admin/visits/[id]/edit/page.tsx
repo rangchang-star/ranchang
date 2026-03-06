@@ -65,6 +65,7 @@ const mockVisit = {
 export default function AdminVisitEditPage() {
   const router = useRouter();
   const params = useParams();
+  const visitId = params.id as string;
   const [loading, setLoading] = useState(false);
 
   // 探访基本信息
@@ -117,42 +118,58 @@ export default function AdminVisitEditPage() {
   // 加载现有数据
   useEffect(() => {
     const loadData = async () => {
+      if (!visitId) return;
+
       try {
-        // 模拟API调用
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        setLoading(true);
+
+        // 从API获取探访数据
+        const response = await fetch(`/api/visits/${visitId}`);
+        if (!response.ok) {
+          throw new Error('加载探访数据失败');
+        }
+        const data = await response.json();
+
+        if (!data.success || !data.data) {
+          throw new Error('探访数据不存在');
+        }
+
+        const visit = data.data;
 
         // 解析时间
-        const timeParts = mockVisit.time.split('-');
+        const timeParts = visit.duration ? visit.duration.split('-') : ['14:00', '16:00'];
         const [start, end] = timeParts;
 
-        setVisitDate(mockVisit.date);
+        setVisitDate(visit.date || '');
         setStartTime(start);
         setEndTime(end);
-        setStatus(mockVisit.status);
-        setTargetName(mockVisit.target.name);
-        setTargetTitle(mockVisit.target.title);
-        setTargetCompany(mockVisit.target.company);
-        setTargetAvatar(mockVisit.target.avatar);
-        setPurpose(mockVisit.purpose);
-        setLocation(mockVisit.location);
-        setParticipants(mockVisit.participants.toString());
-        setOutcome(mockVisit.outcome || '');
-        setNotes(mockVisit.notes || '');
-        setSelectedTags(mockVisit.tags);
-        setRating(mockVisit.rating);
-        setSelectedVisitors(mockVisit.visitors?.map((v) => v.id) || []);
-        setKeyPoints(mockVisit.keyPoints.length > 0 ? mockVisit.keyPoints : ['']);
-        setNextSteps(mockVisit.nextSteps.length > 0 ? mockVisit.nextSteps : ['']);
-        setImageUrls(mockVisit.images.length > 0 ? mockVisit.images : ['']);
-        setImagePreviewUrls(mockVisit.images.length > 0 ? mockVisit.images : ['']);
+        setStatus(visit.status?.[0] || 'completed');
+        setTargetName(visit.target?.name || '');
+        setTargetTitle(visit.target?.title || '');
+        setTargetCompany(visit.target?.company || '');
+        setTargetAvatar(visit.target?.avatar || '/avatar-1.jpg');
+        setPurpose(visit.record?.substring(0, 100) || '');
+        setLocation(visit.location || '');
+        setParticipants(visit.visitors?.length?.toString() || '0');
+        setOutcome(visit.outcome || '');
+        setNotes(visit.notes || '');
+        setSelectedTags([...visit.status, visit.industry].filter(Boolean) || ['已结束']);
+        setRating(visit.rating || 5);
+        setSelectedVisitors(visit.visitors?.map((v: any) => v.id) || []);
+        setKeyPoints(visit.keyPoints?.length > 0 ? visit.keyPoints : ['']);
+        setNextSteps(visit.nextSteps?.length > 0 ? visit.nextSteps : ['']);
+        setImageUrls(visit.images?.length > 0 ? visit.images : ['']);
+        setImagePreviewUrls(visit.images?.length > 0 ? visit.images : ['']);
       } catch (error) {
         console.error('加载数据失败:', error);
         alert('加载数据失败');
+      } finally {
+        setLoading(false);
       }
     };
 
     loadData();
-  }, [params.id]);
+  }, [visitId]);
 
   // 添加标签
   const handleAddTag = (tag: string) => {

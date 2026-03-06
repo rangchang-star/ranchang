@@ -38,77 +38,41 @@ const getActivityTypeLabel = (type: string) => {
   return option ? option.label : type;
 };
 
-// 模拟从后台获取活动数据
-const fetchActivity = (id: string) => {
-  const mockActivities = [
-    {
-      id: '1',
-      title: '转型期私董会：如何找到第二曲线',
-      date: '2024-04-10',
-      startTime: '14:00',
-      endTime: '17:00',
-      location: '上海·静安',
-      address: '上海市静安区南京西路1788号',
-      type: 'private',
-      maxParticipants: 12,
-      tags: ['私董会', '名额紧张'],
-      status: 'ongoing',
-      teaFee: 'aa茶水费35元',
-      description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。我们将围绕"如何利用过往经验"、"如何降低试错成本"等话题展开讨论。',
-      imageUrl: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=200&fit=crop',
-      participants: ['1', '2', '3', '4', '5'], // 参与人员ID列表
-    },
-    {
-      id: '2',
-      title: '跨界沙龙：AI时代的商业创新',
-      date: '2024-04-15',
-      startTime: '19:00',
-      endTime: '21:00',
-      location: '北京·朝阳',
-      address: '北京市朝阳区CBD国贸大厦',
-      type: 'salon',
-      maxParticipants: 30,
-      tags: ['跨界', 'AI'],
-      status: 'ongoing',
-      teaFee: 'aa茶水费40元',
-      description: '邀请不同领域的专家分享AI在各行业的应用实践，促进跨界交流与合作。适合对AI商业化感兴趣的朋友参与。',
-      imageUrl: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=200&fit=crop',
-    },
-    {
-      id: '3',
-      title: 'AI实战赋能营（第一期）',
-      date: '2024-04-20',
-      startTime: '09:00',
-      endTime: '17:00',
-      location: '深圳·南山',
-      address: '深圳市南山区科技园',
-      type: 'ai',
-      maxParticipants: 30,
-      tags: ['AI实战', '工作坊'],
-      status: 'ended',
-      teaFee: 'aa茶水费50元',
-      description: '全天候AI工具实战培训，从工具选型到场景落地，帮你快速掌握AI辅助工作的核心技能。',
-      imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=200&fit=crop',
-    },
-    {
-      id: '4',
-      title: '35+职场转型工作坊',
-      date: '2024-04-25',
-      startTime: '13:00',
-      endTime: '17:00',
-      location: '广州·天河',
-      address: '广州市天河区珠江新城',
-      type: 'private',
-      maxParticipants: 15,
-      tags: ['工作坊', '即将开始'],
-      status: 'ongoing',
-      teaFee: '',
-      description: '为35+职场人提供转型指导，涵盖简历优化、面试技巧、行业分析等内容，帮助你顺利实现职业转型。',
-      imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=200&fit=crop',
-    },
-  ];
-  
-  return mockActivities.find(a => a.id === id);
+// 从API获取活动数据
+const fetchActivity = async (id: string) => {
+  try {
+    const response = await fetch(`/api/activities/${id}`);
+    if (!response.ok) {
+      throw new Error('加载活动数据失败');
+    }
+    const data = await response.json();
+    if (data.success) {
+      const activity = data.data;
+      // 转换为编辑页面需要的格式
+      return {
+        id: activity.id.toString(),
+        title: activity.title,
+        date: activity.startDate ? activity.startDate.split('T')[0] : '',
+        startTime: activity.startDate ? activity.startDate.split('T')[1]?.substring(0, 5) || '14:00' : '14:00',
+        endTime: activity.endDate ? activity.endDate.split('T')[1]?.substring(0, 5) || '17:00' : '17:00',
+        location: activity.address || '',
+        address: activity.address || '',
+        type: activity.category || 'private',
+        maxParticipants: activity.capacity || 12,
+        tags: [activity.category, activity.status === 'active' ? '报名中' : '已结束'],
+        status: activity.status,
+        teaFee: activity.teaFee ? `茶水费${activity.teaFee}元` : '',
+        description: activity.description || '',
+        imageUrl: activity.image || '',
+        participants: activity.participants?.map((p: any) => p.id.toString()) || [],
+        guests: activity.guests?.map((g: any) => g.id.toString()) || [],
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('加载活动数据失败:', error);
+    return null;
+  }
 };
 
 export default function AdminActivityEditPage() {
@@ -138,23 +102,26 @@ export default function AdminActivityEditPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 加载活动数据
-    const activity = fetchActivity(activityId);
-    if (activity) {
-      setTitle(activity.title);
-      setDate(activity.date);
-      setStartTime(activity.startTime);
-      setEndTime(activity.endTime);
-      setLocation(activity.location);
-      setType(activity.type);
-      setMaxParticipants(activity.maxParticipants.toString());
-      setTeaFee((activity as any).teaFee || '');
-      setSelectedTags(activity.tags);
-      setSelectedParticipants((activity as any).participants || []);
-      setDescription(activity.description);
-      setImageUrl(activity.imageUrl || '');
+    async function loadActivity() {
+      setLoading(true);
+      const activity = await fetchActivity(activityId);
+      if (activity) {
+        setTitle(activity.title);
+        setDate(activity.date);
+        setStartTime(activity.startTime);
+        setEndTime(activity.endTime);
+        setLocation(activity.location);
+        setType(activity.type);
+        setMaxParticipants(activity.maxParticipants.toString());
+        setTeaFee((activity as any).teaFee || '');
+        setSelectedTags(activity.tags);
+        setSelectedParticipants((activity as any).participants || []);
+        setDescription(activity.description);
+        setImageUrl(activity.imageUrl || '');
+      }
+      setLoading(false);
     }
-    setLoading(false);
+    loadActivity();
   }, [activityId]);
 
   const handleTagToggle = (tag: string) => {
