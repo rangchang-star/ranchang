@@ -95,7 +95,7 @@ export default function AdminVisitsPage() {
   });
 
   // 收集所有可用的标签，排除不需要显示的标签
-  const excludedTags = ['人工智能', '企业管理', '在线培训', '投资', '设计'];
+  const excludedTags = ['人工智能', '企业管理', '在线培训', '投资', '设计', '已审核', '已发布', '在线教育'];
   const availableTags = Array.from(
     new Set(visits.flatMap((visit) => visit.tags))
   ).filter(tag => !excludedTags.includes(tag));
