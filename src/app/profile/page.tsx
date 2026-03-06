@@ -673,14 +673,10 @@ export default function ProfilePage() {
                       <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-gray-300 rounded-full border-2 border-white" />
                     )}
                   </button>
-                  {/* 退出登录按钮 */}
-                  <button
-                    onClick={logout}
-                    className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors"
-                    title="退出登录"
-                  >
-                    <LogOut className="w-5 h-5 text-red-400" />
-                  </button>
+                  {/* 设置按钮 */}
+                  <Link href="/settings" className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
+                    <Settings className="w-5 h-5 text-blue-400" />
+                  </Link>
                 </div>
               </div>
 
