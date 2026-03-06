@@ -1258,18 +1258,17 @@ export default function ProfilePage() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
-                <h2 className="text-[26px] font-bold">
+                <h2 className="text-[26px] font-bold flex items-center">
                   <span className="text-[rgba(96,165,250,0.6)]">参与</span>
                   <span className="text-blue-400">活动</span>
+                  <button
+                    onClick={() => setActivitiesExpanded(!activitiesExpanded)}
+                    className="ml-2 text-blue-400 hover:text-blue-500 transition-colors"
+                  >
+                    {activitiesExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                  </button>
                 </h2>
               </div>
-              {/* 展开/收起按钮 */}
-              <button
-                onClick={() => setActivitiesExpanded(!activitiesExpanded)}
-                className="text-blue-400 hover:text-blue-500 transition-colors"
-              >
-                {activitiesExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </button>
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
             <div className="space-y-3">
