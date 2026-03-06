@@ -784,7 +784,26 @@ function ProfileEditContent() {
                 添加
               </button>
             </div>
-            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">点开会员详细页后才能看到资源标签</p>
+            {/* 已选资源标签（可删除） */}
+            {selectedResources.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {selectedResources.map((resource) => (
+                  <span
+                    key={resource}
+                    className="px-2 py-1 text-[10px] border border-blue-400 bg-blue-400/40 text-blue-400 flex items-center gap-1"
+                  >
+                    {resource}
+                    <button
+                      onClick={() => handleResourceToggle(resource)}
+                      className="text-blue-400 hover:text-blue-600 font-bold text-xs ml-1"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">点开会员详细页后才能看到资源标签（最多选3个）</p>
           </div>
 
           {/* 能力标签 */}
@@ -826,6 +845,25 @@ function ProfileEditContent() {
                 添加
               </button>
             </div>
+            {/* 已选能力标签（可删除） */}
+            {selectedAbilityTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {selectedAbilityTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2 py-1 text-[10px] border border-blue-400 bg-blue-400/40 text-blue-400 flex items-center gap-1"
+                  >
+                    {tag}
+                    <button
+                      onClick={() => handleAbilityTagToggle(tag)}
+                      className="text-blue-400 hover:text-blue-600 font-bold text-xs ml-1"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
             <p className="text-[11px] text-[rgba(0,0,0,0.4)]">前台只显示能力标签（最多选3个）</p>
           </div>
 
