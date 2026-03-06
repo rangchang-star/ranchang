@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, User, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,13 +20,31 @@ export default function LoginPage() {
       return;
     }
 
-    // 创建用户对象
+    // 创建用户对象 - 使用 auth-context 中定义的 User 接口
     const user = {
-      id: 'user_' + Date.now(),
+      id: Date.now(), // 数字 ID
+      phone: phone.trim(),
+      password: '', // 暂时为空
+      nickname: name.trim(),
       name: name.trim(),
       avatar: '/avatar-1.jpg',
-      isGuest: false,
-      phone: phone.trim(),
+      age: 35, // 默认值
+      company: '',
+      position: '',
+      industry: '',
+      bio: '',
+      need: '',
+      tagStamp: 'pureExchange',
+      tags: [],
+      abilityTags: [],
+      resourceTags: [],
+      isTrusted: false,
+      role: 'user',
+      status: 'active',
+      connectionCount: 0,
+      activityCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     // 登录

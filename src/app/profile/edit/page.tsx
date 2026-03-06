@@ -123,7 +123,7 @@ const directions = [
   { id: 'growth', name: '成长', icon: '/icon-growth.jpg' },
 ];
 
-export default function ProfileEditPage() {
+function ProfileEditContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
   const { user, isLoggedIn } = useAuth();
@@ -1068,5 +1068,15 @@ export default function ProfileEditPage() {
         </div>
       )}
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+
+export default function ProfileEditPage() {
+  return (
+    <Suspense fallback={<div className="p-4">加载中...</div>}>
+      <ProfileEditContent />
+    </Suspense>
   );
 }
