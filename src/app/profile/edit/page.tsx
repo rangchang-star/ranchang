@@ -186,7 +186,7 @@ function ProfileEditContent() {
   // 高燃宣告数据结构 - 每个方向独立管理主题、简介、音频
   const [declarations, setDeclarations] = useState<Record<string, {
     theme: string;          // 宣告主题
-    description: string;    // 宣告简介
+    description: string;    // 宣告内容
     audioUrl?: string;      // 音频URL
     isRecording: boolean;   // 是否正在录音
     hasRecorded: boolean;   // 是否已录制
@@ -324,7 +324,7 @@ function ProfileEditContent() {
     }));
   };
 
-  // 更新宣告简介
+  // 更新宣告内容
   const updateDeclarationDescription = (directionId: string, description: string) => {
     setDeclarations(prev => ({
       ...prev,
@@ -479,6 +479,29 @@ function ProfileEditContent() {
     // 验证能力标签（必选）
     if (!selectedAbilityTags || selectedAbilityTags.length === 0) {
       requiredErrors.push('能力标签（必选）');
+    }
+
+    // 验证高燃宣告（如果选中了方向）
+    if (selectedDirection) {
+      const declaration = declarations[selectedDirection];
+      
+      // 验证宣告主题
+      if (!declaration?.theme || declaration.theme.trim() === '') {
+        requiredErrors.push('宣告主题');
+      } else if (declaration.theme.trim().length < 8) {
+        requiredErrors.push('宣告主题（不少于8字）');
+      } else if (declaration.theme.trim().length > 15) {
+        requiredErrors.push('宣告主题（不超过15字）');
+      }
+      
+      // 验证宣告内容
+      if (!declaration?.description || declaration.description.trim() === '') {
+        requiredErrors.push('宣告内容');
+      } else if (declaration.description.trim().length < 25) {
+        requiredErrors.push('宣告内容（不少于25字）');
+      } else if (declaration.description.trim().length > 60) {
+        requiredErrors.push('宣告内容（不超过60字）');
+      }
     }
 
     // 如果有必选项未填写，显示提示
@@ -1005,27 +1028,27 @@ function ProfileEditContent() {
                           value={declarations[direction.id]?.theme || ''}
                           onChange={(e) => updateDeclarationTheme(direction.id, e.target.value)}
                           className="w-full px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
-                          placeholder="请输入宣告主题（不超过50字）"
-                          maxLength={50}
+                          placeholder="请输入宣告主题（8-15字）"
+                          maxLength={15}
                         />
                       </div>
                       
-                      {/* 宣告简介 */}
+                      {/* 宣告内容 */}
                       <div>
                         <label className="text-[11px] text-[rgba(0,0,0,0.4)] block mb-1">
-                          宣告简介 <span className="text-red-400">*</span>
+                          宣告内容 <span className="text-red-400">*</span>
                         </label>
                         <textarea
                           value={declarations[direction.id]?.description || ''}
                           onChange={(e) => updateDeclarationDescription(direction.id, e.target.value)}
                           className="w-full px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none placeholder-[rgba(0,0,0,0.3)]"
                           rows={3}
-                          placeholder="请输入宣告简介（不少于20字）"
-                          minLength={20}
-                          maxLength={200}
+                          placeholder="请输入宣告内容（25-60字）"
+                          minLength={25}
+                          maxLength={60}
                         />
                         <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
-                          {(declarations[direction.id]?.description || '').length}/200
+                          {(declarations[direction.id]?.description || '').length}/60
                         </p>
                       </div>
                       
