@@ -3,7 +3,7 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Edit, Eye, Plus } from 'lucide-react';
+import { Search, Edit, Eye, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -49,6 +49,7 @@ export default function AdminVisitsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // 从 API 加载探访数据
   useEffect(() => {
@@ -93,10 +94,23 @@ export default function AdminVisitsPage() {
     return matchesSearch && matchesTag;
   });
 
-  // 收集所有可用的标签
+  // 收集所有可用的标签，排除不需要显示的标签
+  const excludedTags = ['人工智能', '企业管理', '在线培训', '投资', '设计'];
   const availableTags = Array.from(
     new Set(visits.flatMap((visit) => visit.tags))
-  );
+  ).filter(tag => !excludedTags.includes(tag));
+
+  // 按时间排序的探访列表
+  const sortedVisits = [...filteredVisits].sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+  });
+
+  // 切换排序
+  const toggleSortOrder = () => {
+    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
 
   return (
     <AdminLayout>
@@ -177,18 +191,29 @@ export default function AdminVisitsPage() {
         {/* 探访列表 */}
         {!isLoading && !error && (
         <div className="border border-[rgba(0,0,0,0.1)]">
-          <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
+          <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between">
             <h3 className="text-[13px] font-semibold text-gray-900">
-              探访列表（{filteredVisits.length}）
+              探访列表（{sortedVisits.length}）
             </h3>
+            <button
+              onClick={toggleSortOrder}
+              className="flex items-center space-x-1 text-[13px] text-[rgba(0,0,0,0.6)] hover:text-blue-600 transition-colors"
+            >
+              <span>按时间排序</span>
+              {sortOrder === 'asc' ? (
+                <ArrowUp className="w-4 h-4" />
+              ) : (
+                <ArrowDown className="w-4 h-4" />
+              )}
+            </button>
           </div>
           <div className="divide-y divide-[rgba(0,0,0,0.05)]">
-            {filteredVisits.length === 0 ? (
+            {sortedVisits.length === 0 ? (
               <div className="p-12 text-center">
                 <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无符合条件的探访记录</p>
               </div>
             ) : (
-              filteredVisits.map((visit) => (
+              sortedVisits.map((visit) => (
                 <div
                   key={visit.id}
                   className="flex items-center justify-between p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
