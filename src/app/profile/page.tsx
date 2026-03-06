@@ -300,6 +300,28 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, isLoggedIn, logout } = useAuth();
   
+  // 刷新用户数据，确保显示最新数据
+  useEffect(() => {
+    const refreshUserData = async () => {
+      if (user?.id) {
+        try {
+          const response = await fetch(`/api/users/${user.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+              // 更新 localStorage 中的用户数据
+              localStorage.setItem('currentUser', JSON.stringify(data.data));
+            }
+          }
+        } catch (error) {
+          console.error('Failed to refresh user data:', error);
+        }
+      }
+    };
+    
+    refreshUserData();
+  }, [user?.id]);
+  
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
