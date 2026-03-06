@@ -751,7 +751,7 @@ export default function DiscoveryPage() {
                         {item.title}
                       </h3>
                       {/* 达人画像与时长（灰色字） */}
-                      <p className="text-[15px] text-[rgba(0,0,0,0.25)] flex items-center">
+                      <p className="text-[12px] text-[rgba(0,0,0,0.25)] flex items-center">
                         {item.profile} · <Timer className="w-3 h-3 mx-1" />
                         {item.duration}
                       </p>
@@ -1028,7 +1028,7 @@ export default function DiscoveryPage() {
                             {item.title}
                           </h3>
                           <div className="flex items-center space-x-2 mt-1">
-                            <span className="text-[18px] text-[rgba(0,0,0,0.25)]">
+                            <span className="text-[12px] text-[rgba(0,0,0,0.25)]">
                               {item.profile}
                             </span>
                           </div>
