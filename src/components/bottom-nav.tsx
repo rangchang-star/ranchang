@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Compass, User } from 'lucide-react';
 import { SunIcon } from '@/components/sun-icon';
 import { useAuth } from '@/contexts/auth-context';
-import { useLoginModal } from '@/contexts/login-modal-context';
+import { useLoginModal } from '@/contexts/login-modal-context-v2';
 
 const navItems = [
   { href: '/discovery', label: '发现', icon: Compass },

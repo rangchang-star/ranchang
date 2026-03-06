@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Inspector } from 'react-dev-inspector';
-import { Inter } from 'next/font/google';
+import { Inter, Noto_Sans_SC } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { LoginModalProvider } from '@/contexts/login-modal-context-v2';
@@ -9,6 +9,13 @@ import { GlobalLoginModal } from '@/components/global-login-modal';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+const notoSansSC = Noto_Sans_SC({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+  variable: '--font-noto-sans-sc',
   display: 'swap',
 });
 
@@ -69,7 +76,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${notoSansSC.variable} ${inter.variable} antialiased font-sans`}>
         <RootLayoutContent>
           {children}
         </RootLayoutContent>
