@@ -53,129 +53,98 @@ const abilityTagsOptions = [
   '市场洞察',
 ];
 
-// 模拟完整会员数据
-const mockMember = {
-  id: '1',
-  // 基本信息
-  name: '王芳',
-  age: 45,
-  avatar: '/avatar-3.jpg',
-  connectionType: 'personLookingForJob',
-  industry: '企业服务',
-  need: '希望找到传统制造业的数字化转型项目机会，用15年HRBP经验帮助企业搭建AI时代的人才培养体系',
-  abilityTags: ['HRBP', '团队管理', '人才发展', '组织优化', '数字化转型'],
-  resourceTags: ['人才', '技术', '品牌'],
-
-  // 后台标签
-  adminTags: ['普通', '私董案主'],
-
-  // 公司信息
-  phone: '13800123000',
-  email: 'wang@example.com',
-  company: '某科技公司',
-  position: 'CEO',
-  faith: '基督教',
-
-  // 其他信息
-  level: '活跃会员',
-  joinDate: '2024-01-15',
-  status: 'active',
-  isFeatured: true,
-
-  // 高燃宣告
-  declaration: {
-    direction: 'confidence',
-    text: '用15年HRBP经验，帮助企业搭建AI时代的人才培养体系，实现从传统HR到数字化HRBP的转型',
-    summary: '基于15年人力资源管理经验，专注于企业数字化转型中的人才体系搭建与AI赋能实践',
-    date: '2024年3月1日',
-    views: 2847,
-    hasAudio: true,
-    audioUrl: '/declaration-audio.mp3',
-  },
-
-  // 量表评估
-  assessments: [
-    {
-      name: '创业心理评估',
-      score: 85,
-      level: '优秀',
-      summary: '您的创业心理素质全面，具备出色的抗压能力、创新思维和风险把控能力。',
-    },
-    {
-      name: '商业认知评估',
-      score: 78,
-      level: '良好',
-      summary: '您对商业模式和市场策略有基本理解，在财务分析和战略规划方面还有提升空间。',
-    },
-    {
-      name: 'AI认知评估',
-      score: 88,
-      level: '优秀',
-      summary: '您对AI工具有深入理解和丰富实践经验，具备将AI技术落地应用的能力。',
-    },
-    {
-      name: '事业使命感评估',
-      score: 82,
-      level: '良好',
-      summary: '您有清晰的职业使命感，能够将个人价值观与社会价值结合。',
-    },
-  ],
-
-  // 探访记录
-  visitRecords: [
-    {
-      id: '1',
-      title: '上海某制造业企业数字化转型探访',
-      date: '2024年3月15日',
-      role: '探访人',
-      skill: '人力资源',
-      industry: '企业转型',
-    },
-    {
-      id: '2',
-      title: '杭州科技创业公司战略规划探访',
-      date: '2024年3月12日',
-      role: '探访人',
-      skill: '组织优化',
-      industry: '战略规划',
-    },
-  ],
-
-  // 参与活动
-  activities: [
-    {
-      id: '1',
-      title: 'CEO转型期私董会',
-      date: '2024年3月20日',
-      status: '即将开始',
-      category: '私董会',
-    },
-  ],
-};
-
 export default function AdminMemberEditPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [memberId, setMemberId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    params.then(p => setMemberId(p.id));
-  }, [params]);
-  const [name, setName] = useState(mockMember.name);
-  const [age, setAge] = useState(mockMember.age);
-  const [connectionType, setConnectionType] = useState(mockMember.connectionType);
-  const [industry, setIndustry] = useState(mockMember.industry);
-  const [need, setNeed] = useState(mockMember.need);
-  const [abilityTags, setAbilityTags] = useState(mockMember.abilityTags);
-  const [resourceTags, setResourceTags] = useState(mockMember.resourceTags);
-  const [adminTags, setAdminTags] = useState(mockMember.adminTags);
-  const [phone, setPhone] = useState(mockMember.phone);
-  const [email, setEmail] = useState(mockMember.email);
-  const [company, setCompany] = useState(mockMember.company);
-  const [position, setPosition] = useState(mockMember.position);
-  const [faith, setFaith] = useState(mockMember.faith || '');
-  const [isFeatured, setIsFeatured] = useState(mockMember.isFeatured);
+  // 表单状态
+  const [name, setName] = useState('');
+  const [age, setAge] = useState(0);
+  const [connectionType, setConnectionType] = useState('personLookingForJob');
+  const [industry, setIndustry] = useState('');
+  const [need, setNeed] = useState('');
+  const [abilityTags, setAbilityTags] = useState<string[]>([]);
+  const [resourceTags, setResourceTags] = useState<string[]>([]);
+  const [adminTags, setAdminTags] = useState<string[]>([]);
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [company, setCompany] = useState('');
+  const [position, setPosition] = useState('');
+  const [faith, setFaith] = useState('');
+  const [isFeatured, setIsFeatured] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(mockMember.avatar);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [level, setLevel] = useState('');
+  const [joinDate, setJoinDate] = useState('');
+  const [status, setStatus] = useState('');
+  const [role, setRole] = useState('');
+  const [bio, setBio] = useState('');
+  const [connectionCount, setConnectionCount] = useState(0);
+  const [activityCount, setActivityCount] = useState(0);
+
+  // 额外的数据（暂时为空，待后端完善）
+  const [declaration, setDeclaration] = useState<any>(null);
+  const [assessments, setAssessments] = useState<any[]>([]);
+  const [visitRecords, setVisitRecords] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+
+  // 加载用户数据
+  useEffect(() => {
+    params.then(p => {
+      setMemberId(p.id);
+      loadMemberData(p.id);
+    });
+  }, [params]);
+
+  const loadMemberData = async (id: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch(`/admin/api/members/${id}`);
+
+      if (!response.ok) {
+        throw new Error('加载会员信息失败');
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        const member = data.data;
+        setName(member.name || '');
+        setAge(member.age || 0);
+        setConnectionType(member.connectionType || 'personLookingForJob');
+        setIndustry(member.industry || '');
+        setNeed(member.need || '');
+        setAbilityTags(member.abilityTags || []);
+        setResourceTags(member.resourceTags || []);
+        setAdminTags(member.adminTags || ['普通']);
+        setPhone(member.phone || '');
+        setEmail(member.email || '');
+        setCompany(member.company || '');
+        setPosition(member.position || '');
+        setFaith(member.faith || '');
+        setIsFeatured(member.isFeatured || false);
+        setAvatarUrl(member.avatar || '');
+        setLevel(member.level || '');
+        setJoinDate(member.joinDate || '');
+        setStatus(member.status || '');
+        setRole(member.role || '');
+        setBio(member.bio || '');
+        setConnectionCount(member.connectionCount || 0);
+        setActivityCount(member.activityCount || 0);
+      } else {
+        throw new Error(data.error || '加载会员信息失败');
+      }
+    } catch (err: any) {
+      console.error('加载会员信息失败:', err);
+      setError(err.message || '加载会员信息失败');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleTagToggle = (tag: string, type: 'admin' | 'ability' | 'resource') => {
     const setTags = type === 'admin' ? setAdminTags : type === 'ability' ? setAbilityTags : setResourceTags;
@@ -219,7 +188,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
 
     try {
       // 调用API保存会员信息
-      const response = await fetch(`/api/users/${memberId}`, {
+      const response = await fetch(`/admin/api/members/${memberId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -228,16 +197,19 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
           name,
           age,
           avatar: avatarUrl,
-          tagStamp: connectionType,
+          connectionType,
           industry,
           need,
           abilityTags,
           resourceTags,
+          adminTags,
           phone,
           email,
           company,
           position,
+          faith,
           isFeatured,
+          bio,
         }),
       });
 
@@ -276,6 +248,26 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
   return (
     <AdminLayout>
       <div className="space-y-5">
+        {/* 加载状态 */}
+        {isLoading && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">加载中...</p>
+          </div>
+        )}
+
+        {/* 错误状态 */}
+        {error && !isLoading && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-red-500 mb-4">{error}</p>
+            <Link href="/admin/members">
+              <Button variant="outline">返回列表</Button>
+            </Link>
+          </div>
+        )}
+
+        {/* 内容区域 */}
+        {!isLoading && !error && (
+        <>
         {/* 顶部导航 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -320,7 +312,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                 <div>
                   <h3 className="text-[15px] font-semibold text-gray-900 mb-1">{name}</h3>
                   <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                    {mockMember.level} · {mockMember.joinDate} 加入
+                    {level} · {joinDate} 加入
                   </p>
                   <div className="mt-2">
                     <input
@@ -595,37 +587,40 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
               <div className="flex items-start space-x-4">
                 <div className="flex-1">
                   <div className="p-3 bg-[rgba(0,0,0,0.02)]">
-                    <p className="text-[13px] text-[rgba(0,0,0,0.6)] mb-2">
-                      <span className="font-medium text-gray-900">方向：</span>
-                      {mockMember.declaration.direction === 'confidence' && '信心'}
-                      {mockMember.declaration.direction === 'mission' && '使命'}
-                      {mockMember.declaration.direction === 'self' && '自我'}
-                      {mockMember.declaration.direction === 'opponent' && '对手'}
-                      {mockMember.declaration.direction === 'environment' && '环境'}
-                    </p>
-                    <p className="text-[13px] text-gray-900 mb-2">{mockMember.declaration.text}</p>
-                    <p className="text-[11px] text-[rgba(0,0,0,0.6)] mb-1">{mockMember.declaration.summary}</p>
-                    <div className="flex items-center space-x-4 text-[11px] text-[rgba(0,0,0,0.6)]">
-                      <span>发布时间：{mockMember.declaration.date}</span>
-                      <span>浏览量：{mockMember.declaration.views}</span>
-                    </div>
+                    {declaration ? (
+                      <>
+                        <p className="text-[13px] text-[rgba(0,0,0,0.6)] mb-2">
+                          <span className="font-medium text-gray-900">方向：</span>
+                          {declaration.direction === 'confidence' && '信心'}
+                          {declaration.direction === 'mission' && '使命'}
+                          {declaration.direction === 'self' && '自我'}
+                          {declaration.direction === 'opponent' && '对手'}
+                          {declaration.direction === 'environment' && '环境'}
+                        </p>
+                        <p className="text-[13px] text-gray-900 mb-2">{declaration.text}</p>
+                        <p className="text-[11px] text-[rgba(0,0,0,0.6)] mb-1">{declaration.summary}</p>
+                        <div className="flex items-center space-x-4 text-[11px] text-[rgba(0,0,0,0.6)]">
+                          <span>发布时间：{declaration.date}</span>
+                          <span>浏览量：{declaration.views}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无高燃宣告</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col items-center space-y-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePlayAudio}
-                    className={`w-12 h-12 rounded-full ${
-                      mockMember.declaration.hasAudio
-                        ? 'text-blue-600 border-blue-400'
-                        : 'text-gray-400 border-gray-300'
-                    }`}
-                    disabled={!mockMember.declaration.hasAudio}
-                  >
-                    {isPlayingAudio ? '⏸' : '▶'}
-                  </Button>
-                  {mockMember.declaration.hasAudio && (
+                  {declaration && declaration.hasAudio && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePlayAudio}
+                      className={`w-12 h-12 rounded-full text-blue-600 border-blue-400`}
+                    >
+                      {isPlayingAudio ? '⏸' : '▶'}
+                    </Button>
+                  )}
+                  {declaration && declaration.hasAudio && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -646,56 +641,61 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
               <h3 className="text-[13px] font-semibold text-gray-900">量表评估</h3>
             </div>
             <div className="px-4 py-3">
-              <div className="grid grid-cols-2 gap-4">
-                {mockMember.assessments.map((assessment, index) => (
-                  <div key={index} className="p-3 bg-[rgba(0,0,0,0.02)]">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-[13px] font-semibold text-gray-900">{assessment.name}</h4>
-                      <span className="text-[13px] font-medium">
-                        {assessment.score}分
-                      </span>
+              {assessments.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {assessments.map((assessment, index) => (
+                    <div key={index} className="p-3 bg-[rgba(0,0,0,0.02)]">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-[13px] font-semibold text-gray-900">{assessment.name}</h4>
+                        <span className="text-[13px] font-medium">
+                          {assessment.score}分
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[rgba(0,0,0,0.6)] mb-1">评级：{assessment.level}</p>
+                      <p className="text-[11px] text-[rgba(0,0,0,0.6)] line-clamp-2">{assessment.summary}</p>
                     </div>
-                    <p className="text-[11px] text-[rgba(0,0,0,0.6)] mb-1">评级：{assessment.level}</p>
-                    <p className="text-[11px] text-[rgba(0,0,0,0.6)] line-clamp-2">{assessment.summary}</p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无量表评估数据</p>
+              )}
             </div>
           </div>
 
           {/* 探访记录展示（只读） */}
           <div className="border border-[rgba(0,0,0,0.1)]">
             <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">探访记录（{mockMember.visitRecords.length}）</h3>
+              <h3 className="text-[13px] font-semibold text-gray-900">探访记录（{visitRecords.length}）</h3>
             </div>
             <div className="px-4 py-3">
-              <div className="space-y-3">
-                {mockMember.visitRecords.map((record) => (
-                  <div key={record.id} className="p-3 bg-[rgba(0,0,0,0.02)]">
-                    <h4 className="text-[13px] font-medium text-gray-900 mb-1">{record.title}</h4>
-                    <div className="flex items-center space-x-4 text-[11px] text-[rgba(0,0,0,0.6)]">
-                      <span>{record.date}</span>
-                      <span>角色：{record.role}</span>
-                      <span>技能：{record.skill}</span>
-                      <span>行业：{record.industry}</span>
+              {visitRecords.length > 0 ? (
+                <div className="space-y-3">
+                  {visitRecords.map((record) => (
+                    <div key={record.id} className="p-3 bg-[rgba(0,0,0,0.02)]">
+                      <h4 className="text-[13px] font-medium text-gray-900 mb-1">{record.title}</h4>
+                      <div className="flex items-center space-x-4 text-[11px] text-[rgba(0,0,0,0.6)]">
+                        <span>{record.date}</span>
+                        <span>角色：{record.role}</span>
+                        <span>技能：{record.skill}</span>
+                        <span>行业：{record.industry}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {mockMember.visitRecords.length === 0 && (
-                  <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无探访记录</p>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无探访记录</p>
+              )}
             </div>
           </div>
 
           {/* 参与活动展示（只读） */}
           <div className="border border-[rgba(0,0,0,0.1)]">
             <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">参与活动（{mockMember.activities.length}）</h3>
+              <h3 className="text-[13px] font-semibold text-gray-900">参与活动（{activities.length}）</h3>
             </div>
             <div className="px-4 py-3">
               <div className="space-y-3">
-                {mockMember.activities.map((activity) => (
+                {activities.map((activity) => (
                   <div key={activity.id} className="p-3 bg-[rgba(0,0,0,0.02)]">
                     <h4 className="text-[13px] font-medium text-gray-900 mb-1">{activity.title}</h4>
                     <div className="flex items-center space-x-4 text-[11px] text-[rgba(0,0,0,0.6)]">
@@ -705,7 +705,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                     </div>
                   </div>
                 ))}
-                {mockMember.activities.length === 0 && (
+                {activities.length === 0 && (
                   <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无参与活动</p>
                 )}
               </div>
@@ -726,6 +726,8 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
             </div>
           </div>
         </div>
+        </>
+        )}
       </div>
     </AdminLayout>
   );
