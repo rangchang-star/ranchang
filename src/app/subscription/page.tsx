@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
@@ -134,6 +134,7 @@ export default function SubscriptionPage() {
   const [visits, setVisits] = useState<any[]>([]);
   const [isLoadingVisits, setIsLoadingVisits] = useState(false);
   const [visitsError, setVisitsError] = useState<string | null>(null);
+  const [visitsExpanded, setVisitsExpanded] = useState(false);
 
   // 从 API 加载探访数据
   useEffect(() => {
@@ -329,7 +330,6 @@ export default function SubscriptionPage() {
             </TabsList>
 
             {/* 探访点亮内容 */}
-            {/* 探访点亮内容 */}
             <TabsContent value="training" className="space-y-4 mt-6">
               {isLoadingVisits ? (
                 <div className="text-center py-12 text-gray-400">加载中...</div>
@@ -338,16 +338,17 @@ export default function SubscriptionPage() {
               ) : visits.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">暂无探访内容</div>
               ) : (
-                visits.map((visit) => (
-                  <div
-                    key={visit.id}
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        window.location.href = `/visit/${visit.id}`;
-                      }
-                    }}
-                    className="block p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
-                  >
+                <React.Fragment>
+                  {visits.slice(0, visitsExpanded ? visits.length : 2).map((visit) => (
+                    <div
+                      key={visit.id}
+                      onClick={() => {
+                        if (typeof window !== 'undefined') {
+                          window.location.href = `/visit/${visit.id}`;
+                        }
+                      }}
+                      className="block p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                    >
                     {/* 图片 */}
                     <div className="mb-3 overflow-hidden">
                       <img
@@ -424,7 +425,17 @@ export default function SubscriptionPage() {
                       <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
                     </div>
                   </div>
-                ))
+                  ))}
+                  {/* 展开/收起按钮 */}
+                  {visits.length > 2 && (
+                    <button
+                      onClick={() => setVisitsExpanded(!visitsExpanded)}
+                      className="w-full py-2.5 text-center text-[15px] text-blue-400 hover:text-blue-500 transition-colors"
+                    >
+                      {visitsExpanded ? '收起' : '查看更多'}
+                    </button>
+                  )}
+                </React.Fragment>
               )}
             </TabsContent>
 
