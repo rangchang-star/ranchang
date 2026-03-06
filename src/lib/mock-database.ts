@@ -795,13 +795,14 @@ export const mockActivities = [
     category: '私董会',
     image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&h=400&fit=crop',
     description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。围绕"如何利用过往经验"、"如何降低试错成本"、"如何构建第二职业曲线"等话题展开讨论。本次活动邀请了多位成功转型的企业家和职业导师，为参与者提供实战经验分享。',
-    address: '北京市朝阳区建国门外大街1号国贸大厦',
+    address: '杭州市西湖区碾米厂文化街区高燃茶楼二楼牡丹厅',
     startDate: '2024-02-15T14:00:00Z',
     endDate: '2024-02-15T17:00:00Z',
     capacity: 12,
-    teaFee: 198,
+    teaFee: 0,
     status: 'active',
     createdBy: 6,
+    guests: [17, 22, 29], // 参与嘉宾：马丽、唐伟、卢燕（不与参与人员1,2,6,10,14,20重复）
     createdAt: '2024-02-01T00:00:00Z',
     updatedAt: '2024-02-15T18:00:00Z',
   },
@@ -813,13 +814,14 @@ export const mockActivities = [
     category: '私董会',
     image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop',
     description: '为创业者提供一个私密、专业的交流平台。通过私董会形式，创业者可以分享创业过程中的困惑和挑战，获得同行的建议和支持。本次活动重点讨论"如何获得第一笔投资"、"如何组建核心团队"、"如何快速验证商业模式"等核心议题。',
-    address: '上海市浦东新区陆家嘴环路1000号',
+    address: '杭州市西湖区碾米厂文化街区高燃茶楼二楼牡丹厅',
     startDate: '2024-02-28T14:00:00Z',
     endDate: '2024-02-28T17:00:00Z',
     capacity: 15,
-    teaFee: 288,
+    teaFee: 0,
     status: 'active',
     createdBy: 3,
+    guests: [18, 25, 30], // 参与嘉宾：高远、范丽、戴明（不与参与人员3,4,7,8,13,16,19重复）
     createdAt: '2024-02-10T00:00:00Z',
     updatedAt: '2024-02-28T18:00:00Z',
   },
@@ -831,13 +833,14 @@ export const mockActivities = [
     category: '私董会',
     image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=400&fit=crop',
     description: '针对传统企业家的转型需求，通过私董会形式探讨数字化转型的路径和方法。邀请数字化转型成功的企业家分享实战经验，包括"如何制定数字化战略"、"如何组织变革"、"如何培养数字化人才"等关键议题。',
-    address: '深圳市南山区科技园南区',
+    address: '杭州市西湖区碾米厂文化街区高燃茶楼二楼牡丹厅',
     startDate: '2024-04-10T14:00:00Z',
     endDate: '2024-04-10T17:00:00Z',
     capacity: 15,
-    teaFee: 388,
+    teaFee: 0,
     status: 'active',
     createdBy: 2,
+    guests: [4, 15, 23], // 参与嘉宾：刘伟、朱丹、姜敏（不与参与人员1,2,9,11,17,22,26,28重复）
     createdAt: '2024-03-01T00:00:00Z',
     updatedAt: '2024-03-10T00:00:00Z',
   },
@@ -849,13 +852,14 @@ export const mockActivities = [
     category: '沙龙',
     image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop',
     description: '邀请AI领域的实战专家，分享AI工具在各行业的应用案例。涵盖ChatGPT、Midjourney、Stable Diffusion等主流AI工具的使用技巧。通过实际操作演示，帮助参与者快速掌握AI工具的应用方法，提升工作效率和创新能力。',
-    address: '北京市海淀区中关村创业大街',
+    address: '杭州市西湖区碾米厂文化街区高燃茶楼二楼牡丹厅',
     startDate: '2024-04-08T19:00:00Z',
     endDate: '2024-04-08T21:00:00Z',
     capacity: 30,
-    teaFee: 128,
+    teaFee: 0,
     status: 'active',
     createdBy: 1,
+    guests: [4, 7, 13], // 参与嘉宾：刘伟、孙丽、杨琳（不与参与人员1,5,11,12,15,18,21,23,24,27,30重复）
     createdAt: '2024-03-05T00:00:00Z',
     updatedAt: '2024-03-15T00:00:00Z',
   },
@@ -867,13 +871,14 @@ export const mockActivities = [
     category: '培训',
     image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=400&fit=crop',
     description: '针对非技术人员设计，通过OpenClaw低代码平台，让零基础用户也能快速开发企业级应用。课程内容包括：平台基础操作、数据建模、业务逻辑设计、UI设计、API集成等。通过实战项目演练，学员将完成一个完整的企业应用开发。',
-    address: '广州市天河区珠江新城CBD',
+    address: '杭州市西湖区碾米厂文化街区高燃茶楼二楼牡丹厅',
     startDate: '2024-04-12T09:00:00Z',
     endDate: '2024-04-13T17:00:00Z',
     capacity: 20,
-    teaFee: 1888,
+    teaFee: 0,
     status: 'active',
     createdBy: 5,
+    guests: [8, 14, 18], // 参与嘉宾：周涛、黄磊、高远（不与参与人员5,7,9,12,16,20,25,26,29重复）
     createdAt: '2024-03-08T00:00:00Z',
     updatedAt: '2024-03-18T00:00:00Z',
   },
@@ -1530,6 +1535,16 @@ export class MockDatabase {
       .filter(ua => ua.activityId === activityId.toString())
       .map(ua => ua.userId);
     return mockUsers.filter(user => userIds.includes(user.id.toString()));
+  }
+
+  // 获取活动的嘉宾
+  static getActivityGuests(activityId: number) {
+    const activity = mockActivities.find(a => a.id === activityId);
+    if (!activity || !activity.guests) {
+      return [];
+    }
+    const guestIds = activity.guests;
+    return mockUsers.filter(user => guestIds.includes(user.id));
   }
 
   // 获取所有探访

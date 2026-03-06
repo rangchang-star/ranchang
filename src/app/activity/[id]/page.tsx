@@ -116,6 +116,13 @@ export default function ActivityDetailPage() {
               position: p.position || '',
               company: p.company || '',
             })) || [],
+            guests: data.data.guests?.map((g: any) => ({
+              id: g.id.toString(),
+              name: g.name || g.nickname || '',
+              avatar: g.avatar || '',
+              position: g.position || '',
+              company: g.company || '',
+            })) || [],
             address: data.data.address || '',
             teaFee: `茶水费${data.data.teaFee || 0}元`,
             status: data.data.status === 'active' ? 'ongoing' : 'ended',
@@ -305,13 +312,13 @@ export default function ActivityDetailPage() {
             </div>
 
             {/* 参与嘉宾 */}
-            {(activity as any).participants && (activity as any).participants.length > 0 && (
+            {(activity as any).guests && (activity as any).guests.length > 0 && (
               <div>
                 <h3 className="text-[15px] font-semibold text-gray-900 mb-3">
-                  参与嘉宾 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">{(activity as any).participants?.length || 0} 位嘉宾</span>
+                  参与嘉宾 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">{(activity as any).guests?.length || 0} 位嘉宾</span>
                 </h3>
                 <div className="flex items-center space-x-2">
-                  {(activity as any).participants?.slice(0, 8).map((guest: any) => (
+                  {(activity as any).guests?.map((guest: any) => (
                     <Avatar key={guest.id} className="w-10 h-10 border-2 border-white">
                       <AvatarImage src={guest.avatar} alt={guest.name} />
                       <AvatarFallback className="text-[10px]">
@@ -329,20 +336,17 @@ export default function ActivityDetailPage() {
                 参与人员 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">已报名{activity.enrolledCount}/{activity.maxEnrollments}</span>
               </h3>
               <div className="flex items-center space-x-2">
-                {activity.enrollments?.slice(0, 8).map((memberId: string) => {
-                  const member = (activity as any).participants?.find((p: any) => p.id === memberId);
-                  return (
-                    <Avatar key={memberId} className="w-8 h-8 border-2 border-white">
-                      <AvatarImage src={member?.avatar} alt={member?.name} />
-                      <AvatarFallback className="text-[10px]">
-                        {member?.name?.slice(0, 2) || memberId.slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                  );
-                })}
-                {activity.enrollments?.length > 8 && (
+                {(activity as any).participants?.slice(0, 8).map((member: any) => (
+                  <Avatar key={member.id} className="w-8 h-8 border-2 border-white">
+                    <AvatarImage src={member.avatar} alt={member.name} />
+                    <AvatarFallback className="text-[10px]">
+                      {member.name?.slice(0, 2) || member.id?.slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {(activity as any).participants?.length > 8 && (
                   <div className="w-8 h-8 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center text-[10px] text-[rgba(0,0,0,0.5)]">
-                    +{activity.enrollments?.length - 8}
+                    +{(activity as any).participants?.length - 8}
                   </div>
                 )}
               </div>

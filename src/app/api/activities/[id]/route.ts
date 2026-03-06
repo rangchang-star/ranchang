@@ -23,12 +23,16 @@ export async function GET(
           }, { status: 404 });
         }
 
-        // 获取参与人员
+        // 获取参与人员和嘉宾
         const participants = await db
           .select()
           .from(registrations)
           .where(eq(registrations.activityId, parseInt(id)))
           .leftJoin(users, eq(registrations.userId, users.id));
+
+        // 嘉宾从活动数据中获取
+        const activity = result[0] as any;
+        const guests = activity.guests ? activity.guests : [];
 
         return NextResponse.json({
           success: true,
@@ -36,6 +40,7 @@ export async function GET(
             ...result[0],
             participants: participants.filter(p => p.users).map(p => p.users),
             enrolledCount: participants.length,
+            guests: guests,
           }
         });
       } catch (dbError: any) {
@@ -53,8 +58,9 @@ export async function GET(
       }, { status: 404 });
     }
 
-    // 获取活动的参与人员
+    // 获取活动的参与人员和嘉宾
     const participants = MockDatabase.getActivityParticipants(parseInt(id));
+    const guests = MockDatabase.getActivityGuests(parseInt(id));
 
     return NextResponse.json({
       success: true,
@@ -62,6 +68,7 @@ export async function GET(
         ...activity,
         participants: participants,
         enrolledCount: participants.length,
+        guests: guests,
       }
     });
   } catch (error: any) {

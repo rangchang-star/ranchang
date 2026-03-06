@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       ...activity,
       participants: MockDatabase.getActivityParticipants(activity.id),
       enrolledCount: MockDatabase.getActivityParticipants(activity.id).length,
+      guests: MockDatabase.getActivityGuests(activity.id),
     }));
 
     return NextResponse.json({
