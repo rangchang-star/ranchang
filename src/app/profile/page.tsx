@@ -876,7 +876,7 @@ export default function ProfilePage() {
             {/* 完善资料按钮 */}
             <div className="mt-4">
               <button
-                onClick={() => router.push('/profile/edit')}
+                onClick={() => router.push(`/profile/edit?id=${user?.id}`)}
                 className="w-full py-2.5 bg-[rgba(34,197,94,0.1)] hover:bg-[rgba(34,197,94,0.2)] text-green-600 font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
               >
                 <Edit className="w-4 h-4" />

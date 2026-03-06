@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Camera, Upload, Plus, X, Mic, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/auth-context';
 
 // 数据验证函数：检查特殊字符
 const containsSpecialChars = (str: string): boolean => {
@@ -122,14 +124,66 @@ const directions = [
 ];
 
 export default function ProfileEditPage() {
-  const [profile, setProfile] = useState(mockUserProfile);
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('id');
+  const { user, isLoggedIn } = useAuth();
+
+  // 根据登录用户数据初始化用户资料
+  const getUserProfile = () => {
+    if (!isLoggedIn || !user) {
+      // 未登录时返回默认的mock数据
+      return mockUserProfile;
+    }
+
+    // 将登录用户数据映射到编辑页面需要的格式
+    return {
+      avatar: user.avatar || mockUserProfile.avatar,
+      name: user.name || user.nickname || mockUserProfile.name,
+      gender: 'female', // 暂时默认，实际可以从用户数据中获取
+      age: user.age || mockUserProfile.age,
+      phone: user.phone || mockUserProfile.phone,
+      email: '', // 暂时为空
+      companyName: user.company || '',
+      companyScale: '',
+      companyPosition: user.position || '',
+      belief: '',
+      purpose: getPurposeFromTagStamp(user.tagStamp),
+      industry: user.industry || mockUserProfile.industry,
+      industryTags: user.abilityTags || mockUserProfile.industryTags,
+      resources: user.resourceTags || mockUserProfile.resources,
+      declaration: user.bio || mockUserProfile.declaration,
+      directions: mockUserProfile.directions,
+    };
+  };
+
+  // 辅助函数：将 tagStamp 转换为 purpose
+  const getPurposeFromTagStamp = (tagStamp?: string): string => {
+    if (!tagStamp) return '纯交流';
+    if (tagStamp === 'personLookingForJob') return '人找事';
+    if (tagStamp === 'jobLookingForPerson') return '事找人';
+    return '纯交流';
+  };
+
+  const [profile, setProfile] = useState(getUserProfile());
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(profile.purpose);
   const [selectedIndustryTag, setSelectedIndustryTag] = useState<string>(profile.industryTags[0] || '');
   const [selectedResources, setSelectedResources] = useState<string[]>(profile.resources);
   const [customResource, setCustomResource] = useState('');
-  const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>(mockUserProfile.industryTags || []);
+  const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>(profile.industryTags || []);
   const [customAbility, setCustomAbility] = useState('');
   const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
+
+  // 当用户数据变化时，更新profile状态
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      const newProfile = getUserProfile();
+      setProfile(newProfile);
+      setSelectedPurpose(newProfile.purpose);
+      setSelectedIndustryTag(newProfile.industryTags[0] || '');
+      setSelectedResources(newProfile.resources);
+      setSelectedAbilityTags(newProfile.industryTags || []);
+    }
+  }, [isLoggedIn, user]);
   
   // 录音相关状态 - 每个类别单独管理
   const [recordings, setRecordings] = useState<Record<string, { isRecording: boolean; hasRecorded: boolean; audioUrl?: string }>>({});
