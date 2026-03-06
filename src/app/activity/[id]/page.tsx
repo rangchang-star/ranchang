@@ -106,12 +106,18 @@ export default function ActivityDetailPage() {
             description: data.data.description || '',
             image: data.data.image || '',
             tags: [data.data.category || '', '名额紧张'],
-            enrollments: [], // TODO: 从报名表获取
-            enrolledCount: 0, // TODO: 从报名表统计
+            enrollments: data.data.participants?.map((p: any) => p.id.toString()) || [],
+            enrolledCount: data.data.enrolledCount || 0,
             maxEnrollments: data.data.capacity || 0,
-            participants: [], // TODO: 从报名表获取
+            participants: data.data.participants?.map((p: any) => ({
+              id: p.id.toString(),
+              name: p.name || p.nickname || '',
+              avatar: p.avatar || '',
+              position: p.position || '',
+              company: p.company || '',
+            })) || [],
             address: data.data.address || '',
-            teaFee: `aa茶水费${data.data.teaFee || 0}元`,
+            teaFee: `茶水费${data.data.teaFee || 0}元`,
             status: data.data.status === 'active' ? 'ongoing' : 'ended',
             endTime: data.data.endDate || '',
             startDate: data.data.startDate ? new Date(data.data.startDate).toLocaleString('zh-CN', {
@@ -305,12 +311,13 @@ export default function ActivityDetailPage() {
                   参与嘉宾 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">{(activity as any).participants?.length || 0} 位嘉宾</span>
                 </h3>
                 <div className="flex items-center space-x-2">
-                  {(activity as any).participants?.slice(0, 8).map((guestId: string) => (
-                    <div key={guestId} className="w-10 h-10 rounded-full overflow-hidden border-2 border-white relative">
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-[10px]">
-                        {guestId.slice(0, 2)}
-                      </div>
-                    </div>
+                  {(activity as any).participants?.slice(0, 8).map((guest: any) => (
+                    <Avatar key={guest.id} className="w-10 h-10 border-2 border-white">
+                      <AvatarImage src={guest.avatar} alt={guest.name} />
+                      <AvatarFallback className="text-[10px]">
+                        {guest.name?.slice(0, 2) || guest.id?.slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
                   ))}
                 </div>
               </div>
@@ -322,13 +329,17 @@ export default function ActivityDetailPage() {
                 参与人员 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">已报名{activity.enrolledCount}/{activity.maxEnrollments}</span>
               </h3>
               <div className="flex items-center space-x-2">
-                {activity.enrollments?.slice(0, 8).map((memberId: string) => (
-                  <div key={memberId} className="w-8 h-8 rounded-full overflow-hidden border-2 border-white relative">
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-[10px]">
-                      {memberId.slice(0, 2)}
-                    </div>
-                  </div>
-                ))}
+                {activity.enrollments?.slice(0, 8).map((memberId: string) => {
+                  const member = (activity as any).participants?.find((p: any) => p.id === memberId);
+                  return (
+                    <Avatar key={memberId} className="w-8 h-8 border-2 border-white">
+                      <AvatarImage src={member?.avatar} alt={member?.name} />
+                      <AvatarFallback className="text-[10px]">
+                        {member?.name?.slice(0, 2) || memberId.slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                  );
+                })}
                 {activity.enrollments?.length > 8 && (
                   <div className="w-8 h-8 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center text-[10px] text-[rgba(0,0,0,0.5)]">
                     +{activity.enrollments?.length - 8}

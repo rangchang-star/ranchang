@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { mockVisits } from '@/lib/mock-database';
+import { MockDatabase } from '@/lib/mock-database';
 
 export async function GET(
   request: NextRequest,
@@ -10,7 +10,7 @@ export async function GET(
     const id = params.id;
 
     // 从模拟数据库中查找对应的数据
-    const visit = mockVisits.find((v) => v.id === id);
+    const visit = MockDatabase.getVisitById(id);
 
     if (!visit) {
       return NextResponse.json(

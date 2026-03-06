@@ -26,9 +26,16 @@ export async function GET(request: NextRequest) {
     // 使用统一的模拟数据
     const activities = MockDatabase.getActivities();
 
+    // 为每个活动添加参与人员信息
+    const activitiesWithParticipants = activities.map(activity => ({
+      ...activity,
+      participants: MockDatabase.getActivityParticipants(activity.id),
+      enrolledCount: MockDatabase.getActivityParticipants(activity.id).length,
+    }));
+
     return NextResponse.json({
       success: true,
-      data: activities
+      data: activitiesWithParticipants
     });
   } catch (error: any) {
     console.error('获取活动列表失败:', error);

@@ -20,45 +20,7 @@ const AMAZING_GRACE_AUDIO = 'https://www.soundhelix.com/examples/mp3/SoundHelix-
 
 // 活动推荐（已改为从 API 加载）
 
-// 高燃宣告 - 使用图标类型
-const declarationItems = [
-  {
-    id: '1',
-    rank: 1,
-    icon: '/icon-confidence.jpg',
-    iconType: '信心',
-    title: '用AI重塑传统制造业',
-    profile: '制造专家',
-    duration: '5:23',
-  },
-  {
-    id: '2',
-    rank: 2,
-    icon: '/icon-mission.jpg',
-    iconType: '使命',
-    title: '35+创业者的破局之路',
-    profile: '连续创业者',
-    duration: '8:15',
-  },
-  {
-    id: '3',
-    rank: 3,
-    icon: '/icon-self.jpg',
-    iconType: '自我',
-    title: '从HR到企业合伙人',
-    profile: '战略顾问',
-    duration: '6:42',
-  },
-  {
-    id: '4',
-    rank: 4,
-    icon: '/icon-opponent.jpg',
-    iconType: '对手',
-    title: 'AI时代的产品思维',
-    profile: '产品总监',
-    duration: '7:30',
-  },
-];
+// 高燃宣告（已改为从 API 加载）
 
 // 每日宣告
 const dailyDeclaration = {
@@ -246,6 +208,7 @@ export default function DiscoveryPage() {
   // 数据加载状态
   const [connectionItems, setConnectionItems] = useState<any[]>([]);
   const [activityItems, setActivityItems] = useState<any[]>([]);
+  const [declarationItems, setDeclarationItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -256,18 +219,20 @@ export default function DiscoveryPage() {
         setIsLoading(true);
         setError(null);
 
-        // 并行加载用户和活动数据
-        const [usersRes, activitiesRes] = await Promise.all([
+        // 并行加载用户、活动和高燃宣告数据
+        const [usersRes, activitiesRes, declarationsRes] = await Promise.all([
           fetch('/api/users'),
-          fetch('/api/activities?status=active')
+          fetch('/api/activities?status=active'),
+          fetch('/api/declarations')
         ]);
 
-        if (!usersRes.ok || !activitiesRes.ok) {
+        if (!usersRes.ok || !activitiesRes.ok || !declarationsRes.ok) {
           throw new Error('加载数据失败');
         }
 
         const usersData = await usersRes.json();
         const activitiesData = await activitiesRes.json();
+        const declarationsData = await declarationsRes.json();
 
         if (usersData.success) {
           // 将用户数据转换为前端需要的格式
@@ -306,15 +271,34 @@ export default function DiscoveryPage() {
             subtitle: activity.subtitle || '',
             description: activity.description || '',
             image: activity.image || '',
-            enrollments: [], // TODO: 从报名表获取
-            enrolledCount: 0, // TODO: 从报名表统计
+            enrollments: activity.participants?.map((p: any) => p.id.toString()) || [],
+            enrolledCount: activity.enrolledCount || 0,
             maxEnrollments: activity.capacity || 0,
             address: activity.address || '',
-            teaFee: `aa茶水费${activity.teaFee || 0}元`,
+            teaFee: `茶水费${activity.teaFee || 0}元`,
             status: (activity.status === 'active' || activity.status === 'upcoming') ? 'ongoing' : 'ended',
             endTime: activity.endDate || '',
           }));
           setActivityItems(formattedActivities);
+        }
+
+        if (declarationsData.success) {
+          // 将高燃宣告数据转换为前端需要的格式
+          const formattedDeclarations = declarationsData.data.map((declaration: any) => ({
+            id: declaration.id.toString(),
+            rank: declaration.rank || 0,
+            icon: declaration.user?.avatar || '/avatar-default.jpg',
+            iconType: declaration.iconType || '',
+            title: declaration.summary || declaration.text?.substring(0, 20) || '',
+            profile: declaration.user?.position || '',
+            duration: declaration.duration || '0:00',
+            userId: declaration.userId,
+            userName: declaration.user?.name || declaration.user?.nickname || '',
+            userAvatar: declaration.user?.avatar || '/avatar-default.jpg',
+            views: declaration.views || 0,
+            isFeatured: declaration.isFeatured || false,
+          }));
+          setDeclarationItems(formattedDeclarations);
         }
       } catch (err) {
         console.error('加载数据失败:', err);
