@@ -495,10 +495,14 @@ export default function DiscoveryPage() {
 
                   {/* 中间文字 */}
                   <div className="flex-1 min-w-0">
-                    {/* 姓名与标签 */}
+                    {/* 姓名与年龄 */}
                     <div className="flex items-center space-x-2 mb-2">
                       <span className="text-[17px] font-semibold text-gray-900 line-clamp-1">{item.name}</span>
                       <span className="text-[17px] text-[rgba(0,0,0,0.25)]">{item.age}岁</span>
+                      {/* 绿色行业标签块 */}
+                      <span className="inline-block px-1.5 py-0.5 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal line-clamp-1">
+                        {item.industry}
+                      </span>
                     </div>
                     {/* 方形浅灰色标签块 - 纯方形 */}
                     <div className="flex flex-wrap gap-2 mb-2">
@@ -510,10 +514,6 @@ export default function DiscoveryPage() {
                           {tag}
                         </span>
                       ))}
-                      {/* 绿色行业标签块 */}
-                      <span className="inline-block px-1.5 py-0.5 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal line-clamp-1">
-                        {item.industry}
-                      </span>
                     </div>
                     {/* 个人需求说明 */}
                     <p className="text-[15px] text-gray-900 leading-relaxed line-clamp-3">
