@@ -183,26 +183,7 @@ const careerMissionAssessment = {
   ]
 };
 
-// 用户基本信息
-const userInfo = {
-  id: '1', // 用户ID，用于匹配探访记录中的访客
-  name: '王芳',
-  age: 45,
-  avatar: '/avatar-3.jpg',
-  connectionType: 'personLookingForJob', // 人找事/事找人/纯交流
-  industry: '企业服务',
-  need: '希望找到传统制造业的数字化转型项目机会，用15年HRBP经验帮助企业搭建AI时代的人才培养体系',
-  abilityTags: ['技术落地', '业务咨询', '培训授课', '项目对接', '资源撮合'],
-  resourceTags: ['人才', '技术', '品牌'],
-  currentDeclaration: {
-    direction: 'confidence',
-    text: '用15年HRBP经验，帮助企业搭建AI时代的人才培养体系，实现从传统HR到数字化HRBP的转型',
-    summary: '基于15年人力资源管理经验，专注于企业数字化转型中的人才体系搭建与AI赋能实践',
-    date: '2024年3月1日',
-    views: 2847,
-  },
-  assessments: [entrepreneurialPsychologyAssessment, businessCognitionAssessment, aiCognitionAssessment, careerMissionAssessment] as Assessment[],
-};
+
 
 // 探访记录（管理员后台确认后出现）
 const visitRecords = [
@@ -348,7 +329,47 @@ export default function ProfilePage() {
   const [currentTestAssessment, setCurrentTestAssessment] = useState<Assessment | null>(null);
   const [testQuestionIndex, setTestQuestionIndex] = useState(0);
   const [testAnswers, setTestAnswers] = useState<Record<number, number>>({});
-  
+
+  // 从登录用户生成用户信息
+  const userInfo = user ? {
+    id: user.id.toString(),
+    name: user.name || user.nickname,
+    age: user.age,
+    avatar: user.avatar,
+    connectionType: user.tagStamp || 'pureExchange',
+    industry: user.industry || '未设置',
+    need: user.need || '',
+    abilityTags: user.abilityTags || [],
+    resourceTags: user.resourceTags || [],
+    currentDeclaration: {
+      direction: 'confidence',
+      text: user.bio || '',
+      summary: user.bio || '',
+      date: new Date(user.createdAt).toLocaleDateString('zh-CN'),
+      views: 0,
+    },
+    assessments: [entrepreneurialPsychologyAssessment, businessCognitionAssessment, aiCognitionAssessment, careerMissionAssessment] as Assessment[],
+  } : {
+    // 默认值，避免 null 错误
+    id: '',
+    name: '',
+    age: 0,
+    avatar: '',
+    connectionType: 'pureExchange',
+    industry: '',
+    need: '',
+    abilityTags: [] as string[],
+    resourceTags: [] as string[],
+    currentDeclaration: {
+      direction: 'confidence',
+      text: '',
+      summary: '',
+      date: '',
+      views: 0,
+    },
+    assessments: [] as Assessment[],
+  };
+
   // 切换量表展开状态
   const toggleAssessmentExpand = (index: number) => {
     setExpandedAssessments(prev => {
