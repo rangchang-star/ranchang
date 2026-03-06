@@ -413,6 +413,15 @@ export default function DiscoveryPage() {
             </p>
           </div>
 
+          {/* 装饰背景图 */}
+          <div className="px-5 pb-4">
+            <img
+              src="/discovery-header-bg.jpg"
+              alt="装饰背景"
+              className="w-full h-24 object-cover rounded-lg"
+            />
+          </div>
+
           {/* 搜索框 */}
           <div className="px-5 pb-2 pt-0">
             <div className="relative">
