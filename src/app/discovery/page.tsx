@@ -608,6 +608,21 @@ export default function DiscoveryPage() {
               </div>
             </section>
 
+            {/* 硬核图谱 */}
+            <section>
+              <div className="border border-yellow-400 p-4 bg-yellow-50/30">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-xl font-bold">
+                    <span className="text-yellow-600">硬核</span>
+                    <span className="text-yellow-500">图谱</span>
+                  </h2>
+                </div>
+                <div className="text-[13px] text-[rgba(0,0,0,0.5)] text-center py-8">
+                  敬请期待硬核图谱功能
+                </div>
+              </div>
+            </section>
+
             {/* 活动推荐 */}
             <section>
               <div className="flex items-center justify-between mb-1">
