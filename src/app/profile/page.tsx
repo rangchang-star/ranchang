@@ -984,6 +984,7 @@ export default function ProfilePage() {
           </div>
 
           {/* 量表结果展示 */}
+          {showAssessmentsSection && (
           <div>
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-[26px] font-bold">
@@ -1072,6 +1073,7 @@ export default function ProfilePage() {
                 );
               })}
             </div>
+          )}
 
           {/* 活动详情弹窗 */}
           {showActivityDetail && selectedActivity && (
