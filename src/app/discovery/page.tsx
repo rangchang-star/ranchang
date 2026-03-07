@@ -36,117 +36,142 @@ import { BottomNav } from "@/components/bottom-nav";
 
 // 高燃宣告（已改为从 API 加载）
 
-// 硬核图谱 - 技能树
-const skillTree = {
-  root: {
-    id: 'root',
-    name: '搞定自己',
-    icon: '💪',
-    level: 0,
-    description: '核心能力'
+// 硬核图谱 - 技能树（半透明圆形不规则排列）
+const skillBubbles = [
+  // 三个较大的圆形（前三个技能），大小不同
+  {
+    id: 's1',
+    name: 'AI技术',
+    size: 80,
+    color: 'bg-yellow-400/50',
+    borderColor: 'border-yellow-500',
+    textColor: 'text-yellow-800',
+    x: 25,
+    y: 30
   },
-  skills: [
-    // 第一层：基础能力
-    {
-      id: 's1',
-      name: '定方向',
-      icon: '🎯',
-      level: 1,
-      parent: 'root',
-      color: 'from-yellow-300 to-yellow-400'
-    },
-    {
-      id: 's2',
-      name: '找人识人',
-      icon: '👁️',
-      level: 1,
-      parent: 'root',
-      color: 'from-yellow-300 to-yellow-400'
-    },
-    {
-      id: 's3',
-      name: '会说人话',
-      icon: '💬',
-      level: 1,
-      parent: 'root',
-      color: 'from-yellow-300 to-yellow-400'
-    },
-    // 第二层：执行能力
-    {
-      id: 's4',
-      name: '从0到1',
-      icon: '🚀',
-      level: 2,
-      parent: 's1',
-      color: 'from-yellow-400 to-orange-400'
-    },
-    {
-      id: 's5',
-      name: '带兵打仗',
-      icon: '⚔️',
-      level: 2,
-      parent: 's1',
-      color: 'from-yellow-400 to-orange-400'
-    },
-    {
-      id: 's6',
-      name: '攒局组队',
-      icon: '🤝',
-      level: 2,
-      parent: 's2',
-      color: 'from-yellow-400 to-orange-400'
-    },
-    {
-      id: 's7',
-      name: '搞定人',
-      icon: '👥',
-      level: 2,
-      parent: 's3',
-      color: 'from-yellow-400 to-orange-400'
-    },
-    // 第三层：专业能力
-    {
-      id: 's8',
-      name: 'AI技术',
-      icon: '🤖',
-      level: 3,
-      parent: 's4',
-      color: 'from-orange-400 to-red-400'
-    },
-    {
-      id: 's9',
-      name: '摆平滥摊',
-      icon: '🔧',
-      level: 3,
-      parent: 's5',
-      color: 'from-orange-400 to-red-400'
-    },
-    {
-      id: 's10',
-      name: '看懂账本',
-      icon: '📊',
-      level: 3,
-      parent: 's6',
-      color: 'from-orange-400 to-red-400'
-    },
-    {
-      id: 's11',
-      name: '卖出去',
-      icon: '💰',
-      level: 3,
-      parent: 's7',
-      color: 'from-orange-400 to-red-400'
-    },
-    {
-      id: 's12',
-      name: '稳军心',
-      icon: '🛡️',
-      level: 3,
-      parent: 's5',
-      color: 'from-orange-400 to-red-400'
-    }
-  ]
-};
+  {
+    id: 's2',
+    name: '定方向',
+    size: 75,
+    color: 'bg-orange-400/45',
+    borderColor: 'border-orange-500',
+    textColor: 'text-orange-800',
+    x: 65,
+    y: 25
+  },
+  {
+    id: 's3',
+    name: '带兵打仗',
+    size: 70,
+    color: 'bg-red-400/40',
+    borderColor: 'border-red-500',
+    textColor: 'text-red-800',
+    x: 45,
+    y: 65
+  },
+  // 中等大小的圆形
+  {
+    id: 's4',
+    name: '从0到1',
+    size: 55,
+    color: 'bg-yellow-300/45',
+    borderColor: 'border-yellow-400',
+    textColor: 'text-yellow-700',
+    x: 15,
+    y: 55
+  },
+  {
+    id: 's5',
+    name: '摆平滥摊',
+    size: 50,
+    color: 'bg-orange-300/40',
+    borderColor: 'border-orange-400',
+    textColor: 'text-orange-700',
+    x: 80,
+    y: 50
+  },
+  {
+    id: 's6',
+    name: '搞定人',
+    size: 52,
+    color: 'bg-red-300/40',
+    borderColor: 'border-red-400',
+    textColor: 'text-red-700',
+    x: 70,
+    y: 80
+  },
+  // 小圆形
+  {
+    id: 's7',
+    name: '看懂账本',
+    size: 45,
+    color: 'bg-yellow-200/50',
+    borderColor: 'border-yellow-300',
+    textColor: 'text-yellow-600',
+    x: 30,
+    y: 15
+  },
+  {
+    id: 's8',
+    name: '攒局组队',
+    size: 42,
+    color: 'bg-orange-200/45',
+    borderColor: 'border-orange-300',
+    textColor: 'text-orange-600',
+    x: 85,
+    y: 20
+  },
+  {
+    id: 's9',
+    name: '卖出去',
+    size: 40,
+    color: 'bg-red-200/45',
+    borderColor: 'border-red-300',
+    textColor: 'text-red-600',
+    x: 10,
+    y: 80
+  },
+  {
+    id: 's10',
+    name: '稳军心',
+    size: 38,
+    color: 'bg-yellow-100/50',
+    borderColor: 'border-yellow-200',
+    textColor: 'text-yellow-500',
+    x: 50,
+    y: 90
+  },
+  {
+    id: 's11',
+    name: '搞定自己',
+    size: 48,
+    color: 'bg-orange-100/45',
+    borderColor: 'border-orange-200',
+    textColor: 'text-orange-500',
+    x: 55,
+    y: 10
+  },
+  {
+    id: 's12',
+    name: '找人识人',
+    size: 44,
+    color: 'bg-red-100/45',
+    borderColor: 'border-red-200',
+    textColor: 'text-red-500',
+    x: 20,
+    y: 40
+  },
+  {
+    id: 's13',
+    name: '会说人话',
+    size: 46,
+    color: 'bg-yellow-300/40',
+    borderColor: 'border-yellow-400',
+    textColor: 'text-yellow-700',
+    x: 90,
+    y: 70
+  }
+];
 
 // 每日宣告
 const dailyDeclaration = {
@@ -900,81 +925,40 @@ export default function DiscoveryPage() {
               {/* 硬核图谱 */}
               <section className="mt-8">
                 <div className="border border-yellow-400 p-4 bg-yellow-50/30">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl font-bold">
                       <span className="text-yellow-600">硬核</span>
                       <span className="text-yellow-500">图谱</span>
                     </h2>
-                    <span className="text-[10px] text-yellow-500/70">技能树</span>
+                    <span className="text-[10px] text-yellow-500/70">技能气泡</span>
                   </div>
 
-                  {/* 技能树展示 */}
-                  <div className="space-y-4">
-                    {/* 核心技能 */}
-                    <div className="flex justify-center">
-                      <div className="relative">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center shadow-lg border-4 border-yellow-200">
-                          <div className="text-center">
-                            <div className="text-3xl">{skillTree.root.icon}</div>
+                  {/* 技能气泡图 */}
+                  <div className="relative w-full h-64 overflow-hidden">
+                    {skillBubbles.map((bubble) => (
+                      <div
+                        key={bubble.id}
+                        className={`absolute rounded-full border-2 ${bubble.borderColor} ${bubble.color} flex items-center justify-center transition-all hover:scale-105 hover:shadow-lg`}
+                        style={{
+                          width: `${bubble.size}px`,
+                          height: `${bubble.size}px`,
+                          left: `${bubble.x}%`,
+                          top: `${bubble.y}%`,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                      >
+                        <div className={`text-center px-1 ${bubble.textColor}`}>
+                          <div className={`font-semibold ${bubble.size >= 55 ? 'text-[12px]' : bubble.size >= 40 ? 'text-[10px]' : 'text-[8px]'}`}>
+                            {bubble.name}
                           </div>
-                        </div>
-                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-yellow-600 text-white text-[10px] px-2 py-0.5 rounded-full">
-                          {skillTree.root.name}
                         </div>
                       </div>
-                    </div>
+                    ))}
+                  </div>
 
-                    {/* 连接线 */}
-                    <div className="flex justify-center">
-                      <div className="w-0.5 h-4 bg-gradient-to-b from-yellow-400 to-yellow-300"></div>
-                    </div>
-
-                    {/* 第一层技能 */}
-                    <div className="grid grid-cols-3 gap-2">
-                      {skillTree.skills.filter(s => s.level === 1).map((skill) => (
-                        <div key={skill.id} className="relative">
-                          <div className={`w-14 h-14 rounded-lg bg-gradient-to-br ${skill.color} flex items-center justify-center shadow-md border-2 border-white/50`}>
-                            <span className="text-2xl">{skill.icon}</span>
-                          </div>
-                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-white/90 text-[9px] px-1.5 py-0.5 rounded shadow-sm max-w-[50px] truncate">
-                            {skill.name}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* 第二层技能 */}
-                    <div className="grid grid-cols-4 gap-2">
-                      {skillTree.skills.filter(s => s.level === 2).map((skill) => (
-                        <div key={skill.id} className="relative">
-                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${skill.color} flex items-center justify-center shadow-md border-2 border-white/50`}>
-                            <span className="text-xl">{skill.icon}</span>
-                          </div>
-                          <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-white/90 text-[9px] px-1 py-0.5 rounded shadow-sm max-w-[45px] truncate">
-                            {skill.name}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* 第三层技能 */}
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {skillTree.skills.filter(s => s.level === 3).map((skill) => (
-                        <div key={skill.id} className="relative">
-                          <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${skill.color} flex items-center justify-center shadow-sm border-2 border-white/50`}>
-                            <span className="text-lg">{skill.icon}</span>
-                          </div>
-                          <div className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 bg-white/90 text-[8px] px-1 py-0.5 rounded shadow-sm max-w-[40px] truncate">
-                            {skill.name}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* 技能说明 */}
-                    <div className="text-[10px] text-yellow-600/70 text-center pt-2">
-                      💡 从核心能力开始，逐步解锁进阶技能
-                    </div>
+                  {/* 技能说明 */}
+                  <div className="text-[10px] text-yellow-600/70 text-center pt-2">
+                    💡 半透明大小不一的圆形，体现技能的重要性与层次
                   </div>
                 </div>
               </section>
