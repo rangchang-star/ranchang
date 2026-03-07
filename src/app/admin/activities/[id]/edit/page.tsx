@@ -411,7 +411,7 @@ export default function AdminActivityEditPage() {
 
                 <div>
                   <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    参与嘉宾 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {new Set(selectedParticipants).size} 人)</span>
+                    参与嘉宾
                   </label>
                   <div className="grid grid-cols-4 gap-3">
                     {availableMembers.map((member) => (
