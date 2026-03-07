@@ -184,7 +184,7 @@ const careerMissionAssessment = {
 
 
 
-// 探访记录（管理员后台确认后出现）
+// 探访项目（管理员后台确认后出现）
 const visitRecords = [
   {
     id: '1',
@@ -578,7 +578,7 @@ export default function ProfilePage() {
     { id: 10, question: '当团队成员出现矛盾时，您会？', options: ['回避矛盾', '分别谈话了解', '公开讨论解决', '建立规则预防', '转化为成长机会'] }
   ];
 
-  // 过滤出包含当前用户作为访客的探访记录
+  // 过滤出包含当前用户作为访客的探访项目
   const userVisitRecords = visitRecords.filter((record) =>
     record.visitors.some((visitor) => visitor.id === userInfo.id)
   );
@@ -1157,13 +1157,13 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* 探访记录 */}
+          {/* 探访项目 */}
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center space-x-2">
                 <h2 className="text-[26px] font-bold">
                   <span className="text-[rgba(96,165,250,0.6)]">探访</span>
-                  <span className="text-blue-400">记录</span>
+                  <span className="text-blue-400">项目</span>
                 </h2>
                 <span className="text-[13px] text-[rgba(0,0,0,0.25)]">
                   （你的收藏）
@@ -1175,10 +1175,10 @@ export default function ProfilePage() {
               {userVisitRecords.length === 0 ? (
                 <div className="p-8 text-center">
                   <p className="text-[17px] text-[rgba(0,0,0,0.6)]">
-                    暂无探访记录
+                    暂无探访项目
                   </p>
                   <p className="text-[14px] text-[rgba(0,0,0,0.4)] mt-1">
-                    探访记录将在后台探访管理中添加访客后显示
+                    探访项目将在后台探访管理中添加访客后显示
                   </p>
                 </div>
               ) : (
