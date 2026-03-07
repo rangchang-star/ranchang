@@ -338,7 +338,12 @@ export default function SubscriptionPage() {
                 <div className="text-center py-12 text-gray-400">暂无探访内容</div>
               ) : (
                 <React.Fragment>
-                  {visits.slice(0, visitsExpanded ? visits.length : 2).map((visit) => (
+                  {visits.slice(0, visitsExpanded ? visits.length : 2).map((visit) => {
+                    // 过滤系统标签
+                    const excludedTags = ['已审核', '已发布'];
+                    const displayTags = visit.tags?.filter((tag: string) => !excludedTags.includes(tag)) || [];
+
+                    return (
                     <div
                       key={visit.id}
                       onClick={() => {
@@ -349,19 +354,31 @@ export default function SubscriptionPage() {
                       className="block p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                     >
                     {/* 图片 */}
-                    <div className="mb-3 overflow-hidden">
+                    <div className="mb-3 overflow-hidden relative">
                       <img
                         src={visit.image}
                         alt={visit.title}
                         className="w-full h-44 object-cover"
                       />
+                      {/* 图片上的标签 */}
+                      {displayTags.length > 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                          <div className="flex flex-wrap gap-2">
+                            {displayTags.map((tag: string) => (
+                              <Badge
+                                key={tag}
+                                className="rounded-none bg-blue-400 text-white font-normal text-[11px]"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {/* 行业标签、时长、日期 */}
+                    {/* 时长、日期 */}
                     <div className="flex items-center space-x-2 mb-3">
-                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
-                        {visit.industry}
-                      </Badge>
                       <div className="flex items-center space-x-1 text-[13px] text-[rgba(0,0,0,0.25)]">
                         <Clock className="w-3.5 h-3.5" />
                         <span>{visit.duration}</span>
@@ -424,7 +441,8 @@ export default function SubscriptionPage() {
                       <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
                     </div>
                   </div>
-                  ))}
+                    );
+                  })}
                   {/* 展开/收起按钮 */}
                   {visits.length > 2 && (
                     <button

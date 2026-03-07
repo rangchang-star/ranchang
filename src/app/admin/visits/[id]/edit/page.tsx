@@ -153,7 +153,7 @@ export default function AdminVisitEditPage() {
         setParticipants(visit.visitors?.length?.toString() || '0');
         setOutcome(visit.outcome || '');
         setNotes(visit.notes || '');
-        setSelectedTags([...visit.status, visit.industry].filter(Boolean) || ['已结束']);
+        setSelectedTags(visit.tags || ['已结束']);
         setRating(visit.rating || 5);
         setSelectedVisitors(visit.visitors?.map((v: any) => v.id) || []);
         setKeyPoints(visit.keyPoints?.length > 0 ? visit.keyPoints : ['']);
@@ -324,6 +324,7 @@ export default function AdminVisitEditPage() {
         nextSteps: nextSteps.filter((ns) => ns.trim()),
         notes,
         rating,
+        tags: selectedTags,
         images: imageUrls.filter((url) => url.trim()),
         visitors: selectedVisitors.map((memberId) => {
           const member = mockMembers.find((m) => m.id === memberId);

@@ -380,9 +380,23 @@ export default function VisitDetailPage() {
               className="w-full h-full object-cover"
             />
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-5">
-              <Badge className="rounded-none bg-blue-400 text-white font-normal text-[12px] mb-2">
-                {visit.industry}
-              </Badge>
+              {/* 显示 tags 标签，过滤掉系统标签 */}
+              {visit.tags?.filter((tag: string) => !['已审核', '已发布'].includes(tag)).length > 0 ? (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {visit.tags.filter((tag: string) => !['已审核', '已发布'].includes(tag)).map((tag: string) => (
+                    <Badge
+                      key={tag}
+                      className="rounded-none bg-blue-400 text-white font-normal text-[12px]"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <Badge className="rounded-none bg-blue-400 text-white font-normal text-[12px] mb-2">
+                  {visit.industry}
+                </Badge>
+              )}
             </div>
           </div>
 

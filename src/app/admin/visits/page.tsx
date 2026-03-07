@@ -248,7 +248,7 @@ export default function AdminVisitsPage() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <div className="flex flex-wrap gap-2">
-                          {visit.tags.map((tag) => (
+                          {visit.tags?.filter(tag => !excludedTags.includes(tag)).map((tag) => (
                             <span
                               key={tag}
                               className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"

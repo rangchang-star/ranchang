@@ -1007,6 +1007,7 @@ export const mockVisits = [
     notes: '企业在AI应用方面有丰富经验，值得学习借鉴',
     rating: 5,
     status: ['已审核', '已发布'],
+    tags: ['人工智能', 'AI技术落地', '数据质量', '人才培养'],
     images: [
       'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=400&h=300&fit=crop',
       'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=300&fit=crop',
@@ -1052,6 +1053,7 @@ export const mockVisits = [
     notes: '数字化转型需要系统思维，不能急于求成',
     rating: 4,
     status: ['已审核', '已发布'],
+    tags: ['企业管理', '数字化转型', '战略规划'],
     images: [
       'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&h=300&fit=crop',
       'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop',
@@ -1097,6 +1099,7 @@ export const mockVisits = [
     notes: '教育科技行业发展迅速，创新是关键',
     rating: 5,
     status: ['已审核', '已发布'],
+    tags: ['在线教育', 'AI技术', '个性化学习'],
     images: [
       'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=300&fit=crop',
       'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=300&fit=crop',
@@ -1142,6 +1145,7 @@ export const mockVisits = [
     notes: '早期投资风险高，但回报潜力也大',
     rating: 4,
     status: ['已审核', '已发布'],
+    tags: ['投资', '项目评估', '风险管理'],
     images: [
       'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop',
       'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=400&h=300&fit=crop',
@@ -1187,6 +1191,7 @@ export const mockVisits = [
     notes: '设计不仅是艺术，更是商业',
     rating: 5,
     status: ['已审核', '已发布'],
+    tags: ['设计', '品牌设计', '创新思维'],
     images: [
       'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop',
       'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400&h=300&fit=crop',
