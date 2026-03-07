@@ -908,7 +908,7 @@ export default function ProfilePage() {
                   userInfo.hardcoreTags.map((tag: string) => (
                     <span
                       key={tag}
-                      className="px-2.5 py-1 bg-blue-100 text-blue-600 text-[14px] font-medium"
+                      className="px-2.5 py-1 bg-blue-100 text-black text-[14px]"
                     >
                       {tag}
                     </span>
