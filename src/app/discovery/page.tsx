@@ -469,18 +469,31 @@ export default function DiscoveryPage() {
 
         if (documentsData.success) {
           // 将文档数据转换为前端需要的格式
-          const formattedDocuments = documentsData.data.map((doc: any) => ({
-            id: doc.id,
-            type: doc.type || "document",
-            title: doc.title || "",
-            icon: doc.icon || "robot",
-            description: doc.description || "",
-            content: doc.content || "",
-            cover: doc.cover || "",
-            date: doc.date || "",
-            views: doc.views || 0,
-            status: doc.status || "published",
-          }));
+          const formattedDocuments = documentsData.data.map((doc: any) => {
+            // 根据 fileType 映射图标
+            const iconMap: Record<string, string> = {
+              pdf: "book",
+              docx: "note",
+              doc: "note",
+              xlsx: "table",
+              xls: "table",
+              pptx: "note",
+              ppt: "note",
+            };
+
+            return {
+              id: doc.id,
+              type: doc.type || "document",
+              title: doc.title || "",
+              icon: doc.icon || iconMap[doc.fileType] || "note",
+              description: doc.description || "",
+              content: doc.content || "",
+              cover: doc.cover || "",
+              date: doc.createdAt ? doc.createdAt.split('T')[0] : "",
+              views: doc.downloadCount || 0,
+              status: doc.status || "published",
+            };
+          });
           setDocumentItems(formattedDocuments);
         }
 
