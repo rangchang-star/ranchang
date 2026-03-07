@@ -528,8 +528,8 @@ export default function ProfilePage() {
   // 切换所有量表的展开/收起
   const toggleAllAssessments = () => {
     if (expandedAssessments.size === userInfo.assessments.length) {
-      // 如果全部展开，则全部收起，只保留第一个
-      setExpandedAssessments(new Set([0]));
+      // 如果全部展开，则全部收起
+      setExpandedAssessments(new Set());
     } else {
       // 否则全部展开
       setExpandedAssessments(new Set(userInfo.assessments.map((_, idx) => idx)));
