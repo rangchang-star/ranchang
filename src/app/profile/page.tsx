@@ -1166,7 +1166,7 @@ export default function ProfilePage() {
                   <span className="text-blue-400">记录</span>
                 </h2>
                 <span className="text-[13px] text-[rgba(0,0,0,0.25)]">
-                  （只探访案主可见）
+                  （你的收藏）
                 </span>
               </div>
             </div>
