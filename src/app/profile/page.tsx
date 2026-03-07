@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/auth-context';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut, ChevronDown, ChevronUp, Zap, Building2 } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -929,7 +929,10 @@ export default function ProfilePage() {
 
             {/* 第二行：行业标签 */}
             <div className="mb-3">
-              <div className="text-[14px] text-gray-400 mb-1">行业标签（必填）</div>
+              <div className="text-[14px] text-gray-400 mb-1 flex items-center space-x-2">
+                <Building2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+                行业标签（必填）
+              </div>
               <span className="block w-full px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal">
                 {userInfo.industry}
               </span>
@@ -937,8 +940,8 @@ export default function ProfilePage() {
 
             {/* 硬核标签 */}
             <div className="mb-3">
-              <div className="text-[14px] text-gray-400 mb-2 flex items-center">
-                <Zap className="w-3.5 h-3.5 text-blue-400 mr-1" />
+              <div className="text-[14px] text-gray-400 mb-2 flex items-center space-x-2">
+                <Zap className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
                 硬核标签（必填）
               </div>
               <div className="flex flex-wrap gap-2">
@@ -959,8 +962,8 @@ export default function ProfilePage() {
 
             {/* 资源标签 */}
             <div className="mb-3">
-              <div className="text-[14px] text-gray-400 mb-2 flex items-center">
-                <Briefcase className="w-3.5 h-3.5 text-blue-400 mr-1" />
+              <div className="text-[14px] text-gray-400 mb-2 flex items-center space-x-2">
+                <Briefcase className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
                 资源标签（必填）
               </div>
               <div className="flex flex-wrap gap-2">
@@ -978,7 +981,7 @@ export default function ProfilePage() {
             {/* 一句说清你的需要 */}
             <div className="mt-4 p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-2 mb-2">
-                <Info className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                <Info className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
                 <div className="text-[14px] text-gray-400">一句话说清你的需求</div>
               </div>
               <p className="text-[17px] text-gray-700 leading-relaxed line-clamp-3">
@@ -989,7 +992,7 @@ export default function ProfilePage() {
             {/* 当前宣告 */}
             <div className="mt-4 p-3 bg-gray-50 rounded-lg">
               <div className="flex items-start space-x-2">
-                <Flame className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                <Flame className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[14px] text-gray-500">
