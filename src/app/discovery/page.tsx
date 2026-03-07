@@ -510,17 +510,6 @@ export default function DiscoveryPage() {
             }
           }
         }
-              setDailyDeclaration({
-                image: latest.image,
-                date: latest.date,
-                title: latest.title,
-                duration: latest.duration,
-                audio: latest.audio,
-                id: latest.id,
-              });
-            }
-          }
-        }
       } catch (err) {
         console.error("加载数据失败:", err);
         setError("加载数据失败，请稍后重试");
