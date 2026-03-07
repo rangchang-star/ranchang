@@ -531,6 +531,18 @@ function ProfileEditContent() {
     try {
       localStorage.setItem('userProfile', JSON.stringify(fullProfile));
 
+      // 同时更新 currentUser 中的相关字段，确保个人中心页面能读取到最新数据
+      if (isLoggedIn && user) {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        currentUser.hardcoreTags = selectedAbilityTags;
+        currentUser.resourceTags = selectedResources;
+        currentUser.industry = profile.industry;
+        currentUser.bio = profile.declaration;
+        currentUser.tagStamp = selectedPurpose === '人找事' ? 'personLookingForJob' :
+                             selectedPurpose === '事找人' ? 'jobLookingForPerson' : 'pureExchange';
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+      }
+
       // 保存宣告数据（新的数据结构）
       const declarationsArray = directions.map(dir => {
         const decl = declarations[dir.id] || { theme: '', description: '', hasRecorded: false };
@@ -546,19 +558,6 @@ function ProfileEditContent() {
       });
 
       localStorage.setItem('userDeclarations', JSON.stringify(declarationsArray));
-
-      // 触发自定义事件，通知其他页面更新
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'userProfile',
-        newValue: JSON.stringify(fullProfile),
-        storageArea: window.localStorage,
-      }));
-
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: 'userDeclarations',
-        newValue: JSON.stringify(declarationsArray),
-        storageArea: window.localStorage,
-      }));
 
       console.log('保存资料:', fullProfile);
       alert('资料保存成功！');

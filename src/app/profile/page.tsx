@@ -470,33 +470,6 @@ export default function ProfilePage() {
 
   const [userInfo, setUserInfo] = useState(() => getUserInfoFromUser(user));
 
-  // 监听 localStorage 的 userProfile 变化，确保编辑页面保存后能同步更新
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'userProfile' && e.newValue) {
-        try {
-          const userProfile = JSON.parse(e.newValue);
-          // 如果 userProfile 包含 hardcoreTags，更新 userInfo 中的 hardcoreTags
-          if (userProfile.hardcoreTags) {
-            setUserInfo(prev => ({
-              ...prev,
-              hardcoreTags: userProfile.hardcoreTags,
-            }));
-          }
-        } catch (error) {
-          console.error('Failed to parse userProfile from storage:', error);
-        }
-      }
-    };
-
-    // 监听 window 的 storage 事件
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
   // 切换量表展开状态
   const toggleAssessmentExpand = (index: number) => {
     setExpandedAssessments(prev => {
