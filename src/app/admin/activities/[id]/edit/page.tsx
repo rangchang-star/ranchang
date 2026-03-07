@@ -663,8 +663,16 @@ export default function AdminActivityEditPage() {
                   {selectedTags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {selectedTags.map((tag) => (
-                        <span key={tag} className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[11px] text-[rgba(0,0,0,0.6)]">
+                        <span key={tag} className="relative inline-flex items-center px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[11px] text-[rgba(0,0,0,0.6)] rounded">
                           {tag}
+                          <button
+                            type="button"
+                            onClick={() => handleTagToggle(tag)}
+                            className="ml-1 hover:text-red-500 transition-colors"
+                            title="删除标签"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
                         </span>
                       ))}
                     </div>
