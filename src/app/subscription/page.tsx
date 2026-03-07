@@ -161,6 +161,7 @@ export default function SubscriptionPage() {
             visitors: visit.visitors || [],
             record: visit.record || '',
             status: visit.status || [],
+            tags: visit.tags || [],
             audioDuration: visit.audioDuration || '',
             image: visit.image || '',
           }));
