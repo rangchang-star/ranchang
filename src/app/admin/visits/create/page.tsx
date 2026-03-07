@@ -332,16 +332,52 @@ export default function AdminVisitCreatePage() {
                 />
               </div>
 
+              {/* 探访对象头像 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  探访对象头像URL
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  探访对象头像
                 </label>
-                <Input
-                  value={targetAvatar}
-                  onChange={(e) => setTargetAvatar(e.target.value)}
-                  placeholder="请输入头像图片URL"
-                  className="text-[13px]"
-                />
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    {targetAvatar ? (
+                      <Image
+                        src={targetAvatar}
+                        alt="头像预览"
+                        width={80}
+                        height={80}
+                        className="w-20 h-20 rounded-lg object-cover border-2 border-[rgba(0,0,0,0.1)]"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-lg bg-[rgba(0,0,0,0.05)] border-2 border-dashed border-[rgba(0,0,0,0.2)] flex items-center justify-center">
+                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">暂无头像</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const url = URL.createObjectURL(file);
+                          setTargetAvatar(url);
+                        }
+                      }}
+                      className="text-[13px]"
+                    />
+                    <Input
+                      value={targetAvatar}
+                      onChange={(e) => setTargetAvatar(e.target.value)}
+                      placeholder="或输入头像图片URL"
+                      className="text-[13px]"
+                    />
+                    <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                      支持上传图片或输入图片链接
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* 探访时间 */}
