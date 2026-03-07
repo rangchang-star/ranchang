@@ -95,7 +95,8 @@ export default function AdminVisitEditPage() {
 
   // 访客选择
   const [selectedVisitors, setSelectedVisitors] = useState<string[]>([]);
-
+  const [availableMembers, setAvailableMembers] = useState(mockMembers);
+  
   // 自定义访客
   const [showAddCustomVisitor, setShowAddCustomVisitor] = useState(false);
   const [customVisitorName, setCustomVisitorName] = useState('');
@@ -202,6 +203,14 @@ export default function AdminVisitEditPage() {
   // 移除访客
   const handleRemoveVisitor = (memberId: string) => {
     setSelectedVisitors(selectedVisitors.filter((id) => id !== memberId));
+  };
+
+  // 删除访客（永久删除）
+  const handleDeleteVisitor = (memberId: string) => {
+    // 从已选中列表中移除
+    setSelectedVisitors(selectedVisitors.filter((id) => id !== memberId));
+    // 从可用访客列表中永久删除
+    setAvailableMembers(availableMembers.filter((m) => m.id !== memberId));
   };
 
   // 添加关键点
@@ -605,7 +614,7 @@ export default function AdminVisitEditPage() {
                 <div className="space-y-2">
                   <span className="text-[12px] text-[rgba(0,0,0,0.6)]">可选访客：</span>
                   <div className="grid grid-cols-2 gap-2">
-                    {mockMembers
+                    {availableMembers
                       .filter((member) => !selectedVisitors.includes(member.id))
                       .map((member) => (
                         <button
@@ -630,6 +639,17 @@ export default function AdminVisitEditPage() {
                               {member.abilityTags.join(' · ')}
                             </div>
                           </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteVisitor(member.id);
+                            }}
+                            className="w-6 h-6 flex items-center justify-center bg-red-500 hover:bg-red-600 rounded text-white flex-shrink-0 transition-colors"
+                            title="删除访客"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
                           <Plus className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
                         </button>
                       ))}
