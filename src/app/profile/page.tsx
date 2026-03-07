@@ -1435,7 +1435,7 @@ export default function ProfilePage() {
                     window.location.href = '/login';
                   } else {
                     // 跳转到个人资料页面
-                    window.location.href = '/profile/edit';
+                    window.location.href = `/profile/edit?id=${user?.id}`;
                   }
                 }}
                 className="flex-1 py-3 text-[18px] text-white bg-[rgba(59,130,246,0.4)] hover:bg-[rgba(59,130,246,0.5)]"
