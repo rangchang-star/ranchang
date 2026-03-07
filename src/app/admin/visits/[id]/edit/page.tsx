@@ -161,6 +161,7 @@ export default function AdminVisitEditPage() {
         setNextSteps(visit.nextSteps?.length > 0 ? visit.nextSteps : ['']);
         setImageUrls(visit.images?.length > 0 ? visit.images : ['']);
         setImagePreviewUrls(visit.images?.length > 0 ? visit.images : ['']);
+        setMainImage(visit.mainImage || '');
       } catch (error) {
         console.error('加载数据失败:', error);
         alert('加载数据失败');
@@ -186,6 +187,8 @@ export default function AdminVisitEditPage() {
 
   // 自定义标签
   const [customTag, setCustomTag] = useState('');
+  const [mainImage, setMainImage] = useState<string>('');
+  const [uploadingMainImage, setUploadingMainImage] = useState(false);
   const handleAddCustomTag = () => {
     if (customTag.trim() && !selectedTags.includes(customTag.trim())) {
       setSelectedTags([...selectedTags, customTag.trim()]);
@@ -335,6 +338,7 @@ export default function AdminVisitEditPage() {
         rating,
         tags: selectedTags,
         images: imageUrls.filter((url) => url.trim()),
+        mainImage: mainImage,
         visitors: selectedVisitors.map((memberId) => {
           const member = mockMembers.find((m) => m.id === memberId);
           return member
@@ -1017,6 +1021,84 @@ export default function AdminVisitEditPage() {
                   添加
                 </Button>
               </div>
+            </div>
+          </div>
+
+          {/* 活动主图 */}
+          <div className="border border-[rgba(0,0,0,0.1)]">
+            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
+              <h3 className="text-[13px] font-semibold text-gray-900">活动主图</h3>
+            </div>
+            <div className="p-4 space-y-4">
+              {mainImage ? (
+                <div className="relative">
+                  <Image
+                    src={mainImage}
+                    alt="活动主图"
+                    width={800}
+                    height={450}
+                    className="w-full h-auto rounded-lg object-cover"
+                    unoptimized
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMainImage('')}
+                    className="absolute top-2 right-2 bg-white/90 hover:bg-white"
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    删除
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-[rgba(0,0,0,0.2)] rounded-lg p-8 text-center">
+                  <input
+                    type="file"
+                    id="main-image-upload"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      setUploadingMainImage(true);
+                      try {
+                        // 读取文件为 base64
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setMainImage(reader.result as string);
+                          setUploadingMainImage(false);
+                        };
+                        reader.readAsDataURL(file);
+                      } catch (error) {
+                        console.error('上传主图失败:', error);
+                        alert('上传主图失败，请重试');
+                        setUploadingMainImage(false);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="main-image-upload"
+                    className="cursor-pointer inline-flex flex-col items-center"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[rgba(59,130,246,0.1)] flex items-center justify-center mb-3">
+                      <Plus className="w-6 h-6 text-blue-500" />
+                    </div>
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)] mb-1">
+                      点击上传活动主图
+                    </span>
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                      支持 JPG、PNG 等格式
+                    </span>
+                  </label>
+                  {uploadingMainImage && (
+                    <div className="mt-3 text-[13px] text-blue-500">上传中...</div>
+                  )}
+                </div>
+              )}
+              <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                * 活动主图将作为探访项目的顶图显示，建议尺寸 16:9
+              </p>
             </div>
           </div>
         </div>
