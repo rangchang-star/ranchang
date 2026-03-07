@@ -149,6 +149,17 @@ export default function DeclarationDetailPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
+
   const handleLike = () => {
     setIsLiked(!isLiked);
   };
@@ -164,8 +175,8 @@ export default function DeclarationDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="w-full max-w-md mx-auto">
+    <div className="min-h-screen bg-white pb-14">
+      <div className="w-full max-w-md mx-auto pb-8">
         {/* 顶部导航 */}
         <div className="sticky top-0 bg-white z-50 px-5 py-4">
           <div className="flex items-center justify-between">
@@ -319,8 +330,8 @@ export default function DeclarationDetailPage() {
             </div>
 
             {/* 发布时间 */}
-            <div className="text-[11px] text-[rgba(0,0,0,0.4)] text-center">
-              发布于 {declaration.publishDate}
+            <div className="text-[11px] text-[rgba(0,0,0,0.4)] text-center mt-6">
+              发布于 {declaration.createdAt ? formatDate(declaration.createdAt) : ''}
             </div>
           </div>
         </div>
