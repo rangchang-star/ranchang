@@ -307,14 +307,14 @@ export default function AdminActivityCreatePage() {
 
                 <div>
                   <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    参与嘉宾 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {selectedParticipants.length} 人)</span>
+                    参与嘉宾 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {selectedParticipants.length + 3} 人)</span>
                   </label>
                   <div className="grid grid-cols-4 gap-3">
                     {mockMembers.map((member) => (
                       <button
                         key={member.id}
                         onClick={() => handleToggleParticipant(member.id)}
-                        className={`flex flex-col items-center space-y-2 p-3 rounded-lg border-2 transition-all ${
+                        className={`relative flex flex-col items-center space-y-2 p-3 rounded-lg border-2 transition-all ${
                           selectedParticipants.includes(member.id)
                             ? 'border-blue-400 bg-blue-50'
                             : 'border-[rgba(0,0,0,0.1)] hover:border-[rgba(59,130,246,0.3)]'
@@ -330,6 +330,19 @@ export default function AdminActivityCreatePage() {
                             <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center">
                               <Check className="w-3 h-3 text-white" />
                             </div>
+                          )}
+                          {selectedParticipants.includes(member.id) && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleParticipant(member.id);
+                              }}
+                              className="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
+                              title="删除嘉宾"
+                            >
+                              <X className="w-3 h-3 text-white" />
+                            </button>
                           )}
                         </div>
                         <span className="text-[11px] text-[rgba(0,0,0,0.8)]">{member.name}</span>
