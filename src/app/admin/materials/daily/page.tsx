@@ -3,7 +3,7 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Edit, Trash2, Search, Volume2, Play } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Volume2, Play, ArrowLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -178,9 +178,17 @@ export default function AdminDailyDeclarationsPage() {
       <div className="space-y-6">
         {/* 页面头部 */}
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-[15px] font-bold text-gray-900 mb-1">每日宣告管理</h2>
-            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">管理每日高燃宣告内容</p>
+          <div className="flex items-center space-x-4">
+            <Link href="/admin/materials">
+              <Button variant="ghost" size="sm" className="text-[rgba(0,0,0,0.6)] hover:text-gray-900">
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                返回
+              </Button>
+            </Link>
+            <div>
+              <h2 className="text-[15px] font-bold text-gray-900 mb-1">每日宣告管理</h2>
+              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">管理每日高燃宣告内容</p>
+            </div>
           </div>
           <Link href="/admin/materials/daily/create">
             <Button>
