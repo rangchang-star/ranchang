@@ -2,14 +2,20 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronRight, Shield, HelpCircle, LogOut, LayoutDashboard, User } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Shield, HelpCircle, LogOut, LayoutDashboard, X, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminLoginError, setAdminLoginError] = useState('');
+  const [isAdminLogging, setIsAdminLogging] = useState(false);
   const { user, isLoggedIn, logout } = useAuth();
   const router = useRouter();
 
@@ -32,6 +38,42 @@ export default function SettingsPage() {
       // 重定向到首页
       router.push('/');
     }
+  };
+
+  const handleAdminLogin = async () => {
+    setAdminLoginError('');
+    
+    // 验证输入
+    if (!adminUsername || !adminPassword) {
+      setAdminLoginError('请输入用户名和密码');
+      return;
+    }
+
+    setIsAdminLogging(true);
+
+    try {
+      // 验证管理员账号
+      if (adminUsername === '13023699913' && adminPassword === '818989') {
+        // 验证成功，跳转到管理后台
+        setShowAdminLoginModal(false);
+        setAdminUsername('');
+        setAdminPassword('');
+        router.push('/admin');
+      } else {
+        setAdminLoginError('用户名或密码错误');
+      }
+    } catch (error) {
+      setAdminLoginError('登录失败，请重试');
+    } finally {
+      setIsAdminLogging(false);
+    }
+  };
+
+  const handleAdminLoginCancel = () => {
+    setShowAdminLoginModal(false);
+    setAdminUsername('');
+    setAdminPassword('');
+    setAdminLoginError('');
   };
 
   return (
@@ -130,10 +172,13 @@ export default function SettingsPage() {
               <h2 className="text-[15px] font-semibold text-gray-900">管理后台</h2>
             </div>
             <div className="divide-y divide-[rgba(0,0,0,0.05)]">
-              <Link href="/admin" className="flex items-center justify-between py-4 hover:bg-[rgba(0,0,0,0.02)]">
+              <button
+                onClick={() => setShowAdminLoginModal(true)}
+                className="w-full flex items-center justify-between py-4 hover:bg-[rgba(0,0,0,0.02)] text-left"
+              >
                 <span className="text-[13px] text-gray-900">进入管理后台</span>
                 <ChevronRight className="w-5 h-5 text-[rgba(0,0,0,0.3)]" />
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -155,6 +200,92 @@ export default function SettingsPage() {
           </Button>
         </div>
       </div>
+
+      {/* 管理员登录弹窗 */}
+      {showAdminLoginModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-lg w-full max-w-sm p-6 relative">
+            {/* 关闭按钮 */}
+            <button
+              onClick={handleAdminLoginCancel}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* 标题 */}
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Lock className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-[17px] font-semibold text-gray-900">管理员登录</h3>
+              <p className="text-[13px] text-gray-500 mt-1">请输入管理员账号和密码</p>
+            </div>
+
+            {/* 表单 */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[13px] font-medium text-gray-700 mb-1.5">
+                  用户名
+                </label>
+                <Input
+                  type="text"
+                  value={adminUsername}
+                  onChange={(e) => setAdminUsername(e.target.value)}
+                  placeholder="请输入管理员用户名"
+                  className="h-10 text-[13px]"
+                  disabled={isAdminLogging}
+                />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-medium text-gray-700 mb-1.5">
+                  密码
+                </label>
+                <Input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  placeholder="请输入密码"
+                  className="h-10 text-[13px]"
+                  disabled={isAdminLogging}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAdminLogin();
+                    }
+                  }}
+                />
+              </div>
+
+              {/* 错误提示 */}
+              {adminLoginError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-[12px] text-red-600">{adminLoginError}</p>
+                </div>
+              )}
+
+              {/* 按钮 */}
+              <div className="flex space-x-3 pt-2">
+                <Button
+                  onClick={handleAdminLoginCancel}
+                  variant="outline"
+                  className="flex-1 h-10 text-[13px]"
+                  disabled={isAdminLogging}
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={handleAdminLogin}
+                  disabled={isAdminLogging}
+                  className="flex-1 bg-blue-400 hover:bg-blue-500 text-white h-10 text-[13px]"
+                >
+                  {isAdminLogging ? '登录中...' : '确定'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
