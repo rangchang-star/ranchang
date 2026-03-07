@@ -441,9 +441,6 @@ export default function ProfilePage() {
   // 量表展开状态 - 默认只展开"创业心理评估"
   const [expandedAssessments, setExpandedAssessments] = useState<Set<number>>(new Set([0]));
   
-  // 量表评估部分显示状态 - 默认显示
-  const [showAssessmentsSection, setShowAssessmentsSection] = useState(true);
-  
   // 咨询相关状态
   const [selectedTopic, setSelectedTopic] = useState<string>('ai-frontier'); // 默认选择第一个话题
   const [consultationQuestion, setConsultationQuestion] = useState(''); // 清空初始问题
@@ -530,7 +527,15 @@ export default function ProfilePage() {
 
   // 切换所有量表的展开/收起
   const toggleAllAssessments = () => {
-    setShowAssessmentsSection(!showAssessmentsSection);
+    // 如果所有量表都已展开，则收起全部；否则展开全部
+    const allExpanded = expandedAssessments.size === userInfo.assessments.length;
+    if (allExpanded) {
+      // 收起全部：清空展开集合
+      setExpandedAssessments(new Set());
+    } else {
+      // 展开全部：添加所有量表到展开集合
+      setExpandedAssessments(new Set(userInfo.assessments.map((_, idx) => idx)));
+    }
   };
 
   // 处理开始测试按钮点击
@@ -984,7 +989,6 @@ export default function ProfilePage() {
           </div>
 
           {/* 量表结果展示 */}
-          {showAssessmentsSection && (
           <div>
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-[26px] font-bold">
@@ -995,7 +999,7 @@ export default function ProfilePage() {
                 onClick={toggleAllAssessments}
                 className="text-[13px] text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] flex items-center space-x-1"
               >
-                <span>{showAssessmentsSection ? '收起全部' : '展开全部'}</span>
+                <span>{expandedAssessments.size === userInfo.assessments.length ? '收起全部' : '展开全部'}</span>
               </button>
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
@@ -1074,7 +1078,6 @@ export default function ProfilePage() {
               })}
             </div>
           </div>
-          )}
 
           {/* 活动详情弹窗 */}
           {showActivityDetail && selectedActivity && (
