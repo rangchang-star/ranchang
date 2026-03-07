@@ -308,6 +308,9 @@ export default function DiscoveryPage() {
   );
 
   const [showAssetsModal, setShowAssetsModal] = useState(false);
+  
+  // 技能气泡点击状态
+  const [clickedBubbleId, setClickedBubbleId] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
 
@@ -938,7 +941,16 @@ export default function DiscoveryPage() {
                     {skillBubbles.map((bubble) => (
                       <div
                         key={bubble.id}
-                        className={`absolute rounded-full border ${bubble.borderColor} ${bubble.color} flex items-center justify-center transition-all hover:scale-105 hover:shadow-lg`}
+                        onClick={() => {
+                          setClickedBubbleId(bubble.id);
+                          // 1.5秒后自动取消选中状态
+                          setTimeout(() => setClickedBubbleId(null), 1500);
+                        }}
+                        className={`absolute rounded-full border ${bubble.borderColor} ${bubble.color} flex items-center justify-center cursor-pointer transition-all hover:scale-105 hover:shadow-lg ${
+                          clickedBubbleId === bubble.id
+                            ? 'scale-110 shadow-xl ring-4 ring-yellow-300/50'
+                            : ''
+                        }`}
                         style={{
                           width: `${bubble.size}px`,
                           height: `${bubble.size}px`,
