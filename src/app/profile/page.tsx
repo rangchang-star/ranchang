@@ -450,7 +450,7 @@ export default function ProfilePage() {
     connectionType: 'pureExchange',
     industry: '',
     need: '',
-    abilityTags: [] as string[],
+    hardcoreTags: [] as string[],
     resourceTags: [] as string[],
     currentDeclaration: {
       direction: 'confidence',

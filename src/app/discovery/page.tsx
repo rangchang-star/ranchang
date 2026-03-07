@@ -398,7 +398,7 @@ export default function DiscoveryPage() {
             name: user.name || user.nickname,
             age: user.age || 0,
             avatar: user.avatar || "/avatar-default.jpg",
-            tags: user.abilityTags || user.tags || [], // 优先使用 abilityTags
+            tags: user.hardcoreTags || user.tags || [], // 优先使用 hardcoreTags
             industry: user.industry || "",
             tagStamp: user.tagStamp || "pureExchange",
             need: user.need || "",

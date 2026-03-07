@@ -177,7 +177,7 @@ Response:
   "data": {
     "id": 1,
     "name": "张明",
-    "abilityTags": ["技术架构", "团队管理"],
+    "hardcoreTags": ["技术架构", "团队管理"],
     "resourceTags": ["资金", "人脉"],
     ...
   }

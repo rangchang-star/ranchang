@@ -28,7 +28,7 @@ export async function GET(
       connectionType: user.tagStamp || 'personLookingForJob',
       industry: user.industry,
       need: user.need,
-      abilityTags: user.abilityTags || [],
+      hardcoreTags: user.hardcoreTags || [],
       resourceTags: user.resourceTags || [],
 
       // 后台标签
@@ -96,7 +96,7 @@ export async function PUT(
       bio: body.bio,
       need: body.need,
       tags: body.adminTags,
-      abilityTags: body.abilityTags,
+      hardcoreTags: body.hardcoreTags,
       resourceTags: body.resourceTags,
       tagStamp: body.connectionType,
       isFeatured: body.isFeatured,

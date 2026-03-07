@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       bio: user.bio,
       need: user.need,
       tagStamp: user.tagStamp,
-      abilityTags: user.abilityTags,
+      hardcoreTags: user.hardcoreTags,
       resourceTags: user.resourceTags,
       role: user.role,
       connectionCount: user.connectionCount || 0,

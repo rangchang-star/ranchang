@@ -55,7 +55,7 @@ export default function ConnectionDetailPage() {
             industry: data.data.industry || '',
             tagStamp: data.data.tagStamp || 'pureExchange',
             need: data.data.need || '',
-            abilityTags: data.data.abilityTags || [],
+            hardcoreTags: data.data.hardcoreTags || [],
             resourceTags: data.data.resourceTags || [],
             currentDeclaration: {
               direction: 'confidence',

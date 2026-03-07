@@ -23,7 +23,7 @@ const mockMember = {
   company: '某科技公司',
   position: 'CEO',
   industry: '企业服务',
-  abilityTags: ['供应链专家', '数字化转型'],
+  hardcoreTags: ['供应链专家', '数字化转型'],
   description: '15年供应链管理经验，专注于制造业数字化转型',
   lastLogin: '2024-03-18 09:30',
   activityCount: 12,
@@ -146,7 +146,7 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
                 <span className="text-[13px] text-gray-900">{mockMember.industry}</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {mockMember.abilityTags.map((tag) => (
+                {mockMember.hardcoreTags.map((tag) => (
                   <span
                     key={tag}
                     className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
