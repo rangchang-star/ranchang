@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/auth-context';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut, ChevronDown, ChevronUp, Zap } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -937,7 +937,10 @@ export default function ProfilePage() {
 
             {/* 硬核标签 */}
             <div className="mb-3">
-              <div className="text-[14px] text-gray-400 mb-2">硬核标签（必填）</div>
+              <div className="text-[14px] text-gray-400 mb-2 flex items-center">
+                <Zap className="w-3.5 h-3.5 text-blue-400 mr-1" />
+                硬核标签（必填）
+              </div>
               <div className="flex flex-wrap gap-2">
                 {userInfo.hardcoreTags && userInfo.hardcoreTags.length > 0 ? (
                   userInfo.hardcoreTags.map((tag: string) => (
@@ -956,7 +959,10 @@ export default function ProfilePage() {
 
             {/* 资源标签 */}
             <div className="mb-3">
-              <div className="text-[14px] text-gray-400 mb-2">资源标签（必填）</div>
+              <div className="text-[14px] text-gray-400 mb-2 flex items-center">
+                <Briefcase className="w-3.5 h-3.5 text-blue-400 mr-1" />
+                资源标签（必填）
+              </div>
               <div className="flex flex-wrap gap-2">
                 {userInfo.resourceTags.map((tag: string) => (
                   <span
