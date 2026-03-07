@@ -1213,25 +1213,6 @@ export default function ProfilePage() {
                           {record.role}
                         </Badge>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        {record.visitors.map((visitor, idx) => (
-                          <div key={idx} className="flex items-center space-x-1">
-                            <div className="w-6 h-6 rounded-full overflow-hidden">
-                              <Image
-                                src={visitor.avatar}
-                                alt={visitor.name}
-                                width={24}
-                                height={24}
-                                className="w-full h-full object-cover"
-                                unoptimized
-                              />
-                            </div>
-                            <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[16px]">
-                              {visitor.skill}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 </div>
