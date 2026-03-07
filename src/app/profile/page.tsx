@@ -42,40 +42,6 @@ const resourceTags = [
   '数据资源', '政府关系', '媒体资源', '合作伙伴', '其他'
 ];
 
-// 硬核标签数据项（必选）
-const hardcoreTags = [
-  'AI技术',
-  '定方向',
-  '带兵打仗',
-  '从0到1',
-  '摆平烂摊',
-  '搞定人',
-  '看懂账本',
-  '攒局组队',
-  '卖出去',
-  '稳军心',
-  '搞定自己',
-  '找人识人',
-  '会说人话',
-];
-
-// 硬核标签说明映射
-const tagDescriptions: Record<string, string> = {
-  'AI技术': '拥抱AI，掌握前沿技术工具',
-  '定方向': '做战略、选赛道、不踩坑',
-  '带兵打仗': '从管1个人到管100个人的实战能力',
-  '从0到1': '冷启动、开荒、从零搭班子',
-  '摆平烂摊': '接盘烂项目、救火、危机处理',
-  '搞定人': '跨部门推动、向上管理、难缠客户',
-  '看懂账本': '算成本、看财报、懂毛利、控预算',
-  '攒局组队': '拉资源、找搭档、攒项目',
-  '卖出去': '拿单、成交、搞钱',
-  '稳军心': '团队动荡、士气低、人心散',
-  '搞定自己': '情绪管理、抗压、不崩',
-  '找人识人': '招对人、看走眼、搭团队',
-  '会说人话': '汇报、路演、谈判、讲明白事',
-};
-
 // 人找事/事找人/纯交流选项（必选）
 const connectionType = [
   { id: 'personLookingForJob', label: '人找事', description: '我有能力，寻找项目机会' },
@@ -384,12 +350,42 @@ export default function ProfilePage() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // 硬核标签编辑相关状态
-  const [editingHardcoreTags, setEditingHardcoreTags] = useState(false);
-  const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>([]);
-  const [hoveredTag, setHoveredTag] = useState<string | null>(null);
-  const [isSavingTags, setIsSavingTags] = useState(false);
-  
+  // 从 localStorage.currentUser 同步最新数据到 userInfo
+  useEffect(() => {
+    const syncFromLocalStorage = () => {
+      try {
+        const storedUser = localStorage.getItem('currentUser');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          setUserInfo(prev => ({
+            ...prev,
+            hardcoreTags: userData.hardcoreTags || [],
+            resourceTags: userData.resourceTags || [],
+            industry: userData.industry || prev.industry,
+            need: userData.need || prev.need,
+            name: userData.name || userData.nickname || prev.name,
+            age: userData.age || prev.age,
+            avatar: userData.avatar || prev.avatar,
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to sync from localStorage:', error);
+      }
+    };
+
+    syncFromLocalStorage();
+
+    // 监听 localStorage 的变化（用于同步编辑页面的修改）
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'currentUser' && e.newValue) {
+        syncFromLocalStorage();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // 根据用户ID加载模拟通知数据
   useEffect(() => {
     const loadUserNotifications = () => {
@@ -521,65 +517,6 @@ export default function ProfilePage() {
       }
       return newSet;
     });
-  };
-
-  // 处理硬核标签选择
-  const handleAbilityTagToggle = (tag: string) => {
-    if (selectedAbilityTags.includes(tag)) {
-      setSelectedAbilityTags(selectedAbilityTags.filter((t) => t !== tag));
-    } else {
-      // 最多选择三个
-      if (selectedAbilityTags.length >= 3) {
-        alert('硬核标签最多选择三个');
-        return;
-      }
-      setSelectedAbilityTags([...selectedAbilityTags, tag]);
-    }
-  };
-
-  // 开始编辑硬核标签
-  const handleStartEditingTags = () => {
-    setEditingHardcoreTags(true);
-    setSelectedAbilityTags(userInfo.hardcoreTags || []);
-  };
-
-  // 保存硬核标签
-  const handleSaveTags = async () => {
-    if (selectedAbilityTags.length === 0) {
-      alert('请至少选择一个硬核标签');
-      return;
-    }
-
-    setIsSavingTags(true);
-    try {
-      // 更新 localStorage 中的 currentUser
-      if (user?.id) {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        currentUser.hardcoreTags = selectedAbilityTags;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-
-        // 更新本地 userInfo 状态
-        setUserInfo(prev => ({
-          ...prev,
-          hardcoreTags: selectedAbilityTags,
-        }));
-
-        alert('硬核标签保存成功！');
-        setEditingHardcoreTags(false);
-      }
-    } catch (error) {
-      console.error('保存失败:', error);
-      alert('保存失败，请重试');
-    } finally {
-      setIsSavingTags(false);
-    }
-  };
-
-  // 取消编辑硬核标签
-  const handleCancelEditingTags = () => {
-    setEditingHardcoreTags(false);
-    setSelectedAbilityTags([]);
-    setHoveredTag(null);
   };
 
   // 处理重新测试按钮点击
@@ -965,97 +902,21 @@ export default function ProfilePage() {
 
             {/* 硬核标签 */}
             <div className="mb-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-[14px] text-gray-400">硬核标签（必填）</div>
-                {!editingHardcoreTags && (
-                  <button
-                    onClick={handleStartEditingTags}
-                    className="text-[11px] text-blue-600 hover:text-blue-700 flex items-center space-x-1"
-                  >
-                    <Edit className="w-3 h-3" />
-                    <span>编辑</span>
-                  </button>
+              <div className="text-[14px] text-gray-400 mb-2">硬核标签（必填）</div>
+              <div className="flex flex-wrap gap-2">
+                {userInfo.hardcoreTags && userInfo.hardcoreTags.length > 0 ? (
+                  userInfo.hardcoreTags.map((tag: string) => (
+                    <span
+                      key={tag}
+                      className="px-2.5 py-1 bg-blue-100 text-blue-600 text-[14px] font-medium"
+                    >
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[13px] text-gray-400">暂未设置硬核标签</span>
                 )}
               </div>
-
-              {/* 显示模式 */}
-              {!editingHardcoreTags ? (
-                <div className="flex flex-wrap gap-2">
-                  {userInfo.hardcoreTags && userInfo.hardcoreTags.length > 0 ? (
-                    userInfo.hardcoreTags.map((tag: string) => (
-                      <span
-                        key={tag}
-                        className="px-2.5 py-1 bg-blue-100 text-blue-600 text-[14px] font-medium"
-                      >
-                        {tag}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-[13px] text-gray-400">暂未设置硬核标签</span>
-                  )}
-                </div>
-              ) : (
-                /* 编辑模式 */
-                <div className="space-y-3">
-                  <div className="flex flex-wrap gap-2">
-                    {hardcoreTags.map((tag) => (
-                      <button
-                        key={tag}
-                        onClick={() => handleAbilityTagToggle(tag)}
-                        onMouseEnter={() => setHoveredTag(tag)}
-                        onMouseLeave={() => setHoveredTag(null)}
-                        className={`px-2 py-1 text-[10px] border ${
-                          selectedAbilityTags.includes(tag)
-                            ? 'border-blue-400 bg-blue-400/40 text-blue-400'
-                            : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)]'
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                  {/* 硬核标签说明框 */}
-                  <div className="px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)]">
-                    {hoveredTag ? tagDescriptions[hoveredTag] : '点击或悬停标签查看技能说明'}
-                  </div>
-                  {/* 已选硬核标签 */}
-                  {selectedAbilityTags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {selectedAbilityTags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-1 text-[10px] border border-blue-400 bg-blue-400/40 text-blue-400 flex items-center gap-1"
-                        >
-                          {tag}
-                          <button
-                            onClick={() => handleAbilityTagToggle(tag)}
-                            className="text-blue-400 hover:text-blue-600 font-bold text-xs ml-1"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <p className="text-[11px] text-[rgba(0,0,0,0.4)]">前台只显示硬核标签（最多选3个）</p>
-                  {/* 操作按钮 */}
-                  <div className="flex space-x-2 pt-2">
-                    <button
-                      onClick={handleSaveTags}
-                      disabled={isSavingTags}
-                      className="flex-1 py-1.5 bg-blue-400 hover:bg-blue-500 text-white text-[12px] font-medium rounded transition-colors disabled:opacity-50"
-                    >
-                      {isSavingTags ? '保存中...' : '保存'}
-                    </button>
-                    <button
-                      onClick={handleCancelEditingTags}
-                      className="flex-1 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-[12px] font-medium rounded transition-colors"
-                    >
-                      取消
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* 资源标签 */}
