@@ -112,6 +112,23 @@ const hardcoreTags = [
   '会说人话',
 ];
 
+// 硬核标签说明映射
+const tagDescriptions: Record<string, string> = {
+  'AI技术': '拥抱AI，掌握前沿技术工具',
+  '定方向': '做战略、选赛道、不踩坑',
+  '带兵打仗': '从管1个人到管100个人的实战能力',
+  '从0到1': '冷启动、开荒、从零搭班子',
+  '摆平烂摊': '接盘烂项目、救火、危机处理',
+  '搞定人': '跨部门推动、向上管理、难缠客户',
+  '看懂账本': '算成本、看财报、懂毛利、控预算',
+  '攒局组队': '拉资源、找搭档、攒项目',
+  '卖出去': '拿单、成交、搞钱',
+  '稳军心': '团队动荡、士气低、人心散',
+  '搞定自己': '情绪管理、抗压、不崩',
+  '找人识人': '招对人、看走眼、搭团队',
+  '会说人话': '汇报、路演、谈判、讲明白事',
+};
+
 const directions = [
   { id: 'confidence', name: '信心', icon: '/icon-confidence.jpg' },
   { id: 'mission', name: '使命', icon: '/icon-mission.jpg' },
@@ -166,8 +183,8 @@ function ProfileEditContent() {
   const [selectedResources, setSelectedResources] = useState<string[]>(profile.resources);
   const [customResource, setCustomResource] = useState('');
   const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>(profile.industryTags || []);
-  const [customAbility, setCustomAbility] = useState('');
   const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
+  const [hoveredTag, setHoveredTag] = useState<string | null>(null);
 
   // 当用户数据变化时，更新profile状态
   useEffect(() => {
@@ -364,38 +381,16 @@ function ProfileEditContent() {
     }
   };
 
-  const handleAbilityTagRemove = (tag: string) => {
-    setSelectedAbilityTags(selectedAbilityTags.filter((t) => t !== tag));
-  };
-
   const handleAbilityTagToggle = (tag: string) => {
     if (selectedAbilityTags.includes(tag)) {
       setSelectedAbilityTags(selectedAbilityTags.filter((t) => t !== tag));
     } else {
       // 最多选择三个
       if (selectedAbilityTags.length >= 3) {
-        alert('能力标签最多选择三个');
+        alert('硬核标签最多选择三个');
         return;
       }
       setSelectedAbilityTags([...selectedAbilityTags, tag]);
-    }
-  };
-
-  const handleAddCustomAbility = () => {
-    const trimmed = customAbility.trim();
-    if (trimmed && !selectedAbilityTags.includes(trimmed)) {
-      // 检查长度限制（最多4个汉字）
-      if (trimmed.length > 4) {
-        alert('能力标签最多4个汉字');
-        return;
-      }
-      // 最多选择三个
-      if (selectedAbilityTags.length >= 3) {
-        alert('能力标签最多选择三个');
-        return;
-      }
-      setSelectedAbilityTags([...selectedAbilityTags, trimmed]);
-      setCustomAbility('');
     }
   };
 
@@ -879,6 +874,8 @@ function ProfileEditContent() {
                 <button
                   key={tag}
                   onClick={() => handleAbilityTagToggle(tag)}
+                  onMouseEnter={() => setHoveredTag(tag)}
+                  onMouseLeave={() => setHoveredTag(null)}
                   className={`px-2 py-1 text-[10px] border ${
                     selectedAbilityTags.includes(tag)
                       ? 'border-blue-400 bg-blue-400/40 text-blue-400'
@@ -889,27 +886,9 @@ function ProfileEditContent() {
                 </button>
               ))}
             </div>
-            {/* 自定义硬核标签输入框 */}
-            <div className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={customAbility}
-                onChange={(e) => setCustomAbility(e.target.value)}
-                maxLength={4}
-                className="flex-1 px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
-                placeholder="自定义硬核标签（最多4字）"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAddCustomAbility();
-                  }
-                }}
-              />
-              <button
-                onClick={handleAddCustomAbility}
-                className="px-3 py-2 bg-blue-400 text-white text-[11px] border border-blue-400 hover:bg-blue-500"
-              >
-                添加
-              </button>
+            {/* 硬核标签说明框 */}
+            <div className="px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)]">
+              {hoveredTag ? tagDescriptions[hoveredTag] : '点击或悬停标签查看技能说明'}
             </div>
             {/* 已选硬核标签（可删除） */}
             {selectedAbilityTags.length > 0 && (
