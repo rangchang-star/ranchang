@@ -116,6 +116,9 @@ export default function AdminVisitEditPage() {
   // 图片预览
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>(['']);
 
+  // 活动主题
+  const [theme, setTheme] = useState('');
+
   // 加载现有数据
   useEffect(() => {
     const loadData = async () => {
@@ -162,6 +165,7 @@ export default function AdminVisitEditPage() {
         setImageUrls(visit.images?.length > 0 ? visit.images : ['']);
         setImagePreviewUrls(visit.images?.length > 0 ? visit.images : ['']);
         setMainImage(visit.mainImage || '');
+        setTheme(visit.theme || visit.title?.replace('探访', '') || '');
       } catch (error) {
         console.error('加载数据失败:', error);
         alert('加载数据失败');
@@ -326,7 +330,8 @@ export default function AdminVisitEditPage() {
       ) || '';
 
       const visitData = {
-        title: `${visitDate} ${industry}探访`,
+        title: theme ? `${theme}` : `${visitDate} ${industry}探访`,
+        theme: theme,
         date: visitDate,
         location,
         industry,
@@ -569,6 +574,22 @@ export default function AdminVisitEditPage() {
                   placeholder="请输入参与人数"
                   className="text-[13px]"
                 />
+              </div>
+
+              {/* 活动主题 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  活动主题
+                </label>
+                <Input
+                  value={theme}
+                  onChange={(e) => setTheme(e.target.value)}
+                  placeholder="请输入活动主题，如：AI技术落地实践"
+                  className="text-[13px]"
+                />
+                <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
+                  活动主题将作为探访的主要标识，与探访ID关联
+                </p>
               </div>
 
               {/* 访客选择 */}
