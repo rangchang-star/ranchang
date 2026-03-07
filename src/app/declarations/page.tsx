@@ -22,95 +22,67 @@ interface Declaration {
   views: number;
   likes: number;
   comments: number;
+  user?: {
+    id: string;
+    name: string;
+    nickname: string;
+    avatar: string;
+    position: string;
+    company: string;
+  };
 }
-
-// 模拟数据（作为备用）
-const mockDeclarations: Declaration[] = [
-  {
-    id: '1',
-    rank: 1,
-    icon: '/icon-confidence.jpg',
-    iconType: '信心',
-    title: '用AI重塑传统制造业',
-    summary: '基于15年供应链管理经验，帮助传统制造业实现数字化转型',
-    duration: '5:23',
-    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=200&h=120&fit=crop',
-    publishDate: '2024年3月1日',
-    views: 2847,
-    likes: 156,
-    comments: 23,
-  },
-  {
-    id: '2',
-    rank: 2,
-    icon: '/icon-mission.jpg',
-    iconType: '使命',
-    title: '35+创业者的破局之路',
-    summary: '探索中年创业的机遇与挑战，找到自己的使命',
-    duration: '8:15',
-    image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=200&h=120&fit=crop',
-    publishDate: '2024年2月20日',
-    views: 1523,
-    likes: 89,
-    comments: 15,
-  },
-  {
-    id: '3',
-    rank: 3,
-    icon: '/icon-self.jpg',
-    iconType: '自我',
-    title: '从HR到企业合伙人',
-    summary: '分享从人力资源专家到企业合伙人的转型经历',
-    duration: '6:42',
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=120&fit=crop',
-    publishDate: '2024年2月10日',
-    views: 987,
-    likes: 67,
-    comments: 9,
-  },
-];
 
 export default function MyDeclarationsPage() {
   const [declarations, setDeclarations] = useState<Declaration[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 从localStorage加载宣告数据
+  // 从API加载宣告数据
   useEffect(() => {
-    const loadDeclarations = () => {
+    async function loadDeclarations() {
       try {
-        const storedDeclarations = localStorage.getItem('userDeclarations');
-        if (storedDeclarations) {
-          const parsedDeclarations = JSON.parse(storedDeclarations);
-          if (Array.isArray(parsedDeclarations) && parsedDeclarations.length > 0) {
-            setDeclarations(parsedDeclarations);
-          } else {
-            // 如果数据为空或格式错误，使用模拟数据
-            setDeclarations(mockDeclarations);
-          }
-        } else {
-          // 如果没有存储数据，使用模拟数据
-          setDeclarations(mockDeclarations);
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/declarations');
+
+        if (!response.ok) {
+          throw new Error('加载宣告数据失败');
         }
-      } catch (error) {
-        console.error('加载宣告数据失败:', error);
-        // 出错时使用模拟数据
-        setDeclarations(mockDeclarations);
+
+        const data = await response.json();
+
+        if (data.success) {
+          // 转换数据格式
+          const formattedDeclarations = data.data.map((declaration: any) => ({
+            id: declaration.id,
+            rank: declaration.rank || 0,
+            icon: declaration.user?.avatar || '/avatar-default.jpg',
+            iconType: declaration.iconType || '',
+            title: declaration.summary || declaration.text?.substring(0, 30) || '',
+            summary: declaration.text || '',
+            duration: declaration.duration || '0:00',
+            image: declaration.image || '',
+            publishDate: declaration.createdAt ? new Date(declaration.createdAt).toLocaleDateString('zh-CN') : '',
+            views: declaration.views || 0,
+            likes: Math.floor((declaration.views || 0) * 0.1), // 模拟点赞数为浏览量的10%
+            comments: Math.floor((declaration.views || 0) * 0.02), // 模拟评论数为浏览量的2%
+            user: declaration.user || null,
+          }));
+
+          setDeclarations(formattedDeclarations);
+        } else {
+          throw new Error(data.error || '加载宣告数据失败');
+        }
+      } catch (err: any) {
+        console.error('加载宣告数据失败:', err);
+        setError(err.message || '加载宣告数据失败');
+      } finally {
+        setIsLoading(false);
       }
-    };
+    }
 
     loadDeclarations();
-
-    // 监听localStorage变化
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'userDeclarations') {
-        loadDeclarations();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
   }, []);
 
   const handleDelete = (id: string) => {
@@ -119,6 +91,70 @@ export default function MyDeclarationsPage() {
       console.log('删除宣告:', id);
     }
   };
+
+  // 显示加载状态
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white pb-20">
+        <div className="w-full max-w-md mx-auto">
+          {/* 顶部导航 */}
+          <div className="sticky top-0 bg-white z-50 px-5 py-4">
+            <div className="flex items-center justify-between">
+              <Link href="/profile">
+                <Button variant="ghost" className="p-2">
+                  <ArrowLeft className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+                </Button>
+              </Link>
+              <h1 className="text-[15px] font-semibold text-gray-900">我的宣告</h1>
+              <Link href="/declaration/create">
+                <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-3 py-1.5 flex items-center">
+                  <Plus className="w-4 h-4 mr-1" />
+                  新建
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* 加载状态 */}
+          <div className="flex items-center justify-center py-20">
+            <div className="text-[13px] text-[rgba(0,0,0,0.4)]">加载中...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 显示错误状态
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white pb-20">
+        <div className="w-full max-w-md mx-auto">
+          {/* 顶部导航 */}
+          <div className="sticky top-0 bg-white z-50 px-5 py-4">
+            <div className="flex items-center justify-between">
+              <Link href="/profile">
+                <Button variant="ghost" className="p-2">
+                  <ArrowLeft className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+                </Button>
+              </Link>
+              <h1 className="text-[15px] font-semibold text-gray-900">我的宣告</h1>
+              <Link href="/declaration/create">
+                <Button className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-3 py-1.5 flex items-center">
+                  <Plus className="w-4 h-4 mr-1" />
+                  新建
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* 错误状态 */}
+          <div className="flex items-center justify-center py-20">
+            <div className="text-[13px] text-red-400">{error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white pb-20">
