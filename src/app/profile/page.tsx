@@ -1245,14 +1245,23 @@ export default function ProfilePage() {
                             <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.25)] mb-2">
                               <span>{visitData.date}</span>
                               <span>·</span>
-                              <Badge className="rounded-none bg-[rgba(34,197,94,0.15)] text-green-600 font-normal text-[13px]">
-                                {visitData.industry}
-                              </Badge>
-                              <span>·</span>
                               <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
                                 {visitData.role}
                               </Badge>
                             </div>
+                            {/* 显示标签 */}
+                            {visitData.tags && visitData.tags.filter((tag: string) => !['已审核', '已发布'].includes(tag)).length > 0 && (
+                              <div className="flex items-center space-x-2 flex-wrap gap-2">
+                                {visitData.tags.filter((tag: string) => !['已审核', '已发布'].includes(tag)).map((tag: string) => (
+                                  <Badge
+                                    key={tag}
+                                    className="rounded-none bg-blue-400 text-white font-normal text-[11px]"
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

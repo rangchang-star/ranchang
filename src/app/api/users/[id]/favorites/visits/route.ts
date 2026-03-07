@@ -10,22 +10,37 @@ export async function GET(
 
     // TODO: 从数据库获取用户收藏的探访项目列表
     // 这里先返回模拟数据
-    const favorites = [
+    const mockFavorites = [
       {
         id: '1',
         userId: userId,
         visitId: '1',
-        visit: {
-          id: '1',
-          title: '上海某制造业企业数字化转型探访',
-          image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=120&fit=crop',
-          date: '2024年3月15日',
-          industry: '企业转型',
-          role: '探访人',
-        },
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: '2',
+        userId: userId,
+        visitId: '2',
         createdAt: new Date().toISOString(),
       },
     ];
+
+    // 根据 visitId 获取真实的探访项目数据
+    const favorites = mockFavorites.map((fav) => {
+      const visit = MockDatabase.getVisitById(fav.visitId);
+      return {
+        ...fav,
+        visit: visit ? {
+          id: visit.id,
+          title: visit.title,
+          image: visit.image,
+          date: visit.date,
+          industry: visit.industry,
+          tags: visit.tags,
+          role: '探访人',
+        } : null,
+      };
+    }).filter(fav => fav.visit !== null);
 
     return NextResponse.json({
       success: true,
