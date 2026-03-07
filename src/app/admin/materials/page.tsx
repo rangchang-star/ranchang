@@ -136,9 +136,82 @@ export default function AdminMaterialsPage() {
 
         {/* 每日宣告管理 */}
         {activeTab === 'daily' && (
-          <div>
-            <div className="text-center py-8 text-gray-500">
-              每日宣告功能暂未开放
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">管理每日高燃宣告内容</p>
+                <p className="text-xs text-gray-500">包括添加、编辑、删除和发布每日宣告</p>
+              </div>
+              <Link href="/admin/materials/daily/create">
+                <Button className="bg-blue-400 hover:bg-blue-500 text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  添加每日宣告
+                </Button>
+              </Link>
+            </div>
+
+            {/* 快速访问 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Link href="/admin/materials/daily">
+                <div className="p-4 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900">宣告列表</h3>
+                      <p className="text-xs text-gray-500">查看和管理所有每日宣告</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              <Link href="/admin/materials/daily/create">
+                <div className="p-4 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <Plus className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900">创建宣告</h3>
+                      <p className="text-xs text-gray-500">添加新的每日宣告</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              <div className="p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <Image className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-900">使用说明</h3>
+                    <p className="text-xs text-gray-500">支持图片和音频上传</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 示例数据展示 */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">最近添加的宣告</h4>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 p-3 bg-white rounded-lg">
+                  <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=100&h=100&fit=crop"
+                      alt="示例"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="text-sm font-medium text-gray-900">每日宣告：重塑自我，迎接新挑战</h5>
+                    <p className="text-xs text-gray-500">2024-03-01 · 3:15</p>
+                  </div>
+                  <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">已发布</span>
+                </div>
+              </div>
             </div>
           </div>
         )}

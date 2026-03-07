@@ -1737,6 +1737,40 @@ export const mockDocuments = [
   },
 ];
 
+// ==================== 每日宣告数据 ====================
+export const mockDailyDeclarations = [
+  {
+    id: '1',
+    title: '每日宣告：重塑自我，迎接新挑战',
+    date: '2024-03-01',
+    duration: '3:15',
+    image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop',
+    audio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    createdAt: '2024-03-01T00:00:00Z',
+    isActive: true,
+  },
+  {
+    id: '2',
+    title: '每日宣告：勇敢突破，创造无限可能',
+    date: '2024-03-02',
+    duration: '4:20',
+    image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=200&h=200&fit=crop',
+    audio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+    createdAt: '2024-03-02T00:00:00Z',
+    isActive: true,
+  },
+  {
+    id: '3',
+    title: '每日宣告：坚持初心，砥砺前行',
+    date: '2024-03-03',
+    duration: '2:45',
+    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=200&fit=crop',
+    audio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+    createdAt: '2024-03-03T00:00:00Z',
+    isActive: false,
+  },
+];
+
 // ==================== 模拟数据库操作类 ====================
 export class MockDatabase {
   // 获取所有用户
@@ -2027,7 +2061,55 @@ export class MockDatabase {
     return document;
   }
 
-  // 获取所有活动参与记录
+  // ==================== 每日宣告相关方法 ====================
+
+  // 获取所有每日宣告
+  static getDailyDeclarations() {
+    return mockDailyDeclarations;
+  }
+
+  // 根据 ID 获取每日宣告
+  static getDailyDeclarationById(id: string) {
+    return mockDailyDeclarations.find(decl => decl.id === id);
+  }
+
+  // 创建每日宣告
+  static createDailyDeclaration(declarationData: any) {
+    const newId = (mockDailyDeclarations.length + 1).toString();
+    const newDeclaration = {
+      id: newId,
+      ...declarationData,
+      isActive: declarationData.isActive ?? true,
+      createdAt: new Date().toISOString(),
+    };
+    mockDailyDeclarations.push(newDeclaration);
+    return newDeclaration;
+  }
+
+  // 更新每日宣告
+  static updateDailyDeclaration(id: string, updates: any) {
+    const index = mockDailyDeclarations.findIndex(decl => decl.id === id);
+    if (index === -1) {
+      return null;
+    }
+    mockDailyDeclarations[index] = {
+      ...mockDailyDeclarations[index],
+      ...updates,
+    };
+    return mockDailyDeclarations[index];
+  }
+
+  // 删除每日宣告
+  static deleteDailyDeclaration(id: string) {
+    const index = mockDailyDeclarations.findIndex(decl => decl.id === id);
+    if (index === -1) {
+      return false;
+    }
+    mockDailyDeclarations.splice(index, 1);
+    return true;
+  }
+
+  // ==================== 活动相关方法 ====================
   static getActivityRegistrations() {
     return mockActivityRegistrations;
   }

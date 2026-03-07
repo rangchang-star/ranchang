@@ -24,14 +24,33 @@ export default function AdminDailyDeclarationEditPage() {
 
   // 模拟加载数据
   useEffect(() => {
-    // 这里应该从API加载数据
-    // 模拟数据
-    setTitle('每日宣告：重塑自我，迎接新挑战');
-    setDate('2024-03-01');
-    setDuration('3:15');
-    setImage('/daily-declaration-square.webp');
-    setAudio('https://example.com/audio/1.mp3');
-  }, [declarationId]);
+    async function loadData() {
+      if (!declarationId) return;
+
+      try {
+        const response = await fetch(`/api/daily-declarations/${declarationId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const decl = data.data;
+            setTitle(decl.title || '');
+            setDate(decl.date || '');
+            setDuration(decl.duration || '');
+            setImage(decl.image || '');
+            setAudio(decl.audio || '');
+          }
+        } else {
+          alert('加载失败');
+          router.push('/admin/materials/daily');
+        }
+      } catch (error) {
+        console.error('加载数据失败:', error);
+        alert('加载失败');
+      }
+    }
+
+    loadData();
+  }, [declarationId, router]);
 
   // 处理图片上传
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +79,7 @@ export default function AdminDailyDeclarationEditPage() {
   };
 
   // 保存
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title) {
       alert('请输入标题');
       return;
@@ -76,12 +95,35 @@ export default function AdminDailyDeclarationEditPage() {
 
     setIsUploading(true);
 
-    // 模拟保存 - 这里应该调用API保存数据
-    setTimeout(() => {
+    try {
+      const response = await fetch(`/api/daily-declarations/${declarationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          date,
+          duration,
+          image,
+          audio,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('每日宣告更新成功！');
+        router.push('/admin/materials/daily');
+      } else {
+        alert(data.error || '更新失败');
+      }
+    } catch (error) {
+      console.error('更新失败:', error);
+      alert('更新失败，请重试');
+    } finally {
       setIsUploading(false);
-      alert('每日宣告更新成功！');
-      router.push('/admin/materials');
-    }, 1000);
+    }
   };
 
   return (

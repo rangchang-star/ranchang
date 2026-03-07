@@ -47,7 +47,7 @@ export default function AdminDailyDeclarationCreatePage() {
   };
 
   // 保存
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title) {
       alert('请输入标题');
       return;
@@ -63,12 +63,36 @@ export default function AdminDailyDeclarationCreatePage() {
 
     setIsUploading(true);
 
-    // 模拟保存 - 这里应该调用API保存数据
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/daily-declarations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          date,
+          duration,
+          image,
+          audio,
+          isActive: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('每日宣告创建成功！');
+        router.push('/admin/materials/daily');
+      } else {
+        alert(data.error || '创建失败');
+      }
+    } catch (error) {
+      console.error('创建失败:', error);
+      alert('创建失败，请重试');
+    } finally {
       setIsUploading(false);
-      alert('每日宣告创建成功！');
-      router.push('/admin/materials');
-    }, 1000);
+    }
   };
 
   return (
