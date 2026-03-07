@@ -6,7 +6,7 @@ export const mockUsers = [
   {
     id: 1,
     phone: '13023699913',
-    password: '',
+    password: '818989',
     nickname: '张明',
     name: '张明',
     avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face',
