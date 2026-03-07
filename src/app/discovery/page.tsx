@@ -487,14 +487,29 @@ export default function DiscoveryPage() {
         // 加载每日宣告数据（获取最新的已发布宣告）
         if (dailyRes.ok) {
           const dailyData = await dailyRes.json();
-          if (dailyData.success && dailyData.data) {
-            const activeDeclarations = dailyData.data.filter((d: any) => d.isActive);
+          if (dailyData.success && dailyData.data && dailyData.data.length > 0) {
+            // 过滤出 active 的宣告，如果没有 isActive 字段则使用 isFeatured
+            const activeDeclarations = dailyData.data.filter((d: any) =>
+              d.isActive !== false && d.isActive !== undefined ? d.isActive : d.isFeatured
+            );
+
             if (activeDeclarations.length > 0) {
               // 按创建时间倒序，取最新的
               const sorted = activeDeclarations.sort((a: any, b: any) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
               );
               const latest = sorted[0];
+              setDailyDeclaration({
+                image: latest.image,
+                date: latest.date || latest.createdAt?.split('T')[0] || '',
+                title: latest.title || latest.summary || '',
+                duration: latest.duration || '',
+                audio: latest.audio || latest.audioUrl || '',
+                id: latest.id,
+              });
+            }
+          }
+        }
               setDailyDeclaration({
                 image: latest.image,
                 date: latest.date,
