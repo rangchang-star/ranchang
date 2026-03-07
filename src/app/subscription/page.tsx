@@ -316,6 +316,9 @@ export default function SubscriptionPage() {
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-4 h-4" />
                   <span>探访点亮</span>
+                  {!isLoadingVisits && visits.length > 0 && (
+                    <span className="text-xs opacity-70">({visits.length})</span>
+                  )}
                 </div>
               </TabsTrigger>
               <TabsTrigger
