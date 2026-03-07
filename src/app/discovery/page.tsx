@@ -938,7 +938,7 @@ export default function DiscoveryPage() {
                     {skillBubbles.map((bubble) => (
                       <div
                         key={bubble.id}
-                        className={`absolute rounded-full border-2 ${bubble.borderColor} ${bubble.color} flex items-center justify-center transition-all hover:scale-105 hover:shadow-lg`}
+                        className={`absolute rounded-full border ${bubble.borderColor} ${bubble.color} flex items-center justify-center transition-all hover:scale-105 hover:shadow-lg`}
                         style={{
                           width: `${bubble.size}px`,
                           height: `${bubble.size}px`,
