@@ -180,15 +180,6 @@ export default function DeclarationDetailPage() {
         </div>
 
         <div className="space-y-6">
-          {/* 封面图 */}
-          <div className="w-full h-56 overflow-hidden">
-            <img
-              src={declaration.image}
-              alt={declaration.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-
           {/* 播放器 */}
           <div className="px-5">
             <div className="p-4 bg-[rgba(0,0,0,0.02)]">
