@@ -856,6 +856,25 @@ export default function ProfilePage() {
               </span>
             </div>
 
+            {/* 硬核标签 */}
+            <div className="mb-3">
+              <div className="text-[14px] text-gray-400 mb-2">硬核标签（必填）</div>
+              <div className="flex flex-wrap gap-2">
+                {userInfo.hardcoreTags && userInfo.hardcoreTags.length > 0 ? (
+                  userInfo.hardcoreTags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2.5 py-1 bg-blue-100 text-blue-600 text-[14px] font-medium"
+                    >
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[13px] text-gray-400">暂未设置硬核标签</span>
+                )}
+              </div>
+            </div>
+
             {/* 资源标签 */}
             <div className="mb-3">
               <div className="text-[14px] text-gray-400 mb-2">资源标签（必填）</div>

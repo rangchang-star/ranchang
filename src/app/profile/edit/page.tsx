@@ -146,7 +146,10 @@ function ProfileEditContent() {
   const getUserProfile = () => {
     if (!isLoggedIn || !user) {
       // 未登录时返回默认的mock数据
-      return mockUserProfile;
+      return {
+        ...mockUserProfile,
+        hardcoreTags: mockUserProfile.industryTags, // 使用industryTags作为默认硬核标签
+      };
     }
 
     // 将登录用户数据映射到编辑页面需要的格式
@@ -162,8 +165,9 @@ function ProfileEditContent() {
       companyPosition: user.position || '',
       purpose: getPurposeFromTagStamp(user.tagStamp),
       industry: user.industry || mockUserProfile.industry,
-      industryTags: user.hardcoreTags || mockUserProfile.industryTags,
+      industryTags: mockUserProfile.industryTags, // 保留行业标签用于行业相关功能
       resources: user.resourceTags || mockUserProfile.resources,
+      hardcoreTags: user.hardcoreTags || mockUserProfile.industryTags, // 硬核标签从用户数据中获取
       declaration: user.bio || mockUserProfile.declaration,
       directions: mockUserProfile.directions,
     };
@@ -182,7 +186,7 @@ function ProfileEditContent() {
   const [selectedIndustryTag, setSelectedIndustryTag] = useState<string>(profile.industryTags[0] || '');
   const [selectedResources, setSelectedResources] = useState<string[]>(profile.resources);
   const [customResource, setCustomResource] = useState('');
-  const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>(profile.industryTags || []);
+  const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>(profile.hardcoreTags || []);
   const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
 
@@ -194,7 +198,7 @@ function ProfileEditContent() {
       setSelectedPurpose(newProfile.purpose);
       setSelectedIndustryTag(newProfile.industryTags[0] || '');
       setSelectedResources(newProfile.resources);
-      setSelectedAbilityTags(newProfile.industryTags || []);
+      setSelectedAbilityTags(newProfile.hardcoreTags || []);
     }
   }, [isLoggedIn, user]);
   
