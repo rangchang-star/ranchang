@@ -153,7 +153,7 @@ export const users = pgTable("users", {
 	connectionType: varchar("connection_type", { length: 50 }),
 	industry: varchar({ length: 100 }),
 	need: text(),
-	abilityTags: jsonb("ability_tags"),
+	hardcoreTags: jsonb("hardcore_tags"),
 	resourceTags: jsonb("resource_tags"),
 	level: varchar({ length: 50 }),
 	company: varchar({ length: 255 }),

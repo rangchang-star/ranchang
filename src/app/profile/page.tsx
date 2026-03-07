@@ -431,7 +431,7 @@ export default function ProfilePage() {
     connectionType: user.tagStamp || 'pureExchange',
     industry: user.industry || '未设置',
     need: user.need || '',
-    abilityTags: user.abilityTags || [],
+    hardcoreTags: user.hardcoreTags || [],
     resourceTags: user.resourceTags || [],
     currentDeclaration: {
       direction: 'confidence',

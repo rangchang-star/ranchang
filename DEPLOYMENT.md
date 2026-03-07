@@ -70,7 +70,7 @@ CREATE TABLE users (
   need TEXT,
   tag_stamp VARCHAR(50) DEFAULT 'pureExchange',
   tags TEXT[],
-  ability_tags TEXT[],
+  hardcore_tags TEXT[],
   resource_tags TEXT[],
   is_trusted BOOLEAN DEFAULT false,
   role VARCHAR(20) DEFAULT 'user',

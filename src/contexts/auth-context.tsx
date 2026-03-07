@@ -16,7 +16,7 @@ interface User {
   need: string;
   tagStamp: string;
   tags: string[];
-  abilityTags: string[];
+  hardcoreTags: string[];
   resourceTags: string[];
   isTrusted: boolean;
   role: string;

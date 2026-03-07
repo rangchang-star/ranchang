@@ -43,7 +43,7 @@ CREATE TABLE "users" (
 	"need" text,
 	"tag_stamp" "tag_stamp" DEFAULT 'pureExchange',
 	"tags" jsonb,
-	"ability_tags" jsonb,
+	"hardcore_tags" jsonb,
 	"resource_tags" jsonb,
 	"is_trusted" boolean DEFAULT false,
 	"role" "user_role" DEFAULT 'user',
@@ -224,7 +224,7 @@ CREATE TRIGGER trigger_update_visits_updated_at
 -- 完成
 -- ==========================================
 
-COMMENT ON TABLE "users" IS '用户表（会员表）- 存储用户基本信息、能力标签、需求描述等';
+COMMENT ON TABLE "users" IS '用户表（会员表）- 存储用户基本信息、硬核标签、需求描述等';
 COMMENT ON TABLE "activities" IS '活动表 - 存储活动信息';
 COMMENT ON TABLE "visits" IS '探访表 - 存储探访企业活动信息';
 COMMENT ON TABLE "registrations" IS '报名记录表 - 存储用户报名活动的记录';

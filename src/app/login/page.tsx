@@ -36,7 +36,7 @@ export default function LoginPage() {
       need: '',
       tagStamp: 'pureExchange',
       tags: [],
-      abilityTags: [],
+      hardcoreTags: [],
       resourceTags: [],
       isTrusted: false,
       role: 'user',

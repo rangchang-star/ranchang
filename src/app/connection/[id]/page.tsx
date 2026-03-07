@@ -195,11 +195,11 @@ export default function ConnectionDetailPage() {
             </Button>
           </div>
 
-          {/* 能力标签 */}
+          {/* 硬核标签 */}
           <div>
-            <h3 className="text-[15px] font-semibold text-gray-900 mb-3">能力标签</h3>
+            <h3 className="text-[15px] font-semibold text-gray-900 mb-3">硬核标签</h3>
             <div className="flex flex-wrap gap-2">
-              {user.abilityTags.map((tag: string) => (
+              {user.hardcoreTags.map((tag: string) => (
                 <span
                   key={tag}
                   className="px-3 py-1.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[12px] font-normal"

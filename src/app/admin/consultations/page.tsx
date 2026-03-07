@@ -60,7 +60,7 @@ const mockUserDetails = {
     position: 'HRBP总监',
     connectionType: 'personLookingForJob',
     need: '希望找到传统制造业的数字化转型项目机会，用15年HRBP经验帮助企业搭建AI时代的人才培养体系',
-    abilityTags: ['HRBP', '团队管理', '人才发展', '组织优化', '数字化转型'],
+    hardcoreTags: ['HRBP', '团队管理', '人才发展', '组织优化', '数字化转型'],
     resourceTags: ['人才', '技术', '品牌'],
     registerDate: '2024-01-15',
     lastLoginDate: '2024-03-15',
@@ -80,7 +80,7 @@ const mockUserDetails = {
     position: 'CEO',
     connectionType: 'jobLookingForPerson',
     need: '寻找合伙人，共同推进教育科技项目',
-    abilityTags: ['产品管理', '市场营销', '融资', '团队搭建'],
+    hardcoreTags: ['产品管理', '市场营销', '融资', '团队搭建'],
     resourceTags: ['资金', '渠道', '品牌'],
     registerDate: '2024-02-01',
     lastLoginDate: '2024-03-14',
@@ -100,7 +100,7 @@ const mockUserDetails = {
     position: '创始人',
     connectionType: 'personLookingForJob',
     need: '寻找数字化转型合作伙伴和资源',
-    abilityTags: ['战略规划', '供应链管理', '品牌建设', '数字化转型'],
+    hardcoreTags: ['战略规划', '供应链管理', '品牌建设', '数字化转型'],
     resourceTags: ['资金', '供应链', '场地'],
     registerDate: '2024-01-20',
     lastLoginDate: '2024-03-13',
@@ -908,14 +908,14 @@ export default function AdminConsultationsPage() {
 
                     <div className="border-t border-gray-200"></div>
 
-                    {/* 能力标签 */}
+                    {/* 硬核标签 */}
                     <div>
                       <h5 className="text-sm font-semibold text-gray-900 mb-3 flex items-center space-x-2">
                         <Users className="w-4 h-4 text-blue-400" />
-                        <span>能力标签</span>
+                        <span>硬核标签</span>
                       </h5>
                       <div className="flex flex-wrap gap-2">
-                        {user.abilityTags.map((tag) => (
+                        {user.hardcoreTags.map((tag) => (
                           <Badge
                             key={tag}
                             className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.7)] font-normal text-[11px]"

@@ -483,9 +483,9 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
               </div>
             </div>
 
-            {/* 能力标签 */}
+            {/* 硬核标签 */}
             <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900 mb-4">能力标签 <span className="text-red-500">*</span></h3>
+              <h3 className="text-[13px] font-semibold text-gray-900 mb-4">硬核标签 <span className="text-red-500">*</span></h3>
               <div className="flex flex-wrap gap-2">
                 {abilityTagsOptions.map((tag) => (
                   <button
@@ -505,7 +505,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
               <p className="text-[11px] text-[rgba(0,0,0,0.6)] mt-2">
                 已选择 {abilityTags.length} 个标签（最多3个）：{abilityTags.join('、')}
               </p>
-              <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">前台只显示能力标签</p>
+              <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">前台只显示硬核标签</p>
             </div>
 
             {/* 资源标签 */}

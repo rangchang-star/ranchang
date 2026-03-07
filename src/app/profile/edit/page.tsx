@@ -96,7 +96,7 @@ const resourceTags = [
   '财务顾问',
 ];
 
-const abilityTags = [
+const hardcoreTags = [
   '团队管理',
   '沟通能力',
   '战略思维',
@@ -147,7 +147,7 @@ function ProfileEditContent() {
       companyPosition: user.position || '',
       purpose: getPurposeFromTagStamp(user.tagStamp),
       industry: user.industry || mockUserProfile.industry,
-      industryTags: user.abilityTags || mockUserProfile.industryTags,
+      industryTags: user.hardcoreTags || mockUserProfile.industryTags,
       resources: user.resourceTags || mockUserProfile.resources,
       declaration: user.bio || mockUserProfile.declaration,
       directions: mockUserProfile.directions,
@@ -524,7 +524,7 @@ function ProfileEditContent() {
       purpose: selectedPurpose,
       industryTags: selectedIndustryTag ? [selectedIndustryTag] : [],
       resources: selectedResources,
-      abilityTags: selectedAbilityTags,
+      hardcoreTags: selectedAbilityTags,
       directions: selectedDirection ? [selectedDirection] : [],
       declarations, // 保存高燃宣告数据（包含每个方向的主题、简介、音频）
       experiences,
@@ -873,11 +873,11 @@ function ProfileEditContent() {
             <p className="text-[11px] text-[rgba(0,0,0,0.4)]">点开会员详细页后才能看到资源标签（最多选3个）</p>
           </div>
 
-          {/* 能力标签 */}
+          {/* 硬核标签 */}
           <div className="space-y-3">
-            <h2 className="text-[13px] font-semibold text-gray-900">能力标签 <span className="text-red-400">*</span></h2>
+            <h2 className="text-[13px] font-semibold text-gray-900">硬核标签 <span className="text-red-400">*</span></h2>
             <div className="flex flex-wrap gap-2">
-              {abilityTags.map((tag) => (
+              {hardcoreTags.map((tag) => (
                 <button
                   key={tag}
                   onClick={() => handleAbilityTagToggle(tag)}
@@ -891,7 +891,7 @@ function ProfileEditContent() {
                 </button>
               ))}
             </div>
-            {/* 自定义能力标签输入框 */}
+            {/* 自定义硬核标签输入框 */}
             <div className="flex items-center space-x-2">
               <input
                 type="text"
@@ -899,7 +899,7 @@ function ProfileEditContent() {
                 onChange={(e) => setCustomAbility(e.target.value)}
                 maxLength={4}
                 className="flex-1 px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
-                placeholder="自定义能力标签（最多4字）"
+                placeholder="自定义硬核标签（最多4字）"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     handleAddCustomAbility();
@@ -913,7 +913,7 @@ function ProfileEditContent() {
                 添加
               </button>
             </div>
-            {/* 已选能力标签（可删除） */}
+            {/* 已选硬核标签（可删除） */}
             {selectedAbilityTags.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-1">
                 {selectedAbilityTags.map((tag) => (
@@ -932,7 +932,7 @@ function ProfileEditContent() {
                 ))}
               </div>
             )}
-            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">前台只显示能力标签（最多选3个）</p>
+            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">前台只显示硬核标签（最多选3个）</p>
           </div>
 
           {/* 宣告方向 */}

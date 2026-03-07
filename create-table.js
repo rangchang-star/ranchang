@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
   connection_type VARCHAR(50),
   industry VARCHAR(100),
   need TEXT,
-  ability_tags JSONB,
+  hardcore_tags JSONB,
   resource_tags JSONB,
   level VARCHAR(50),
   company VARCHAR(255),

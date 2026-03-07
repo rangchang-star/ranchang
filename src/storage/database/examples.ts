@@ -75,7 +75,7 @@ export async function updateUser(userId: string, userData: Partial<{
   connection_type: string;
   industry: string;
   need: string;
-  ability_tags: string[];
+  hardcore_tags: string[];
   resource_tags: string[];
 }>) {
   const { data, error } = await client
@@ -418,7 +418,7 @@ export function DatabaseUsageExample() {
   const handleUpdateUser = async (userId: string) => {
     const updatedUser = await updateUser(userId, {
       name: '李四',
-      ability_tags: ['技术落地', '业务咨询', '培训授课'],
+      hardcore_tags: ['技术落地', '业务咨询', '培训授课'],
       resource_tags: ['人才', '技术', '品牌'],
     });
     if (updatedUser) {

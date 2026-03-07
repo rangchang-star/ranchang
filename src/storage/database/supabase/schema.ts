@@ -41,7 +41,7 @@ export const users = pgTable('users', {
   need: text('need'),
   tagStamp: tagStampEnum('tag_stamp').default('pureExchange'),
   tags: jsonb('tags').$type<string[]>(),
-  abilityTags: jsonb('ability_tags').$type<string[]>(),
+  hardcoreTags: jsonb('hardcore_tags').$type<string[]>(),
   resourceTags: jsonb('resource_tags').$type<string[]>(),
   isTrusted: boolean('is_trusted').default(false),
   role: userRoleEnum('role').default('user'),

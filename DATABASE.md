@@ -16,7 +16,7 @@
 | connection_type | varchar(50) | 连接类型：人找事/事找人/纯交流 |
 | industry | varchar(100) | 行业标签 |
 | need | text | 一句话需求 |
-| ability_tags | jsonb | 能力标签（JSON数组） |
+| hardcore_tags | jsonb | 硬核标签（JSON数组） |
 | resource_tags | jsonb | 资源标签（JSON数组） |
 | level | varchar(50) | 会员等级 |
 | company | varchar(255) | 公司名称 |
@@ -317,7 +317,7 @@ const { data } = await client.from('activities')
    - 数据库查询时使用 snake_case（如 `connection_type`）
 
 2. **JSON 字段**：
-   - `ability_tags`、`resource_tags`、`dimensions` 等字段存储为 JSON
+   - `hardcore_tags`、`resource_tags`、`dimensions` 等字段存储为 JSON
    - 插入/更新时直接传入 JSON 对象或数组
 
 3. **错误处理**：

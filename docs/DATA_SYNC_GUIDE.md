@@ -24,7 +24,7 @@
 | `need` | text | 需求描述 |
 | `tag_stamp` | tag_stamp enum | 标签类型（personLookingForJob/jobLookingForPerson/pureExchange） |
 | `tags` | jsonb | 能力标签数组 |
-| `ability_tags` | jsonb | 能力标签数组（详细） |
+| `hardcore_tags` | jsonb | 硬核标签数组（详细） |
 | `resource_tags` | jsonb | 资源标签数组 |
 | `is_trusted` | boolean | 是否可信 |
 

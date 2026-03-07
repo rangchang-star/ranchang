@@ -319,8 +319,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "ability_tags": {
-          "name": "ability_tags",
+        "hardcore_tags": {
+          "name": "hardcore_tags",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false
