@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, MessageSquare, LogOut, Bell, Settings, FileText, Eye } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, MessageSquare, LogOut, Bell, Settings, FileText, Eye, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/admin/materials', label: '资料管理', icon: FileText },
   { href: '/admin/messages', label: '消息管理', icon: Bell },
   { href: '/admin/consultations', label: '咨询管理', icon: MessageSquare },
+  { href: '/admin/admin', label: '管理员管理', icon: Shield },
   { href: '/admin/settings', label: '页面设置', icon: Settings },
 ];
 

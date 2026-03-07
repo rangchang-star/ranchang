@@ -22,7 +22,7 @@ export const mockUsers = [
     resourceTags: ['技术资源', '项目经验'],
     isTrusted: true,
     isFeatured: true,
-    role: 'user',
+    role: 'admin',
     status: 'active',
     connectionCount: 12,
     activityCount: 3,
@@ -2015,5 +2015,81 @@ export class MockDatabase {
   // 获取待审核的活动申请
   static getPendingActivityApplications() {
     return mockActivityApplications.filter(app => app.status === 'pending');
+  }
+
+  // ==================== 管理员管理相关方法 ====================
+
+  // 获取所有管理员
+  static getAdmins() {
+    return mockUsers.filter(user => user.role === 'admin');
+  }
+
+  // 创建管理员
+  static createAdmin(adminData: { phone: string; password: string; nickname: string; name: string }) {
+    // 检查手机号是否已存在
+    const existingUser = mockUsers.find(user => user.phone === adminData.phone);
+    if (existingUser) {
+      throw new Error('该手机号已被注册');
+    }
+
+    const newAdmin = {
+      id: mockUsers.length + 1,
+      phone: adminData.phone,
+      password: adminData.password,
+      nickname: adminData.nickname,
+      name: adminData.name,
+      avatar: `https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop&crop=face`,
+      age: 30,
+      company: '燃场',
+      position: '管理员',
+      industry: '管理',
+      bio: '燃场管理员',
+      need: '',
+      tagStamp: 'pureExchange',
+      tags: [],
+      hardcoreTags: [],
+      resourceTags: [],
+      isTrusted: true,
+      isFeatured: false,
+      role: 'admin' as const,
+      status: 'active',
+      connectionCount: 0,
+      activityCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    mockUsers.push(newAdmin);
+    return newAdmin;
+  }
+
+  // 修改管理员密码
+  static updateAdminPassword(userId: number, newPassword: string) {
+    const admin = mockUsers.find(user => user.id === userId);
+    if (!admin || admin.role !== 'admin') {
+      throw new Error('管理员不存在');
+    }
+
+    admin.password = newPassword;
+    admin.updatedAt = new Date().toISOString();
+    return admin;
+  }
+
+  // 删除管理员（降级为普通用户）
+  static deleteAdmin(userId: number) {
+    const admin = mockUsers.find(user => user.id === userId);
+    if (!admin || admin.role !== 'admin') {
+      throw new Error('管理员不存在');
+    }
+
+    // 不允许删除最后一个管理员
+    const adminCount = mockUsers.filter(user => user.role === 'admin').length;
+    if (adminCount <= 1) {
+      throw new Error('不能删除最后一个管理员');
+    }
+
+    admin.role = 'user' as const;
+    admin.updatedAt = new Date().toISOString();
+    return admin;
   }
 }
