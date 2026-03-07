@@ -1242,26 +1242,23 @@ export default function ProfilePage() {
                             <h3 className="text-[18px] font-semibold text-gray-900 mb-1 line-clamp-2">
                               {visitData.title}
                             </h3>
-                            <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.25)] mb-2">
-                              <span>{visitData.date}</span>
-                              <span>·</span>
-                              <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
-                                {visitData.role}
-                              </Badge>
-                            </div>
                             {/* 显示标签 */}
                             {visitData.tags && visitData.tags.filter((tag: string) => !['已审核', '已发布'].includes(tag)).length > 0 && (
-                              <div className="flex items-center space-x-2 flex-wrap gap-2">
+                              <div className="flex items-center space-x-2 flex-wrap gap-2 mb-2">
                                 {visitData.tags.filter((tag: string) => !['已审核', '已发布'].includes(tag)).map((tag: string) => (
                                   <Badge
                                     key={tag}
-                                    className="rounded-none bg-blue-400 text-white font-normal text-[11px]"
+                                    className="rounded-none bg-blue-400 text-white font-normal text-[8px]"
                                   >
                                     {tag}
                                   </Badge>
                                 ))}
                               </div>
                             )}
+                            {/* 年月日 */}
+                            <div className="text-[13px] text-[rgba(0,0,0,0.25)]">
+                              {visitData.date}
+                            </div>
                           </div>
                         </div>
                       </div>
