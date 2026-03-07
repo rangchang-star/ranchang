@@ -36,7 +36,22 @@ export default function AdminManagementPage() {
   const loadAdmins = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/admins');
+      // 从 localStorage 获取当前用户信息
+      const storedUser = localStorage.getItem('currentUser');
+      const currentUser = storedUser ? JSON.parse(storedUser) : null;
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // 如果有当前用户，添加用户ID到请求头
+      if (currentUser && currentUser.id) {
+        headers['x-user-id'] = currentUser.id.toString();
+      }
+
+      const response = await fetch('/api/admin/admins', {
+        headers,
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -77,8 +92,22 @@ export default function AdminManagementPage() {
     }
 
     try {
+      // 从 localStorage 获取当前用户信息
+      const storedUser = localStorage.getItem('currentUser');
+      const currentUser = storedUser ? JSON.parse(storedUser) : null;
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // 如果有当前用户，添加用户ID到请求头
+      if (currentUser && currentUser.id) {
+        headers['x-user-id'] = currentUser.id.toString();
+      }
+
       const response = await fetch(`/api/admin/admins/${adminId}`, {
         method: 'DELETE',
+        headers,
       });
 
       const data = await response.json();
