@@ -116,7 +116,10 @@ export default function AdminActivityEditPage() {
         setMaxParticipants(activity.maxParticipants.toString());
         setTeaFee((activity as any).teaFee || '');
         setSelectedTags(activity.tags);
-        setSelectedParticipants((activity as any).participants || []);
+        // 去重：使用 Set 确保不会重复添加嘉宾
+        const participantsData = (activity as any).participants || [];
+        const uniqueParticipants = Array.from(new Set(participantsData as string[]));
+        setSelectedParticipants(uniqueParticipants);
         setDescription(activity.description);
         setImageUrl(activity.imageUrl || '');
       }
@@ -134,11 +137,14 @@ export default function AdminActivityEditPage() {
   };
 
   const handleToggleParticipant = (memberId: string) => {
-    if (selectedParticipants.includes(memberId)) {
-      setSelectedParticipants(selectedParticipants.filter((id) => id !== memberId));
+    // 使用 Set 确保不会重复
+    const currentSet = new Set(selectedParticipants);
+    if (currentSet.has(memberId)) {
+      currentSet.delete(memberId);
     } else {
-      setSelectedParticipants([...selectedParticipants, memberId]);
+      currentSet.add(memberId);
     }
+    setSelectedParticipants(Array.from(currentSet));
   };
 
   const handleDeleteParticipant = (memberId: string) => {
@@ -405,7 +411,7 @@ export default function AdminActivityEditPage() {
 
                 <div>
                   <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    参与嘉宾 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {selectedParticipants.length} 人)</span>
+                    参与嘉宾 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {new Set(selectedParticipants).size} 人)</span>
                   </label>
                   <div className="grid grid-cols-4 gap-3">
                     {availableMembers.map((member) => (

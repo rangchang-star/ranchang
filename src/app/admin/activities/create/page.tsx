@@ -70,11 +70,14 @@ export default function AdminActivityCreatePage() {
   };
 
   const handleToggleParticipant = (memberId: string) => {
-    if (selectedParticipants.includes(memberId)) {
-      setSelectedParticipants(selectedParticipants.filter((id) => id !== memberId));
+    // 使用 Set 确保不会重复
+    const currentSet = new Set(selectedParticipants);
+    if (currentSet.has(memberId)) {
+      currentSet.delete(memberId);
     } else {
-      setSelectedParticipants([...selectedParticipants, memberId]);
+      currentSet.add(memberId);
     }
+    setSelectedParticipants(Array.from(currentSet));
   };
 
   const handleDeleteParticipant = (memberId: string) => {
@@ -315,7 +318,7 @@ export default function AdminActivityCreatePage() {
 
                 <div>
                   <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    参与嘉宾 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {selectedParticipants.length} 人)</span>
+                    参与嘉宾 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {new Set(selectedParticipants).size} 人)</span>
                   </label>
                   <div className="grid grid-cols-4 gap-3">
                     {availableMembers.map((member) => (
