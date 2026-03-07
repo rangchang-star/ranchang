@@ -36,8 +36,8 @@ export default function LoginPage() {
       need: '',
       tagStamp: 'pureExchange',
       tags: [],
-      hardcoreTags: [],
-      resourceTags: [],
+      hardcoreTags: ['AI技术', '搞定自己', '会说人话'], // 默认硬核标签
+      resourceTags: ['人才', '技术'], // 默认资源标签
       isTrusted: false,
       role: 'user',
       status: 'active',
