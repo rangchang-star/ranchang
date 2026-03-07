@@ -44,7 +44,7 @@ export async function GET(
         position: user.position,
         company: user.company,
         industry: user.industry,
-        tags: user.tags || [],
+        tags: user.hardcoreTags || user.tags || [], // 优先使用hardcoreTags
       } : null,
     };
 

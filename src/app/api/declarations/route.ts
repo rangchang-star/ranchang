@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
           avatar: user.avatar,
           position: user.position,
           company: user.company,
+          tags: user.hardcoreTags || user.tags || [], // 优先使用hardcoreTags
         } : null,
       };
     });
