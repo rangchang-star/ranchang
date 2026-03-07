@@ -190,15 +190,6 @@ const skillDescriptions: Record<string, string> = {
   s13: '会说人话 | 汇报、路演、谈判、讲明白事'
 };
 
-// 每日宣告
-const dailyDeclaration = {
-  image:
-    "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop",
-  date: "2024年3月1日",
-  title: "每日宣告：重塑自我，迎接新挑战",
-  duration: "3:15",
-};
-
 // 图标映射
 const getIcon = (iconType: string) => {
   switch (iconType) {
@@ -336,6 +327,7 @@ export default function DiscoveryPage() {
   const [activityItems, setActivityItems] = useState<any[]>([]);
   const [declarationItems, setDeclarationItems] = useState<any[]>([]);
   const [documentItems, setDocumentItems] = useState<any[]>([]);
+  const [dailyDeclaration, setDailyDeclaration] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -368,13 +360,14 @@ export default function DiscoveryPage() {
         setIsLoading(true);
         setError(null);
 
-        // 并行加载用户、活动、高燃宣告和文档数据
-        const [usersRes, activitiesRes, declarationsRes, documentsRes] =
+        // 并行加载用户、活动、高燃宣告、文档和每日宣告数据
+        const [usersRes, activitiesRes, declarationsRes, documentsRes, dailyRes] =
           await Promise.all([
             fetch("/api/users"),
             fetch("/api/activities?status=active"),
             fetch("/api/declarations"),
             fetch("/api/documents"),
+            fetch("/api/daily-declarations"),
           ]);
 
         if (
@@ -489,6 +482,29 @@ export default function DiscoveryPage() {
             status: doc.status || "published",
           }));
           setDocumentItems(formattedDocuments);
+        }
+
+        // 加载每日宣告数据（获取最新的已发布宣告）
+        if (dailyRes.ok) {
+          const dailyData = await dailyRes.json();
+          if (dailyData.success && dailyData.data) {
+            const activeDeclarations = dailyData.data.filter((d: any) => d.isActive);
+            if (activeDeclarations.length > 0) {
+              // 按创建时间倒序，取最新的
+              const sorted = activeDeclarations.sort((a: any, b: any) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+              const latest = sorted[0];
+              setDailyDeclaration({
+                image: latest.image,
+                date: latest.date,
+                title: latest.title,
+                duration: latest.duration,
+                audio: latest.audio,
+                id: latest.id,
+              });
+            }
+          }
         }
       } catch (err) {
         console.error("加载数据失败:", err);
@@ -1000,52 +1016,54 @@ export default function DiscoveryPage() {
         </div>
 
         {/* 每日宣告 - 固定在底部导航栏上方 */}
-        <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40">
-          <section>
-            <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors">
-              <div className="flex items-center space-x-3">
-                {/* 左侧图标 - 正方形 */}
-                <div className="flex-shrink-0">
-                  <img
-                    src="/daily-declaration-square.webp"
-                    alt="每日宣告"
-                    className="w-10 h-10 object-cover"
-                  />
-                </div>
+        {dailyDeclaration && (
+          <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40">
+            <section>
+              <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors">
+                <div className="flex items-center space-x-3">
+                  {/* 左侧图标 - 正方形 */}
+                  <div className="flex-shrink-0">
+                    <img
+                      src={dailyDeclaration.image || "/daily-declaration-square.webp"}
+                      alt="每日宣告"
+                      className="w-10 h-10 object-cover"
+                    />
+                  </div>
 
-                {/* 中间内容 */}
-                <div className="flex-1 min-w-0 cursor-pointer">
-                  {/* 日期加宣告片花（黑色字） */}
-                  <h3 className="text-[17px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
-                    {dailyDeclaration.title}
-                  </h3>
-                  {/* 年月日与录音时长（灰色字） */}
-                  <div className="flex items-center space-x-2 text-[12px] text-[rgba(0,0,0,0.25)]">
-                    <span>{dailyDeclaration.date}</span>
+                  {/* 中间内容 */}
+                  <div className="flex-1 min-w-0 cursor-pointer">
+                    {/* 日期加宣告片花（黑色字） */}
+                    <h3 className="text-[17px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                      {dailyDeclaration.title}
+                    </h3>
+                    {/* 年月日与录音时长（灰色字） */}
+                    <div className="flex items-center space-x-2 text-[12px] text-[rgba(0,0,0,0.25)]">
+                      <span>{dailyDeclaration.date}</span>
                     <span>·</span>
                     <span className="flex items-center">
                       <Timer className="w-3 h-3 mr-1" />
                       {dailyDeclaration.duration}
                     </span>
                   </div>
+                  </div>
+
+                  {/* 播放按钮 - 缩小30% */}
+                  <button className="w-7 h-7 bg-blue-400 flex items-center justify-center flex-shrink-0 rounded">
+                    <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                  </button>
+
+                  {/* 查看详情按钮 - 醒目设计 */}
+                  <button
+                    onClick={() => setShowAssetsModal(true)}
+                    className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 flex items-center justify-center flex-shrink-0 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200"
+                  >
+                    <Zap className="w-4 h-4 text-white" />
+                  </button>
                 </div>
-
-                {/* 播放按钮 - 缩小30% */}
-                <button className="w-7 h-7 bg-blue-400 flex items-center justify-center flex-shrink-0 rounded">
-                  <Play className="w-3 h-3 text-white fill-white ml-0.5" />
-                </button>
-
-                {/* 查看详情按钮 - 醒目设计 */}
-                <button
-                  onClick={() => setShowAssetsModal(true)}
-                  className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 flex items-center justify-center flex-shrink-0 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200"
-                >
-                  <Zap className="w-4 h-4 text-white" />
-                </button>
               </div>
-            </div>
-          </section>
-        </div>
+            </section>
+          </div>
+        )}
 
         {/* 底部导航 - 固定在底部 */}
         <BottomNav />
