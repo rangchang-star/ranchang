@@ -38,14 +38,14 @@ import { BottomNav } from "@/components/bottom-nav";
 
 // 硬核图谱 - 技能树（半透明圆形不规则排列）
 const skillBubbles = [
-  // 三个较大的圆形（前三个技能），大小不同
+  // 三个较大的圆形（前三个技能），大小不同，使用蓝色+黄色配色
   {
     id: 's1',
     name: 'AI技术',
     size: 80,
-    color: 'bg-yellow-400/50',
-    borderColor: 'border-yellow-500',
-    textColor: 'text-yellow-800',
+    color: 'bg-blue-400/50',
+    borderColor: 'border-blue-500',
+    textColor: 'text-blue-800',
     x: 25,
     y: 30
   },
@@ -53,9 +53,9 @@ const skillBubbles = [
     id: 's2',
     name: '定方向',
     size: 75,
-    color: 'bg-orange-400/45',
-    borderColor: 'border-orange-500',
-    textColor: 'text-orange-800',
+    color: 'bg-yellow-400/45',
+    borderColor: 'border-yellow-500',
+    textColor: 'text-yellow-800',
     x: 65,
     y: 25
   },
@@ -63,18 +63,18 @@ const skillBubbles = [
     id: 's3',
     name: '带兵打仗',
     size: 70,
-    color: 'bg-red-400/40',
-    borderColor: 'border-red-500',
-    textColor: 'text-red-800',
+    color: 'bg-blue-300/45',
+    borderColor: 'border-blue-400',
+    textColor: 'text-blue-700',
     x: 45,
     y: 65
   },
-  // 中等大小的圆形
+  // 中等大小的圆形 - 黄色系
   {
     id: 's4',
     name: '从0到1',
     size: 55,
-    color: 'bg-yellow-300/45',
+    color: 'bg-yellow-300/40',
     borderColor: 'border-yellow-400',
     textColor: 'text-yellow-700',
     x: 15,
@@ -84,9 +84,9 @@ const skillBubbles = [
     id: 's5',
     name: '摆平滥摊',
     size: 50,
-    color: 'bg-orange-300/40',
-    borderColor: 'border-orange-400',
-    textColor: 'text-orange-700',
+    color: 'bg-yellow-200/40',
+    borderColor: 'border-yellow-300',
+    textColor: 'text-yellow-600',
     x: 80,
     y: 50
   },
@@ -94,19 +94,19 @@ const skillBubbles = [
     id: 's6',
     name: '搞定人',
     size: 52,
-    color: 'bg-red-300/40',
-    borderColor: 'border-red-400',
-    textColor: 'text-red-700',
+    color: 'bg-blue-200/40',
+    borderColor: 'border-blue-300',
+    textColor: 'text-blue-600',
     x: 70,
     y: 80
   },
-  // 小圆形
+  // 小圆形 - 浅色系
   {
     id: 's7',
     name: '看懂账本',
     size: 45,
-    color: 'bg-yellow-200/50',
-    borderColor: 'border-yellow-300',
+    color: 'bg-yellow-100/45',
+    borderColor: 'border-yellow-200',
     textColor: 'text-yellow-600',
     x: 30,
     y: 15
@@ -115,9 +115,9 @@ const skillBubbles = [
     id: 's8',
     name: '攒局组队',
     size: 42,
-    color: 'bg-orange-200/45',
-    borderColor: 'border-orange-300',
-    textColor: 'text-orange-600',
+    color: 'bg-blue-100/45',
+    borderColor: 'border-blue-200',
+    textColor: 'text-blue-600',
     x: 85,
     y: 20
   },
@@ -125,9 +125,9 @@ const skillBubbles = [
     id: 's9',
     name: '卖出去',
     size: 40,
-    color: 'bg-red-200/45',
-    borderColor: 'border-red-300',
-    textColor: 'text-red-600',
+    color: 'bg-yellow-100/40',
+    borderColor: 'border-yellow-200',
+    textColor: 'text-yellow-500',
     x: 10,
     y: 80
   },
@@ -135,9 +135,9 @@ const skillBubbles = [
     id: 's10',
     name: '稳军心',
     size: 38,
-    color: 'bg-yellow-100/50',
-    borderColor: 'border-yellow-200',
-    textColor: 'text-yellow-500',
+    color: 'bg-blue-100/40',
+    borderColor: 'border-blue-200',
+    textColor: 'text-blue-500',
     x: 50,
     y: 90
   },
@@ -145,9 +145,9 @@ const skillBubbles = [
     id: 's11',
     name: '搞定自己',
     size: 48,
-    color: 'bg-orange-100/45',
-    borderColor: 'border-orange-200',
-    textColor: 'text-orange-500',
+    color: 'bg-yellow-200/40',
+    borderColor: 'border-yellow-300',
+    textColor: 'text-yellow-600',
     x: 55,
     y: 10
   },
@@ -155,9 +155,9 @@ const skillBubbles = [
     id: 's12',
     name: '找人识人',
     size: 44,
-    color: 'bg-red-100/45',
-    borderColor: 'border-red-200',
-    textColor: 'text-red-500',
+    color: 'bg-blue-200/40',
+    borderColor: 'border-blue-300',
+    textColor: 'text-blue-600',
     x: 20,
     y: 40
   },
@@ -165,9 +165,9 @@ const skillBubbles = [
     id: 's13',
     name: '会说人话',
     size: 46,
-    color: 'bg-yellow-300/40',
-    borderColor: 'border-yellow-400',
-    textColor: 'text-yellow-700',
+    color: 'bg-yellow-200/40',
+    borderColor: 'border-yellow-300',
+    textColor: 'text-yellow-600',
     x: 90,
     y: 70
   }
