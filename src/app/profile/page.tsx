@@ -423,44 +423,79 @@ export default function ProfilePage() {
   const [testAnswers, setTestAnswers] = useState<Record<number, number>>({});
 
   // 从登录用户生成用户信息
-  const userInfo = user ? {
-    id: user.id.toString(),
-    name: user.name || user.nickname,
-    age: user.age,
-    avatar: user.avatar,
-    connectionType: user.tagStamp || 'pureExchange',
-    industry: user.industry || '未设置',
-    need: user.need || '',
-    hardcoreTags: user.hardcoreTags || [],
-    resourceTags: user.resourceTags || [],
-    currentDeclaration: {
-      direction: 'confidence',
-      text: user.bio || '',
-      summary: user.bio || '',
-      date: new Date(user.createdAt).toLocaleDateString('zh-CN'),
-      views: 0,
-    },
-    assessments: [entrepreneurialPsychologyAssessment, businessCognitionAssessment, aiCognitionAssessment, careerMissionAssessment] as Assessment[],
-  } : {
-    // 默认值，避免 null 错误
-    id: '',
-    name: '',
-    age: 0,
-    avatar: '',
-    connectionType: 'pureExchange',
-    industry: '',
-    need: '',
-    hardcoreTags: [] as string[],
-    resourceTags: [] as string[],
-    currentDeclaration: {
-      direction: 'confidence',
-      text: '',
-      summary: '',
-      date: '',
-      views: 0,
-    },
-    assessments: [] as Assessment[],
+  const getUserInfoFromUser = (userData?: any) => {
+    if (!userData) {
+      // 默认值，避免 null 错误
+      return {
+        id: '',
+        name: '',
+        age: 0,
+        avatar: '',
+        connectionType: 'pureExchange',
+        industry: '',
+        need: '',
+        hardcoreTags: [] as string[],
+        resourceTags: [] as string[],
+        currentDeclaration: {
+          direction: 'confidence',
+          text: '',
+          summary: '',
+          date: '',
+          views: 0,
+        },
+        assessments: [] as Assessment[],
+      };
+    }
+
+    return {
+      id: userData.id.toString(),
+      name: userData.name || userData.nickname,
+      age: userData.age,
+      avatar: userData.avatar,
+      connectionType: userData.tagStamp || 'pureExchange',
+      industry: userData.industry || '未设置',
+      need: userData.need || '',
+      hardcoreTags: userData.hardcoreTags || [],
+      resourceTags: userData.resourceTags || [],
+      currentDeclaration: {
+        direction: 'confidence',
+        text: userData.bio || '',
+        summary: userData.bio || '',
+        date: new Date(userData.createdAt).toLocaleDateString('zh-CN'),
+        views: 0,
+      },
+      assessments: [entrepreneurialPsychologyAssessment, businessCognitionAssessment, aiCognitionAssessment, careerMissionAssessment] as Assessment[],
+    };
   };
+
+  const [userInfo, setUserInfo] = useState(() => getUserInfoFromUser(user));
+
+  // 监听 localStorage 的 userProfile 变化，确保编辑页面保存后能同步更新
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userProfile' && e.newValue) {
+        try {
+          const userProfile = JSON.parse(e.newValue);
+          // 如果 userProfile 包含 hardcoreTags，更新 userInfo 中的 hardcoreTags
+          if (userProfile.hardcoreTags) {
+            setUserInfo(prev => ({
+              ...prev,
+              hardcoreTags: userProfile.hardcoreTags,
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to parse userProfile from storage:', error);
+        }
+      }
+    };
+
+    // 监听 window 的 storage 事件
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   // 切换量表展开状态
   const toggleAssessmentExpand = (index: number) => {
@@ -861,7 +896,7 @@ export default function ProfilePage() {
               <div className="text-[14px] text-gray-400 mb-2">硬核标签（必填）</div>
               <div className="flex flex-wrap gap-2">
                 {userInfo.hardcoreTags && userInfo.hardcoreTags.length > 0 ? (
-                  userInfo.hardcoreTags.map((tag) => (
+                  userInfo.hardcoreTags.map((tag: string) => (
                     <span
                       key={tag}
                       className="px-2.5 py-1 bg-blue-100 text-blue-600 text-[14px] font-medium"
@@ -879,7 +914,7 @@ export default function ProfilePage() {
             <div className="mb-3">
               <div className="text-[14px] text-gray-400 mb-2">资源标签（必填）</div>
               <div className="flex flex-wrap gap-2">
-                {userInfo.resourceTags.map((tag) => (
+                {userInfo.resourceTags.map((tag: string) => (
                   <span
                     key={tag}
                     className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal"

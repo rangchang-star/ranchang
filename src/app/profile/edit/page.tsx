@@ -36,7 +36,8 @@ const mockUserProfile = {
   companyPosition: '',
   purpose: '人找事', // 人找事/事找人/纯交流
   industry: '制造业',
-  industryTags: ['供应链', '智能制造', '数字化转型'],
+  industryTags: ['供应链', '智能制造', '数字化转型'], // 行业标签（用于行业相关功能）
+  hardcoreTags: ['AI技术', '搞定自己', '会说人话'], // 硬核标签（必填，独立字段）
   resources: ['AI技术', '供应链资源', '企业培训'],
   declaration: '用15年供应链管理经验，帮助传统企业实现AI转型',
   directions: ['信心', '使命', '自我'],
@@ -145,11 +146,8 @@ function ProfileEditContent() {
   // 根据登录用户数据初始化用户资料
   const getUserProfile = () => {
     if (!isLoggedIn || !user) {
-      // 未登录时返回默认的mock数据
-      return {
-        ...mockUserProfile,
-        hardcoreTags: mockUserProfile.industryTags, // 使用industryTags作为默认硬核标签
-      };
+      // 未登录时返回默认的mock数据，直接返回 mockUserProfile（包含正确的 hardcoreTags）
+      return mockUserProfile;
     }
 
     // 将登录用户数据映射到编辑页面需要的格式
@@ -167,7 +165,7 @@ function ProfileEditContent() {
       industry: user.industry || mockUserProfile.industry,
       industryTags: mockUserProfile.industryTags, // 保留行业标签用于行业相关功能
       resources: user.resourceTags || mockUserProfile.resources,
-      hardcoreTags: user.hardcoreTags || mockUserProfile.industryTags, // 硬核标签从用户数据中获取
+      hardcoreTags: user.hardcoreTags || mockUserProfile.hardcoreTags || [], // 硬核标签从用户数据中获取，无则使用默认值
       declaration: user.bio || mockUserProfile.declaration,
       directions: mockUserProfile.directions,
     };
@@ -198,7 +196,7 @@ function ProfileEditContent() {
       setSelectedPurpose(newProfile.purpose);
       setSelectedIndustryTag(newProfile.industryTags[0] || '');
       setSelectedResources(newProfile.resources);
-      setSelectedAbilityTags(newProfile.hardcoreTags || []);
+      setSelectedAbilityTags(newProfile.hardcoreTags || []); // 使用 newProfile.hardcoreTags
     }
   }, [isLoggedIn, user]);
   
