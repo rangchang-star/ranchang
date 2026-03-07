@@ -433,7 +433,39 @@ export default function ProfilePage() {
 
     loadUserNotifications();
   }, [user?.id]);
-  
+
+  // 加载用户收藏的探访项目
+  useEffect(() => {
+    const loadFavoriteVisits = async () => {
+      if (!user?.id) {
+        setFavoriteVisits([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/users/${user.id}/favorites/visits`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setFavoriteVisits(data.data);
+          }
+        }
+      } catch (error) {
+        console.error('加载收藏探访项目失败:', error);
+      }
+    };
+
+    loadFavoriteVisits();
+
+    // 监听storage事件，当收藏状态变化时刷新列表
+    const handleStorageChange = () => {
+      loadFavoriteVisits();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [user?.id]);
+
   const [showActivityDetail, setShowActivityDetail] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
   const [activitiesExpanded, setActivitiesExpanded] = useState(false);
@@ -578,10 +610,11 @@ export default function ProfilePage() {
     { id: 10, question: '当团队成员出现矛盾时，您会？', options: ['回避矛盾', '分别谈话了解', '公开讨论解决', '建立规则预防', '转化为成长机会'] }
   ];
 
-  // 过滤出包含当前用户作为访客的探访项目
-  const userVisitRecords = visitRecords.filter((record) =>
-    record.visitors.some((visitor) => visitor.id === userInfo.id)
-  );
+  // 用户收藏的探访项目列表
+  const [favoriteVisits, setFavoriteVisits] = useState<any[]>([]);
+
+  // 过滤出包含当前用户作为访客的探访项目（从收藏数据中读取）
+  const userVisitRecords = favoriteVisits;
 
   // 获取未读通知数量
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -1178,45 +1211,54 @@ export default function ProfilePage() {
                     暂无探访项目
                   </p>
                   <p className="text-[14px] text-[rgba(0,0,0,0.4)] mt-1">
-                    探访项目将在后台探访管理中添加访客后显示
+                    在探访项目详情页点击收藏按钮后，这里会显示你收藏的探访项目
                   </p>
                 </div>
               ) : (
-                userVisitRecords.map((record) => (
-                  <div
-                    key={record.id}
-                    className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors"
-                  >
-                  <div className="flex items-start space-x-3">
-                    <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
-                      <Image
-                        src={record.image}
-                        alt={record.title}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover"
-                        unoptimized
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-[18px] font-semibold text-gray-900 mb-1 line-clamp-2">
-                        {record.title}
-                      </h3>
-                      <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.25)] mb-2">
-                        <span>{record.date}</span>
-                        <span>·</span>
-                        <Badge className="rounded-none bg-[rgba(34,197,94,0.15)] text-green-600 font-normal text-[13px]">
-                          {record.industry}
-                        </Badge>
-                        <span>·</span>
-                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
-                          {record.role}
-                        </Badge>
+                userVisitRecords.map((record) => {
+                  // 兼容两种数据格式：直接的数据和包含visit对象的数据
+                  const visitData = record.visit || record;
+                  const visitId = visitData.id || record.visitId;
+
+                  return (
+                    <Link
+                      key={visitId}
+                      href={`/visit/${visitId}`}
+                      className="block"
+                    >
+                      <div className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
+                            <Image
+                              src={visitData.image || visitData.title}
+                              alt={visitData.title}
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover"
+                              unoptimized
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-[18px] font-semibold text-gray-900 mb-1 line-clamp-2">
+                              {visitData.title}
+                            </h3>
+                            <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.25)] mb-2">
+                              <span>{visitData.date}</span>
+                              <span>·</span>
+                              <Badge className="rounded-none bg-[rgba(34,197,94,0.15)] text-green-600 font-normal text-[13px]">
+                                {visitData.industry}
+                              </Badge>
+                              <span>·</span>
+                              <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
+                                {visitData.role}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-                ))
+                    </Link>
+                  );
+                })
               )}
             </div>
           </div>

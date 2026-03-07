@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Play, Pause, Calendar, MapPin, Users, Clock, Star, Share2 } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Calendar, MapPin, Users, Clock, Star, Share2, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -45,6 +45,9 @@ export default function VisitDetailPage() {
     wechat: '',
   });
 
+  // 收藏状态
+  const [isFavorite, setIsFavorite] = useState(false);
+
   // 从 API 加载探访数据
   useEffect(() => {
     async function loadVisit() {
@@ -63,6 +66,11 @@ export default function VisitDetailPage() {
 
         if (data.success) {
           setVisit(data.data);
+
+          // 检查用户是否已收藏该项目
+          if (user?.id) {
+            checkFavoriteStatus(data.data.id);
+          }
         } else {
           throw new Error(data.error || '加载探访信息失败');
         }
@@ -184,6 +192,58 @@ export default function VisitDetailPage() {
     return phoneRegex.test(phone);
   };
 
+  // 检查收藏状态
+  const checkFavoriteStatus = async (visitId: string) => {
+    try {
+      if (!user?.id) return;
+
+      const response = await fetch(`/api/users/${user.id}/favorites/visits`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          const favoriteVisitIds = data.data.map((fav: any) => fav.visitId);
+          setIsFavorite(favoriteVisitIds.includes(visitId));
+        }
+      }
+    } catch (error) {
+      console.error('检查收藏状态失败:', error);
+    }
+  };
+
+  // 切换收藏状态
+  const toggleFavorite = async () => {
+    // 登录验证
+    if (!isLoggedIn || !user) {
+      showLoginModal();
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/users/${user.id}/favorites/visits`, {
+        method: isFavorite ? 'DELETE' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          visitId: visit.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsFavorite(!isFavorite);
+        // 触发storage事件，让个人页知道收藏状态已变化
+        window.dispatchEvent(new Event('storage'));
+      } else {
+        alert(data.error || '操作失败，请稍后重试');
+      }
+    } catch (error) {
+      console.error('收藏操作失败:', error);
+      alert('操作失败，请稍后重试');
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors = {
       name: '',
@@ -298,9 +358,16 @@ export default function VisitDetailPage() {
               </Button>
             </Link>
             <h1 className="text-[15px] font-semibold text-gray-900">探访点亮</h1>
-            <Button variant="ghost" onClick={handleShare} className="p-2">
-              <Share2 className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
-            </Button>
+            <div className="flex items-center space-x-1">
+              <Button variant="ghost" onClick={toggleFavorite} className="p-2">
+                <Heart
+                  className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-[rgba(0,0,0,0.6)]'}`}
+                />
+              </Button>
+              <Button variant="ghost" onClick={handleShare} className="p-2">
+                <Share2 className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+              </Button>
+            </div>
           </div>
         </div>
 
