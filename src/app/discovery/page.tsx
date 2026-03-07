@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Zap,
   RefreshCw,
+  Lightbulb,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -474,10 +475,10 @@ export default function DiscoveryPage() {
             {/* 搜索框 */}
             <div className="px-5 pb-2 pt-0">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[rgba(0,0,0,0.25)]" />
+                <Lightbulb className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-yellow-400" />
                 <input
                   type="text"
-                  placeholder="搜索AI资产、活动、会员..."
+                  placeholder="35岁+ ｜ 有硬核  ｜晒战绩  ｜  交盟友..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-1.5 bg-[rgba(0,0,0,0.05)] text-[17px] text-gray-900 placeholder-[rgba(0,0,0,0.25)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
