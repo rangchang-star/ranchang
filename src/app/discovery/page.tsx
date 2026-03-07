@@ -990,8 +990,8 @@ export default function DiscoveryPage() {
                   </div>
 
                   {/* 技能说明 */}
-                  <div className="text-[10px] text-yellow-600/70 text-center pt-2">
-                    💡 半透明大小不一的圆形，体现技能的重要性与层次
+                  <div className="text-[11px] text-yellow-600/70 text-center pt-2">
+                    💡 35岁+找盟友不看履历，聊硬核能力与战绩
                   </div>
                 </div>
               </section>
