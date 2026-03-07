@@ -441,6 +441,9 @@ export default function ProfilePage() {
   // 量表展开状态 - 默认只展开"创业心理评估"
   const [expandedAssessments, setExpandedAssessments] = useState<Set<number>>(new Set([0]));
   
+  // 量表评估部分显示状态 - 默认显示
+  const [showAssessmentsSection, setShowAssessmentsSection] = useState(true);
+  
   // 咨询相关状态
   const [selectedTopic, setSelectedTopic] = useState<string>('ai-frontier'); // 默认选择第一个话题
   const [consultationQuestion, setConsultationQuestion] = useState(''); // 清空初始问题
@@ -527,13 +530,7 @@ export default function ProfilePage() {
 
   // 切换所有量表的展开/收起
   const toggleAllAssessments = () => {
-    if (expandedAssessments.size === userInfo.assessments.length) {
-      // 如果全部展开，则全部收起
-      setExpandedAssessments(new Set());
-    } else {
-      // 否则全部展开
-      setExpandedAssessments(new Set(userInfo.assessments.map((_, idx) => idx)));
-    }
+    setShowAssessmentsSection(!showAssessmentsSection);
   };
 
   // 处理开始测试按钮点击
@@ -997,7 +994,7 @@ export default function ProfilePage() {
                 onClick={toggleAllAssessments}
                 className="text-[13px] text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] flex items-center space-x-1"
               >
-                <span>{expandedAssessments.size === userInfo.assessments.length ? '收起全部' : '展开全部'}</span>
+                <span>{showAssessmentsSection ? '收起全部' : '展开全部'}</span>
               </button>
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
