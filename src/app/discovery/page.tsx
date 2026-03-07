@@ -784,25 +784,23 @@ export default function DiscoveryPage() {
                   <span>更多</span>
                 </button>
               </div>
+
+              {/* 硬核图谱 */}
+              <section className="mt-8">
+                <div className="border border-yellow-400 p-4 bg-yellow-50/30">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-xl font-bold">
+                      <span className="text-yellow-600">硬核</span>
+                      <span className="text-yellow-500">图谱</span>
+                    </h2>
+                  </div>
+                  <div className="text-[13px] text-[rgba(0,0,0,0.5)] text-center py-8">
+                    敬请期待硬核图谱功能
+                  </div>
+                </div>
+              </section>
             </section>
           </div>
-        </div>
-
-        {/* 硬核图谱 - 每日宣告上方 */}
-        <div className="fixed bottom-[calc(56px+140px)] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-30">
-          <section>
-            <div className="border border-yellow-400 p-4 bg-yellow-50/30">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-bold">
-                  <span className="text-yellow-600">硬核</span>
-                  <span className="text-yellow-500">图谱</span>
-                </h2>
-              </div>
-              <div className="text-[13px] text-[rgba(0,0,0,0.5)] text-center py-8">
-                敬请期待硬核图谱功能
-              </div>
-            </div>
-          </section>
         </div>
 
         {/* 每日宣告 - 固定在底部导航栏上方 */}
