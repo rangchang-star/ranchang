@@ -415,20 +415,6 @@ export default function SubscriptionPage() {
                       {visit.record}
                     </p>
 
-                    {/* 状态标签 */}
-                    <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-3">
-                      <div className="flex flex-wrap gap-2">
-                        {visit.status.map((status: string) => (
-                          <Badge
-                            key={status}
-                            className="rounded-none bg-[rgba(0,0,0,0.08)] text-[rgba(0,0,0,0.6)] font-normal text-[13px] line-clamp-1"
-                          >
-                            {status}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
                     {/* 走访录音 */}
                     <div className="flex items-center space-x-3 p-3 bg-[rgba(0,0,0,0.03)]">
                       <button className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0">
