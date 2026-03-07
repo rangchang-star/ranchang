@@ -1226,7 +1226,7 @@ export default function ProfilePage() {
                       href={`/visit/${visitId}`}
                       className="block"
                     >
-                      <div className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors">
+                      <div className="p-3 bg-[rgba(0,0,0,0.02)]">
                         <div className="flex items-start space-x-3">
                           <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
                             <Image
@@ -1244,11 +1244,11 @@ export default function ProfilePage() {
                             </h3>
                             {/* 显示标签 */}
                             {visitData.tags && visitData.tags.filter((tag: string) => !['已审核', '已发布'].includes(tag)).length > 0 && (
-                              <div className="flex items-center space-x-2 flex-wrap gap-2 mb-2">
+                              <div className="flex items-center space-x-1 flex-wrap gap-1 mb-2">
                                 {visitData.tags.filter((tag: string) => !['已审核', '已发布'].includes(tag)).map((tag: string) => (
                                   <Badge
                                     key={tag}
-                                    className="rounded-none bg-blue-400 text-white font-normal text-[8px]"
+                                    className="rounded-none bg-blue-400/50 text-white font-normal text-[8px]"
                                   >
                                     {tag}
                                   </Badge>
