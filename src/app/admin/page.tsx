@@ -2,7 +2,7 @@
 
 import { AdminLayout } from '@/components/admin-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Calendar, MessageSquare, TrendingUp } from 'lucide-react';
+import { Users, Calendar, MessageSquare, TrendingUp, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function AdminDashboardPage() {
@@ -10,6 +10,7 @@ export default function AdminDashboardPage() {
     totalMembers: 0,
     totalActivities: 0,
     totalConsultations: 0,
+    totalVisits: 0,
     weeklyActive: 0,
   });
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
@@ -22,22 +23,26 @@ export default function AdminDashboardPage() {
         setIsLoading(true);
 
         // 并行加载所有数据
-        const [membersRes, activitiesRes] = await Promise.all([
+        const [membersRes, activitiesRes, visitsRes] = await Promise.all([
           fetch('/admin/api/members'),
           fetch('/admin/api/activities'),
+          fetch('/admin/api/visits'),
         ]);
 
         const membersData = await membersRes.json();
         const activitiesData = await activitiesRes.json();
+        const visitsData = await visitsRes.json();
 
-        if (membersData.success && activitiesData.success) {
+        if (membersData.success && activitiesData.success && visitsData.success) {
           const members = membersData.data || [];
           const activities = activitiesData.data || [];
+          const visits = visitsData.data || [];
 
           setStats({
             totalMembers: members.length,
             totalActivities: activities.length,
             totalConsultations: 89, // 暂时硬编码，等待咨询数据API
+            totalVisits: visits.length,
             weeklyActive: Math.floor(members.length * 0.2), // 假设20%活跃
           });
 
@@ -97,7 +102,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* 统计卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -123,6 +128,20 @@ export default function AdminDashboardPage() {
               <div className="text-2xl font-bold">{stats.totalActivities}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 <span className="text-primary">+8%</span> 较上周
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                探访总数
+              </CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalVisits}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                <span className="text-primary">+5%</span> 较上周
               </p>
             </CardContent>
           </Card>
