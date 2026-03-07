@@ -1073,6 +1073,7 @@ export default function ProfilePage() {
                 );
               })}
             </div>
+          </div>
           )}
 
           {/* 活动详情弹窗 */}
@@ -1152,7 +1153,6 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
-          </div>
 
           {/* 探访记录 */}
           <div>
