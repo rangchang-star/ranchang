@@ -173,6 +173,23 @@ const skillBubbles = [
   }
 ];
 
+// 技能详细描述映射
+const skillDescriptions: Record<string, string> = {
+  s1: 'AI技术 | 拥抱AI，掌握前沿技术工具',
+  s2: '定方向 | 做战略、选赛道、不踩坑',
+  s3: '带兵打仗 | 从管1个人到管100个人的实战能力',
+  s4: '从0到1 | 冷启动、开荒、从零搭班子',
+  s5: '摆平烂摊 | 接盘烂项目、救火、危机处理',
+  s6: '搞定人 | 跨部门推动、向上管理、难缠客户',
+  s7: '看懂账本 | 算成本、看财报、懂毛利、控预算',
+  s8: '攒局组队 | 拉资源、找搭档、攒项目',
+  s9: '卖出去 | 拿单、成交、搞钱',
+  s10: '稳军心 | 团队动荡、士气低、人心散',
+  s11: '搞定自己 | 情绪管理、抗压、不崩',
+  s12: '找人识人 | 招对人、看走眼、搭团队',
+  s13: '会说人话 | 汇报、路演、谈判、讲明白事'
+};
+
 // 每日宣告
 const dailyDeclaration = {
   image:
@@ -942,9 +959,8 @@ export default function DiscoveryPage() {
                       <div
                         key={bubble.id}
                         onClick={() => {
-                          setClickedBubbleId(bubble.id);
-                          // 1.5秒后自动取消选中状态
-                          setTimeout(() => setClickedBubbleId(null), 1500);
+                          // 点击另一个时取消之前的选中状态
+                          setClickedBubbleId(clickedBubbleId === bubble.id ? null : bubble.id);
                         }}
                         className={`absolute rounded-full border ${bubble.borderColor} ${bubble.color} flex items-center justify-center cursor-pointer transition-all hover:scale-105 hover:shadow-lg ${
                           clickedBubbleId === bubble.id
@@ -963,6 +979,11 @@ export default function DiscoveryPage() {
                           <div className={`font-semibold ${bubble.size >= 55 ? 'text-[12px]' : bubble.size >= 40 ? 'text-[10px]' : 'text-[8px]'}`}>
                             {bubble.name}
                           </div>
+                          {clickedBubbleId === bubble.id && skillDescriptions[bubble.id] && (
+                            <div className={`text-[8px] text-gray-500 mt-0.5 leading-tight`}>
+                              {skillDescriptions[bubble.id].split('|')[1]?.trim()}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
