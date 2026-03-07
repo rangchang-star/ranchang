@@ -20,18 +20,6 @@ const activityTypeOptions = [
 // 可用标签
 const availableTags = ['私董会', '名额紧张', '跨界', 'AI', 'AI实战', '工作坊', '已结束'];
 
-// 模拟会员数据（实际项目中应从API获取）
-const mockMembers = [
-  { id: '1', name: '王姐', avatar: '/avatar-3.jpg', bio: 'HRBP专家，20年人力资源经验' },
-  { id: '2', name: '李明', avatar: '/avatar-2.jpg', bio: '战略咨询师，专注企业数字化转型' },
-  { id: '3', name: '张总', avatar: '/avatar-1.jpg', bio: '智能制造领域专家' },
-  { id: '4', name: '陈老师', avatar: '/avatar-4.jpg', bio: '创业导师，投资人' },
-  { id: '5', name: '刘总', avatar: '/avatar-5.jpg', bio: '金融投资专家' },
-  { id: '6', name: '赵经理', avatar: '/avatar-6.jpg', bio: '运营管理专家' },
-  { id: '7', name: '孙总', avatar: '/avatar-7.jpg', bio: '市场营销专家' },
-  { id: '8', name: '周董', avatar: '/avatar-8.jpg', bio: '技术研发专家' },
-];
-
 // 获取活动类型标签
 const getActivityTypeLabel = (type: string) => {
   const option = activityTypeOptions.find(opt => opt.id === type);
@@ -90,7 +78,8 @@ export default function AdminActivityEditPage() {
   const [teaFee, setTeaFee] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
-  const [availableMembers, setAvailableMembers] = useState(mockMembers);
+  const [availableMembers, setAvailableMembers] = useState<any[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(true);
   
   // 自定义嘉宾
   const [showAddCustomGuest, setShowAddCustomGuest] = useState(false);
@@ -101,6 +90,27 @@ export default function AdminActivityEditPage() {
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // 加载会员数据
+  useEffect(() => {
+    async function loadMembers() {
+      try {
+        const response = await fetch('/admin/api/members/selectable');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setAvailableMembers(data.data);
+          }
+        }
+      } catch (error) {
+        console.error('加载会员数据失败:', error);
+      } finally {
+        setIsLoadingMembers(false);
+      }
+    }
+
+    loadMembers();
+  }, []);
 
   useEffect(() => {
     async function loadActivity() {
@@ -568,7 +578,7 @@ export default function AdminActivityEditPage() {
                               bio: customGuestBio,
                             };
 
-                            mockMembers.push(newGuest);
+                            setAvailableMembers([...availableMembers, newGuest]);
                             setSelectedParticipants([...selectedParticipants, newGuestId]);
                             setShowAddCustomGuest(false);
                             setCustomGuestName('');

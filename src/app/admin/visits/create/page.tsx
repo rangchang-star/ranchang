@@ -13,17 +13,32 @@ import Link from 'next/link';
 // 可用标签
 const availableTags = ['已结束', '进行中', 'AI', '智能制造', '金融投资', '数字化转型', '工业互联网'];
 
-// 模拟会员数据（实际项目中应从API获取）
-const mockMembers = [
-  { id: '1', name: '王姐', avatar: '/avatar-3.jpg', abilityTags: ['HRBP', '团队管理'] },
-  { id: '2', name: '李明', avatar: '/avatar-2.jpg', abilityTags: ['战略', '金融投资'] },
-  { id: '3', name: '张总', avatar: '/avatar-1.jpg', abilityTags: ['智能制造', '技术研发'] },
-  { id: '4', name: '陈老师', avatar: '/avatar-4.jpg', abilityTags: ['教育培训', '创业指导'] },
-];
-
 export default function AdminVisitCreatePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [availableMembers, setAvailableMembers] = useState<any[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(true);
+
+  // 加载会员数据
+  useEffect(() => {
+    async function loadMembers() {
+      try {
+        const response = await fetch('/admin/api/members/selectable');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setAvailableMembers(data.data);
+          }
+        }
+      } catch (error) {
+        console.error('加载会员数据失败:', error);
+      } finally {
+        setIsLoadingMembers(false);
+      }
+    }
+
+    loadMembers();
+  }, []);
 
   // 探访基本信息
   const [visitDate, setVisitDate] = useState('');
@@ -242,7 +257,7 @@ export default function AdminVisitCreatePage() {
         tags: selectedTags,
         projectTags: projectTags.filter((tag) => tag.trim()),
         visitors: selectedVisitors.map((memberId) => {
-          const member = mockMembers.find((m) => m.id === memberId);
+          const member = availableMembers.find((m) => m.id === memberId);
           return member
             ? {
                 id: member.id,
@@ -519,7 +534,7 @@ export default function AdminVisitCreatePage() {
                 {selectedVisitors.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-3">
                     {selectedVisitors.map((memberId) => {
-                      const member = mockMembers.find((m) => m.id === memberId);
+                      const member = availableMembers.find((m) => m.id === memberId);
                       if (!member) return null;
                       return (
                         <div
@@ -551,7 +566,7 @@ export default function AdminVisitCreatePage() {
                 <div className="space-y-2">
                   <span className="text-[12px] text-[rgba(0,0,0,0.6)]">可选访客：</span>
                   <div className="grid grid-cols-2 gap-2">
-                    {mockMembers
+                    {availableMembers
                       .filter((member) => !selectedVisitors.includes(member.id))
                       .map((member) => (
                         <button
@@ -697,7 +712,7 @@ export default function AdminVisitCreatePage() {
                             abilityTags: customVisitorIntro ? [customVisitorIntro] : [],
                           };
 
-                          mockMembers.push(newMember);
+                          availableMembers.push(newMember);
                           setSelectedVisitors([...selectedVisitors, newMemberId]);
                           setShowAddCustomVisitor(false);
                           setCustomVisitorName('');

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
-interface User {
+// 用户信息类型
+export interface User {
   id: number;
   phone: string;
   nickname: string;
@@ -19,7 +20,8 @@ interface User {
   hardcoreTags: string[];
   resourceTags: string[];
   isTrusted: boolean;
-  role: string;
+  isFeatured: boolean;
+  role: 'user' | 'admin';
   status: string;
   connectionCount: number;
   activityCount: number;
@@ -29,60 +31,101 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  isAuthenticated: boolean;
   isLoggedIn: boolean;
-  login: (user: User) => void;
+  isAdmin: boolean;
+  isLoading: boolean;
+  login: (phone: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 从 localStorage 加载登录状态
+  // 从 localStorage 加载用户信息
   useEffect(() => {
-    const loadAuthState = () => {
+    const loadUserFromStorage = () => {
       try {
         const storedUser = localStorage.getItem('currentUser');
-        const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
-
-        if (storedUser && storedIsLoggedIn === 'true') {
+        if (storedUser) {
           setUser(JSON.parse(storedUser));
-          setIsLoggedIn(true);
         }
       } catch (error) {
-        console.error('Failed to load auth state:', error);
+        console.error('加载用户信息失败:', error);
+        localStorage.removeItem('currentUser');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    loadAuthState();
+    loadUserFromStorage();
   }, []);
 
-  const login = (userData: User) => {
-    setUser(userData);
-    setIsLoggedIn(true);
-    // 保存到 localStorage
-    localStorage.setItem('currentUser', JSON.stringify(userData));
-    localStorage.setItem('isLoggedIn', 'true');
-    // 保存用户ID
-    localStorage.setItem('currentUserId', userData.id.toString());
-  };
+  // 用户登录
+  const login = useCallback(async (phone: string, password?: string) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone, password }),
+      });
 
-  const logout = () => {
+      const data = await response.json();
+
+      if (data.success && data.data.user) {
+        setUser(data.data.user);
+        localStorage.setItem('currentUser', JSON.stringify(data.data.user));
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || '登录失败' };
+      }
+    } catch (error: any) {
+      console.error('登录失败:', error);
+      return { success: false, error: '网络错误，请重试' };
+    }
+  }, []);
+
+  // 用户登出
+  const logout = useCallback(() => {
     setUser(null);
-    setIsLoggedIn(false);
-    // 清除 localStorage
     localStorage.removeItem('currentUser');
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('currentUserId');
+  }, []);
+
+  // 刷新用户信息
+  const refreshUser = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(`/api/users/${user.id}`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setUser(data.data);
+        localStorage.setItem('currentUser', JSON.stringify(data.data));
+      }
+    } catch (error) {
+      console.error('刷新用户信息失败:', error);
+    }
+  }, [user]);
+
+  const value: AuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    isLoggedIn: !!user,
+    isAdmin: user?.role === 'admin',
+    isLoading,
+    login,
+    logout,
+    refreshUser,
   };
 
-  return (
-    <AuthContext.Provider value={{ user, isLoggedIn, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

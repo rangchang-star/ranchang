@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MockDatabase } from '@/lib/mock-database';
+import { requireAuth } from '@/lib/auth-utils';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // 验证用户登录状态
+    const authResult = await requireAuth(request);
+
+    if (!authResult.success) {
+      return NextResponse.json({
+        success: false,
+        error: authResult.error
+      }, { status: authResult.statusCode || 401 });
+    }
 
     // 验证必填字段
     if (!body.activityId || !body.userId || !body.userName || !body.userPhone) {
@@ -14,6 +25,14 @@ export async function POST(request: NextRequest) {
     }
 
     const { activityId, userId, userName, userPhone, reason } = body;
+
+    // 验证当前登录用户是否就是请求中的userId
+    if (authResult.user!.id !== parseInt(userId)) {
+      return NextResponse.json({
+        success: false,
+        error: '只能为自己报名活动'
+      }, { status: 403 });
+    }
 
     // 检查活动是否存在
     const activity = MockDatabase.getActivityById(parseInt(activityId));

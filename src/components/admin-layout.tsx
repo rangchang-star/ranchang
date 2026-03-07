@@ -1,9 +1,12 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Calendar, MessageSquare, LogOut, Bell, Settings, FileText, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/auth-context';
 
 const navItems = [
   { href: '/admin', label: '数据看板', icon: LayoutDashboard },
@@ -18,6 +21,48 @@ const navItems = [
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, isAdmin, isLoading, logout } = useAuth();
+  const router = useRouter();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    // 等待加载完成
+    if (isLoading) return;
+
+    setIsCheckingAuth(false);
+
+    // 检查用户是否登录
+    if (!user) {
+      // 未登录，跳转到登录页
+      router.push('/login');
+      return;
+    }
+
+    // 检查用户是否为管理员
+    if (!isAdmin) {
+      // 不是管理员，显示错误或跳转到首页
+      alert('您没有权限访问后台管理系统');
+      router.push('/');
+      return;
+    }
+  }, [user, isAdmin, isLoading, router]);
+
+  // 加载中或检查权限中显示加载状态
+  if (isLoading || isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
+          <p className="mt-4 text-[rgba(0,0,0,0.6)]">加载中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 用户未登录或不是管理员
+  if (!user || !isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -28,14 +73,19 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <h1 className="text-[15px] font-bold text-gray-900">燃场后台</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-[13px] text-[rgba(0,0,0,0.6)]">管理员</span>
-            <Link
-              href="/"
+            <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
+              {user.nickname || user.name}
+            </span>
+            <button
+              onClick={() => {
+                logout();
+                router.push('/');
+              }}
               className="flex items-center space-x-1 text-[13px] text-[rgba(0,0,0,0.6)] hover:text-gray-900"
             >
               <LogOut className="w-4 h-4" />
               <span>退出</span>
-            </Link>
+            </button>
           </div>
         </div>
       </header>

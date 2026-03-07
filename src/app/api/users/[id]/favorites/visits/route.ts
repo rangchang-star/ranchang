@@ -1,5 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MockDatabase } from '@/lib/mock-database';
+import { requireAuth, requireOwnership } from '@/lib/auth-utils';
+
+// 用户收藏数据存储（模拟数据库）
+// Map<userId, Array<{userId, visitId, createdAt}>>
+const userFavorites: Map<string, { userId: string; visitId: string; createdAt: string }[]> = new Map();
+
+// 初始化模拟数据
+const getMockFavorites = (userId: string) => {
+  if (!userFavorites.has(userId)) {
+    userFavorites.set(userId, [
+      {
+        userId,
+        visitId: '1',
+        createdAt: new Date().toISOString(),
+      },
+      {
+        userId,
+        visitId: '2',
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+  }
+  return userFavorites.get(userId) || [];
+};
 
 export async function GET(
   request: NextRequest,
@@ -8,28 +32,27 @@ export async function GET(
   try {
     const { id: userId } = await params;
 
-    // TODO: 从数据库获取用户收藏的探访项目列表
-    // 这里先返回模拟数据
-    const mockFavorites = [
-      {
-        id: '1',
-        userId: userId,
-        visitId: '1',
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        userId: userId,
-        visitId: '2',
-        createdAt: new Date().toISOString(),
-      },
-    ];
+    // 验证用户登录状态和权限
+    const authResult = await requireOwnership(request, parseInt(userId));
+
+    if (!authResult.success) {
+      return NextResponse.json({
+        success: false,
+        error: authResult.error,
+      }, { status: authResult.statusCode || 401 });
+    }
+
+    // 获取用户收藏列表
+    const favorites = getMockFavorites(userId);
 
     // 根据 visitId 获取真实的探访项目数据
-    const favorites = mockFavorites.map((fav) => {
+    const favoritesWithVisit = favorites.map((fav, index) => {
       const visit = MockDatabase.getVisitById(fav.visitId);
       return {
-        ...fav,
+        id: `${userId}-${fav.visitId}-${index}`,
+        userId: userId,
+        visitId: fav.visitId,
+        createdAt: fav.createdAt,
         visit: visit ? {
           id: visit.id,
           title: visit.title,
@@ -44,7 +67,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: favorites,
+      data: favoritesWithVisit,
     });
   } catch (error) {
     console.error('获取收藏列表失败:', error);
@@ -67,6 +90,19 @@ export async function POST(
     const body = await request.json();
     const { visitId } = body;
 
+    // 验证用户登录状态和权限
+    const authResult = await requireOwnership(request, parseInt(userId));
+
+    if (!authResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: authResult.error,
+        },
+        { status: authResult.statusCode || 401 }
+      );
+    }
+
     if (!visitId) {
       return NextResponse.json(
         {
@@ -77,16 +113,50 @@ export async function POST(
       );
     }
 
-    // TODO: 将收藏关系保存到数据库
-    // 这里先返回成功
+    // 验证探访项目是否存在
+    const visit = MockDatabase.getVisitById(visitId);
+    if (!visit) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: '探访项目不存在',
+        },
+        { status: 404 }
+      );
+    }
+
+    // 获取当前收藏列表
+    const favorites = getMockFavorites(userId);
+
+    // 检查是否已收藏
+    if (favorites.some(fav => fav.visitId === visitId)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: '已经收藏过该探访项目',
+        },
+        { status: 400 }
+      );
+    }
+
+    // 添加收藏
+    const newFavorite = {
+      userId,
+      visitId,
+      createdAt: new Date().toISOString(),
+    };
+
+    favorites.push(newFavorite);
+    userFavorites.set(userId, favorites);
+
     return NextResponse.json({
       success: true,
       message: '收藏成功',
       data: {
-        id: Date.now().toString(),
+        id: `${userId}-${visitId}-${Date.now()}`,
         userId,
         visitId,
-        createdAt: new Date().toISOString(),
+        createdAt: newFavorite.createdAt,
       },
     });
   } catch (error) {
@@ -110,6 +180,19 @@ export async function DELETE(
     const body = await request.json();
     const { visitId } = body;
 
+    // 验证用户登录状态和权限
+    const authResult = await requireOwnership(request, parseInt(userId));
+
+    if (!authResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: authResult.error,
+        },
+        { status: authResult.statusCode || 401 }
+      );
+    }
+
     if (!visitId) {
       return NextResponse.json(
         {
@@ -120,8 +203,25 @@ export async function DELETE(
       );
     }
 
-    // TODO: 从数据库删除收藏关系
-    // 这里先返回成功
+    // 获取当前收藏列表
+    const favorites = getMockFavorites(userId);
+
+    // 检查是否已收藏
+    const index = favorites.findIndex(fav => fav.visitId === visitId);
+    if (index === -1) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: '未收藏该探访项目',
+        },
+        { status: 400 }
+      );
+    }
+
+    // 移除收藏
+    favorites.splice(index, 1);
+    userFavorites.set(userId, favorites);
+
     return NextResponse.json({
       success: true,
       message: '取消收藏成功',

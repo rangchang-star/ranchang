@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MockDatabase } from '@/lib/mock-database';
+import { requireAdmin } from '@/lib/auth-utils';
 
+// GET - 获取文档详情
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        // TODO: 从数据库获取文档详情
-        // 暂时使用模拟数据
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-      }
-    }
 
     const document = MockDatabase.getDocumentById(id);
 
@@ -29,7 +21,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: document,
+      data: document
     });
   } catch (error: any) {
     console.error('获取文档详情失败:', error);
@@ -40,35 +32,36 @@ export async function GET(
   }
 }
 
+// PUT - 更新文档
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const body = await request.json();
 
-    // 验证必填字段
-    if (!body.title) {
+    // 验证管理员权限
+    const authResult = await requireAdmin(request);
+
+    if (!authResult.success) {
       return NextResponse.json({
         success: false,
-        error: '请填写文档标题'
-      }, { status: 400 });
+        error: authResult.error,
+      }, { status: authResult.statusCode || 403 });
     }
 
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        // TODO: 更新文档到数据库
-        // 暂时使用模拟数据
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-      }
-    }
+    const body = await request.json();
 
-    const document = MockDatabase.updateDocument(id, body);
+    const updatedDocument = MockDatabase.updateDocument(id, {
+      title: body.title,
+      description: body.description,
+      fileUrl: body.fileUrl,
+      fileType: body.fileType,
+      fileSize: body.fileSize,
+      category: body.category,
+    });
 
-    if (!document) {
+    if (!updatedDocument) {
       return NextResponse.json({
         success: false,
         error: '文档不存在'
@@ -78,7 +71,7 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       message: '文档更新成功',
-      data: document,
+      data: updatedDocument
     });
   } catch (error: any) {
     console.error('更新文档失败:', error);
@@ -89,6 +82,7 @@ export async function PUT(
   }
 }
 
+// DELETE - 删除文档
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -96,19 +90,19 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        // TODO: 从数据库删除文档
-        // 暂时使用模拟数据
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-      }
+    // 验证管理员权限
+    const authResult = await requireAdmin(request);
+
+    if (!authResult.success) {
+      return NextResponse.json({
+        success: false,
+        error: authResult.error,
+      }, { status: authResult.statusCode || 403 });
     }
 
-    const result = MockDatabase.deleteDocument(id);
+    const success = MockDatabase.deleteDocument(id);
 
-    if (!result) {
+    if (!success) {
       return NextResponse.json({
         success: false,
         error: '文档不存在'
@@ -117,7 +111,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: '文档删除成功',
+      message: '文档删除成功'
     });
   } catch (error: any) {
     console.error('删除文档失败:', error);

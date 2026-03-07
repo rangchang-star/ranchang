@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +13,7 @@ import { AlertCircle, User, Lock } from 'lucide-react';
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess: (user: any) => void;
+  onLoginSuccess?: (phone: string, password?: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps) {
@@ -30,31 +28,17 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
     setIsLoading(true);
 
     try {
-      // 调用登录API
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phone,
-          password,
-        }),
-      });
+      if (onLoginSuccess) {
+        const result = await onLoginSuccess(phone, password);
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        setError(data.error || '登录失败，请检查手机号和密码');
-        return;
+        if (!result.success) {
+          setError(result.error || '登录失败，请检查手机号和密码');
+          return;
+        }
       }
 
-      // 登录成功
-      onLoginSuccess(data.data.user);
+      // 登录成功，关闭弹窗
       onClose();
-    } catch (err: any) {
-      console.error('登录失败:', err);
-      setError('网络错误，请重试');
     } finally {
       setIsLoading(false);
     }

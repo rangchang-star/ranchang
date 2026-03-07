@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
 
-  const handleWeChatLogin = () => {
+  const handleWeChatLogin = async () => {
     if (!name.trim() || !phone.trim()) {
       alert('请填写完整信息');
       return;
@@ -39,6 +39,7 @@ export default function LoginPage() {
       hardcoreTags: ['AI技术', '搞定自己', '会说人话'], // 默认硬核标签
       resourceTags: ['人才', '技术'], // 默认资源标签
       isTrusted: false,
+      isFeatured: false,
       role: 'user',
       status: 'active',
       connectionCount: 0,
@@ -47,8 +48,11 @@ export default function LoginPage() {
       updatedAt: new Date().toISOString(),
     };
 
+    // 先保存用户到localStorage（模拟登录状态）
+    localStorage.setItem('currentUser', JSON.stringify(user));
+
     // 登录
-    login(user);
+    await login(phone.trim());
 
     // 跳转到首页
     router.push('/discovery');
