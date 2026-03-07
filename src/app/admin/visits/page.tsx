@@ -12,6 +12,7 @@ import Link from 'next/link';
 interface Visit {
   id: string;
   title: string;
+  theme: string;
   date: string;
   time: string;
   status: string;
@@ -33,6 +34,7 @@ interface Visit {
   audioDuration: string;
   audioUrl: string;
   image: string;
+  mainImage: string;
   outcome: string;
   keyPoints: string[];
   nextSteps: string[];
@@ -219,27 +221,35 @@ export default function AdminVisitsPage() {
                   className="flex items-center justify-between p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
                 >
                   <div className="flex items-center space-x-4 flex-1">
-                    {/* 圆形头像 */}
-                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                    {/* 活动主图或探访对象头像 */}
+                    <div className="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-[rgba(0,0,0,0.05)]">
                       <Image
-                        src={visit.target.avatar}
-                        alt={visit.target.name}
-                        width={48}
+                        src={visit.mainImage || visit.image || visit.target.avatar}
+                        alt={visit.theme || visit.title}
+                        width={64}
                         height={48}
                         className="w-full h-full object-cover"
                         unoptimized
                       />
                     </div>
                     <div className="flex-1 min-w-0">
+                      {/* 活动主题 */}
+                      {visit.theme && (
+                        <div className="mb-1">
+                          <h3 className="text-[15px] font-semibold text-gray-900 truncate">
+                            {visit.theme}
+                          </h3>
+                        </div>
+                      )}
                       <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="text-[15px] font-semibold text-gray-900">
+                        <h3 className="text-[13px] font-medium text-gray-900">
                           {visit.target.name}
                         </h3>
-                        <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                        <span className="text-[12px] text-[rgba(0,0,0,0.6)]">
                           {visit.target.title}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.6)] mb-2">
+                      <div className="flex items-center space-x-2 text-[12px] text-[rgba(0,0,0,0.6)] mb-2">
                         <span>{visit.target.company}</span>
                         <span>·</span>
                         <span>{visit.date}</span>
