@@ -16,7 +16,7 @@ export default function SettingsPage() {
   const [adminPassword, setAdminPassword] = useState('');
   const [adminLoginError, setAdminLoginError] = useState('');
   const [isAdminLogging, setIsAdminLogging] = useState(false);
-  const { user, isLoggedIn, logout } = useAuth();
+  const { user, isLoggedIn, logout, setUserRole } = useAuth();
   const router = useRouter();
 
   // 如果未登录，重定向到登录
@@ -42,7 +42,7 @@ export default function SettingsPage() {
 
   const handleAdminLogin = async () => {
     setAdminLoginError('');
-    
+
     // 验证输入
     if (!adminUsername || !adminPassword) {
       setAdminLoginError('请输入用户名和密码');
@@ -54,10 +54,15 @@ export default function SettingsPage() {
     try {
       // 验证管理员账号
       if (adminUsername === '13023699913' && adminPassword === '818989') {
-        // 验证成功，跳转到管理后台
+        // 验证成功，更新用户角色为管理员
+        setUserRole('admin');
+
+        // 关闭弹窗并清空表单
         setShowAdminLoginModal(false);
         setAdminUsername('');
         setAdminPassword('');
+
+        // 跳转到管理后台
         router.push('/admin');
       } else {
         setAdminLoginError('用户名或密码错误');
