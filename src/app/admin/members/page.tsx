@@ -20,6 +20,17 @@ interface Member {
   joinDate: string;
   status: string;
   isFeatured: boolean;
+  phone: string;
+  company: string;
+  position: string;
+  bio: string;
+  need: string;
+  tagStamp: string;
+  hardcoreTags: string[];
+  resourceTags: string[];
+  role: string;
+  connectionCount: number;
+  activityCount: number;
 }
 
 export default function AdminMembersPage() {
@@ -194,14 +205,34 @@ export default function AdminMembersPage() {
                       <span>{member.joinDate} 加入</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {member.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                      <span className="text-[11px] text-[rgba(0,0,0,0.6)] mr-1 py-1">硬核标签：</span>
+                      {member.hardcoreTags && member.hardcoreTags.length > 0 ? (
+                        member.hardcoreTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-2.5 py-1 bg-blue-100 text-blue-600 text-[11px] font-medium"
+                          >
+                            {tag}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[11px] text-[rgba(0,0,0,0.4)] py-1">未设置</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <span className="text-[11px] text-[rgba(0,0,0,0.6)] mr-1">资源标签：</span>
+                      {member.resourceTags && member.resourceTags.length > 0 ? (
+                        member.resourceTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[11px] font-normal"
+                          >
+                            {tag}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">未设置</span>
+                      )}
                     </div>
                   </div>
                 </div>

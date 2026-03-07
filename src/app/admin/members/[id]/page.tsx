@@ -5,37 +5,78 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Edit, MapPin, Calendar, Phone, Mail, Building, Briefcase, ShieldCheck, Shield } from 'lucide-react';
+import { ArrowLeft, Edit, MapPin, Calendar, Phone, Mail, Building, Briefcase, ShieldCheck, Shield, Loader2 } from 'lucide-react';
 
-// 模拟会员数据
-const mockMember = {
-  id: '1',
-  name: '王姐',
-  age: 48,
-  avatar: '/avatar-3.jpg',
-  level: '活跃会员',
-  tags: ['普通', '私董案主'],
-  joinDate: '2024-01-15',
-  status: 'active',
-  isFeatured: true,
-  phone: '13800123456',
-  email: 'wang@example.com',
-  company: '某科技公司',
-  position: 'CEO',
-  industry: '企业服务',
-  hardcoreTags: ['供应链专家', '数字化转型'],
-  description: '15年供应链管理经验，专注于制造业数字化转型',
-  lastLogin: '2024-03-18 09:30',
-  activityCount: 12,
-  visitCount: 5,
-};
+// 会员数据类型
+interface Member {
+  id: string;
+  name: string;
+  age: number;
+  avatar: string;
+  level: string;
+  tags: string[];
+  industry: string;
+  joinDate: string;
+  status: string;
+  isFeatured: boolean;
+  phone: string;
+  email: string;
+  company: string;
+  position: string;
+  bio: string;
+  need: string;
+  tagStamp: string;
+  hardcoreTags: string[];
+  resourceTags: string[];
+  role: string;
+  connectionCount: number;
+  activityCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function AdminMemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [memberId, setMemberId] = useState<string>('');
+  const [member, setMember] = useState<Member | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     params.then(p => setMemberId(p.id));
   }, [params]);
+
+  // 从API加载会员详情
+  useEffect(() => {
+    async function loadMemberDetail() {
+      if (!memberId) return;
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`/admin/api/members/${memberId}`);
+
+        if (!response.ok) {
+          throw new Error('加载会员详情失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          setMember(data.data);
+        } else {
+          throw new Error(data.error || '加载会员详情失败');
+        }
+      } catch (err: any) {
+        console.error('加载会员详情失败:', err);
+        setError(err.message || '加载会员详情失败');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadMemberDetail();
+  }, [memberId]);
 
   return (
     <AdminLayout>
@@ -62,14 +103,30 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
           </Link>
         </div>
 
-        {/* 基本信息 */}
+        {/* 加载状态 */}
+        {isLoading && (
+          <div className="py-12 text-center">
+            <Loader2 className="w-8 h-8 text-blue-500 mx-auto mb-2 animate-spin" />
+            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">加载中...</p>
+          </div>
+        )}
+
+        {/* 错误状态 */}
+        {error && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-red-500">{error}</p>
+          </div>
+        )}
+
+        {/* 会员详情 */}
+        {!isLoading && !error && member && (
         <div className="border border-[rgba(0,0,0,0.1)]">
           <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
             <div className="flex items-start space-x-4">
               <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
                 <Image
-                  src={mockMember.avatar}
-                  alt={mockMember.name}
+                  src={member.avatar}
+                  alt={member.name}
                   width={80}
                   height={80}
                   className="w-full h-full object-cover"
@@ -80,17 +137,17 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <h3 className="text-[15px] font-semibold text-gray-900 mb-1">
-                      {mockMember.name}
+                      {member.name}
                       <span className="ml-2 text-[13px] text-[rgba(0,0,0,0.6)]">
-                        {mockMember.age}岁
+                        {member.age}岁
                       </span>
                     </h3>
                     <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                      {mockMember.company} · {mockMember.position}
+                      {member.company} · {member.position}
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {mockMember.status === 'active' ? (
+                    {member.status === 'active' ? (
                       <ShieldCheck className="w-5 h-5 text-green-600" />
                     ) : (
                       <Shield className="w-5 h-5 text-gray-400" />
@@ -98,7 +155,8 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {mockMember.tags.map((tag) => (
+                  <span className="text-[11px] text-[rgba(0,0,0,0.6)] mr-1">后台标签：</span>
+                  {member.tags.map((tag) => (
                     <span
                       key={tag}
                       className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
@@ -107,7 +165,7 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
                     </span>
                   ))}
                   <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[11px] font-normal">
-                    {mockMember.level}
+                    {member.level}
                   </span>
                 </div>
               </div>
@@ -120,19 +178,19 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
             <div className="grid grid-cols-2 gap-4 text-[13px]">
               <div className="flex items-center space-x-2 text-[rgba(0,0,0,0.6)]">
                 <Phone className="w-4 h-4" />
-                <span>{mockMember.phone}</span>
+                <span>{member.phone}</span>
               </div>
               <div className="flex items-center space-x-2 text-[rgba(0,0,0,0.6)]">
                 <Mail className="w-4 h-4" />
-                <span>{mockMember.email}</span>
+                <span>{member.email || '未设置'}</span>
               </div>
               <div className="flex items-center space-x-2 text-[rgba(0,0,0,0.6)]">
                 <Building className="w-4 h-4" />
-                <span>{mockMember.company}</span>
+                <span>{member.company}</span>
               </div>
               <div className="flex items-center space-x-2 text-[rgba(0,0,0,0.6)]">
                 <Briefcase className="w-4 h-4" />
-                <span>{mockMember.position}</span>
+                <span>{member.position}</span>
               </div>
             </div>
           </div>
@@ -143,21 +201,45 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
             <div className="space-y-2">
               <div>
                 <span className="text-[11px] text-[rgba(0,0,0,0.6)]">行业：</span>
-                <span className="text-[13px] text-gray-900">{mockMember.industry}</span>
+                <span className="text-[13px] text-gray-900">{member.industry}</span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {mockMember.hardcoreTags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
-                  >
-                    {tag}
-                  </span>
-                ))}
+              <div>
+                <span className="text-[11px] text-[rgba(0,0,0,0.6)] mr-2">硬核标签（必填）：</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {member.hardcoreTags && member.hardcoreTags.length > 0 ? (
+                    member.hardcoreTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 bg-blue-100 text-blue-600 text-[11px] font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">未设置</span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <span className="text-[11px] text-[rgba(0,0,0,0.6)] mr-2">资源标签（必填）：</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {member.resourceTags && member.resourceTags.length > 0 ? (
+                    member.resourceTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[11px] font-normal"
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">未设置</span>
+                  )}
+                </div>
               </div>
               <div>
                 <span className="text-[11px] text-[rgba(0,0,0,0.6)]">简介：</span>
-                <p className="text-[13px] text-[rgba(0,0,0,0.6)] mt-1">{mockMember.description}</p>
+                <p className="text-[13px] text-[rgba(0,0,0,0.6)] mt-1">{member.bio || member.need}</p>
               </div>
             </div>
           </div>
@@ -167,27 +249,28 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
             <h3 className="text-[13px] font-semibold text-gray-900 mb-3">活动统计</h3>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-3 bg-[rgba(0,0,0,0.02)]">
-                <p className="text-[20px] font-bold text-gray-900">{mockMember.activityCount}</p>
+                <p className="text-[20px] font-bold text-gray-900">{member.activityCount}</p>
                 <p className="text-[11px] text-[rgba(0,0,0,0.6)]">参与活动</p>
               </div>
               <div className="text-center p-3 bg-[rgba(0,0,0,0.02)]">
-                <p className="text-[20px] font-bold text-gray-900">{mockMember.visitCount}</p>
-                <p className="text-[11px] text-[rgba(0,0,0,0.6)]">探访次数</p>
+                <p className="text-[20px] font-bold text-gray-900">{member.connectionCount}</p>
+                <p className="text-[11px] text-[rgba(0,0,0,0.6)]">连接数</p>
               </div>
               <div className="text-center p-3 bg-[rgba(0,0,0,0.02)]">
-                <p className="text-[20px] font-bold text-gray-900">{mockMember.status === 'active' ? '活跃' : '未活跃'}</p>
+                <p className="text-[20px] font-bold text-gray-900">{member.status === 'active' ? '活跃' : '未活跃'}</p>
                 <p className="text-[11px] text-[rgba(0,0,0,0.6)]">状态</p>
               </div>
             </div>
             <div className="mt-3 text-[11px] text-[rgba(0,0,0,0.6)]">
               <span>加入时间：</span>
-              <span>{mockMember.joinDate}</span>
+              <span>{member.joinDate}</span>
               <span className="mx-2">|</span>
-              <span>最后登录：</span>
-              <span>{mockMember.lastLogin}</span>
+              <span>更新时间：</span>
+              <span>{new Date(member.updatedAt).toLocaleDateString('zh-CN')}</span>
             </div>
           </div>
         </div>
+        )}
       </div>
     </AdminLayout>
   );

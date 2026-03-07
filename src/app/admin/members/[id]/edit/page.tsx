@@ -116,7 +116,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
         setConnectionType(member.connectionType || 'personLookingForJob');
         setIndustry(member.industry || '');
         setNeed(member.need || '');
-        setAbilityTags(member.abilityTags || []);
+        setAbilityTags(member.hardcoreTags || []); // 使用 hardcoreTags 字段
         setResourceTags(member.resourceTags || []);
         setAdminTags(member.adminTags || ['普通']);
         setPhone(member.phone || '');
@@ -198,7 +198,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
           connectionType,
           industry,
           need,
-          abilityTags,
+          hardcoreTags: abilityTags, // 发送时使用 hardcoreTags 字段名
           resourceTags,
           adminTags,
           phone,
