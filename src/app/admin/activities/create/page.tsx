@@ -195,17 +195,49 @@ export default function AdminActivityCreatePage() {
                   />
                 </div>
 
+                {/* 封面图片 */}
                 <div>
-                  <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                    封面图片URL
+                  <label className="block text-[13px] font-medium text-gray-700 mb-2">
+                    封面图片
                   </label>
-                  <Input
-                    placeholder="https://example.com/image.jpg"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className="text-[13px]"
-                  />
-                  <p className="text-[11px] text-[rgba(0,0,0,0.5)] mt-1">留空将使用默认图片</p>
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt="封面预览"
+                          className="w-32 h-20 rounded-lg object-cover border-2 border-[rgba(0,0,0,0.1)]"
+                        />
+                      ) : (
+                        <div className="w-32 h-20 rounded-lg bg-[rgba(0,0,0,0.05)] border-2 border-dashed border-[rgba(0,0,0,0.2)] flex items-center justify-center">
+                          <span className="text-[11px] text-[rgba(0,0,0,0.4)]">暂无封面</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const url = URL.createObjectURL(file);
+                            setImageUrl(url);
+                          }
+                        }}
+                        className="text-[13px]"
+                      />
+                      <Input
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="或输入封面图片URL"
+                        className="text-[13px]"
+                      />
+                      <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                        支持上传图片或输入图片链接，留空将使用默认图片
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
