@@ -638,7 +638,7 @@ export default function DiscoveryPage() {
                   placeholder="35岁+ ｜ 有硬核  ｜晒战绩  ｜  交盟友..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-1.5 bg-[rgba(0,0,0,0.05)] text-[17px] text-gray-900 placeholder-[rgba(0,0,0,0.25)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
+                  className="w-full pl-12 pr-4 py-1.5 bg-[rgba(0,0,0,0.05)] text-[15px] text-gray-900 placeholder-[rgba(0,0,0,0.25)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
                 />
               </div>
             </div>
