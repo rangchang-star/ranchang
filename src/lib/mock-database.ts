@@ -1013,6 +1013,7 @@ export const mockVisits = [
     ],
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
     audioDuration: '15:23',
+    projectTags: ['AI技术落地', '数据质量', '人才培养', '快速迭代'],
   },
   {
     id: '2',
@@ -1057,6 +1058,7 @@ export const mockVisits = [
     ],
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
     audioDuration: '12:45',
+    projectTags: ['组织变革', '领导决心', '文化转型', '人才体系'],
   },
   {
     id: '3',
@@ -1101,6 +1103,7 @@ export const mockVisits = [
     ],
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
     audioDuration: '11:30',
+    projectTags: ['AI个性化', '数据驱动', '用户体验', '创新教育'],
   },
   {
     id: '4',
@@ -1145,6 +1148,7 @@ export const mockVisits = [
     ],
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
     audioDuration: '16:20',
+    projectTags: ['团队评估', '市场前景', '风险控制', '投后管理'],
   },
   {
     id: '5',
@@ -1189,6 +1193,7 @@ export const mockVisits = [
     ],
     audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
     audioDuration: '13:15',
+    projectTags: ['品牌定位', '用户体验', '创新思维', '商业价值'],
   },
 ];
 

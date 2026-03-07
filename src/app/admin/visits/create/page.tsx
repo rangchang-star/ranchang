@@ -71,6 +71,16 @@ export default function AdminVisitCreatePage() {
   // 图片预览
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>(['']);
 
+  // 探访项目标签（4个）
+  const [projectTags, setProjectTags] = useState(['', '', '', '']);
+
+  // 更新探访项目标签
+  const handleProjectTagChange = (index: number, value: string) => {
+    const newTags = [...projectTags];
+    newTags[index] = value;
+    setProjectTags(newTags);
+  };
+
   // 添加标签
   const handleAddTag = (tag: string) => {
     if (!selectedTags.includes(tag)) {
@@ -230,6 +240,7 @@ export default function AdminVisitCreatePage() {
         notes,
         images: imageUrls.filter((url) => url.trim()),
         tags: selectedTags,
+        projectTags: projectTags.filter((tag) => tag.trim()),
         visitors: selectedVisitors.map((memberId) => {
           const member = mockMembers.find((m) => m.id === memberId);
           return member
@@ -378,6 +389,41 @@ export default function AdminVisitCreatePage() {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* 探访项目标签 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  探访项目标签 <span className="text-[rgba(0,0,0,0.4)]">(4个)</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {projectTags.map((tag, index) => (
+                    <div key={index} className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[11px] text-[rgba(0,0,0,0.6)]">标签 {index + 1}:</span>
+                        {index === 0 && (
+                          <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                            主标签（蓝色）
+                          </span>
+                        )}
+                        {index > 0 && (
+                          <span className="text-[10px] text-[rgba(0,0,0,0.4)] bg-[rgba(0,0,0,0.05)] px-2 py-0.5 rounded">
+                            副标签
+                          </span>
+                        )}
+                      </div>
+                      <Input
+                        value={tag}
+                        onChange={(e) => handleProjectTagChange(index, e.target.value)}
+                        placeholder={`请输入第${index + 1}个标签`}
+                        className="text-[13px]"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">
+                  业务说明：标签描述企业希望解决的问题。第1个标签作为主标签显示在项目详情页，后3个标签显示在被访者头像右侧。
+                </p>
               </div>
 
               {/* 探访时间 */}
