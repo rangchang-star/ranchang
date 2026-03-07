@@ -90,6 +90,7 @@ export default function AdminActivityEditPage() {
   const [teaFee, setTeaFee] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
+  const [availableMembers, setAvailableMembers] = useState(mockMembers);
   
   // 自定义嘉宾
   const [showAddCustomGuest, setShowAddCustomGuest] = useState(false);
@@ -138,6 +139,13 @@ export default function AdminActivityEditPage() {
     } else {
       setSelectedParticipants([...selectedParticipants, memberId]);
     }
+  };
+
+  const handleDeleteParticipant = (memberId: string) => {
+    // 从已选中列表中移除
+    setSelectedParticipants(selectedParticipants.filter((id) => id !== memberId));
+    // 从可用嘉宾列表中永久删除
+    setAvailableMembers(availableMembers.filter((m) => m.id !== memberId));
   };
 
   const handleSave = async () => {
@@ -400,7 +408,7 @@ export default function AdminActivityEditPage() {
                     参与嘉宾 <span className="text-[rgba(0,0,0,0.5)] font-normal">(已选 {selectedParticipants.length + 3} 人)</span>
                   </label>
                   <div className="grid grid-cols-4 gap-3">
-                    {mockMembers.map((member) => (
+                    {availableMembers.map((member) => (
                       <button
                         key={member.id}
                         onClick={() => handleToggleParticipant(member.id)}
@@ -426,7 +434,7 @@ export default function AdminActivityEditPage() {
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleToggleParticipant(member.id);
+                                handleDeleteParticipant(member.id);
                               }}
                               className="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm"
                               title="删除嘉宾"
