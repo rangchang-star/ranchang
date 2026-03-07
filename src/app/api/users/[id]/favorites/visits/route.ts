@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { MockDatabase } from '@/lib/mock-database';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = params;
+    const { id: userId } = await params;
 
     // TODO: 从数据库获取用户收藏的探访项目列表
     // 这里先返回模拟数据
@@ -44,10 +45,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = params;
+    const { id: userId } = await params;
     const body = await request.json();
     const { visitId } = body;
 
@@ -87,10 +88,10 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = params;
+    const { id: userId } = await params;
     const body = await request.json();
     const { visitId } = body;
 
@@ -115,6 +116,7 @@ export async function DELETE(
     return NextResponse.json(
       {
         success: false,
+        error: '取消收藏失败',
       },
       { status: 500 }
     );
