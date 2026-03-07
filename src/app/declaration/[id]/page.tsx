@@ -181,11 +181,11 @@ export default function DeclarationDetailPage() {
 
         <div className="space-y-6">
           {/* 封面图 */}
-          <div className="w-full h-56 overflow-hidden">
+          <div className="w-full h-12 overflow-hidden">
             <img
               src={declaration.image}
               alt={declaration.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-bottom"
             />
           </div>
 
