@@ -376,15 +376,20 @@ export default function ActivityDetailPage() {
             </div>
 
             {/* 主办方 */}
-            <div className="flex items-center space-x-3 p-3 bg-[rgba(0,0,0,0.02)]">
-              <img
-                src={activity.organizerAvatar}
-                alt={activity.organizer}
-                className="w-10 h-10 object-contain"
-              />
-              <div>
-                <div className="text-[13px] font-semibold text-gray-900">{activity.organizer}</div>
-                <div className="text-[11px] text-[rgba(0,0,0,0.4)]">主办方</div>
+            <div className="flex items-center justify-between p-3 bg-[rgba(0,0,0,0.02)]">
+              <div className="flex items-center space-x-3">
+                <img
+                  src={activity.organizerAvatar}
+                  alt={activity.organizer}
+                  className="w-10 h-10 object-contain"
+                />
+                <div>
+                  <div className="text-[13px] font-semibold text-gray-900">{activity.organizer}</div>
+                  <div className="text-[11px] text-[rgba(0,0,0,0.4)]">主办方</div>
+                </div>
+              </div>
+              <div className="text-[10px] text-black font-light">
+                聚焦本地 35岁+ 硬核群体小圈子
               </div>
             </div>
             </div>
