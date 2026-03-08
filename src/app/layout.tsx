@@ -13,10 +13,10 @@ const inter = Inter({
 });
 
 const notoSansSC = Noto_Sans_SC({
-  subsets: ['latin', 'latin-ext'],
   weight: ['300', '400', '500', '700'],
   variable: '--font-noto-sans-sc',
   display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
