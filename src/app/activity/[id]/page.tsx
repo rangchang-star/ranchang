@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Clock, Users, Calendar, Share2, Heart, Check, XCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, Users, Calendar, Share2, Heart, Check, XCircle, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -327,7 +327,7 @@ export default function ActivityDetailPage() {
               </div>
 
               <div className="flex items-start space-x-3">
-                <Clock className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                <Coins className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <div className="text-[13px] text-gray-900">{activity.teaFee}</div>
                 </div>
