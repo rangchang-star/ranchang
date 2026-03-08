@@ -75,22 +75,34 @@ const defaultSettings = {
 
 export async function GET() {
   try {
+    let settingsData;
+
     // 检查是否配置了数据库连接
     if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
       try {
-        // 尝试从数据库读取设置
-        // 注意：这里需要创建一个 settings 表来存储设置数据
-        // 暂时返回默认设置，后续可以扩展为从数据库读取
-        console.log('数据库连接已配置，但settings表尚未实现，使用默认设置');
+        const { db, settings } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
+
+        const result = await db.select().from(settings).where(eq(settings.key, 'default_settings'));
+
+        if (result.length > 0 && result[0].value) {
+          settingsData = result[0].value;
+        } else {
+          // 数据库中没有设置数据，使用默认设置
+          settingsData = defaultSettings;
+        }
       } catch (dbError: any) {
         console.warn('数据库连接失败，使用默认设置:', dbError.message);
+        settingsData = defaultSettings;
       }
+    } else {
+      // 使用默认设置
+      settingsData = defaultSettings;
     }
 
-    // 返回默认设置
     return NextResponse.json({
       success: true,
-      data: defaultSettings,
+      data: settingsData,
     });
   } catch (error) {
     console.error('获取设置失败:', error);
@@ -122,15 +134,34 @@ export async function PUT(request: NextRequest) {
     // 检查是否配置了数据库连接
     if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
       try {
-        // TODO: 将设置保存到数据库
-        // 需要创建一个 settings 表来存储设置数据
-        console.log('保存设置到数据库:', body);
+        const { db, settings } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
+
+        // 检查是否已存在设置
+        const existing = await db.select().from(settings).where(eq(settings.key, 'default_settings'));
+
+        if (existing.length > 0) {
+          // 更新现有设置
+          await db.update(settings)
+            .set({
+              value: body,
+              updatedAt: new Date(),
+            })
+            .where(eq(settings.key, 'default_settings'));
+        } else {
+          // 创建新设置
+          await db.insert(settings).values({
+            key: 'default_settings',
+            value: body,
+            updatedAt: new Date(),
+          });
+        }
       } catch (dbError: any) {
         console.warn('数据库连接失败，仅返回成功响应:', dbError.message);
+        // 降级：不保存到数据库，但返回成功响应
       }
     }
 
-    // 返回成功响应（实际保存到数据库需要创建相应的表）
     return NextResponse.json({
       success: true,
       data: body,

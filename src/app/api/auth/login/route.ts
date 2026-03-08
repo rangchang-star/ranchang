@@ -65,11 +65,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 查找用户（包括静态用户和动态用户）
-    const dynamicUsers = getDynamicUsers();
-    const user =
-      mockUsers.find((u) => u.phone === phone) ||
-      dynamicUsers.find((u) => u.phone === phone);
+    // 查找用户
+    let user = null;
+
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, users } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
+
+        const dbUsers = await db.select().from(users).where(eq(users.phone, phone));
+
+        if (dbUsers.length > 0) {
+          user = dbUsers[0];
+        }
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
+        // 降级到模拟数据
+      }
+    }
+
+    // 如果数据库中没有找到，从模拟数据中查找
+    if (!user) {
+      user = mockUsers.find((u) => u.phone === phone) ||
+            getDynamicUsers().find((u) => u.phone === phone);
+    }
 
     if (!user) {
       return NextResponse.json(

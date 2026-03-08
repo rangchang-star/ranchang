@@ -96,6 +96,33 @@ export const registrations = pgTable('registrations', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
+// 每日宣告表
+export const dailyDeclarations = pgTable('daily_declarations', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 200 }).notNull(),
+  date: timestamp('date').notNull(),
+  image: text('image'),
+  audio: text('audio'),
+  summary: text('summary'),
+  text: text('text'),
+  iconType: varchar('icon_type', { length: 50 }),
+  rank: integer('rank'),
+  profile: text('profile'),
+  duration: varchar('duration', { length: 50 }),
+  views: integer('views').default(0),
+  isFeatured: boolean('is_featured').default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 系统设置表
+export const settings = pgTable('settings', {
+  id: serial('id').primaryKey(),
+  key: varchar('key', { length: 100 }).notNull().unique(),
+  value: jsonb('value').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
 // 关系定义
 export const usersRelations = relations(users, ({ many }) => ({
   createdActivities: many(activities),

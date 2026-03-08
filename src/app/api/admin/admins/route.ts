@@ -15,8 +15,28 @@ export async function GET(request: NextRequest) {
       }, { status: authResult.statusCode || 403 });
     }
 
-    // 获取所有管理员
-    const admins = MockDatabase.getAdmins();
+    let admins;
+
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, users } = await import('@/storage/database/supabase/connection');
+        const { eq, desc } = await import('drizzle-orm');
+
+        const dbAdmins = await db.select().from(users)
+          .where(eq(users.role, 'admin'))
+          .orderBy(desc(users.createdAt));
+
+        admins = dbAdmins;
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
+        // 降级到模拟数据
+        admins = MockDatabase.getAdmins();
+      }
+    } else {
+      // 使用模拟数据
+      admins = MockDatabase.getAdmins();
+    }
 
     return NextResponse.json({
       success: true,
@@ -54,13 +74,54 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // 创建管理员
-    const newAdmin = MockDatabase.createAdmin({
-      phone: body.phone,
-      password: body.password,
-      nickname: body.nickname,
-      name: body.name,
-    });
+    let newAdmin;
+
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, users } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
+
+        // 检查手机号是否已存在
+        const existing = await db.select().from(users).where(eq(users.phone, body.phone));
+
+        if (existing.length > 0) {
+          return NextResponse.json({
+            success: false,
+            error: '该手机号已被注册'
+          }, { status: 400 });
+        }
+
+        // 创建管理员
+        const result = await db.insert(users).values({
+          phone: body.phone,
+          password: body.password,
+          nickname: body.nickname,
+          name: body.name,
+          role: 'admin',
+          status: 'active',
+        }).returning();
+
+        newAdmin = result[0];
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，仅创建模拟数据:', dbError.message);
+        // 降级到模拟数据
+        newAdmin = MockDatabase.createAdmin({
+          phone: body.phone,
+          password: body.password,
+          nickname: body.nickname,
+          name: body.name,
+        });
+      }
+    } else {
+      // 使用模拟数据
+      newAdmin = MockDatabase.createAdmin({
+        phone: body.phone,
+        password: body.password,
+        nickname: body.nickname,
+        name: body.name,
+      });
+    }
 
     return NextResponse.json({
       success: true,

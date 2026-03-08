@@ -55,10 +55,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 检查手机号是否已注册（包括静态和动态用户）
-    const existingUser =
-      mockUsers.find((u) => u.phone === phone) ||
-      dynamicUsers.find((u) => u.phone === phone);
+    // 检查手机号是否已注册
+    let existingUser = null;
+
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, users } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
+
+        const dbUsers = await db.select().from(users).where(eq(users.phone, phone));
+        if (dbUsers.length > 0) {
+          existingUser = dbUsers[0];
+        }
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，使用模拟数据检查:', dbError.message);
+      }
+    }
+
+    // 如果数据库中没有找到，从模拟数据中检查
+    if (!existingUser) {
+      existingUser = mockUsers.find((u) => u.phone === phone) ||
+                    dynamicUsers.find((u) => u.phone === phone);
+    }
 
     if (existingUser) {
       return NextResponse.json(
@@ -67,36 +86,96 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 创建新用户
-    const newUser = {
-      id: mockUsers.length + dynamicUsers.length + 1000, // 避免与静态用户ID冲突
-      phone,
-      password: password || '',
-      nickname,
-      name: nickname,
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face', // 默认头像
-      age: 30,
-      company: '',
-      position: '',
-      industry: '',
-      bio: '',
-      need: '',
-      tagStamp: 'pureExchange',
-      tags: [],
-      hardcoreTags: [],
-      resourceTags: [],
-      isTrusted: false,
-      isFeatured: false,
-      role: 'user',
-      status: 'active',
-      connectionCount: 0,
-      activityCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    let newUser;
 
-    // 保存到动态用户存储
-    dynamicUsers.push(newUser);
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, users } = await import('@/storage/database/supabase/connection');
+
+        const result = await db.insert(users).values({
+          phone,
+          password: password || '',
+          nickname,
+          name: nickname,
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
+          age: 30,
+          company: '',
+          position: '',
+          industry: '',
+          bio: '',
+          need: '',
+          tagStamp: 'pureExchange',
+          tags: [],
+          hardcoreTags: [],
+          resourceTags: [],
+          isTrusted: false,
+          role: 'user',
+          status: 'active',
+        }).returning();
+
+        newUser = result[0];
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，仅创建模拟数据:', dbError.message);
+        // 降级到模拟数据
+        newUser = {
+          id: mockUsers.length + dynamicUsers.length + 1000,
+          phone,
+          password: password || '',
+          nickname,
+          name: nickname,
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
+          age: 30,
+          company: '',
+          position: '',
+          industry: '',
+          bio: '',
+          need: '',
+          tagStamp: 'pureExchange',
+          tags: [],
+          hardcoreTags: [],
+          resourceTags: [],
+          isTrusted: false,
+          isFeatured: false,
+          role: 'user',
+          status: 'active',
+          connectionCount: 0,
+          activityCount: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        dynamicUsers.push(newUser);
+      }
+    } else {
+      // 使用模拟数据
+      newUser = {
+        id: mockUsers.length + dynamicUsers.length + 1000,
+        phone,
+        password: password || '',
+        nickname,
+        name: nickname,
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
+        age: 30,
+        company: '',
+        position: '',
+        industry: '',
+        bio: '',
+        need: '',
+        tagStamp: 'pureExchange',
+        tags: [],
+        hardcoreTags: [],
+        resourceTags: [],
+        isTrusted: false,
+        isFeatured: false,
+        role: 'user',
+        status: 'active',
+        connectionCount: 0,
+        activityCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      dynamicUsers.push(newUser);
+    }
 
     console.log('新用户注册:', { phone, nickname, userId: newUser.id });
 

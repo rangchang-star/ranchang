@@ -20,15 +20,44 @@ export async function GET(
 
     const { id } = await params;
     const userId = parseInt(id);
+    let user;
 
-    // 获取用户信息
-    const user = MockDatabase.getUserById(userId);
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, users } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
 
-    if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: '管理员不存在',
-      }, { status: 404 });
+        const dbUsers = await db.select().from(users).where(eq(users.id, userId));
+
+        if (dbUsers.length === 0) {
+          return NextResponse.json({
+            success: false,
+            error: '管理员不存在',
+          }, { status: 404 });
+        }
+
+        user = dbUsers[0];
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
+        // 降级到模拟数据
+        user = MockDatabase.getUserById(userId);
+        if (!user) {
+          return NextResponse.json({
+            success: false,
+            error: '管理员不存在',
+          }, { status: 404 });
+        }
+      }
+    } else {
+      // 使用模拟数据
+      user = MockDatabase.getUserById(userId);
+      if (!user) {
+        return NextResponse.json({
+          success: false,
+          error: '管理员不存在',
+        }, { status: 404 });
+      }
     }
 
     if (user.role !== 'admin') {
@@ -71,21 +100,47 @@ export async function PUT(
     const userId = parseInt(id);
     const body = await request.json();
 
-    // 目前只支持修改密码
-    if (body.password) {
-      const updatedAdmin = MockDatabase.updateAdminPassword(userId, body.password);
+    let updatedAdmin;
 
-      return NextResponse.json({
-        success: true,
-        data: updatedAdmin,
-        message: '密码修改成功',
-      });
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, users } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
+
+        if (body.password) {
+          const result = await db.update(users)
+            .set({
+              password: body.password,
+              updatedAt: new Date(),
+            })
+            .where(eq(users.id, userId))
+            .returning();
+
+          if (result.length === 0) {
+            return NextResponse.json({
+              success: false,
+              error: '管理员不存在',
+            }, { status: 404 });
+          }
+
+          updatedAdmin = result[0];
+        }
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，仅更新模拟数据:', dbError.message);
+        // 降级到模拟数据
+        updatedAdmin = MockDatabase.updateAdminPassword(userId, body.password);
+      }
+    } else {
+      // 使用模拟数据
+      updatedAdmin = MockDatabase.updateAdminPassword(userId, body.password);
     }
 
     return NextResponse.json({
-      success: false,
-      error: '没有可更新的字段',
-    }, { status: 400 });
+      success: true,
+      data: updatedAdmin,
+      message: '密码修改成功',
+    });
   } catch (error: any) {
     console.error('修改管理员信息失败:', error);
     return NextResponse.json({
@@ -113,9 +168,39 @@ export async function DELETE(
 
     const { id } = await params;
     const userId = parseInt(id);
+    let updatedUser;
 
-    // 删除管理员
-    const updatedUser = MockDatabase.deleteAdmin(userId);
+    // 检查是否配置了数据库连接
+    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
+      try {
+        const { db, users } = await import('@/storage/database/supabase/connection');
+        const { eq, userRoleEnum } = await import('@/storage/database/supabase/connection');
+
+        const result = await db.update(users)
+          .set({
+            role: 'user',
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, userId))
+          .returning();
+
+        if (result.length === 0) {
+          return NextResponse.json({
+            success: false,
+            error: '管理员不存在',
+          }, { status: 404 });
+        }
+
+        updatedUser = result[0];
+      } catch (dbError: any) {
+        console.warn('数据库连接失败，仅删除模拟数据:', dbError.message);
+        // 降级到模拟数据
+        updatedUser = MockDatabase.deleteAdmin(userId);
+      }
+    } else {
+      // 使用模拟数据
+      updatedUser = MockDatabase.deleteAdmin(userId);
+    }
 
     return NextResponse.json({
       success: true,
