@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { LoginRegisterModal } from '@/components/login-register-modal';
 
 export default function LoginPromptModal() {
   const router = useRouter();
   const { isAuthenticated, hasLoginPromptShown, markLoginPromptShown } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     // 如果已经登录或已显示过登录提示，则不再显示
@@ -43,16 +45,40 @@ export default function LoginPromptModal() {
   };
 
   const handleLoginRegister = () => {
-    handleClose();
-    router.push('/login');
+    setIsOpen(false);
+    setShowLoginModal(true);
+  };
+
+  const handleLoginSuccess = (user: any) => {
+    setShowLoginModal(false);
+    // 刷新页面以更新登录状态
+    window.location.reload();
+  };
+
+  const handleRegisterSuccess = (user: any) => {
+    setShowLoginModal(false);
+    // 刷新页面以更新登录状态
+    window.location.reload();
   };
 
   if (!isOpen || isAuthenticated || hasLoginPromptShown) {
-    return null;
+    return (
+      <>
+        {showLoginModal && (
+          <LoginRegisterModal
+            isOpen={showLoginModal}
+            onClose={() => setShowLoginModal(false)}
+            onLoginSuccess={handleLoginSuccess}
+            onRegisterSuccess={handleRegisterSuccess}
+          />
+        )}
+      </>
+    );
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+    <>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-2xl p-6 animate-in zoom-in-95 duration-200">
         {/* 标题 */}
         <div className="text-center mb-6">
@@ -92,6 +118,16 @@ export default function LoginPromptModal() {
           <X className="w-5 h-5" />
         </button>
       </div>
-    </div>
+
+      {/* 登录/注册弹窗 */}
+      {showLoginModal && (
+        <LoginRegisterModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onLoginSuccess={handleLoginSuccess}
+          onRegisterSuccess={handleRegisterSuccess}
+        />
+      )}
+    </>
   );
 }
