@@ -174,7 +174,7 @@ export async function DELETE(
     if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
       try {
         const { db, users } = await import('@/storage/database/supabase/connection');
-        const { eq, userRoleEnum } = await import('@/storage/database/supabase/connection');
+        const { eq } = await import('drizzle-orm');
 
         const result = await db.update(users)
           .set({
