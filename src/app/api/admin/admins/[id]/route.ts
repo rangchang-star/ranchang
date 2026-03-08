@@ -5,7 +5,7 @@ import { requireAdmin } from '@/lib/auth-utils';
 // GET - 获取管理员详情
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 验证管理员权限
@@ -18,7 +18,8 @@ export async function GET(
       }, { status: authResult.statusCode || 403 });
     }
 
-    const userId = parseInt(params.id);
+    const { id } = await params;
+    const userId = parseInt(id);
 
     // 获取用户信息
     const user = MockDatabase.getUserById(userId);
@@ -53,7 +54,7 @@ export async function GET(
 // PUT - 修改管理员信息
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 验证管理员权限
@@ -66,7 +67,8 @@ export async function PUT(
       }, { status: authResult.statusCode || 403 });
     }
 
-    const userId = parseInt(params.id);
+    const { id } = await params;
+    const userId = parseInt(id);
     const body = await request.json();
 
     // 目前只支持修改密码
@@ -96,7 +98,7 @@ export async function PUT(
 // DELETE - 删除管理员（降级为普通用户）
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 验证管理员权限
@@ -109,7 +111,8 @@ export async function DELETE(
       }, { status: authResult.statusCode || 403 });
     }
 
-    const userId = parseInt(params.id);
+    const { id } = await params;
+    const userId = parseInt(id);
 
     // 删除管理员
     const updatedUser = MockDatabase.deleteAdmin(userId);
