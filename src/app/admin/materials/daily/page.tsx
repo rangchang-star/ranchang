@@ -38,8 +38,14 @@ export default function AdminDailyDeclarationsPage() {
       const response = await fetch('/api/daily-declarations');
       if (response.ok) {
         const data = await response.json();
-        if (data.success) {
-          setDeclarations(data.data || []);
+        if (data.success && Array.isArray(data.data)) {
+          // 过滤掉无效数据
+          const validDeclarations = data.data.filter(
+            (decl: any) => decl && decl.id && decl.title && decl.date
+          );
+          setDeclarations(validDeclarations);
+        } else {
+          setDeclarations([]);
         }
       } else {
         // 如果API不存在，使用模拟数据
@@ -168,8 +174,11 @@ export default function AdminDailyDeclarationsPage() {
 
   // 过滤宣告
   const filteredDeclarations = declarations.filter((decl) =>
-    decl.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    decl.date.includes(searchTerm)
+    decl &&
+    decl.title &&
+    decl.date &&
+    (decl.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    decl.date.includes(searchTerm))
   );
 
   return (
