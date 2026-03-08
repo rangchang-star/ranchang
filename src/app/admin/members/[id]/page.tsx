@@ -14,7 +14,7 @@ interface Member {
   age: number;
   avatar: string;
   level: string;
-  tags: string[];
+  adminTags: string[];
   industry: string;
   joinDate: string;
   status: string;
@@ -156,14 +156,16 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className="text-[11px] text-[rgba(0,0,0,0.6)] mr-1">后台标签：</span>
-                  {member.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                  {member.adminTags && member.adminTags.length > 0 ? (
+                    member.adminTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  ) : null}
                   <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[11px] font-normal">
                     {member.level}
                   </span>
