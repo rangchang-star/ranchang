@@ -20,22 +20,49 @@ function generateToken(userId: number): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { phone, code } = body;
+    const { phone, code, password, loginType = 'code' } = body;
 
     // 验证参数
-    if (!phone || !code) {
+    if (!phone) {
       return NextResponse.json(
-        { success: false, message: '请输入手机号和验证码' },
+        { success: false, message: '请输入手机号' },
         { status: 400 }
       );
     }
 
-    // 验证验证码
-    if (!verifyCode(phone, code)) {
+    // 验证手机号格式
+    if (!/^1[3-9]\d{9}$/.test(phone)) {
       return NextResponse.json(
-        { success: false, message: '验证码错误或已过期' },
+        { success: false, message: '请输入正确的手机号' },
         { status: 400 }
       );
+    }
+
+    // 根据登录类型验证
+    if (loginType === 'password') {
+      // 密码登录
+      if (!password) {
+        return NextResponse.json(
+          { success: false, message: '请输入密码' },
+          { status: 400 }
+        );
+      }
+    } else {
+      // 验证码登录
+      if (!code) {
+        return NextResponse.json(
+          { success: false, message: '请输入验证码' },
+          { status: 400 }
+        );
+      }
+
+      // 验证验证码
+      if (!verifyCode(phone, code)) {
+        return NextResponse.json(
+          { success: false, message: '验证码错误或已过期' },
+          { status: 400 }
+        );
+      }
     }
 
     // 查找用户（包括静态用户和动态用户）
@@ -51,6 +78,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 密码登录时验证密码
+    if (loginType === 'password') {
+      if (user.password !== password) {
+        return NextResponse.json(
+          { success: false, message: '密码错误' },
+          { status: 401 }
+        );
+      }
+    }
+
     // 检查用户状态
     if (user.status !== 'active') {
       return NextResponse.json(
@@ -63,7 +100,7 @@ export async function POST(request: NextRequest) {
     const token = generateToken(user.id);
 
     // 返回用户信息（排除敏感信息）
-    const { password, ...safeUser } = user;
+    const { password: pwd, ...safeUser } = user;
 
     return NextResponse.json({
       success: true,

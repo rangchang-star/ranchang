@@ -29,6 +29,7 @@ export function LoginRegisterModal({
   onRegisterSuccess,
 }: LoginRegisterModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>('login');
+  const [loginType, setLoginType] = useState<'code' | 'password'>('code');
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -119,8 +120,25 @@ export function LoginRegisterModal({
 
   // 登录
   const handleLogin = async () => {
-    if (!validatePhone(phone) || !validateCode(code)) {
+    if (!validatePhone(phone)) {
       return;
+    }
+
+    // 根据登录类型验证
+    if (loginType === 'code') {
+      if (!validateCode(code)) {
+        return;
+      }
+    } else {
+      // 密码登录
+      if (!password) {
+        setError('请输入密码');
+        return;
+      }
+      if (password.length < 6) {
+        setError('密码长度至少为6位');
+        return;
+      }
     }
 
     if (!agreedToTerms) {
@@ -139,7 +157,8 @@ export function LoginRegisterModal({
         },
         body: JSON.stringify({
           phone,
-          code,
+          loginType,
+          ...(loginType === 'code' ? { code } : { password }),
         }),
       });
 
@@ -283,6 +302,32 @@ export function LoginRegisterModal({
 
         {/* 表单 */}
         <div className="space-y-4 mt-4">
+          {/* 登录方式切换 */}
+          {activeTab === 'login' && (
+            <div className="flex border-b border-gray-200">
+              <button
+                onClick={() => setLoginType('code')}
+                className={`flex-1 py-2 text-center text-sm font-medium transition-colors ${
+                  loginType === 'code'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                验证码登录
+              </button>
+              <button
+                onClick={() => setLoginType('password')}
+                className={`flex-1 py-2 text-center text-sm font-medium transition-colors ${
+                  loginType === 'password'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                密码登录
+              </button>
+            </div>
+          )}
+
           {/* 手机号 */}
           <div className="space-y-2">
             <label htmlFor="phone" className="text-sm font-medium text-gray-700">
@@ -305,42 +350,95 @@ export function LoginRegisterModal({
             )}
           </div>
 
-          {/* 验证码 */}
-          <div className="space-y-2">
-            <label htmlFor="code" className="text-sm font-medium text-gray-700">
-              验证码
-            </label>
-            <div className="flex space-x-2">
-              <Input
-                id="code"
-                type="text"
-                placeholder="请输入验证码"
-                value={code}
-                onChange={(e) => {
-                  setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
-                  if (e.target.value) validateCode(e.target.value);
-                }}
-                maxLength={6}
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                onClick={handleSendCode}
-                disabled={countdown > 0 || isLoading || !phone}
-                variant="outline"
-                className="whitespace-nowrap"
-              >
-                {countdown > 0 ? `${countdown}s后重发` : '发送验证码'}
-              </Button>
+          {/* 验证码输入框（仅在验证码登录时显示） */}
+          {activeTab === 'login' && loginType === 'code' && (
+            <div className="space-y-2">
+              <label htmlFor="code" className="text-sm font-medium text-gray-700">
+                验证码
+              </label>
+              <div className="flex space-x-2">
+                <Input
+                  id="code"
+                  type="text"
+                  placeholder="请输入验证码"
+                  value={code}
+                  onChange={(e) => {
+                    setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                    if (e.target.value) validateCode(e.target.value);
+                  }}
+                  maxLength={6}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={handleSendCode}
+                  disabled={countdown > 0 || isLoading || !phone}
+                  variant="outline"
+                  className="whitespace-nowrap"
+                >
+                  {countdown > 0 ? `${countdown}s后重发` : '发送验证码'}
+                </Button>
+              </div>
+              {codeError && (
+                <p className="text-xs text-red-500">{codeError}</p>
+              )}
             </div>
-            {codeError && (
-              <p className="text-xs text-red-500">{codeError}</p>
-            )}
-          </div>
+          )}
+
+          {/* 密码输入框（密码登录或注册时显示） */}
+          {(activeTab === 'login' && loginType === 'password') && (
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                密码
+              </label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="请输入密码"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                minLength={6}
+                maxLength={20}
+              />
+            </div>
+          )}
 
           {/* 注册专属字段 */}
           {activeTab === 'register' && (
             <>
+              {/* 验证码 */}
+              <div className="space-y-2">
+                <label htmlFor="code" className="text-sm font-medium text-gray-700">
+                  验证码
+                </label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="code"
+                    type="text"
+                    placeholder="请输入验证码"
+                    value={code}
+                    onChange={(e) => {
+                      setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+                      if (e.target.value) validateCode(e.target.value);
+                    }}
+                    maxLength={6}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleSendCode}
+                    disabled={countdown > 0 || isLoading || !phone}
+                    variant="outline"
+                    className="whitespace-nowrap"
+                  >
+                    {countdown > 0 ? `${countdown}s后重发` : '发送验证码'}
+                  </Button>
+                </div>
+                {codeError && (
+                  <p className="text-xs text-red-500">{codeError}</p>
+                )}
+              </div>
+
               {/* 密码（可选） */}
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium text-gray-700">
