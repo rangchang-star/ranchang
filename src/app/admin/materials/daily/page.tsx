@@ -4,7 +4,7 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Edit, Trash2, Search, Volume2, Play, ArrowLeft } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -25,8 +25,7 @@ export default function AdminDailyDeclarationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
-  const audioRefs = useState<Record<string, HTMLAudioElement>>({});
-  const audioRefMap = audioRefs[0];
+  const audioRefMap = useRef<Record<string, HTMLAudioElement>>({});
 
   // 从 API 加载数据
   useEffect(() => {
@@ -101,25 +100,25 @@ export default function AdminDailyDeclarationsPage() {
   const togglePlay = (id: string, audioUrl: string) => {
     if (playingId === id) {
       // 暂停当前播放
-      if (audioRefMap[id]) {
-        audioRefMap[id].pause();
+      if (audioRefMap.current[id]) {
+        audioRefMap.current[id].pause();
       }
       setPlayingId(null);
     } else {
       // 停止其他音频
-      if (playingId && audioRefMap[playingId]) {
-        audioRefMap[playingId].pause();
+      if (playingId && audioRefMap.current[playingId]) {
+        audioRefMap.current[playingId].pause();
       }
       // 播放新音频
-      if (!audioRefMap[id]) {
+      if (!audioRefMap.current[id]) {
         const audio = new Audio(audioUrl);
-        audioRefMap[id] = audio;
+        audioRefMap.current[id] = audio;
       }
-      audioRefMap[id].play();
+      audioRefMap.current[id].play();
       setPlayingId(id);
 
       // 监听播放结束
-      audioRefMap[id].onended = () => {
+      audioRefMap.current[id].onended = () => {
         setPlayingId(null);
       };
     }
@@ -282,7 +281,7 @@ export default function AdminDailyDeclarationsPage() {
                         </Button>
                         <audio
                           ref={(el) => {
-                            if (el) audioRefMap[declaration.id] = el;
+                            if (el) audioRefMap.current[declaration.id] = el;
                           }}
                           src={declaration.audio}
                           className="hidden"
