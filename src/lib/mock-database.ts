@@ -1832,8 +1832,9 @@ export class MockDatabase {
   }
 
   // 根据 ID 获取用户
-  static getUserById(id: number) {
-    return mockUsers.find(user => user.id === id);
+  static getUserById(id: string | number) {
+    const numericId = typeof id === 'string' ? parseInt(id) : id;
+    return mockUsers.find(user => user.id === numericId);
   }
 
   // 根据手机号获取用户
@@ -1959,8 +1960,9 @@ export class MockDatabase {
   }
 
   // 更新用户信息
-  static updateUser(id: number, updates: any) {
-    const index = mockUsers.findIndex(u => u.id === id);
+  static updateUser(id: string | number, updates: any) {
+    const numericId = typeof id === 'string' ? parseInt(id) : id;
+    const index = mockUsers.findIndex(u => u.id === numericId);
     if (index === -1) {
       return null;
     }
@@ -2296,8 +2298,9 @@ export class MockDatabase {
   }
 
   // 修改管理员密码
-  static updateAdminPassword(userId: number, newPassword: string) {
-    const admin = mockUsers.find(user => user.id === userId);
+  static updateAdminPassword(userId: string | number, newPassword: string) {
+    const numericId = typeof userId === 'string' ? parseInt(userId) : userId;
+    const admin = mockUsers.find(user => user.id === numericId);
     if (!admin || admin.role !== 'admin') {
       throw new Error('管理员不存在');
     }
@@ -2308,8 +2311,9 @@ export class MockDatabase {
   }
 
   // 删除管理员（降级为普通用户）
-  static deleteAdmin(userId: number) {
-    const admin = mockUsers.find(user => user.id === userId);
+  static deleteAdmin(userId: string | number) {
+    const numericId = typeof userId === 'string' ? parseInt(userId) : userId;
+    const admin = mockUsers.find(user => user.id === numericId);
     if (!admin || admin.role !== 'admin') {
       throw new Error('管理员不存在');
     }

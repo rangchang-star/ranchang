@@ -10,11 +10,11 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId');
     const activityId = searchParams.get('activityId');
     const visitId = searchParams.get('visitId');
-    
+
     const conditions = [];
-    if (userId) conditions.push(eq(registrations.userId, parseInt(userId)));
-    if (activityId) conditions.push(eq(registrations.activityId, parseInt(activityId)));
-    if (visitId) conditions.push(eq(registrations.visitId, parseInt(visitId)));
+    if (userId) conditions.push(eq(registrations.userId, userId));
+    if (activityId) conditions.push(eq(registrations.activityId, activityId));
+    if (visitId) conditions.push(eq(registrations.visitId, visitId));
     
     let result;
     if (conditions.length > 0) {
@@ -81,16 +81,16 @@ export async function POST(request: NextRequest) {
       existingRegistration = await db.select()
         .from(registrations)
         .where(and(
-          eq(registrations.userId, parseInt(userId)),
-          eq(registrations.activityId, parseInt(activityId)),
+          eq(registrations.userId, userId),
+          eq(registrations.activityId, activityId),
           eq(registrations.status, 'registered')
         ));
     } else {
       existingRegistration = await db.select()
         .from(registrations)
         .where(and(
-          eq(registrations.userId, parseInt(userId)),
-          eq(registrations.visitId, parseInt(visitId!)),
+          eq(registrations.userId, userId),
+          eq(registrations.visitId, visitId!),
           eq(registrations.status, 'registered')
         ));
     }
@@ -104,9 +104,9 @@ export async function POST(request: NextRequest) {
 
     // 创建报名记录
     const result = await db.insert(registrations).values({
-      userId: parseInt(userId),
-      activityId: activityId ? parseInt(activityId) : null,
-      visitId: visitId ? parseInt(visitId) : null,
+      userId,
+      activityId: activityId || null,
+      visitId: visitId || null,
       status: 'registered',
       paymentStatus: 'unpaid',
     }).returning();

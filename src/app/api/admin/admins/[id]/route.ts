@@ -19,7 +19,6 @@ export async function GET(
     }
 
     const { id } = await params;
-    const userId = parseInt(id);
     let user;
 
     // 检查是否配置了数据库连接
@@ -41,7 +40,7 @@ export async function GET(
       } catch (dbError: any) {
         console.warn('数据库连接失败，使用模拟数据:', dbError.message);
         // 降级到模拟数据
-        user = MockDatabase.getUserById(userId);
+        user = MockDatabase.getUserById(id);
         if (!user) {
           return NextResponse.json({
             success: false,
@@ -51,7 +50,7 @@ export async function GET(
       }
     } else {
       // 使用模拟数据
-      user = MockDatabase.getUserById(userId);
+      user = MockDatabase.getUserById(id);
       if (!user) {
         return NextResponse.json({
           success: false,
@@ -97,7 +96,6 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const userId = parseInt(id);
     const body = await request.json();
 
     let updatedAdmin;
@@ -129,11 +127,11 @@ export async function PUT(
       } catch (dbError: any) {
         console.warn('数据库连接失败，仅更新模拟数据:', dbError.message);
         // 降级到模拟数据
-        updatedAdmin = MockDatabase.updateAdminPassword(userId, body.password);
+        updatedAdmin = MockDatabase.updateAdminPassword(id, body.password);
       }
     } else {
       // 使用模拟数据
-      updatedAdmin = MockDatabase.updateAdminPassword(userId, body.password);
+      updatedAdmin = MockDatabase.updateAdminPassword(id, body.password);
     }
 
     return NextResponse.json({
@@ -167,7 +165,6 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const userId = parseInt(id);
     let updatedUser;
 
     // 检查是否配置了数据库连接
@@ -195,11 +192,11 @@ export async function DELETE(
       } catch (dbError: any) {
         console.warn('数据库连接失败，仅删除模拟数据:', dbError.message);
         // 降级到模拟数据
-        updatedUser = MockDatabase.deleteAdmin(userId);
+        updatedUser = MockDatabase.deleteAdmin(id);
       }
     } else {
       // 使用模拟数据
-      updatedUser = MockDatabase.deleteAdmin(userId);
+      updatedUser = MockDatabase.deleteAdmin(id);
     }
 
     return NextResponse.json({

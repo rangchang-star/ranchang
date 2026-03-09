@@ -45,6 +45,8 @@ export const users = pgTable('users', {
   level: text('level'),
   status: text('status').default('active'),
   isFeatured: boolean('is_featured').default(false),
+  role: text('role').default('user'),
+  isSuperAdmin: boolean('is_super_admin').default(false),
   joinDate: timestamp('join_date'),
   lastLogin: timestamp('last_login'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -53,7 +55,7 @@ export const users = pgTable('users', {
 
 // 活动表
 export const activities = pgTable('activities', {
-  id: serial('id').primaryKey(),
+  id: text('id').primaryKey(),
   title: varchar('title', { length: 200 }).notNull(),
   subtitle: varchar('subtitle', { length: 200 }),
   category: activityCategoryEnum('category').default('private'),
@@ -65,14 +67,14 @@ export const activities = pgTable('activities', {
   capacity: integer('capacity').default(0),
   teaFee: integer('tea_fee').default(0),
   status: activityStatusEnum('status').default('draft'),
-  createdBy: integer('created_by').references(() => users.id),
+  createdBy: text('created_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 // 探访表
 export const visits = pgTable('visits', {
-  id: serial('id').primaryKey(),
+  id: text('id').primaryKey(),
   title: varchar('title', { length: 200 }).notNull(),
   description: text('description').notNull(),
   image: text('image'),
@@ -81,17 +83,17 @@ export const visits = pgTable('visits', {
   capacity: integer('capacity').default(0),
   teaFee: integer('tea_fee').default(0),
   status: visitStatusEnum('status').default('draft'),
-  createdBy: integer('created_by').references(() => users.id),
+  createdBy: text('created_by').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 // 报名记录表
 export const registrations = pgTable('registrations', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
-  activityId: integer('activity_id').references(() => activities.id),
-  visitId: integer('visit_id').references(() => visits.id),
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id),
+  activityId: text('activity_id').references(() => activities.id),
+  visitId: text('visit_id').references(() => visits.id),
   status: registrationStatusEnum('status').default('registered'),
   paymentStatus: paymentStatusEnum('payment_status').default('unpaid'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -99,7 +101,7 @@ export const registrations = pgTable('registrations', {
 
 // 每日宣告表
 export const dailyDeclarations = pgTable('daily_declarations', {
-  id: serial('id').primaryKey(),
+  id: text('id').primaryKey(),
   title: varchar('title', { length: 200 }).notNull(),
   date: timestamp('date').notNull(),
   image: text('image'),
@@ -118,7 +120,7 @@ export const dailyDeclarations = pgTable('daily_declarations', {
 
 // 系统设置表
 export const settings = pgTable('settings', {
-  id: serial('id').primaryKey(),
+  id: text('id').primaryKey(),
   key: varchar('key', { length: 100 }).notNull().unique(),
   value: jsonb('value').notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

@@ -74,7 +74,7 @@ export async function GET(
       } catch (dbError: any) {
         console.warn('数据库连接失败，使用模拟数据:', dbError.message);
         // 降级到模拟数据
-        const user = MockDatabase.getUserById(parseInt(id));
+        const user = MockDatabase.getUserById(id);
         if (!user) {
           return NextResponse.json({
             success: false,
@@ -113,7 +113,7 @@ export async function GET(
       }
     } else {
       // 使用模拟数据
-      const user = MockDatabase.getUserById(parseInt(id));
+      const user = MockDatabase.getUserById(id);
       if (!user) {
         return NextResponse.json({
           success: false,
@@ -210,7 +210,7 @@ export async function PUT(
       } catch (dbError: any) {
         console.warn('数据库连接失败，仅更新模拟数据:', dbError.message);
         // 降级到模拟数据
-        updatedUser = MockDatabase.updateUser(parseInt(id), {
+        updatedUser = MockDatabase.updateUser(id, {
           name: body.name,
           nickname: body.name,
           age: body.age,
@@ -229,7 +229,7 @@ export async function PUT(
       }
     } else {
       // 使用模拟数据
-      updatedUser = MockDatabase.updateUser(parseInt(id), {
+      updatedUser = MockDatabase.updateUser(id, {
         name: body.name,
         nickname: body.name,
         age: body.age,
