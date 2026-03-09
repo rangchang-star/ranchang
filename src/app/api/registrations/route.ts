@@ -81,16 +81,16 @@ export async function POST(request: NextRequest) {
       existingRegistration = await db.select()
         .from(registrations)
         .where(and(
-          eq(registrations.userId, userId),
-          eq(registrations.activityId, activityId),
+          eq(registrations.userId, parseInt(userId)),
+          eq(registrations.activityId, parseInt(activityId)),
           eq(registrations.status, 'registered')
         ));
     } else {
       existingRegistration = await db.select()
         .from(registrations)
         .where(and(
-          eq(registrations.userId, userId),
-          eq(registrations.visitId, visitId),
+          eq(registrations.userId, parseInt(userId)),
+          eq(registrations.visitId, parseInt(visitId!)),
           eq(registrations.status, 'registered')
         ));
     }
@@ -104,9 +104,9 @@ export async function POST(request: NextRequest) {
 
     // 创建报名记录
     const result = await db.insert(registrations).values({
-      userId,
-      activityId: activityId || null,
-      visitId: visitId || null,
+      userId: parseInt(userId),
+      activityId: activityId ? parseInt(activityId) : null,
+      visitId: visitId ? parseInt(visitId) : null,
       status: 'registered',
       paymentStatus: 'unpaid',
     }).returning();

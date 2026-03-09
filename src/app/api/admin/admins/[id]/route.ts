@@ -28,7 +28,7 @@ export async function GET(
         const { db, users } = await import('@/storage/database/supabase/connection');
         const { eq } = await import('drizzle-orm');
 
-        const dbUsers = await db.select().from(users).where(eq(users.id, userId));
+        const dbUsers = await db.select().from(users).where(eq(users.id, id));
 
         if (dbUsers.length === 0) {
           return NextResponse.json({
@@ -114,7 +114,7 @@ export async function PUT(
               password: body.password,
               updatedAt: new Date(),
             })
-            .where(eq(users.id, userId))
+            .where(eq(users.id, id))
             .returning();
 
           if (result.length === 0) {
@@ -181,7 +181,7 @@ export async function DELETE(
             role: 'user',
             updatedAt: new Date(),
           })
-          .where(eq(users.id, userId))
+          .where(eq(users.id, id))
           .returning();
 
         if (result.length === 0) {
