@@ -1,15 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MockDatabase } from '@/lib/mock-database';
-
-// 定义用户类型
-type User = {
-  id: number;
-  phone: string;
-  name: string;
-  avatar: string;
-  company: string;
-  position: string;
-};
 
 export async function GET(
   request: NextRequest,
@@ -18,39 +7,44 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // 获取活动信息
-    const activities = MockDatabase.getActivities();
-    const activity = activities.find((a) => String(a.id) === id);
+    const { db, activities: activitiesTable, registrations: registrationsTable, users: usersTable } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-    if (!activity) {
+    // 获取活动信息
+    const dbActivities = await db.select().from(activitiesTable).where(eq(activitiesTable.id, id));
+
+    if (dbActivities.length === 0) {
       return NextResponse.json(
         { success: false, error: '活动不存在' },
         { status: 404 }
       );
     }
 
+    const activity = dbActivities[0];
+
     // 获取活动的参与记录
-    const activityRegistrations = MockDatabase.getActivityRegistrationsByActivityId(id);
+    const dbRegistrations = await db.select().from(registrationsTable).where(eq(registrationsTable.activityId, id));
 
-    // 获取用户信息（显式指定类型）
-    const users = MockDatabase.getUsers() as User[];
+    // 获取报名用户的详细信息
+    const registrations = await Promise.all(
+      dbRegistrations.map(async (registration) => {
+        const dbUsers = await db.select().from(usersTable).where(eq(usersTable.id, registration.userId));
+        const user = dbUsers[0];
 
-    // 组合数据
-    const registrations = activityRegistrations.map((registration) => {
-      const user = users.find((u) => String(u.id) === registration.userId);
-      return {
-        id: registration.userId,
-        activityId: id,
-        userId: registration.userId,
-        userName: user?.name || '未知',
-        userPhone: user?.phone || '未知',
-        userCompany: user?.company || '未知',
-        userPosition: user?.position || '未知',
-        userAvatar: user?.avatar || '',
-        status: registration.status,
-        registeredAt: registration.registeredAt,
-      };
-    });
+        return {
+          id: registration.userId,
+          activityId: id,
+          userId: registration.userId,
+          userName: user?.nickname || user?.name || '未知',
+          userPhone: user?.phone || '未知',
+          userCompany: user?.company || '未知',
+          userPosition: user?.position || '未知',
+          userAvatar: user?.avatar || '',
+          status: registration.status,
+          registeredAt: registration.createdAt,
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,
@@ -69,10 +63,8 @@ export async function GET(
         registrations: registrations,
         statistics: {
           total: registrations.length,
-          approved: registrations.filter((r) => r.status === 'approved').length,
-          pending: registrations.filter((r) => r.status === 'pending').length,
-          rejected: registrations.filter((r) => r.status === 'rejected').length,
-          completed: registrations.filter((r) => r.status === 'completed').length,
+          registered: registrations.filter((r) => r.status === 'registered').length,
+          cancelled: registrations.filter((r) => r.status === 'cancelled').length,
         },
       },
     });

@@ -1,21 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MockDatabase } from '@/lib/mock-database';
 import { requireAdmin } from '@/lib/auth-utils';
-
-// 定义用户类型
-type User = {
-  id: number;
-  phone: string;
-  name: string;
-  nickname: string;
-  avatar: string;
-  bio: string;
-  position: string;
-  company: string;
-  hardcoreTags: string[];
-  tags: string[];
-  industry: string;
-};
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,18 +13,21 @@ export async function GET(request: NextRequest) {
       }, { status: authResult.statusCode || 403 });
     }
 
-    // 获取所有用户（显式指定类型）
-    const users = MockDatabase.getUsers() as User[];
+    const { db, users } = await import('@/storage/database/supabase/connection');
+    const { desc } = await import('drizzle-orm');
+
+    // 获取所有用户
+    const dbUsers = await db.select().from(users).orderBy(desc(users.createdAt));
 
     // 转换为适合前台使用的格式
-    const members = users.map(user => ({
-      id: String(user.id),
+    const members = dbUsers.map(user => ({
+      id: user.id,
       name: user.nickname || user.name,
       avatar: user.avatar,
       bio: user.bio,
       position: user.position,
       company: user.company,
-      hardcoreTags: user.hardcoreTags || user.tags,
+      hardcoreTags: user.abilityTags || user.tags,
       industry: user.industry,
     }));
 
