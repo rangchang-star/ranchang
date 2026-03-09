@@ -54,7 +54,14 @@ export async function GET(request: NextRequest) {
       } catch (dbError: any) {
         console.error('[DEBUG] Database connection failed:', dbError.message);
         console.error('[DEBUG] Error stack:', dbError.stack);
-        // 数据库连接失败时，使用模拟数据
+        
+        // 数据库连接失败时，返回错误信息（而不是使用模拟数据）
+        return NextResponse.json({
+          success: false,
+          error: '数据库连接失败',
+          detail: dbError.message,
+          stack: dbError.stack?.substring(0, 500) // 只返回前500个字符
+        }, { status: 500 });
       }
     } else {
       console.log('[DEBUG] DATABASE_URL not configured');
