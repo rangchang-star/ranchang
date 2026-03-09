@@ -30,7 +30,7 @@ export const paymentStatusEnum = pgEnum('payment_status', ['paid', 'unpaid', 'of
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
   phone: text('phone').notNull(),
-  password: text('encrypted_password'),
+  password: text('password'),
   nickname: text('nickname'),
   name: text('name'),
   avatar: text('avatar'),
@@ -40,8 +40,6 @@ export const users = pgTable('users', {
   industry: text('industry'),
   bio: text('bio'),
   need: text('need'),
-  connectionType: text('connection_type'),
-  abilityTags: jsonb('ability_tags').$type<string[]>(),
   resourceTags: jsonb('resource_tags').$type<string[]>(),
   level: text('level'),
   status: text('status').default('active'),
