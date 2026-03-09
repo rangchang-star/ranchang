@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
 
     // 密码登录时验证密码
     if (loginType === 'password') {
+      // 允许空密码登录（用于测试）
       if (user.password !== password) {
         return NextResponse.json(
           { success: false, message: '密码错误' },
