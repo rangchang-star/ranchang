@@ -17,17 +17,17 @@ export async function GET(request: NextRequest) {
     const { desc } = await import('drizzle-orm');
 
     // 获取所有用户
-    const dbUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+    const dbUsers = await db.select().from(users).orderBy(desc(users.created_at));
 
     // 转换为适合前台使用的格式
     const members = dbUsers.map(user => ({
       id: user.id,
-      name: user.nickname || user.name,
+      name: user.name,
       avatar: user.avatar,
-      bio: user.bio,
+      bio: user.need,
       position: user.position,
       company: user.company,
-      hardcoreTags: user.abilityTags || user.tags,
+      hardcoreTags: user.ability_tags || [],
       industry: user.industry,
     }));
 

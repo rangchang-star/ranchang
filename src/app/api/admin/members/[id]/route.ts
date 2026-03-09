@@ -28,10 +28,10 @@ export async function GET(
       name: user.nickname || user.name,
       age: user.age,
       avatar: user.avatar,
-      connectionType: user.connectionType || 'personLookingForJob',
+      connectionType: 'personLookingForJob', // 默认值
       industry: user.industry,
       need: user.need,
-      hardcoreTags: user.abilityTags || [],
+      hardcoreTags: [], // 数据库中没有该字段
       resourceTags: user.resourceTags || [],
 
       // 后台标签（暂时使用空数组）
@@ -94,19 +94,15 @@ export async function PUT(
     const result = await db.update(users)
       .set({
         name: body.name,
-        nickname: body.name,
         age: body.age,
         industry: body.industry,
         company: body.company,
         position: body.position,
-        bio: body.bio,
         need: body.need,
-        abilityTags: body.hardcoreTags,
-        resourceTags: body.resourceTags,
-        connectionType: body.connectionType,
-        isFeatured: body.isFeatured,
+        resource_tags: body.resourceTags,
+        is_featured: body.isFeatured,
         avatar: body.avatar,
-        updatedAt: new Date(),
+        updated_at: new Date(),
       })
       .where(eq(users.id, id))
       .returning();
