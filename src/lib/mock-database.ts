@@ -1828,8 +1828,7 @@ export const mockDocuments = [
 export class MockDatabase {
   // 获取所有用户
   static getUsers() {
-    return []; // 清空模拟数据，用于验证数据库连接
-    // return mockUsers; // 备份数据：恢复时取消注释
+    return mockUsers;
   }
 
   // 根据 ID 获取用户
