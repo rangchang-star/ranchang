@@ -45,6 +45,10 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
       const result = await response.json();
 
       if (result.success) {
+        // 保存用户信息和 token 到 localStorage（使用 AuthContext 的 key）
+        localStorage.setItem('currentUser', JSON.stringify(result.data.user));
+        localStorage.setItem('token', result.data.token);
+        
         onClose();
         window.location.reload();
       } else {
@@ -94,6 +98,10 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
 
         const loginResult = await loginResponse.json();
         if (loginResult.success) {
+          // 保存用户信息和 token 到 localStorage（使用 AuthContext 的 key）
+          localStorage.setItem('currentUser', JSON.stringify(loginResult.data.user));
+          localStorage.setItem('token', loginResult.data.token);
+          
           onClose();
           window.location.reload();
         }
