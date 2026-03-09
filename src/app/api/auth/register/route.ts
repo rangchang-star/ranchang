@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { mockUsers } from '@/lib/mock-database';
 import { verifyCode } from '../send-code/route';
+import { randomUUID } from 'crypto';
 
 // 简单的 JWT 生成（生产环境应使用 jsonwebtoken 库）
-function generateToken(userId: number): string {
+function generateToken(userId: string): string {
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payload = btoa(
     JSON.stringify({
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
         const { db, users } = await import('@/storage/database/supabase/connection');
 
         const result = await db.insert(users).values({
+          id: randomUUID(),
           phone,
           password: password || '',
           nickname,
@@ -172,7 +174,7 @@ export async function POST(request: NextRequest) {
     console.log('新用户注册:', { phone, nickname, userId: newUser.id });
 
     // 生成 token
-    const token = generateToken(newUser.id);
+    const token = generateToken(String(newUser.id));
 
     // 返回用户信息（排除敏感信息）
     const { password: _, ...safeUser } = newUser;

@@ -17,7 +17,7 @@ export async function GET(
         const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
         const { eq } = await import('drizzle-orm');
 
-        const dbDeclarations = await db.select().from(dailyDeclarations).where(eq(dailyDeclarations.id, id));
+        const dbDeclarations = await db.select().from(dailyDeclarations).where(eq(dailyDeclarations.id, parseInt(id)));
 
         if (dbDeclarations.length === 0) {
           return NextResponse.json(

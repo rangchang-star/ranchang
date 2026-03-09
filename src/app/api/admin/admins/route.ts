@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MockDatabase } from '@/lib/mock-database';
 import { requireAdmin } from '@/lib/auth-utils';
+import { randomUUID } from 'crypto';
 
 // GET - 获取所有管理员
 export async function GET(request: NextRequest) {
@@ -94,6 +95,7 @@ export async function POST(request: NextRequest) {
 
         // 创建管理员
         const result = await db.insert(users).values({
+          id: randomUUID(),
           phone: body.phone,
           password: body.password,
           nickname: body.nickname,

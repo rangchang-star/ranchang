@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 
 // 默认设置数据
 const defaultSettings = {
@@ -151,6 +152,7 @@ export async function PUT(request: NextRequest) {
         } else {
           // 创建新设置
           await db.insert(settings).values({
+            id: randomUUID(),
             key: 'default_settings',
             value: body,
             updatedAt: new Date(),

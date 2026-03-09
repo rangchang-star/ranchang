@@ -1,4 +1,5 @@
 import { pgTable, serial, varchar, text, integer, timestamp, boolean, pgEnum, jsonb } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { relations } from 'drizzle-orm';
 
 // 用户角色枚举
@@ -45,6 +46,10 @@ export const users = pgTable('users', {
   level: text('level'),
   status: text('status').default('active'),
   isFeatured: boolean('is_featured').default(false),
+  isTrusted: boolean('is_trusted').default(false), // 添加 isTrusted 字段
+  tagStamp: text('tag_stamp'), // 添加 tagStamp 字段
+  tags: jsonb('tags').$type<string[]>(), // 添加 tags 字段
+  hardcoreTags: jsonb('hardcore_tags').$type<string[]>(), // 添加 hardcoreTags 字段
   role: text('role').default('user'),
   isSuperAdmin: boolean('is_super_admin').default(false),
   joinDate: timestamp('join_date'),
@@ -55,7 +60,7 @@ export const users = pgTable('users', {
 
 // 活动表
 export const activities = pgTable('activities', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
   title: varchar('title', { length: 200 }).notNull(),
   subtitle: varchar('subtitle', { length: 200 }),
   category: activityCategoryEnum('category').default('private'),
@@ -74,7 +79,7 @@ export const activities = pgTable('activities', {
 
 // 探访表
 export const visits = pgTable('visits', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
   title: varchar('title', { length: 200 }).notNull(),
   description: text('description').notNull(),
   image: text('image'),
@@ -90,7 +95,7 @@ export const visits = pgTable('visits', {
 
 // 报名记录表
 export const registrations = pgTable('registrations', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: text('user_id').notNull().references(() => users.id),
   activityId: text('activity_id').references(() => activities.id),
   visitId: text('visit_id').references(() => visits.id),
@@ -101,7 +106,7 @@ export const registrations = pgTable('registrations', {
 
 // 每日宣告表
 export const dailyDeclarations = pgTable('daily_declarations', {
-  id: text('id').primaryKey(),
+  id: serial('id').primaryKey(),
   title: varchar('title', { length: 200 }).notNull(),
   date: timestamp('date').notNull(),
   image: text('image'),

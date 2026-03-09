@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MockDatabase } from '@/lib/mock-database';
+import { randomUUID } from 'crypto';
 
 // GET - 获取用户列表
 export async function GET(request: NextRequest) {
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest) {
       try {
         const { db, users } = await import('@/storage/database/supabase/connection');
         const result = await db.insert(users).values({
+          id: randomUUID(),
           phone: body.phone,
           password: body.password,
           nickname: body.nickname,

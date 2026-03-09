@@ -35,7 +35,7 @@ export async function GET(
           status: users.status,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt,
-        }).from(users).where(eq(users.id, parseInt(id))).limit(1);
+        }).from(users).where(eq(users.id, id)).limit(1);
         
         if (result.length === 0) {
           return NextResponse.json({
@@ -120,12 +120,12 @@ export async function PUT(
             isTrusted: body.isTrusted || false,
             updatedAt: new Date(),
           })
-          .where(eq(users.id, parseInt(id)));
+          .where(eq(users.id, id));
 
         return NextResponse.json({
           success: true,
           message: '用户信息更新成功',
-          data: { id: parseInt(id) }
+          data: { id }
         });
       } catch (dbError: any) {
         console.warn('数据库连接失败，使用模拟数据:', dbError.message);

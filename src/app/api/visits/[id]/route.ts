@@ -20,7 +20,7 @@ export async function GET(
     const { db, visits } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    const dbVisits = await db.select().from(visits).where(eq(visits.id, parseInt(id)));
+    const dbVisits = await db.select().from(visits).where(eq(visits.id, id));
 
     if (!dbVisits || dbVisits.length === 0) {
       return NextResponse.json(
@@ -107,7 +107,7 @@ export async function PUT(
         status: body.status,
         updatedAt: new Date(),
       })
-      .where(eq(visits.id, parseInt(id)))
+      .where(eq(visits.id, id))
       .returning();
 
     if (!result || result.length === 0) {
