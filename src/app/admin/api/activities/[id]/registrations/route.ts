@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MockDatabase } from '@/lib/mock-database';
 
+// 定义用户类型
+type User = {
+  id: number;
+  phone: string;
+  name: string;
+  avatar: string;
+  company: string;
+  position: string;
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -22,8 +32,8 @@ export async function GET(
     // 获取活动的参与记录
     const activityRegistrations = MockDatabase.getActivityRegistrationsByActivityId(id);
 
-    // 获取用户信息
-    const users = MockDatabase.getUsers();
+    // 获取用户信息（显式指定类型）
+    const users = MockDatabase.getUsers() as User[];
 
     // 组合数据
     const registrations = activityRegistrations.map((registration) => {

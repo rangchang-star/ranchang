@@ -60,8 +60,8 @@ export async function GET(request: NextRequest) {
       console.log('[DEBUG] DATABASE_URL not configured');
     }
 
-    // 使用统一的模拟数据
-    const users = MockDatabase.getUsers();
+    // 使用统一的模拟数据（显式指定类型）
+    const users = MockDatabase.getUsers() as any[];
 
     // 不返回密码字段
     const usersWithoutPassword = users.map(user => {

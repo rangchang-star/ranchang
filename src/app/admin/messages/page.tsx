@@ -89,7 +89,7 @@ export default function AdminMessagesPage() {
         // 加载活动申请
         const activityApplications = MockDatabase.getActivityApplications();
         const activities = MockDatabase.getActivities();
-        const users = MockDatabase.getUsers();
+        const users = MockDatabase.getUsers() as any[];
 
         // 转换为统一的申请格式
         const formattedApplications: Application[] = activityApplications.map(app => {
