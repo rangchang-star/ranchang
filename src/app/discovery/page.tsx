@@ -974,60 +974,60 @@ export default function DiscoveryPage() {
                   <span>更多</span>
                 </button>
               </div>
+            </section>
 
-              {/* 硬核图谱 */}
-              <section className="mt-8">
-                <div className="border border-yellow-400 p-4 bg-yellow-50/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-xl font-bold">
-                      <span className="text-yellow-600">硬核</span>
-                      <span className="text-yellow-500">图谱</span>
-                    </h2>
-                    <span className="text-[10px] text-yellow-500/70">技能气泡</span>
-                  </div>
-
-                  {/* 技能气泡图 */}
-                  <div className="relative w-full h-64 overflow-hidden">
-                    {skillBubbles.map((bubble) => (
-                      <div
-                        key={bubble.id}
-                        onClick={() => {
-                          // 点击另一个时取消之前的选中状态
-                          setClickedBubbleId(clickedBubbleId === bubble.id ? null : bubble.id);
-                        }}
-                        className={`absolute rounded-full border ${bubble.borderColor} ${bubble.color} flex items-center justify-center cursor-pointer transition-all hover:scale-105 hover:shadow-lg ${
-                          clickedBubbleId === bubble.id
-                            ? 'scale-110 shadow-xl ring-4 ring-yellow-300/50'
-                            : ''
-                        }`}
-                        style={{
-                          width: `${bubble.size}px`,
-                          height: `${bubble.size}px`,
-                          left: `${bubble.x}%`,
-                          top: `${bubble.y}%`,
-                          transform: 'translate(-50%, -50%)',
-                        }}
-                      >
-                        <div className={`text-center px-1 ${bubble.textColor}`}>
-                          <div className={`font-semibold ${bubble.size >= 55 ? 'text-[12px]' : bubble.size >= 40 ? 'text-[10px]' : 'text-[8px]'}`}>
-                            {bubble.name}
-                          </div>
-                          {clickedBubbleId === bubble.id && skillDescriptions[bubble.id] && (
-                            <div className={`text-[8px] text-gray-500 mt-0.5 leading-tight`}>
-                              {skillDescriptions[bubble.id].split('|')[1]?.trim()}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* 技能说明 */}
-                  <div className="text-[11px] text-yellow-600/70 text-center pt-2">
-                    💡 35岁+找盟友不看履历，聊硬核能力与战绩
-                  </div>
+            {/* 硬核图谱 */}
+            <section className="mt-8">
+              <div className="border border-yellow-400 p-4 bg-yellow-50/30">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-xl font-bold">
+                    <span className="text-yellow-600">硬核</span>
+                    <span className="text-yellow-500">图谱</span>
+                  </h2>
+                  <span className="text-[10px] text-yellow-500/70">技能气泡</span>
                 </div>
-              </section>
+
+                {/* 技能气泡图 */}
+                <div className="relative w-full h-64 overflow-hidden">
+                  {skillBubbles.map((bubble) => (
+                    <div
+                      key={bubble.id}
+                      onClick={() => {
+                        // 点击另一个时取消之前的选中状态
+                        setClickedBubbleId(clickedBubbleId === bubble.id ? null : bubble.id);
+                      }}
+                      className={`absolute rounded-full border ${bubble.borderColor} ${bubble.color} flex items-center justify-center cursor-pointer transition-all hover:scale-105 hover:shadow-lg ${
+                        clickedBubbleId === bubble.id
+                          ? 'scale-110 shadow-xl ring-4 ring-yellow-300/50'
+                          : ''
+                      }`}
+                      style={{
+                        width: `${bubble.size}px`,
+                        height: `${bubble.size}px`,
+                        left: `${bubble.x}%`,
+                        top: `${bubble.y}%`,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      <div className={`text-center px-1 ${bubble.textColor}`}>
+                        <div className={`font-semibold ${bubble.size >= 55 ? 'text-[12px]' : bubble.size >= 40 ? 'text-[10px]' : 'text-[8px]'}`}>
+                          {bubble.name}
+                        </div>
+                        {clickedBubbleId === bubble.id && skillDescriptions[bubble.id] && (
+                          <div className={`text-[8px] text-gray-500 mt-0.5 leading-tight`}>
+                            {skillDescriptions[bubble.id].split('|')[1]?.trim()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 技能说明 */}
+                <div className="text-[11px] text-yellow-600/70 text-center pt-2">
+                  💡 35岁+找盟友不看履历，聊硬核能力与战绩
+                </div>
+              </div>
             </section>
           </div>
         </div>
