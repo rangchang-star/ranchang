@@ -4,9 +4,13 @@ import { MockDatabase } from '@/lib/mock-database';
 // GET - 获取用户列表
 export async function GET(request: NextRequest) {
   try {
-    // 打印环境变量（脱敏）
-    console.log('[DEBUG] DATABASE_URL configured:', !!process.env.DATABASE_URL);
-    console.log('[DEBUG] DATABASE_URL prefix:', process.env.DATABASE_URL?.substring(0, 30));
+    // 打印环境变量（完整但脱敏密码）
+    const dbUrl = process.env.DATABASE_URL;
+    console.log('[DEBUG] DATABASE_URL exists:', !!dbUrl);
+    if (dbUrl) {
+      const masked = dbUrl.replace(/:([^:@]+)@/, ':****@');
+      console.log('[DEBUG] DATABASE_URL:', masked);
+    }
 
     // 检查是否配置了数据库连接
     if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
@@ -41,6 +45,7 @@ export async function GET(request: NextRequest) {
         }).from(users).orderBy(desc(users.createdAt));
 
         console.log('[DEBUG] Query successful, returned', result.length, 'users');
+        console.log('[DEBUG] First user name:', result[0]?.name);
         // 不返回密码字段
         return NextResponse.json({
           success: true,
@@ -48,7 +53,7 @@ export async function GET(request: NextRequest) {
         });
       } catch (dbError: any) {
         console.error('[DEBUG] Database connection failed:', dbError.message);
-        console.error('[DEBUG] Full error:', dbError);
+        console.error('[DEBUG] Error stack:', dbError.stack);
         // 数据库连接失败时，使用模拟数据
       }
     } else {
