@@ -483,45 +483,55 @@ export default function VisitDetailPage() {
             <div>
               <h3 className="text-[15px] font-semibold text-gray-900 mb-3">探访人</h3>
               <div className="flex items-start space-x-3">
-                {visit.visitors.map((visitor: any, i: number) => (
-                  <div key={i} className="flex flex-col items-center">
-                    <Avatar className="w-10 h-10 mb-1">
-                      <AvatarImage src={visitor.avatar} alt={visitor.name} />
-                      <AvatarFallback>{visitor.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="text-[10px] text-[rgba(0,0,0,0.6)] text-center w-12 truncate">
-                      {visitor.name}
-                    </div>
-                    <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] font-normal text-[10px] mt-0.5">
-                      {visitor.skill}
-                    </Badge>
-                  </div>
-                ))}
+                {visit.visitors && visit.visitors.length > 0 ? (
+                  visit.visitors.map((visitor: any, i: number) => (
+                    visitor && (
+                      <div key={i} className="flex flex-col items-center">
+                        <Avatar className="w-10 h-10 mb-1">
+                          <AvatarImage src={visitor.avatar || ''} alt={visitor.name || ''} />
+                          <AvatarFallback>{visitor.name ? visitor.name[0] : '访'}</AvatarFallback>
+                        </Avatar>
+                        <div className="text-[10px] text-[rgba(0,0,0,0.6)] text-center w-12 truncate">
+                          {visitor.name || '访客'}
+                        </div>
+                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] font-normal text-[10px] mt-0.5">
+                          {visitor.skill || '能力'}
+                        </Badge>
+                      </div>
+                    )
+                  ))
+                ) : (
+                  <div className="text-[13px] text-[rgba(0,0,0,0.4)]">暂无探访人信息</div>
+                )}
               </div>
             </div>
 
             {/* 走访记录 */}
             <div>
               <h3 className="text-[15px] font-semibold text-gray-900 mb-2">走访记录</h3>
-              <p className="text-[13px] text-gray-700 leading-relaxed">{visit.record}</p>
+              <p className="text-[13px] text-gray-700 leading-relaxed">{visit.record || '暂无记录'}</p>
             </div>
 
             {/* 拜访成果 */}
             <div>
               <h3 className="text-[15px] font-semibold text-gray-900 mb-2">拜访成果</h3>
-              <p className="text-[13px] text-gray-700 leading-relaxed">{visit.outcome}</p>
+              <p className="text-[13px] text-gray-700 leading-relaxed">{visit.outcome || '暂无成果'}</p>
             </div>
 
             {/* 关键要点 */}
             <div>
               <h3 className="text-[15px] font-semibold text-gray-900 mb-2">关键要点</h3>
               <ul className="space-y-1.5">
-                {visit.keyPoints.map((point: string, index: number) => (
-                  <li key={index} className="flex items-start text-[13px] text-gray-700">
-                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
-                    <span>{point}</span>
-                  </li>
-                ))}
+                {visit.keyPoints && visit.keyPoints.length > 0 ? (
+                  visit.keyPoints.map((point: string, index: number) => (
+                    <li key={index} className="flex items-start text-[13px] text-gray-700">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
+                      <span>{point}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-[13px] text-[rgba(0,0,0,0.4)]">暂无关键要点</li>
+                )}
               </ul>
             </div>
 
@@ -529,19 +539,23 @@ export default function VisitDetailPage() {
             <div>
               <h3 className="text-[15px] font-semibold text-gray-900 mb-2">下一步计划</h3>
               <ul className="space-y-1.5">
-                {visit.nextSteps.map((step: string, index: number) => (
-                  <li key={index} className="flex items-start text-[13px] text-gray-700">
-                    <span className="w-1.5 h-1.5 bg-green-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
-                    <span>{step}</span>
-                  </li>
-                ))}
+                {visit.nextSteps && visit.nextSteps.length > 0 ? (
+                  visit.nextSteps.map((step: string, index: number) => (
+                    <li key={index} className="flex items-start text-[13px] text-gray-700">
+                      <span className="w-1.5 h-1.5 bg-green-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
+                      <span>{step}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-[13px] text-[rgba(0,0,0,0.4)]">暂无下一步计划</li>
+                )}
               </ul>
             </div>
 
             {/* 备注 */}
             <div>
               <h3 className="text-[15px] font-semibold text-gray-900 mb-2">备注</h3>
-              <p className="text-[13px] text-gray-700 leading-relaxed">{visit.notes}</p>
+              <p className="text-[13px] text-gray-700 leading-relaxed">{visit.notes || '暂无备注'}</p>
             </div>
 
             {/* 评分 */}

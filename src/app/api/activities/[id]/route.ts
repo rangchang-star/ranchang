@@ -1,148 +1,157 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MockDatabase } from '@/lib/mock-database';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const params = await context.params;
+    const id = params.id;
 
     // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, activities, registrations, users } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
-
-        const result = await db.select().from(activities).where(eq(activities.id, parseInt(id))).limit(1);
-
-        if (result.length === 0) {
-          return NextResponse.json({
-            success: false,
-            error: '活动不存在'
-          }, { status: 404 });
-        }
-
-        // 获取参与人员和嘉宾
-        const participants = await db
-          .select()
-          .from(registrations)
-          .where(eq(registrations.activityId, parseInt(id)))
-          .leftJoin(users, eq(registrations.userId, users.id));
-
-        // 嘉宾从活动数据中获取
-        const activity = result[0] as any;
-        const guests = activity.guests ? activity.guests : [];
-
-        return NextResponse.json({
-          success: true,
-          data: {
-            ...result[0],
-            participants: participants.filter(p => p.users).map(p => p.users),
-            enrolledCount: participants.length,
-            guests: guests,
-          }
-        });
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-      }
-    }
-
-    // 使用统一的模拟数据
-    const activity = MockDatabase.getActivityById(parseInt(id));
-
-    if (!activity) {
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
       return NextResponse.json({
         success: false,
-        error: '活动不存在'
-      }, { status: 404 });
+        error: '数据库未配置'
+      }, { status: 500 });
     }
 
-    // 获取活动的参与人员和嘉宾
-    const participants = MockDatabase.getActivityParticipants(parseInt(id));
-    const guests = MockDatabase.getActivityGuests(parseInt(id));
+    // 从数据库读取活动数据
+    const { db, activities } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
+
+    const dbActivities = await db.select().from(activities).where(eq(activities.id, parseInt(id)));
+
+    if (!dbActivities || dbActivities.length === 0) {
+      return NextResponse.json(
+        { success: false, error: '活动信息不存在' },
+        { status: 404 }
+      );
+    }
+
+    const activity = dbActivities[0];
+
+    // 根据状态判断
+    const now = new Date();
+    const startDate = activity.startDate ? new Date(activity.startDate) : null;
+    const endDate = activity.endDate ? new Date(activity.endDate) : null;
+    
+    let status = 'upcoming';
+    if (activity.status === 'ended') {
+      status = 'ended';
+    } else if (activity.status === 'cancelled') {
+      status = 'cancelled';
+    } else if (endDate && now > endDate) {
+      status = 'ended';
+    } else if (startDate && now > startDate) {
+      status = 'ongoing';
+    }
+
+    // 格式化数据
+    const formattedActivity = {
+      id: activity.id.toString(),
+      title: activity.title,
+      subtitle: activity.subtitle || '',
+      description: activity.description,
+      image: activity.image || '',
+      address: activity.address || '',
+      startDate: activity.startDate?.toISOString(),
+      endDate: activity.endDate?.toISOString(),
+      capacity: activity.capacity || 0,
+      teaFee: activity.teaFee || 0,
+      category: activity.category || 'private',
+      status: status,
+      participants: [],
+      enrolledCount: 0,
+      maxParticipants: activity.capacity || 0,
+      organizer: {
+        id: activity.createdBy?.toString() || '',
+        name: '燃场',
+        avatar: '',
+        company: '燃场',
+        position: '主办方',
+      },
+      createdBy: activity.createdBy?.toString() || '',
+      createdAt: activity.createdAt?.toISOString(),
+      updatedAt: activity.updatedAt?.toISOString(),
+    };
 
     return NextResponse.json({
       success: true,
-      data: {
-        ...activity,
-        participants: participants,
-        enrolledCount: participants.length,
-        guests: guests,
-      }
+      data: formattedActivity,
     });
   } catch (error: any) {
-    console.error('获取活动详情失败:', error);
-    return NextResponse.json({
-      success: false,
-      error: '获取活动详情失败'
-    }, { status: 500 });
+    console.error('获取活动信息失败:', error);
+    return NextResponse.json(
+      { success: false, error: '获取活动信息失败: ' + error.message },
+      { status: 500 }
+    );
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const params = await context.params;
+    const id = params.id;
     const body = await request.json();
 
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
+
     // 验证必填字段
-    if (!body.title || !body.startDate || !body.endDate || !body.address) {
+    if (!body.title || !body.description) {
       return NextResponse.json({
         success: false,
         error: '请填写所有必填字段'
       }, { status: 400 });
     }
 
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, activities } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
+    // 从数据库更新活动数据
+    const { db, activities } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-        // 更新活动数据
-        await db.update(activities)
-          .set({
-            title: body.title,
-            subtitle: body.subtitle || '',
-            category: body.category || '私董会',
-            image: body.imageUrl || '',
-            description: body.description || '',
-            address: body.address,
-            startDate: new Date(body.startDate),
-            endDate: new Date(body.endDate),
-            capacity: parseInt(body.maxParticipants) || 12,
-            teaFee: parseFloat(body.teaFee) || 0,
-            status: body.status || 'active',
-            updatedAt: new Date(),
-          })
-          .where(eq(activities.id, parseInt(id)));
+    const result = await db.update(activities)
+      .set({
+        title: body.title,
+        subtitle: body.subtitle,
+        description: body.description,
+        image: body.image,
+        address: body.address,
+        startDate: body.startDate ? new Date(body.startDate) : null,
+        endDate: body.endDate ? new Date(body.endDate) : null,
+        capacity: body.capacity,
+        teaFee: body.teaFee,
+        status: body.status,
+        updatedAt: new Date(),
+      })
+      .where(eq(activities.id, parseInt(id)))
+      .returning();
 
-        return NextResponse.json({
-          success: true,
-          message: '活动更新成功',
-          data: { id: parseInt(id) }
-        });
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-      }
+    if (!result || result.length === 0) {
+      return NextResponse.json(
+        { success: false, error: '活动信息不存在' },
+        { status: 404 }
+      );
     }
-
-    // 使用模拟数据库更新
-    MockDatabase.updateActivity(parseInt(id), body);
 
     return NextResponse.json({
       success: true,
       message: '活动更新成功',
-      data: { id: parseInt(id) }
+      data: { id }
     });
   } catch (error: any) {
     console.error('更新活动失败:', error);
     return NextResponse.json({
       success: false,
-      error: '更新活动失败'
+      error: '更新活动失败: ' + error.message
     }, { status: 500 });
   }
 }
