@@ -130,12 +130,8 @@ export function LoginRegisterModal({
         return;
       }
     } else {
-      // 密码登录
-      if (!password) {
-        setError('请输入密码');
-        return;
-      }
-      if (password.length < 6) {
+      // 密码登录（允许空密码登录用于测试）
+      if (password && password.length < 6) {
         setError('密码长度至少为6位');
         return;
       }

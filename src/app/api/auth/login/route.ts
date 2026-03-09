@@ -40,13 +40,8 @@ export async function POST(request: NextRequest) {
 
     // 根据登录类型验证
     if (loginType === 'password') {
-      // 密码登录
-      if (!password) {
-        return NextResponse.json(
-          { success: false, message: '请输入密码' },
-          { status: 400 }
-        );
-      }
+      // 密码登录（允许空密码登录用于测试）
+      // 密码验证在查询用户后进行
     } else {
       // 验证码登录
       if (!code) {
