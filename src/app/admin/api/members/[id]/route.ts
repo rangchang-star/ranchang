@@ -15,7 +15,7 @@ export async function GET(
         const { db, users } = await import('@/storage/database/supabase/connection');
         const { eq } = await import('drizzle-orm');
 
-        const dbUsers = await db.select().from(users).where(eq(users.id, parseInt(id)));
+        const dbUsers = await db.select().from(users).where(eq(users.id, id));
 
         if (dbUsers.length === 0) {
           return NextResponse.json({
