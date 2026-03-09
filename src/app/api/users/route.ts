@@ -4,13 +4,19 @@ import { MockDatabase } from '@/lib/mock-database';
 // GET - 获取用户列表
 export async function GET(request: NextRequest) {
   try {
+    // 打印环境变量（脱敏）
+    console.log('[DEBUG] DATABASE_URL configured:', !!process.env.DATABASE_URL);
+    console.log('[DEBUG] DATABASE_URL prefix:', process.env.DATABASE_URL?.substring(0, 30));
+
     // 检查是否配置了数据库连接
     if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
       try {
+        console.log('[DEBUG] Attempting to connect to database...');
         // 尝试连接数据库
         const { db, users } = await import('@/storage/database/supabase/connection');
         const { eq, desc } = await import('drizzle-orm');
 
+        console.log('[DEBUG] Database connection established, querying users...');
         const result = await db.select({
           id: users.id,
           phone: users.phone,
@@ -34,15 +40,19 @@ export async function GET(request: NextRequest) {
           updatedAt: users.updatedAt,
         }).from(users).orderBy(desc(users.createdAt));
 
+        console.log('[DEBUG] Query successful, returned', result.length, 'users');
         // 不返回密码字段
         return NextResponse.json({
           success: true,
           data: result
         });
       } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
+        console.error('[DEBUG] Database connection failed:', dbError.message);
+        console.error('[DEBUG] Full error:', dbError);
         // 数据库连接失败时，使用模拟数据
       }
+    } else {
+      console.log('[DEBUG] DATABASE_URL not configured');
     }
 
     // 使用统一的模拟数据
