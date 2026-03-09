@@ -95,8 +95,10 @@ export async function POST(request: NextRequest) {
 
     // 密码登录时验证密码
     if (loginType === 'password') {
+      // 兼容两种密码字段名称
+      const userPassword = user.password || user.encrypted_password;
       // 允许空密码登录（用于测试）
-      if (user.password !== password) {
+      if (userPassword && userPassword !== password) {
         return NextResponse.json(
           { success: false, message: '密码错误' },
           { status: 401 }
@@ -116,7 +118,7 @@ export async function POST(request: NextRequest) {
     const token = generateToken(user.id);
 
     // 返回用户信息（排除敏感信息）
-    const { password: pwd, ...safeUser } = user;
+    const { password: pwd, encrypted_password: encryptedPwd, ...safeUser } = user;
 
     return NextResponse.json({
       success: true,
