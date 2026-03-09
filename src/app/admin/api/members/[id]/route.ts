@@ -189,15 +189,14 @@ export async function PUT(
             position: body.position,
             bio: body.bio,
             need: body.need,
-            tags: body.adminTags,
-            hardcoreTags: body.hardcoreTags,
+            abilityTags: body.hardcoreTags,
             resourceTags: body.resourceTags,
-            tagStamp: body.connectionType,
-            isTrusted: body.isFeatured,
+            connectionType: body.connectionType,
+            isFeatured: body.isFeatured,
             avatar: body.avatar,
             updatedAt: new Date(),
           })
-          .where(eq(users.id, parseInt(id)))
+          .where(eq(users.id, id))
           .returning();
 
         if (result.length === 0) {
