@@ -424,30 +424,36 @@ export default function VisitDetailPage() {
             {/* 被访者信息 */}
             <div className="p-4 bg-[rgba(0,0,0,0.02)]">
               <h3 className="text-[15px] font-semibold text-gray-900 mb-3">被访者</h3>
-              <div className="flex items-center space-x-3">
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={visit.target.avatar} alt={visit.target.name} />
-                  <AvatarFallback>{visit.target.name[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
-                    {visit.target.name}
-                  </div>
-                  <div className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1">
-                    {visit.target.title} · {visit.target.company}
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {visit.target.tags.map((tag: string) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+              {visit.target ? (
+                <div className="flex items-center space-x-3">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={visit.target.avatar || ''} alt={visit.target.name || ''} />
+                    <AvatarFallback>{visit.target.name ? visit.target.name[0] : '被'}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
+                      {visit.target.name || '暂无姓名'}
+                    </div>
+                    <div className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1">
+                      {visit.target.title || ''} {visit.target.title && visit.target.company ? '·' : ''} {visit.target.company || ''}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {visit.target.tags && visit.target.tags.length > 0 ? (
+                        visit.target.tags.map((tag: string) => (
+                          <span
+                            key={tag}
+                            className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]"
+                          >
+                            {tag}
+                          </span>
+                        ))
+                      ) : null}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="text-[13px] text-[rgba(0,0,0,0.4)]">暂无被访者信息</div>
+              )}
             </div>
 
             {/* 拜访信息 */}
