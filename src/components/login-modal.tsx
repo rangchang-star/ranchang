@@ -23,39 +23,8 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [nickname, setNickname] = useState('');
-  const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(0);
-
-  // 验证码倒计时
-  const handleSendCode = async () => {
-    if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
-      setError('请输入正确的手机号');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/auth/send-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, type: 'register' }),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        setCountdown(60);
-        setError(null);
-      } else {
-        setError(result.message || '验证码发送失败');
-      }
-    } catch (err) {
-      setError('网络异常，请稍后重试');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,10 +65,6 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
       setError('请输入正确的手机号');
       return;
     }
-    if (!code || !/^\d{6}$/.test(code)) {
-      setError('请输入6位验证码');
-      return;
-    }
     if (!nickname) {
       setError('请输入昵称');
       return;
@@ -110,7 +75,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code, nickname }),
+        body: JSON.stringify({ phone, nickname, password }),
       });
 
       const result = await response.json();
@@ -209,36 +174,8 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
 
           {activeTab === 'register' && (
             <div className="space-y-2">
-              <label htmlFor="code" className="text-sm font-medium text-gray-700">
-                验证码
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  id="code"
-                  type="text"
-                  placeholder="请输入验证码"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  maxLength={6}
-                  required
-                />
-                <Button
-                  type="button"
-                  onClick={handleSendCode}
-                  disabled={countdown > 0 || isLoading}
-                  variant="outline"
-                  className="flex-shrink-0"
-                >
-                  {countdown > 0 ? `${countdown}s` : '获取验证码'}
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'register' && (
-            <div className="space-y-2">
               <label htmlFor="nickname" className="text-sm font-medium text-gray-700">
-                昵称
+                昵称（真实姓名或花名）
               </label>
               <Input
                 id="nickname"

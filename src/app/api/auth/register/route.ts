@@ -22,12 +22,12 @@ const dynamicUsers: any[] = [];
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { phone, code, password, nickname } = body;
+    const { phone, password, nickname } = body;
 
     // 验证参数
-    if (!phone || !code) {
+    if (!phone) {
       return NextResponse.json(
-        { success: false, message: '请输入手机号和验证码' },
+        { success: false, message: '请输入手机号' },
         { status: 400 }
       );
     }
@@ -43,14 +43,6 @@ export async function POST(request: NextRequest) {
     if (nickname.length < 2 || nickname.length > 20) {
       return NextResponse.json(
         { success: false, message: '昵称长度为2-20位' },
-        { status: 400 }
-      );
-    }
-
-    // 验证验证码
-    if (!verifyCode(phone, code)) {
-      return NextResponse.json(
-        { success: false, message: '验证码错误或已过期' },
         { status: 400 }
       );
     }
