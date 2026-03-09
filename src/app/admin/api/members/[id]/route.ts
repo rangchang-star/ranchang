@@ -33,14 +33,14 @@ export async function GET(
           name: user.nickname || user.name,
           age: user.age,
           avatar: user.avatar,
-          connectionType: user.tagStamp || 'personLookingForJob',
+          connectionType: user.connectionType || 'personLookingForJob',
           industry: user.industry,
           need: user.need,
-          hardcoreTags: user.hardcoreTags || [],
+          hardcoreTags: user.abilityTags || [],
           resourceTags: user.resourceTags || [],
 
-          // 后台标签
-          adminTags: user.tags || ['普通'],
+          // 后台标签（暂时使用空数组）
+          adminTags: [],
 
           // 公司信息
           phone: user.phone,
@@ -50,14 +50,14 @@ export async function GET(
           faith: '', // mock数据中没有faith字段
 
           // 其他信息
-          level: user.isTrusted ? '活跃会员' : '种子会员',
-          joinDate: new Date(user.createdAt).toISOString().split('T')[0],
-          status: user.status,
-          isFeatured: user.isTrusted,
-          role: user.role,
+          level: user.isFeatured ? '活跃会员' : '种子会员',
+          joinDate: user.joinDate ? new Date(user.joinDate).toISOString().split('T')[0] : new Date(user.createdAt).toISOString().split('T')[0],
+          status: user.status || 'active',
+          isFeatured: user.isFeatured,
+          role: 'user',
           bio: user.bio,
-          connectionCount: user.connectionCount || 0,
-          activityCount: user.activityCount || 0,
+          connectionCount: 0,
+          activityCount: 0,
 
           // 高燃宣告（暂时为空）
           declaration: null,
