@@ -32,27 +32,52 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone,
-          password,
-          loginType: 'password',
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        // 保存用户信息和 token 到 localStorage（使用 AuthContext 的 key）
-        localStorage.setItem('currentUser', JSON.stringify(result.data.user));
-        localStorage.setItem('token', result.data.token);
+      let result;
+      
+      // 如果提供了 onLoginSuccess 回调，使用它；否则直接调用 API
+      if (onLoginSuccess) {
+        result = await onLoginSuccess(phone, password);
         
-        onClose();
-        window.location.reload();
+        if (result.success) {
+          // 保存 token 到 localStorage
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, password, loginType: 'password' }),
+          });
+          const loginData = await response.json();
+          if (loginData.success) {
+            localStorage.setItem('token', loginData.data.token);
+          }
+          
+          onClose();
+        } else {
+          setError(result.error || '登录失败');
+        }
       } else {
-        setError(result.message || '登录失败');
+        // 直接调用 API
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone,
+            password,
+            loginType: 'password',
+          }),
+        });
+
+        const apiResult = await response.json();
+
+        if (apiResult.success) {
+          // 保存用户信息和 token 到 localStorage（使用 AuthContext 的 key）
+          localStorage.setItem('currentUser', JSON.stringify(apiResult.data.user));
+          localStorage.setItem('token', apiResult.data.token);
+          
+          onClose();
+          window.location.reload();
+        } else {
+          setError(apiResult.message || '登录失败');
+        }
       }
     } catch (err) {
       setError('网络异常，请稍后重试');
@@ -86,24 +111,46 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
 
       if (result.success) {
         // 注册成功后自动登录
-        const loginResponse = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone,
-            password: '',
-            loginType: 'password',
-          }),
-        });
-
-        const loginResult = await loginResponse.json();
-        if (loginResult.success) {
-          // 保存用户信息和 token 到 localStorage（使用 AuthContext 的 key）
-          localStorage.setItem('currentUser', JSON.stringify(loginResult.data.user));
-          localStorage.setItem('token', loginResult.data.token);
+        if (onLoginSuccess) {
+          const loginResult = await onLoginSuccess(phone, '');
           
-          onClose();
-          window.location.reload();
+          if (loginResult.success) {
+            // 保存 token 到 localStorage
+            const tokenResponse = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone, password: '', loginType: 'password' }),
+            });
+            const tokenData = await tokenResponse.json();
+            if (tokenData.success) {
+              localStorage.setItem('token', tokenData.data.token);
+            }
+            
+            onClose();
+          } else {
+            setError(loginResult.error || '登录失败');
+          }
+        } else {
+          // 直接调用 API
+          const loginResponse = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              phone,
+              password: '',
+              loginType: 'password',
+            }),
+          });
+
+          const loginResult = await loginResponse.json();
+          if (loginResult.success) {
+            // 保存用户信息和 token 到 localStorage（使用 AuthContext 的 key）
+            localStorage.setItem('currentUser', JSON.stringify(loginResult.data.user));
+            localStorage.setItem('token', loginResult.data.token);
+            
+            onClose();
+            window.location.reload();
+          }
         }
       } else {
         setError(result.message || '注册失败');
