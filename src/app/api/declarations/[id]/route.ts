@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { MockDatabase } from '@/lib/mock-database';
 
 export async function GET(
   request: NextRequest,
@@ -7,47 +8,44 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // 检查是否配置了数据库连接
-    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
-      return NextResponse.json({
-        success: false,
-        error: '数据库未配置'
-      }, { status: 500 });
-    }
+    // 使用统一的模拟数据
+    const declaration = MockDatabase.getDeclarationById(id);
 
-    const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
-    const { eq } = await import('drizzle-orm');
-
-    const declarationData = await db.select()
-      .from(dailyDeclarations)
-      .where(eq(dailyDeclarations.id, parseInt(id)));
-
-    if (declarationData.length === 0) {
+    if (!declaration) {
       return NextResponse.json({
         success: false,
         error: '宣告信息不存在'
       }, { status: 404 });
     }
 
-    const declaration = declarationData[0];
+    // 获取关联的用户信息
+    const user = MockDatabase.getUserById(parseInt(declaration.userId));
 
     // 转换数据格式以匹配前端期望的字段
     const formattedDeclaration = {
       id: declaration.id,
-      title: declaration.summary || declaration.title,
-      content: declaration.text,
-      iconType: declaration.icon_type,
+      title: declaration.summary, // 使用summary作为标题
+      content: declaration.text, // 使用text作为内容
+      iconType: declaration.iconType,
       rank: declaration.rank,
       image: declaration.image,
       profile: declaration.profile,
       duration: declaration.duration,
       views: declaration.views || 0,
-      likes: Math.floor((declaration.views || 0) * 0.1), // 模拟点赞数为浏览量的10%
-      shares: Math.floor((declaration.views || 0) * 0.05), // 模拟分享数为浏览量的5%
-      isFeatured: declaration.is_featured || false,
-      createdAt: declaration.created_at,
-      audioUrl: declaration.audio,
-      creator: null, // 数据库中没有 user_id 字段，暂不关联用户信息
+      likes: Math.floor(declaration.views * 0.1), // 模拟点赞数为浏览量的10%
+      shares: Math.floor(declaration.views * 0.05), // 模拟分享数为浏览量的5%
+      isFeatured: declaration.isFeatured || false,
+      createdAt: declaration.createdAt,
+      audioUrl: declaration.audioUrl,
+      creator: user ? {
+        id: user.id,
+        name: user.name || user.nickname,
+        avatar: user.avatar,
+        position: user.position,
+        company: user.company,
+        industry: user.industry,
+        tags: user.hardcoreTags || user.tags || [], // 优先使用hardcoreTags
+      } : null,
     };
 
     return NextResponse.json({

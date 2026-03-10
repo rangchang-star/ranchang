@@ -1,63 +1,35 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
+import dynamic from 'next/dynamic';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, MapPin, Calendar, Users, Star, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 
+// 动态导入 React Quill，避免 SSR 问题
+const ReactQuill = dynamic(() => import('react-quill'), {
+  ssr: false,
+  loading: () => <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
+});
+
 // 可用标签
 const availableTags = ['已结束', '进行中', 'AI', '智能制造', '金融投资', '数字化转型', '工业互联网'];
 
-// 模拟数据（实际项目中应从API获取）
-const mockVisit = {
-  id: '1',
-  date: '2024年3月5日',
-  time: '14:00-16:00',
-  status: 'completed',
-  target: {
-    name: '张总',
-    title: '创始人兼CEO',
-    company: '智能制造科技有限公司',
-    avatar: '/avatar-2.jpg',
-  },
-  purpose: '了解企业数字化转型实践，寻求合作机会',
-  location: '北京市海淀区中关村软件园',
-  participants: 3,
-  outcome: '深入了解对方的产品体系和技术路线，初步达成战略合作意向',
-  keyPoints: [
-    '对方正在构建工业互联网平台，需要供应链整合能力',
-    '双方在技术路线和商业模式上高度契合',
-    '计划下个月进行第二次深入交流',
-    '对方对我们的AI解决方案表现出浓厚兴趣',
-  ],
-  nextSteps: [
-    '3月20日前提交技术方案初稿',
-    '4月初进行第二次拜访',
-    '准备相关案例和参考资料',
-  ],
-  rating: 5,
-  notes: '张总是非常务实的企业家，对技术和市场都有深刻理解。团队氛围很好，执行力强。建议重点关注其产品迭代速度。',
-  images: [
-    'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=300&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&h=200&fit=crop',
-  ],
-  tags: ['已结束', '智能制造', '数字化转型'],
-  visitors: [
-    { id: '1', name: '王姐', avatar: '/avatar-3.jpg', abilityTags: ['HRBP', '团队管理'] },
-    { id: '2', name: '李明', avatar: '/avatar-2.jpg', abilityTags: ['战略', '金融投资'] },
-  ],
-  createdAt: '2024年3月5日 16:30',
-};
+// 模拟会员数据（实际项目中应从API获取）
+const mockMembers = [
+  { id: '1', name: '王姐', avatar: '/avatar-3.jpg', abilityTags: ['HRBP', '团队管理'] },
+  { id: '2', name: '李明', avatar: '/avatar-2.jpg', abilityTags: ['战略', '金融投资'] },
+  { id: '3', name: '张总', avatar: '/avatar-1.jpg', abilityTags: ['智能制造', '技术研发'] },
+  { id: '4', name: '陈老师', avatar: '/avatar-4.jpg', abilityTags: ['教育培训', '创业指导'] },
+];
 
-export default function AdminVisitEditPage() {
+export default function AdminVisitCreatePage() {
   const router = useRouter();
-  const params = useParams();
-  const visitId = params.id as string;
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // 探访基本信息
@@ -87,36 +59,6 @@ export default function AdminVisitEditPage() {
 
   // 访客选择
   const [selectedVisitors, setSelectedVisitors] = useState<string[]>([]);
-  const [availableMembers, setAvailableMembers] = useState<any[]>([]);
-  const [isLoadingMembers, setIsLoadingMembers] = useState(true);
-  
-  // 加载会员数据
-  useEffect(() => {
-    async function loadMembers() {
-      try {
-        const response = await fetch('/admin/api/members/selectable');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setAvailableMembers(data.data);
-          }
-        }
-      } catch (error) {
-        console.error('加载会员数据失败:', error);
-      } finally {
-        setIsLoadingMembers(false);
-      }
-    }
-
-    loadMembers();
-  }, []);
-  
-  // 自定义访客
-  const [showAddCustomVisitor, setShowAddCustomVisitor] = useState(false);
-  const [customVisitorName, setCustomVisitorName] = useState('');
-  const [customVisitorIntro, setCustomVisitorIntro] = useState('');
-  const [customVisitorAvatar, setCustomVisitorAvatar] = useState('');
-  const [customMemberId, setCustomMemberId] = useState('');
 
   // 关键点（动态数组）
   const [keyPoints, setKeyPoints] = useState<string[]>(['']);
@@ -130,66 +72,10 @@ export default function AdminVisitEditPage() {
   // 图片预览
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>(['']);
 
-  // 活动主题
-  const [theme, setTheme] = useState('');
-
-  // 加载现有数据
+  // 加载完成后允许渲染 Quill
   useEffect(() => {
-    const loadData = async () => {
-      if (!visitId) return;
-
-      try {
-        setLoading(true);
-
-        // 从API获取探访数据
-        const response = await fetch(`/api/visits/${visitId}`);
-        if (!response.ok) {
-          throw new Error('加载探访数据失败');
-        }
-        const data = await response.json();
-
-        if (!data.success || !data.data) {
-          throw new Error('探访数据不存在');
-        }
-
-        const visit = data.data;
-
-        // 解析时间
-        const timeParts = visit.duration ? visit.duration.split('-') : ['14:00', '16:00'];
-        const [start, end] = timeParts;
-
-        setVisitDate(visit.date || '');
-        setStartTime(start);
-        setEndTime(end);
-        setStatus(visit.status?.[0] || 'completed');
-        setTargetName(visit.target?.name || '');
-        setTargetTitle(visit.target?.title || '');
-        setTargetCompany(visit.target?.company || '');
-        setTargetAvatar(visit.target?.avatar || '/avatar-1.jpg');
-        setPurpose(visit.record?.substring(0, 100) || '');
-        setLocation(visit.location || '');
-        setParticipants(visit.visitors?.length?.toString() || '0');
-        setOutcome(visit.outcome || '');
-        setNotes(visit.notes || '');
-        setSelectedTags(visit.tags || ['已结束']);
-        setRating(visit.rating || 5);
-        setSelectedVisitors(visit.visitors?.map((v: any) => v.id) || []);
-        setKeyPoints(visit.keyPoints?.length > 0 ? visit.keyPoints : ['']);
-        setNextSteps(visit.nextSteps?.length > 0 ? visit.nextSteps : ['']);
-        setImageUrls(visit.images?.length > 0 ? visit.images : ['']);
-        setImagePreviewUrls(visit.images?.length > 0 ? visit.images : ['']);
-        setMainImage(visit.mainImage || '');
-        setTheme(visit.theme || visit.title?.replace('探访', '') || '');
-      } catch (error) {
-        console.error('加载数据失败:', error);
-        alert('加载数据失败');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [visitId]);
+    setMounted(true);
+  }, []);
 
   // 添加标签
   const handleAddTag = (tag: string) => {
@@ -203,17 +89,6 @@ export default function AdminVisitEditPage() {
     setSelectedTags(selectedTags.filter((t) => t !== tag));
   };
 
-  // 自定义标签
-  const [customTag, setCustomTag] = useState('');
-  const [mainImage, setMainImage] = useState<string>('');
-  const [uploadingMainImage, setUploadingMainImage] = useState(false);
-  const handleAddCustomTag = () => {
-    if (customTag.trim() && !selectedTags.includes(customTag.trim())) {
-      setSelectedTags([...selectedTags, customTag.trim()]);
-      setCustomTag('');
-    }
-  };
-
   // 添加访客
   const handleAddVisitor = (memberId: string) => {
     if (!selectedVisitors.includes(memberId)) {
@@ -224,14 +99,6 @@ export default function AdminVisitEditPage() {
   // 移除访客
   const handleRemoveVisitor = (memberId: string) => {
     setSelectedVisitors(selectedVisitors.filter((id) => id !== memberId));
-  };
-
-  // 删除访客（永久删除）
-  const handleDeleteVisitor = (memberId: string) => {
-    // 从已选中列表中移除
-    setSelectedVisitors(selectedVisitors.filter((id) => id !== memberId));
-    // 从可用访客列表中永久删除
-    setAvailableMembers(availableMembers.filter((m) => m.id !== memberId));
   };
 
   // 添加关键点
@@ -335,61 +202,59 @@ export default function AdminVisitEditPage() {
 
     setLoading(true);
     try {
-      // 构造数据
-      const industry = selectedTags.find(tag =>
-        ['企业服务', '金融投资', '制造业', '教育培训', '医疗健康',
-         '消费零售', '房地产', '互联网', '人工智能', '新能源',
-         '汽车行业', '物流运输', '传媒娱乐', '农业', '政府公共',
-         '法律咨询', '建筑设计', '化工环保', '通信', '其他'].includes(tag)
-      ) || '';
+      // 模拟API调用
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
+      // 构造数据
       const visitData = {
-        title: theme ? `${theme}` : `${visitDate} ${industry}探访`,
-        theme: theme,
+        id: Date.now().toString(),
         date: visitDate,
+        time: `${startTime}-${endTime}`,
+        status,
+        target: {
+          name: targetName,
+          title: targetTitle,
+          company: targetCompany,
+          avatar: targetAvatar,
+        },
+        purpose,
         location,
-        industry,
-        record: purpose,
+        participants: participants ? parseInt(participants) : 0,
         outcome,
         keyPoints: keyPoints.filter((kp) => kp.trim()),
         nextSteps: nextSteps.filter((ns) => ns.trim()),
-        notes,
         rating,
-        tags: selectedTags,
+        notes,
         images: imageUrls.filter((url) => url.trim()),
-        mainImage: mainImage,
+        tags: selectedTags,
         visitors: selectedVisitors.map((memberId) => {
-          const member = availableMembers.find((m) => m.id === memberId);
+          const member = mockMembers.find((m) => m.id === memberId);
           return member
             ? {
                 id: member.id,
                 name: member.name,
                 avatar: member.avatar,
-                skill: member.abilityTags?.[0] || '',
+                abilityTags: member.abilityTags,
               }
             : null;
         }).filter(Boolean),
+        createdAt: new Date().toLocaleString('zh-CN'),
       };
 
-      // 调用API保存
-      const response = await fetch(`/api/visits/${params.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(visitData),
-      });
+      console.log('保存探访数据:', visitData);
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || '保存探访失败');
-      }
+      // 实际项目中需要调用API保存数据
+      // const response = await fetch('/api/admin/visits', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(visitData),
+      // });
 
-      alert('探访更新成功！');
+      alert('探访添加成功！');
       router.push('/admin/visits');
-    } catch (error: any) {
-      console.error('更新探访失败:', error);
-      alert(`更新探访失败：${error.message}`);
+    } catch (error) {
+      console.error('添加探访失败:', error);
+      alert('添加探访失败，请重试');
     } finally {
       setLoading(false);
     }
@@ -408,8 +273,8 @@ export default function AdminVisitEditPage() {
               </Button>
             </Link>
             <div>
-              <h2 className="text-[15px] font-bold text-gray-900 mb-1">编辑探访</h2>
-              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">编辑探访记录信息</p>
+              <h2 className="text-[15px] font-bold text-gray-900 mb-1">添加探访</h2>
+              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">创建新的探访记录</p>
             </div>
           </div>
           <Button onClick={handleSubmit} disabled={loading}>
@@ -464,52 +329,16 @@ export default function AdminVisitEditPage() {
                 />
               </div>
 
-              {/* 探访对象头像 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  探访对象头像
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  探访对象头像URL
                 </label>
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    {targetAvatar ? (
-                      <Image
-                        src={targetAvatar}
-                        alt="头像预览"
-                        width={80}
-                        height={80}
-                        className="w-20 h-20 rounded-lg object-cover border-2 border-[rgba(0,0,0,0.1)]"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-20 h-20 rounded-lg bg-[rgba(0,0,0,0.05)] border-2 border-dashed border-[rgba(0,0,0,0.2)] flex items-center justify-center">
-                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">暂无头像</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const url = URL.createObjectURL(file);
-                          setTargetAvatar(url);
-                        }
-                      }}
-                      className="text-[13px]"
-                    />
-                    <Input
-                      value={targetAvatar}
-                      onChange={(e) => setTargetAvatar(e.target.value)}
-                      placeholder="或输入头像图片URL"
-                      className="text-[13px]"
-                    />
-                    <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      支持上传图片或输入图片链接
-                    </p>
-                  </div>
-                </div>
+                <Input
+                  value={targetAvatar}
+                  onChange={(e) => setTargetAvatar(e.target.value)}
+                  placeholder="请输入头像图片URL"
+                  className="text-[13px]"
+                />
               </div>
 
               {/* 探访时间 */}
@@ -590,22 +419,6 @@ export default function AdminVisitEditPage() {
                 />
               </div>
 
-              {/* 活动主题 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  活动主题
-                </label>
-                <Input
-                  value={theme}
-                  onChange={(e) => setTheme(e.target.value)}
-                  placeholder="请输入活动主题，如：AI技术落地实践"
-                  className="text-[13px]"
-                />
-                <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
-                  活动主题将作为探访的主要标识，与探访ID关联
-                </p>
-              </div>
-
               {/* 访客选择 */}
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -621,7 +434,7 @@ export default function AdminVisitEditPage() {
                 {selectedVisitors.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-3">
                     {selectedVisitors.map((memberId) => {
-                      const member = availableMembers.find((m) => m.id === memberId);
+                      const member = mockMembers.find((m) => m.id === memberId);
                       if (!member) return null;
                       return (
                         <div
@@ -653,7 +466,7 @@ export default function AdminVisitEditPage() {
                 <div className="space-y-2">
                   <span className="text-[12px] text-[rgba(0,0,0,0.6)]">可选访客：</span>
                   <div className="grid grid-cols-2 gap-2">
-                    {availableMembers
+                    {mockMembers
                       .filter((member) => !selectedVisitors.includes(member.id))
                       .map((member) => (
                         <button
@@ -678,152 +491,12 @@ export default function AdminVisitEditPage() {
                               {member.abilityTags.join(' · ')}
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteVisitor(member.id);
-                            }}
-                            className="w-6 h-6 flex items-center justify-center bg-red-500 hover:bg-red-600 rounded text-white flex-shrink-0 transition-colors"
-                            title="删除访客"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
                           <Plus className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
                         </button>
                       ))}
                   </div>
                 </div>
-
-                {/* 自定义访客按钮 */}
-                <button
-                  type="button"
-                  onClick={() => setShowAddCustomVisitor(true)}
-                  className="w-full mt-2 p-2 border-2 border-dashed border-[rgba(0,0,0,0.2)] rounded-lg text-[13px] text-[rgba(0,0,0,0.6)] hover:border-[rgba(59,130,246,0.5)] hover:text-blue-400 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>添加自定义访客</span>
-                </button>
               </div>
-
-              {/* 自定义访客对话框 */}
-              {showAddCustomVisitor && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">添加自定义访客</h3>
-                      <button
-                        onClick={() => setShowAddCustomVisitor(false)}
-                        className="text-[rgba(0,0,0,0.4)] hover:text-[rgba(0,0,0,0.6)]"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    {/* 上传头像 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        头像 <span className="text-red-500">*</span>
-                      </label>
-                      <div className="flex items-center space-x-4">
-                        {customVisitorAvatar ? (
-                          <Image
-                            src={customVisitorAvatar}
-                            alt="头像预览"
-                            width={64}
-                            height={64}
-                            className="w-16 h-16 rounded-full object-cover"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-16 h-16 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
-                            <span className="text-[13px] text-[rgba(0,0,0,0.4)]">暂无</span>
-                          </div>
-                        )}
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const url = URL.createObjectURL(file);
-                              setCustomVisitorAvatar(url);
-                            }
-                          }}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-
-                    {/* 姓名 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        姓名 <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        value={customVisitorName}
-                        onChange={(e) => setCustomVisitorName(e.target.value)}
-                        placeholder="请输入姓名"
-                      />
-                    </div>
-
-                    {/* 介绍 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        介绍
-                      </label>
-                      <textarea
-                        value={customVisitorIntro}
-                        onChange={(e) => setCustomVisitorIntro(e.target.value)}
-                        placeholder="请输入介绍"
-                        className="w-full min-h-[80px] px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-                      />
-                    </div>
-
-                    {/* 操作按钮 */}
-                    <div className="flex space-x-3 pt-4">
-                      <Button
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => {
-                          setShowAddCustomVisitor(false);
-                          setCustomVisitorName('');
-                          setCustomVisitorIntro('');
-                          setCustomVisitorAvatar('');
-                        }}
-                      >
-                        取消
-                      </Button>
-                      <Button
-                        className="flex-1"
-                        onClick={() => {
-                          if (!customVisitorName || !customVisitorAvatar) {
-                            alert('请填写姓名和上传头像');
-                            return;
-                          }
-
-                          const newMemberId = Date.now().toString();
-                          const newMember = {
-                            id: newMemberId,
-                            name: customVisitorName,
-                            avatar: customVisitorAvatar,
-                            abilityTags: customVisitorIntro ? [customVisitorIntro] : [],
-                          };
-
-                          availableMembers.push(newMember);
-                          setSelectedVisitors([...selectedVisitors, newMemberId]);
-                          setShowAddCustomVisitor(false);
-                          setCustomVisitorName('');
-                          setCustomVisitorIntro('');
-                          setCustomVisitorAvatar('');
-                        }}
-                      >
-                        确认添加
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
@@ -862,12 +535,17 @@ export default function AdminVisitEditPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   探访成果描述
                 </label>
-                <textarea
-                  value={outcome}
-                  onChange={(e) => setOutcome(e.target.value)}
-                  placeholder="请描述本次探访的成果和收获..."
-                  className="w-full min-h-[120px] px-3 py-2 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-                />
+                {mounted ? (
+                  <ReactQuill
+                    value={outcome}
+                    onChange={setOutcome}
+                    theme="snow"
+                    placeholder="请描述本次探访的成果和收获..."
+                    className="text-[13px]"
+                  />
+                ) : (
+                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
+                )}
               </div>
 
               {/* 探访笔记 */}
@@ -875,12 +553,17 @@ export default function AdminVisitEditPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   探访笔记
                 </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="请记录探访过程中的重要观察和心得..."
-                  className="w-full min-h-[120px] px-3 py-2 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-                />
+                {mounted ? (
+                  <ReactQuill
+                    value={notes}
+                    onChange={setNotes}
+                    theme="snow"
+                    placeholder="请记录探访过程中的重要观察和心得..."
+                    className="text-[13px]"
+                  />
+                ) : (
+                  <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载编辑器...</div>
+                )}
               </div>
             </div>
           </div>
@@ -1007,7 +690,7 @@ export default function AdminVisitEditPage() {
               <h3 className="text-[13px] font-semibold text-gray-900">标签</h3>
             </div>
             <div className="p-4 space-y-3">
-              <div className="flex items-center flex-wrap gap-2">
+              <div className="flex items-center space-x-2">
                 <span className="text-[13px] text-[rgba(0,0,0,0.6)]">可用标签：</span>
                 {availableTags.map((tag) => (
                   <button
@@ -1042,98 +725,6 @@ export default function AdminVisitEditPage() {
                   ))}
                 </div>
               )}
-              <div className="flex items-center space-x-2 pt-2 border-t border-[rgba(0,0,0,0.05)]">
-                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">自定义标签：</span>
-                <Input
-                  value={customTag}
-                  onChange={(e) => setCustomTag(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddCustomTag()}
-                  placeholder="输入标签名称"
-                  className="w-48 h-8 text-[13px]"
-                />
-                <Button size="sm" onClick={handleAddCustomTag}>
-                  <Plus className="w-4 h-4 mr-1" />
-                  添加
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* 活动主图 */}
-          <div className="border border-[rgba(0,0,0,0.1)]">
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">活动主图</h3>
-            </div>
-            <div className="p-4 space-y-4">
-              {mainImage ? (
-                <div className="relative">
-                  <Image
-                    src={mainImage}
-                    alt="活动主图"
-                    width={800}
-                    height={450}
-                    className="w-full h-auto rounded-lg object-cover"
-                    unoptimized
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMainImage('')}
-                    className="absolute top-2 right-2 bg-white/90 hover:bg-white"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    删除
-                  </Button>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-[rgba(0,0,0,0.2)] rounded-lg p-8 text-center">
-                  <input
-                    type="file"
-                    id="main-image-upload"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-
-                      setUploadingMainImage(true);
-                      try {
-                        // 读取文件为 base64
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setMainImage(reader.result as string);
-                          setUploadingMainImage(false);
-                        };
-                        reader.readAsDataURL(file);
-                      } catch (error) {
-                        console.error('上传主图失败:', error);
-                        alert('上传主图失败，请重试');
-                        setUploadingMainImage(false);
-                      }
-                    }}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="main-image-upload"
-                    className="cursor-pointer inline-flex flex-col items-center"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-[rgba(59,130,246,0.1)] flex items-center justify-center mb-3">
-                      <Plus className="w-6 h-6 text-blue-500" />
-                    </div>
-                    <span className="text-[13px] text-[rgba(0,0,0,0.6)] mb-1">
-                      点击上传活动主图
-                    </span>
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      支持 JPG、PNG 等格式
-                    </span>
-                  </label>
-                  {uploadingMainImage && (
-                    <div className="mt-3 text-[13px] text-blue-500">上传中...</div>
-                  )}
-                </div>
-              )}
-              <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                * 活动主图将作为探访项目的顶图显示，建议尺寸 16:9
-              </p>
             </div>
           </div>
         </div>

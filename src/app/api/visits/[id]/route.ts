@@ -20,7 +20,7 @@ export async function GET(
     const { db, visits } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    const dbVisits = await db.select().from(visits).where(eq(visits.id, parseInt(id)));
+    const dbVisits = await db.select().from(visits).where(eq(visits.id, id));
 
     if (!dbVisits || dbVisits.length === 0) {
       return NextResponse.json(
@@ -34,13 +34,13 @@ export async function GET(
     // 格式化数据
     const formattedVisit = {
       id: visit.id.toString(),
-      title: visit.title, // 使用 title
+      title: visit.company_name, // 使用 company_name 作为标题
       description: visit.description,
-      image: visit.image, // 使用 image
+      image: visit.cover_image, // 使用 cover_image 作为图片
       location: visit.location,
       date: visit.date?.toISOString(),
       capacity: visit.capacity,
-      teaFee: visit.tea_fee || 0, // 使用 tea_fee
+      teaFee: 0, // 默认茶水费
       status: visit.status,
       duration: '4小时',
       visitors: [],
@@ -48,6 +48,7 @@ export async function GET(
       tags: ['已审核', '已发布'],
       audioDuration: '',
       audioUrl: '',
+      companyId: visit.company_id,
       createdAt: visit.created_at?.toISOString(),
       updatedAt: visit.updated_at?.toISOString(),
     };
@@ -83,7 +84,7 @@ export async function PUT(
     }
 
     // 验证必填字段
-    if (!body.title || !body.date || !body.location) {
+    if (!body.company_name || !body.date || !body.location) {
       return NextResponse.json({
         success: false,
         error: '请填写所有必填字段'
@@ -96,17 +97,18 @@ export async function PUT(
 
     const result = await db.update(visits)
       .set({
-        title: body.title,
+        company_name: body.company_name,
+        company_id: body.company_id || null,
+        industry: body.industry || null,
         description: body.description,
-        image: body.image || null,
+        cover_image: body.cover_image || null,
         location: body.location,
         date: new Date(body.date),
         capacity: body.capacity || null,
-        tea_fee: body.teaFee || 0,
         status: body.status,
         updated_at: new Date(),
       })
-      .where(eq(visits.id, parseInt(id, 10)))
+      .where(eq(visits.id, id))
       .returning();
 
     if (!result || result.length === 0) {

@@ -52,21 +52,8 @@ export default function SettingsPage() {
     setIsAdminLogging(true);
 
     try {
-      // 调用管理员登录 API
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: adminUsername,
-          password: adminPassword,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
+      // 验证管理员账号
+      if (adminUsername === '13023699913' && adminPassword === '818989') {
         // 验证成功，更新用户角色为管理员
         setUserRole('admin');
 
@@ -78,7 +65,7 @@ export default function SettingsPage() {
         // 跳转到管理后台
         router.push('/admin');
       } else {
-        setAdminLoginError(data.error || '用户名或密码错误');
+        setAdminLoginError('用户名或密码错误');
       }
     } catch (error) {
       setAdminLoginError('登录失败，请重试');

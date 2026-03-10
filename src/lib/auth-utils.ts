@@ -1,67 +1,39 @@
 import { NextRequest } from 'next/server';
+import { MockDatabase } from '@/lib/mock-database';
 
-export interface TokenPayload {
-  userId: string;
-  phone: string;
-}
-
-export interface AuthResult {
-  success: boolean;
-  user?: any;
-  error?: string;
-  statusCode?: number;
-}
-
-// 从请求头中获取用户ID
-export async function getUserIdFromRequest(request: NextRequest): Promise<string | null> {
+// 从请求中获取当前用户ID
+export async function getCurrentUserId(request: NextRequest): Promise<number | null> {
   try {
-    const authHeader = request.headers.get('authorization');
+    // 从请求头获取用户信息
+    const userId = request.headers.get('x-user-id');
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!userId) {
       return null;
     }
 
-    const token = authHeader.substring(7);
-
-    // 简单的 JWT 解析（生产环境应使用 jsonwebtoken 库）
-    const [, payload] = token.split('.');
-    if (!payload) {
-      return null;
-    }
-
-    const decoded = JSON.parse(atob(payload)) as TokenPayload;
-
-    if (!decoded.userId) {
-      return null;
-    }
-
-    return decoded.userId;
+    return parseInt(userId, 10);
   } catch (error) {
     console.error('获取用户ID失败:', error);
     return null;
   }
 }
 
-// 从请求头中获取完整用户信息
-export async function getUserFromRequest(request: NextRequest): Promise<any | null> {
+// 从请求中获取当前用户信息
+export async function getCurrentUser(request: NextRequest) {
   try {
-    const userId = await getUserIdFromRequest(request);
+    const userId = await getCurrentUserId(request);
 
     if (!userId) {
       return null;
     }
 
-    // 从数据库获取用户信息
-    const { db, users } = await import('@/storage/database/supabase/connection');
-    const { eq } = await import('drizzle-orm');
+    const user = MockDatabase.getUserById(userId);
 
-    const dbUsers = await db.select().from(users).where(eq(users.id, parseInt(userId)));
-
-    if (dbUsers.length === 0) {
+    if (!user) {
       return null;
     }
 
-    return dbUsers[0];
+    return user;
   } catch (error) {
     console.error('获取用户信息失败:', error);
     return null;
@@ -69,8 +41,16 @@ export async function getUserFromRequest(request: NextRequest): Promise<any | nu
 }
 
 // 验证用户是否已登录
+export interface AuthResult {
+  success: boolean;
+  user?: any;
+  error?: string;
+  statusCode?: number;
+}
+
+// 验证用户是否已登录
 export async function requireAuth(request: NextRequest): Promise<AuthResult> {
-  const user = await getUserFromRequest(request);
+  const user = await getCurrentUser(request);
 
   if (!user) {
     return {
@@ -94,7 +74,7 @@ export async function requireAdmin(request: NextRequest): Promise<AuthResult> {
     return authResult;
   }
 
-  if (authResult.user!.role !== 'admin') {
+  if (authResult.user.role !== 'admin') {
     return {
       success: false,
       error: '无权访问此资源',
@@ -105,5 +85,31 @@ export async function requireAdmin(request: NextRequest): Promise<AuthResult> {
   return {
     success: true,
     user: authResult.user,
+  };
+}
+
+// 验证用户是否有权操作指定资源
+export async function requireOwnership(
+  request: NextRequest,
+  resourceOwnerId: number
+): Promise<AuthResult> {
+  const authResult = await requireAuth(request);
+
+  if (!authResult.success) {
+    return authResult;
+  }
+
+  // 用户只能操作自己的资源，除非是管理员
+  if (authResult.user!.id !== resourceOwnerId && authResult.user!.role !== 'admin') {
+    return {
+      success: false,
+      error: '无权操作此资源',
+      statusCode: 403,
+    };
+  }
+
+  return {
+    success: true,
+    user: authResult.user!,
   };
 }

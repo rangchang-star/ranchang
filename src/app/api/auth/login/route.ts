@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCode } from '@/lib/verification-code';
+import { verifyCode } from '../send-code/route';
 
 // 简单的 JWT 生成（生产环境应使用 jsonwebtoken 库）
 function generateToken(userId: number): string {
@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 从数据库查找用户
-    const connectionString = process.env.DATABASE_URL || '';
+    // 从数据库查找用户（强制使用数据库）
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
 
     if (!connectionString || connectionString === '') {
       return NextResponse.json({
@@ -68,52 +68,32 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 使用 pg 库（和 users API 保持一致）
-    const { default: pg } = await import('pg');
+    const postgres = (await import('postgres')).default;
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const { users } = await import('@/storage/database/supabase/schema');
+    const { eq } = await import('drizzle-orm');
 
-    // 从 DATABASE_URL 解析连接参数
-    // 格式: postgresql://user:password@host:port/database
-    const urlMatch = connectionString.match(/postgresql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-    if (!urlMatch) {
-      console.error('DATABASE_URL 格式错误:', connectionString);
-      return NextResponse.json({
-        success: false,
-        message: '数据库配置错误'
-      }, { status: 500 });
-    }
-
-    const [, dbUser, dbPassword, dbHost, dbPort, dbName] = urlMatch;
-
-    const pgClient = new pg.Client({
-      host: dbHost,
-      port: parseInt(dbPort),
-      database: dbName,
-      user: dbUser,
-      password: dbPassword,
-      ssl: false, // 和 users API 保持一致
+    // 创建单个连接（不使用连接池）
+    const client = postgres(connectionString, {
+      max: 1,
+      ssl: false,
     });
 
-    await pgClient.connect();
+    const db = drizzle(client);
 
-    // 查询用户
-    const result = await pgClient.query(
-      'SELECT * FROM users WHERE phone = $1',
-      [phone]
-    );
+    const dbUsers = await db.select().from(users).where(eq(users.phone, phone));
 
     // 立即关闭连接
-    await pgClient.end();
+    await client.end();
 
-    if (result.rows.length === 0) {
+    if (dbUsers.length === 0) {
       return NextResponse.json(
         { success: false, message: '该手机号未注册，请先注册' },
         { status: 404 }
       );
     }
 
-    const user = result.rows[0];
-
-    console.log('[DEBUG] 登录用户:', user.id, user.phone);
+    const user = dbUsers[0];
 
     // 密码登录时验证密码
     if (loginType === 'password') {

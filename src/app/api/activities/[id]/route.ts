@@ -16,24 +16,11 @@ export async function GET(
       }, { status: 500 });
     }
 
-    // 使用 supabase/schema 中的 activities 定义
-    const { activities } = await import('@/storage/database/supabase/schema');
-    const { default: postgres } = await import('postgres');
-    const { drizzle } = await import('drizzle-orm/postgres-js');
+    // 从数据库读取活动数据
+    const { db, activities } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    // 创建数据库连接
-    const connectionString = process.env.DATABASE_URL || '';
-    const client = postgres(connectionString, {
-      max: 1,
-      ssl: false,
-    });
-
-    const db = drizzle(client);
-
-    const dbActivities = await db.select().from(activities).where(eq(activities.id, parseInt(id)));
-
-    await client.end();
+    const dbActivities = await db.select().from(activities).where(eq(activities.id, id));
 
     if (!dbActivities || dbActivities.length === 0) {
       return NextResponse.json(
@@ -46,8 +33,8 @@ export async function GET(
 
     // 根据状态判断
     const now = new Date();
-    const startTime = activity.start_date ? new Date(activity.start_date) : null;
-    const endTime = activity.end_date ? new Date(activity.end_date) : null;
+    const startTime = activity.start_time ? new Date(activity.start_time) : null;
+    const endTime = activity.end_time ? new Date(activity.end_time) : null;
 
     let status = 'upcoming';
     if (activity.status === 'ended') {
@@ -65,19 +52,17 @@ export async function GET(
       id: activity.id.toString(),
       title: activity.title,
       description: activity.description,
-      startDate: activity.start_date?.toISOString(),
-      endDate: activity.end_date?.toISOString(),
-      address: activity.address,
+      date: activity.date?.toISOString(),
+      startTime: activity.start_time,
+      endTime: activity.end_time,
+      location: activity.location,
       capacity: activity.capacity || 0,
-      registeredCount: 0, // 需要从 activity_registrations 表查询
-      category: activity.category,
-      image: activity.image,
-      teaFee: activity.tea_fee || 0,
+      registeredCount: activity.registered_count || 0,
+      type: activity.type,
+      coverImage: activity.cover_image,
       status: status,
       createdAt: activity.created_at?.toISOString(),
       updatedAt: activity.updated_at?.toISOString(),
-      createdBy: activity.created_by,
-      subtitle: activity.subtitle,
     };
 
     return NextResponse.json({
@@ -125,19 +110,18 @@ export async function PUT(
     const result = await db.update(activities)
       .set({
         title: body.title,
-        subtitle: body.subtitle || null,
         description: body.description,
-        start_date: body.startDate ? new Date(body.startDate) : null,
-        end_date: body.endDate ? new Date(body.endDate) : null,
-        address: body.address || null,
+        date: body.date ? new Date(body.date) : null,
+        start_time: body.start_time || null,
+        end_time: body.end_time || null,
+        location: body.location || null,
         capacity: body.capacity || null,
-        category: body.category || null,
-        image: body.image || null,
-        tea_fee: body.teaFee || 0,
+        type: body.type || null,
+        cover_image: body.cover_image || null,
         status: body.status,
         updated_at: new Date(),
       })
-      .where(eq(activities.id, parseInt(id, 10)))
+      .where(eq(activities.id, id))
       .returning();
 
     if (!result || result.length === 0) {

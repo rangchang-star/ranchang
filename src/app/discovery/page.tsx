@@ -20,8 +20,6 @@ import {
   Zap,
   RefreshCw,
   Lightbulb,
-  PlayCircle,
-  PauseCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -375,7 +373,8 @@ export default function DiscoveryPage() {
         if (
           !usersRes.ok ||
           !activitiesRes.ok ||
-          !declarationsRes.ok
+          !declarationsRes.ok ||
+          !documentsRes.ok
         ) {
           throw new Error("加载数据失败");
         }
@@ -392,12 +391,12 @@ export default function DiscoveryPage() {
             name: user.name || user.nickname,
             age: user.age || 0,
             avatar: user.avatar || "/avatar-default.jpg",
-            tags: user.hardcore_tags || user.tags || [], // 优先使用 hardcore_tags
+            tags: user.hardcoreTags || user.tags || [], // 优先使用 hardcoreTags
             industry: user.industry || "",
-            tagStamp: user.tag_stamp || "pureExchange",
+            tagStamp: user.tagStamp || "pureExchange",
             need: user.need || "",
-            isTrusted: user.is_trusted || false,
-            isFeatured: user.is_featured || false, // 保留 is_featured 字段用于排序
+            isTrusted: user.isTrusted || false,
+            isFeatured: user.isFeatured || false, // 保留 isFeatured 字段用于排序
             position: user.position || "",
             company: user.company || "",
           }));
@@ -450,23 +449,19 @@ export default function DiscoveryPage() {
           const formattedDeclarations = declarationsData.data.map(
             (declaration: any) => ({
               id: declaration.id.toString(),
-              title: declaration.title || "",
-              date: declaration.date || "",
-              image: declaration.image || "",
-              audio: declaration.audio || "",
-              summary: declaration.summary || "",
-              text: declaration.text || "",
-              iconType: declaration.icon_type || "robot",
               rank: declaration.rank || 0,
-              profile: declaration.profile || "",
-              duration: declaration.duration || "",
+              icon: declaration.user?.avatar || "/avatar-default.jpg",
+              iconType: declaration.iconType || "",
+              title:
+                declaration.summary || declaration.text?.substring(0, 20) || "",
+              profile: declaration.user?.position || "",
+              duration: declaration.duration || "0:00",
+              userId: declaration.userId,
+              userName:
+                declaration.user?.name || declaration.user?.nickname || "",
+              userAvatar: declaration.user?.avatar || "/avatar-default.jpg",
               views: declaration.views || 0,
-              isFeatured: declaration.is_featured || false,
-              user: {
-                id: declaration.user_id?.toString() || "",
-                name: declaration.user?.name || "",
-                avatar: declaration.user?.avatar || "",
-              },
+              isFeatured: declaration.isFeatured || false,
             }),
           );
           setDeclarationItems(formattedDeclarations);
@@ -474,32 +469,62 @@ export default function DiscoveryPage() {
 
         if (documentsData.success) {
           // 将文档数据转换为前端需要的格式
-          const formattedDocuments = documentsData.data.map((doc: any) => ({
-            id: doc.id.toString(),
-            title: doc.title || "",
-            description: doc.description || "",
-            cover: doc.file_url || "", // 使用 file_url 作为 cover
-            date: doc.created_at
-              ? new Date(doc.created_at).toLocaleDateString("zh-CN")
-              : "",
-            views: doc.views || 0,
-            type: doc.file_type || "document", // 使用 file_type
-          }));
+          const formattedDocuments = documentsData.data.map((doc: any) => {
+            // 根据 fileType 映射图标
+            const iconMap: Record<string, string> = {
+              pdf: "book",
+              docx: "note",
+              doc: "note",
+              xlsx: "table",
+              xls: "table",
+              pptx: "note",
+              ppt: "note",
+            };
+
+            return {
+              id: doc.id,
+              type: doc.type || "document",
+              title: doc.title || "",
+              icon: doc.icon || iconMap[doc.fileType] || "note",
+              description: doc.description || "",
+              content: doc.content || "",
+              cover: doc.cover || "",
+              date: doc.createdAt ? doc.createdAt.split('T')[0] : "",
+              views: doc.downloadCount || 0,
+              status: doc.status || "published",
+            };
+          });
           setDocumentItems(formattedDocuments);
-        } else {
-          console.warn("文档加载失败，继续加载其他数据");
-          setDocumentItems([]);
         }
 
-        // 处理每日宣告（如果存在）
+        // 加载每日宣告数据（获取最新的已发布宣告）
         if (dailyRes.ok) {
           const dailyData = await dailyRes.json();
-          if (dailyData.success && dailyData.data) {
-            setDailyDeclaration(dailyData.data);
+          if (dailyData.success && dailyData.data && dailyData.data.length > 0) {
+            // 过滤出 active 的宣告，如果没有 isActive 字段则使用 isFeatured
+            const activeDeclarations = dailyData.data.filter((d: any) =>
+              d.isActive !== false && d.isActive !== undefined ? d.isActive : d.isFeatured
+            );
+
+            if (activeDeclarations.length > 0) {
+              // 按创建时间倒序，取最新的
+              const sorted = activeDeclarations.sort((a: any, b: any) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+              const latest = sorted[0];
+              setDailyDeclaration({
+                image: latest.image,
+                date: latest.date || latest.createdAt?.split('T')[0] || '',
+                title: latest.title || latest.summary || '',
+                duration: latest.duration || '',
+                audio: latest.audio || latest.audioUrl || '',
+                id: latest.id,
+              });
+            }
           }
         }
-      } catch (error) {
-        console.error("加载数据失败:", error);
+      } catch (err) {
+        console.error("加载数据失败:", err);
         setError("加载数据失败，请稍后重试");
       } finally {
         setIsLoading(false);
@@ -509,693 +534,814 @@ export default function DiscoveryPage() {
     loadData();
   }, []);
 
-  // 播放/暂停背景音乐
   const toggleMusic = () => {
+    if (!audioRef.current) return;
+
     if (isPlaying) {
-      audioRef.current?.pause();
+      audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current?.play();
+      audioRef.current.play();
       setIsPlaying(true);
     }
   };
 
-  // 播放高燃宣告音频
-  const playDeclarationAudio = (declarationId: string, audioUrl: string) => {
-    // 如果当前正在播放这个宣告，则暂停
+  const toggleDeclarationAudio = (declarationId: string, audioUrl?: string) => {
     if (playingDeclarationId === declarationId) {
-      const currentAudio = declarationAudioRefs.current[declarationId];
-      if (currentAudio) {
-        currentAudio.pause();
+      // 暂停当前播放
+      const audio = declarationAudioRefs.current[declarationId];
+      if (audio) {
+        audio.pause();
         setPlayingDeclarationId(null);
       }
-      return;
-    }
-
-    // 暂停之前播放的音频
-    if (playingDeclarationId) {
-      const prevAudio = declarationAudioRefs.current[playingDeclarationId];
-      if (prevAudio) {
-        prevAudio.pause();
+    } else {
+      // 暂停之前的
+      if (playingDeclarationId) {
+        const prevAudio = declarationAudioRefs.current[playingDeclarationId];
+        if (prevAudio) prevAudio.pause();
+      }
+      // 播放新的
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+        declarationAudioRefs.current[declarationId] = audio;
+        audio.play();
+        setPlayingDeclarationId(declarationId);
       }
     }
-
-    // 播放新的音频
-    const newAudio = declarationAudioRefs.current[declarationId];
-    if (newAudio) {
-      newAudio.play();
-      setPlayingDeclarationId(declarationId);
-    }
   };
 
-  // 打开模态框
-  const openModal = (type: "abilities" | "activities" | "declarations") => {
-    setModalType(type);
-    setShowModal(true);
+  const handlePlayDeclaration = (declarationId: string) => {
+    // 模拟音频URL
+    const audioUrl = `https://example.com/declaration/${declarationId}.mp3`;
+    toggleDeclarationAudio(declarationId, audioUrl);
   };
 
-  // 打开文档详情
   const handleDocClick = (doc: any) => {
     setSelectedDoc(doc);
     setIsDocModalOpen(true);
   };
 
-  // 关闭文档详情
-  const handleCloseDocModal = () => {
-    setIsDocModalOpen(false);
-    setSelectedDoc(null);
-  };
-
-  // 文档分享
   const handleDocShare = () => {
     if (navigator.share && selectedDoc) {
-      navigator
-        .share({
-          title: selectedDoc.title,
-          text: selectedDoc.description,
-          url: window.location.href,
-        })
-        .catch(console.error);
+      navigator.share({
+        title: selectedDoc.title,
+        text: selectedDoc.description?.substring(0, 100),
+        url: window.location.href,
+      });
     }
   };
 
-  // 筛选活动
-  const filteredActivities = activityItems.filter(
-    (activity: any) =>
-      activity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      activity.description.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  useEffect(() => {
+    const audio = new Audio(audioUrl);
+    audio.loop = true;
+    audio.volume = 0.3;
+    audioRef.current = audio;
 
-  // 筛选用户
-  const filteredUsers = connectionItems.filter(
-    (user: any) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.need.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+    // 从localStorage读取背景图设置
+    try {
+      const settings = localStorage.getItem("pageSettings");
+      if (settings) {
+        const parsedSettings = JSON.parse(settings);
+        if (parsedSettings.discovery?.bgImage) {
+          setDiscoveryBg(parsedSettings.discovery.bgImage);
+        }
+      }
+    } catch (error) {
+      console.error("读取背景图设置失败:", error);
+    }
 
-  // 筛选高燃宣告
-  const filteredDeclarations = declarationItems.filter(
-    (declaration: any) =>
-      declaration.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      declaration.text.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  // 筛选文档
-  const filteredDocuments = documentItems.filter(
-    (doc: any) =>
-      doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.description.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  // 显示加载状态
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 pb-20">
-        <div className="w-full max-w-md mx-auto bg-white min-h-screen flex items-center justify-center">
-          <div className="text-gray-400">加载中...</div>
-        </div>
-      </div>
-    );
-  }
-
-  // 显示错误状态
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 pb-20">
-        <div className="w-full max-w-md mx-auto bg-white min-h-screen flex items-center justify-center p-4">
-          <div className="text-center">
-            <div className="text-red-500 mb-4">{error}</div>
-            <Button onClick={() => window.location.reload()}>重新加载</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="w-full max-w-md mx-auto bg-white min-h-screen">
-        {/* 背景音乐 */}
-        <audio ref={audioRef} src={audioUrl} loop />
-
-        {/* 顶部横幅 */}
-        <div
-          className="relative h-[280px] bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${discoveryBg})`,
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
-          <div className="absolute inset-0 flex flex-col items-center justify-between p-5">
-            {/* 顶部工具栏 */}
-            <div className="flex items-center justify-between w-full">
+    <div
+      className="min-h-screen pb-14"
+      style={{
+        backgroundImage: `url(${discoveryBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* 白色遮罩层，确保文字清晰可读 */}
+      <div className="min-h-screen bg-white/95 pb-14">
+        {/* 可滚动内容区 - 手机H5宽度 */}
+        <div className="w-full max-w-md mx-auto">
+          {/* 顶部导航 - 标题上方留出适当空间 */}
+          <div className="sticky top-0 bg-white z-50 pt-[6px]">
+            <div className="flex items-center justify-between px-5 -mb-6">
+              <h1 className="text-[31px] font-light text-gray-900">发现光亮</h1>
+              {/* Logo + 音乐符号 - 点击播放音乐 */}
               <button
-                onClick={() => router.back()}
-                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={toggleMusic}
-                  className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-                >
-                  {isPlaying ? (
-                    <Music2 className="w-5 h-5" />
-                  ) : (
-                    <Play className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* 标题 */}
-            <div className="text-center text-white">
-              <h1 className="text-[22px] font-bold mb-2">
-                {pageSettings.discovery?.slogan || "发现光亮，点亮事业"}
-              </h1>
-              <div className="flex items-center justify-center space-x-2 text-sm opacity-80">
-                <Users className="w-4 h-4" />
-                <span>{connectionItems.length} 位伙伴</span>
-                <span>•</span>
-                <Flame className="w-4 h-4" />
-                <span>{declarationItems.length} 条高燃宣告</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 搜索框 */}
-        <div className="px-5 -mt-6 relative z-10">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="搜索伙伴、活动、高燃宣告、文档..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white rounded-xl shadow-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* 技能树（硬核图谱） */}
-        <div className="mt-6 px-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">硬核图谱</h2>
-            <button
-              onClick={() => router.push("/abilities")}
-              className="text-sm text-blue-500 flex items-center space-x-1"
-            >
-              <span>查看全部</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* 技能气泡可视化 */}
-          <div className="relative h-[300px] bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl overflow-hidden">
-            {skillBubbles.map((bubble) => (
-              <div
-                key={bubble.id}
-                onClick={() => setClickedBubbleId(bubble.id)}
-                className={`absolute rounded-full flex flex-col items-center justify-center cursor-pointer transition-all ${
-                  clickedBubbleId === bubble.id
-                    ? "scale-110 shadow-lg"
-                    : "hover:scale-110"
-                } ${bubble.color} ${bubble.borderColor} border-2 ${bubble.textColor}`}
-                style={{
-                  width: bubble.size,
-                  height: bubble.size,
-                  left: `${bubble.x}%`,
-                  top: `${bubble.y}%`,
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                <span className="text-[10px] font-bold whitespace-nowrap">
-                  {bubble.name}
-                </span>
-              </div>
-            ))}
-
-            {/* 技能描述弹窗 */}
-            {clickedBubbleId && skillDescriptions[clickedBubbleId] && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 p-4">
-                <div className="bg-white rounded-lg p-4 shadow-xl max-w-[80%]">
-                  <p className="text-sm text-gray-900 font-medium">
-                    {skillDescriptions[clickedBubbleId]}
-                  </p>
-                  <button
-                    onClick={() => setClickedBubbleId(null)}
-                    className="mt-3 text-sm text-blue-500 hover:text-blue-600"
-                  >
-                    关闭
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 快捷入口 */}
-        <div className="mt-6 px-5">
-          <div className="grid grid-cols-4 gap-3">
-            <button
-              onClick={() => openModal("abilities")}
-              className="flex flex-col items-center space-y-2 p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl hover:shadow-md transition-all"
-            >
-              <User className="w-8 h-8 text-blue-500" />
-              <span className="text-xs text-gray-700">伙伴</span>
-            </button>
-            <button
-              onClick={() => openModal("activities")}
-              className="flex flex-col items-center space-y-2 p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-xl hover:shadow-md transition-all"
-            >
-              <Flame className="w-8 h-8 text-green-500" />
-              <span className="text-xs text-gray-700">活动</span>
-            </button>
-            <button
-              onClick={() => openModal("declarations")}
-              className="flex flex-col items-center space-y-2 p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl hover:shadow-md transition-all"
-            >
-              <Zap className="w-8 h-8 text-orange-500" />
-              <span className="text-xs text-gray-700">高燃</span>
-            </button>
-            <button
-              onClick={() => router.push("/documents")}
-              className="flex flex-col items-center space-y-2 p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl hover:shadow-md transition-all"
-            >
-              <Folder className="w-8 h-8 text-purple-500" />
-              <span className="text-xs text-gray-700">文档</span>
-            </button>
-          </div>
-        </div>
-
-        {/* 伙伴列表 */}
-        <div className="mt-6 px-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">伙伴</h2>
-            <button
-              onClick={() => openModal("abilities")}
-              className="text-sm text-blue-500 flex items-center space-x-1"
-            >
-              <span>查看全部</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {filteredUsers.slice(0, 5).map((user: any) => (
-              <Link
-                key={user.id}
-                href={`/profile/${user.id}`}
-                className="block bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-start space-x-3">
-                  <Avatar className="w-12 h-12 flex-shrink-0">
-                    <AvatarImage
-                      src={user.avatar}
-                      alt={user.name}
-                    />
-                    <AvatarFallback>{user.name?.[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-medium text-gray-900">{user.name}</h3>
-                      {user.isTrusted && (
-                        <span className="text-xs text-blue-500">已认证</span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      {user.position} • {user.company}
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {user.tags.slice(0, 3).map((tag: string, index: number) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* 活动列表 */}
-        <div className="mt-6 px-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">活动</h2>
-            <button
-              onClick={() => openModal("activities")}
-              className="text-sm text-blue-500 flex items-center space-x-1"
-            >
-              <span>查看全部</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {filteredActivities.slice(0, 3).map((activity: any) => (
-              <Link
-                key={activity.id}
-                href={`/activity/${activity.id}`}
-                className="block bg-gray-50 rounded-xl overflow-hidden hover:bg-gray-100 transition-colors"
+                onClick={toggleMusic}
+                className="relative w-[126px] h-[126px] flex items-center justify-center transition-colors"
               >
                 <img
-                  src={activity.image}
-                  alt={activity.title}
-                  className="w-full h-32 object-cover"
+                  src={pageSettings.discovery.logo}
+                  alt="燃场Logo"
+                  className="w-[90px] h-[90px] object-contain"
                 />
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-gray-900">{activity.title}</h3>
-                    <ActivityStatusBadge
-                      status={activity.status}
-                      endTime={activity.endTime}
-                    />
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {activity.subtitle}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center space-x-2">
-                      <Timer className="w-3 h-3" />
-                      <span>{activity.address}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Users className="w-3 h-3" />
-                      <span>{activity.enrolledCount}/{activity.maxEnrollments}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+                {/* 音乐符号在logo内部 */}
+                <Music2
+                  className={`absolute w-6 h-6 transition-colors ${
+                    isPlaying
+                      ? "text-[rgba(0,0,0,0.7)]"
+                      : "text-[rgba(0,0,0,0.3)]"
+                  }`}
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                />
+              </button>
+            </div>
 
-        {/* 高燃宣告 */}
-        <div className="mt-6 px-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">高燃宣告</h2>
-            <button
-              onClick={() => openModal("declarations")}
-              className="text-sm text-blue-500 flex items-center space-x-1"
-            >
-              <span>查看全部</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {/* 搜索框 */}
+            <div className="px-5 pb-2 pt-0">
+              <div className="relative">
+                <Lightbulb className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-yellow-400" />
+                <input
+                  type="text"
+                  placeholder="35岁+ ｜ 有硬核  ｜晒战绩  ｜  交盟友..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-1.5 bg-[rgba(0,0,0,0.05)] text-[15px] text-gray-900 placeholder-[rgba(0,0,0,0.25)] focus:outline-none focus:bg-[rgba(0,0,0,0.08)] transition-colors"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-3">
-            {filteredDeclarations.slice(0, 3).map((declaration: any) => (
-              <div
-                key={declaration.id}
-                className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-start space-x-3">
-                  <Avatar className="w-12 h-12 flex-shrink-0">
-                    <AvatarImage
-                      src={declaration.image}
-                      alt={declaration.title}
-                    />
-                    <AvatarFallback>
-                      {getIcon(declaration.iconType)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-gray-900">
-                        {declaration.title}
-                      </h3>
-                      <button
-                        onClick={() =>
-                          playDeclarationAudio(declaration.id, declaration.audio)
-                        }
-                        className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 hover:bg-blue-100 transition-colors"
+          {/* 内容区 - 增加栏目间距，增加底部padding避免被固定的每日宣告遮挡 */}
+          <div className="px-5 pt-3 space-y-8 pb-64">
+            {/* 能力连接 */}
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">
+                  <span className="text-[rgba(96,165,250,0.6)]">能力</span>
+                  <span className="text-blue-400">连接</span>
+                </h2>
+              </div>
+              <div className="space-y-4">
+                {isLoading && (
+                  <div className="text-center py-8 text-gray-400">
+                    加载中...
+                  </div>
+                )}
+
+                {error && (
+                  <div className="text-center py-8 text-red-400">{error}</div>
+                )}
+
+                {!isLoading && !error && connectionItems.length === 0 && (
+                  <div className="text-center py-8 text-gray-400">暂无数据</div>
+                )}
+
+                {!isLoading && !error && connectionItems.length > 0 && (
+                  <>
+                    {connectionItems.slice(0, 3).map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          if (!item.isTrusted) {
+                            setTrustDialogOpen(true);
+                          }
+                        }}
+                        className={`relative flex items-start p-3 transition-colors ${
+                          item.isTrusted
+                            ? "bg-white hover:bg-[rgba(0,0,0,0.02)] cursor-pointer"
+                            : "bg-[rgba(0,0,0,0.02)] cursor-not-allowed opacity-75"
+                        }`}
                       >
-                        {playingDeclarationId === declaration.id ? (
-                          <PauseCircle className="w-5 h-5" />
-                        ) : (
-                          <PlayCircle className="w-5 h-5" />
+                        {/* 标签戳 */}
+                        {item.tagStamp && (
+                          <div
+                            className={`absolute top-0 right-0 px-2 py-0.5 text-[12px] font-medium rounded-bl-md z-10 ${
+                              item.tagStamp === "personLookingForJob"
+                                ? "bg-[rgba(34,197,94,0.15)] text-gray-600 border-l-2 border-t-2 border-gray-400"
+                                : "bg-blue-100 text-gray-600 border-l-2 border-t-2 border-gray-400"
+                            }`}
+                          >
+                            {item.tagStamp === "personLookingForJob"
+                              ? "人找事"
+                              : "事找人"}
+                          </div>
                         )}
-                      </button>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      {declaration.summary}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <div className="flex items-center space-x-2">
-                        <Play className="w-3 h-3" />
-                        <span>{declaration.views} 次播放</span>
+
+                        {/* 方形头像 - 纯方形，点击跳转到详情页 */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/connection/${item.id}`);
+                          }}
+                          className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden cursor-pointer"
+                        >
+                          <img
+                            src={item.avatar}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+
+                        {/* 中间文字 */}
+                        <div className="flex-1 min-w-0">
+                          {/* 姓名与年龄 */}
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="text-[17px] font-semibold text-gray-900 line-clamp-1">
+                              {item.name}
+                            </span>
+                            <span className="text-[17px] text-[rgba(0,0,0,0.25)]">
+                              {item.age}岁
+                            </span>
+                            {/* 绿色行业标签块 */}
+                            <span className="inline-block px-1.5 py-0.5 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal line-clamp-1">
+                              {item.industry}
+                            </span>
+                          </div>
+                          {/* 方形浅灰色标签块 - 纯方形 */}
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {item.tags.map((tag: string) => (
+                              <span
+                                key={tag}
+                                className="inline-block px-1.5 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal line-clamp-1"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          {/* 个人需求说明 */}
+                          <p className="text-[15px] text-gray-900 leading-relaxed line-clamp-3">
+                            {item.need}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Timer className="w-3 h-3" />
-                        <span>{declaration.duration}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* 音频元素 */}
-                {declaration.audio && (
-                  <audio
-                    ref={(el) => {
-                      if (el) {
-                        declarationAudioRefs.current[declaration.id] = el;
-                      }
-                    }}
-                    src={declaration.audio}
-                    onEnded={() => setPlayingDeclarationId(null)}
-                  />
+                    ))}
+                  </>
                 )}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 文档列表 */}
-        <div className="mt-6 px-5 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">文档</h2>
-            <button
-              onClick={() => router.push("/documents")}
-              className="text-sm text-blue-500 flex items-center space-x-1"
-            >
-              <span>查看全部</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {filteredDocuments.slice(0, 3).map((doc: any) => (
-              <div
-                key={doc.id}
-                onClick={() => handleDocClick(doc)}
-                className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors cursor-pointer"
-              >
-                <div className="flex items-start space-x-3">
-                  {doc.cover && (
-                    <img
-                      src={doc.cover}
-                      alt={doc.title}
-                      className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-900 mb-1">
-                      {doc.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                      {doc.description}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>{doc.date}</span>
-                      <span>{doc.views} 浏览</span>
-                    </div>
-                  </div>
-                </div>
+              <div className="mt-4 flex justify-center">
+                <button
+                  className="flex items-center space-x-1 px-1.5 py-0.75 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
+                  onClick={() => {
+                    setModalType("abilities");
+                    setShowModal(true);
+                  }}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>更多</span>
+                </button>
               </div>
-            ))}
-          </div>
-        </div>
+            </section>
 
-        {/* 模态框 */}
-        {showModal && (
-          <Dialog open={showModal} onOpenChange={setShowModal}>
-            <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {modalType === "abilities" && "伙伴列表"}
-                  {modalType === "activities" && "活动列表"}
-                  {modalType === "declarations" && "高燃宣告列表"}
-                </DialogTitle>
-              </DialogHeader>
+            {/* 活动推荐 */}
+            <section>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-xl font-bold">
+                  <span className="text-[rgba(96,165,250,0.6)]">活动</span>
+                  <span className="text-blue-400">推荐</span>
+                </h2>
+              </div>
+              {/* 灰色横线 */}
+              <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+              <div className="space-y-4">
+                {isLoading && (
+                  <div className="text-center py-8 text-gray-400">
+                    加载中...
+                  </div>
+                )}
 
-              <div className="space-y-4 mt-4">
-                {modalType === "abilities" && (
-                  <div className="space-y-3">
-                    {filteredUsers.map((user: any) => (
+                {error && (
+                  <div className="text-center py-8 text-red-400">{error}</div>
+                )}
+
+                {!isLoading && !error && activityItems.length === 0 && (
+                  <div className="text-center py-8 text-gray-400">暂无数据</div>
+                )}
+
+                {!isLoading && !error && activityItems.length > 0 && (
+                  <>
+                    {activityItems.slice(0, 3).map((item) => (
                       <Link
-                        key={user.id}
-                        href={`/profile/${user.id}`}
-                        onClick={() => setShowModal(false)}
-                        className="block bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors"
+                        key={item.id}
+                        href={`/activity/${item.id}`}
+                        className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                       >
-                        <div className="flex items-start space-x-3">
-                          <Avatar className="w-12 h-12 flex-shrink-0">
-                            <AvatarImage
-                              src={user.avatar}
-                              alt={user.name}
+                        <div className="flex items-start">
+                          {/* 左侧图片 - 纯方形 */}
+                          <div className="w-[80px] h-[80px] flex-shrink-0 mr-4 overflow-hidden">
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
                             />
-                            <AvatarFallback>{user.name?.[0]}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <h3 className="font-medium text-gray-900 mb-1">
-                              {user.name}
+                          </div>
+
+                          {/* 右侧内容 */}
+                          <div className="flex-1 min-w-0">
+                            {/* 分类名称和状态图标 */}
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="text-[18px] text-[rgba(0,0,0,0.25)]">
+                                {item.category}
+                              </div>
+                              {/* 状态图标 - 右上角 */}
+                              <ActivityStatusBadge
+                                status={item.status}
+                                endTime={item.endTime}
+                              />
+                            </div>
+                            {/* 活动主题与副标题（黑色字） */}
+                            <h3 className="text-[15px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                              {item.title}
                             </h3>
-                            <p className="text-sm text-gray-600 mb-2">
-                              {user.position} • {user.company}
+                            <p className="text-[16px] text-gray-900 mb-2 leading-relaxed line-clamp-2">
+                              {item.subtitle}
                             </p>
-                            <div className="flex flex-wrap gap-1">
-                              {user.tags.slice(0, 3).map(
-                                (tag: string, index: number) => (
-                                  <span
-                                    key={index}
-                                    className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-full"
-                                  >
-                                    {tag}
-                                  </span>
-                                ),
-                              )}
+                            {/* 活动简介 - 纯方形灰色框 */}
+                            <div className="p-2.5 bg-[rgba(0,0,0,0.05)] mb-2">
+                              <p className="text-[16px] text-[rgba(0,0,0,0.25)] leading-relaxed line-clamp-3">
+                                {item.description}
+                              </p>
+                            </div>
+                            {/* 报名人数、地址、茶水费 */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2">
+                                <Users className="w-4 h-4 text-[rgba(0,0,0,0.25)] flex-shrink-0" />
+                                <span className="text-[12px] text-[rgba(0,0,0,0.25)]">
+                                  {item.enrolledCount}人
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2 text-[12px] text-[rgba(0,0,0,0.25)]">
+                                <span className="line-clamp-1">
+                                  {item.address.substring(0, 6)}
+                                </span>
+                                <span>·</span>
+                                <span>{item.teaFee.substring(0, 5)}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </Link>
+                    ))}
+                  </>
+                )}
+              </div>
+              <div className="mt-4 flex justify-center">
+                <button
+                  className="flex items-center space-x-1 px-1.5 py-0.75 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
+                  onClick={() => {
+                    setModalType("activities");
+                    setShowModal(true);
+                  }}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>更多</span>
+                </button>
+              </div>
+            </section>
+
+            {/* 高燃宣告 */}
+            <section>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-xl font-bold">
+                  <span className="text-[rgba(96,165,250,0.6)]">高燃</span>
+                  <span className="text-blue-400">宣告</span>
+                </h2>
+              </div>
+              {/* 灰色横线 */}
+              <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+              <div className="space-y-3">
+                {declarationItems.slice(0, 3).map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                    onClick={() => router.push(`/declaration/${item.id}`)}
+                  >
+                    {/* 排序 - 圆形，缩小70%，灰色 */}
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mr-4 font-normal text-[17px] bg-[rgba(0,0,0,0.25)] text-[rgba(0,0,0,0.25)]">
+                      {item.rank}
+                    </div>
+
+                    {/* 左侧图标 - 纯方形 */}
+                    <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
+                      <img
+                        src={item.icon}
+                        alt={item.iconType}
+                        className="w-10 h-10 object-contain"
+                      />
+                    </div>
+
+                    {/* 中间文字 */}
+                    <div className="flex-1 min-w-0">
+                      {/* 内容片花（黑色字） */}
+                      <h3 className="text-[17px] font-semibold text-gray-900 mb-1 line-clamp-2">
+                        {item.title}
+                      </h3>
+                      {/* 达人画像与时长（灰色字） */}
+                      <p className="text-[12px] text-[rgba(0,0,0,0.25)] flex items-center">
+                        {item.profile} · <Timer className="w-3 h-3 mx-1" />
+                        {item.duration}
+                      </p>
+                    </div>
+
+                    {/* 右侧播放按钮 - 圆形 */}
+                    <button
+                      className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0 ml-3"
+                      onClick={(e) => {
+                        e.stopPropagation(); // 阻止事件冒泡
+                        handlePlayDeclaration(item.id);
+                      }}
+                    >
+                      <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {/* 查看更多灰色色块 */}
+              <div className="mt-4 flex justify-center">
+                <button
+                  className="flex items-center space-x-1 px-1.5 py-0.75 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[18px] font-normal"
+                  onClick={() => {
+                    setModalType("declarations");
+                    setShowModal(true);
+                  }}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>更多</span>
+                </button>
+              </div>
+            </section>
+
+            {/* 硬核图谱 */}
+            <section className="mt-8">
+              <div className="border border-yellow-400 p-4 bg-yellow-50/30">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-xl font-bold">
+                    <span className="text-yellow-600">硬核</span>
+                    <span className="text-yellow-500">图谱</span>
+                  </h2>
+                  <span className="text-[10px] text-yellow-500/70">技能气泡</span>
+                </div>
+
+                {/* 技能气泡图 */}
+                <div className="relative w-full h-64 overflow-hidden">
+                  {skillBubbles.map((bubble) => (
+                    <div
+                      key={bubble.id}
+                      onClick={() => {
+                        // 点击另一个时取消之前的选中状态
+                        setClickedBubbleId(clickedBubbleId === bubble.id ? null : bubble.id);
+                      }}
+                      className={`absolute rounded-full border ${bubble.borderColor} ${bubble.color} flex items-center justify-center cursor-pointer transition-all hover:scale-105 hover:shadow-lg ${
+                        clickedBubbleId === bubble.id
+                          ? 'scale-110 shadow-xl ring-4 ring-yellow-300/50'
+                          : ''
+                      }`}
+                      style={{
+                        width: `${bubble.size}px`,
+                        height: `${bubble.size}px`,
+                        left: `${bubble.x}%`,
+                        top: `${bubble.y}%`,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      <div className={`text-center px-1 ${bubble.textColor}`}>
+                        <div className={`font-semibold ${bubble.size >= 55 ? 'text-[12px]' : bubble.size >= 40 ? 'text-[10px]' : 'text-[8px]'}`}>
+                          {bubble.name}
+                        </div>
+                        {clickedBubbleId === bubble.id && skillDescriptions[bubble.id] && (
+                          <div className={`text-[8px] text-gray-500 mt-0.5 leading-tight`}>
+                            {skillDescriptions[bubble.id].split('|')[1]?.trim()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 技能说明 */}
+                <div className="text-[11px] text-yellow-600/70 text-center pt-2">
+                  💡 35岁+找盟友不看履历，聊硬核能力与战绩
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        {/* 每日宣告 - 固定在底部导航栏上方 */}
+        {dailyDeclaration && (
+          <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40">
+            <section>
+              <div className="p-4 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors">
+                <div className="flex items-center space-x-3">
+                  {/* 左侧图标 - 正方形 */}
+                  <div className="flex-shrink-0">
+                    <img
+                      src={dailyDeclaration.image || "/daily-declaration-square.webp"}
+                      alt="每日宣告"
+                      className="w-10 h-10 object-cover"
+                    />
+                  </div>
+
+                  {/* 中间内容 */}
+                  <div className="flex-1 min-w-0 cursor-pointer">
+                    {/* 日期加宣告片花（黑色字） */}
+                    <h3 className="text-[17px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
+                      {dailyDeclaration.title}
+                    </h3>
+                    {/* 年月日与录音时长（灰色字） */}
+                    <div className="flex items-center space-x-2 text-[12px] text-[rgba(0,0,0,0.25)]">
+                      <span>{dailyDeclaration.date}</span>
+                    <span>·</span>
+                    <span className="flex items-center">
+                      <Timer className="w-3 h-3 mr-1" />
+                      {dailyDeclaration.duration}
+                    </span>
+                  </div>
+                  </div>
+
+                  {/* 播放按钮 - 缩小30% */}
+                  <button className="w-7 h-7 bg-blue-400 flex items-center justify-center flex-shrink-0 rounded">
+                    <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                  </button>
+
+                  {/* 查看详情按钮 - 醒目设计 */}
+                  <button
+                    onClick={() => setShowAssetsModal(true)}
+                    className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 hover:from-orange-500 hover:to-red-600 flex items-center justify-center flex-shrink-0 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200"
+                  >
+                    <Zap className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {/* 底部导航 - 固定在底部 */}
+        <BottomNav />
+
+        {/* 能力连接权限提示对话框 */}
+        <Dialog open={trustDialogOpen} onOpenChange={setTrustDialogOpen}>
+          <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-5 sm:p-6 flex flex-col items-center justify-center">
+            <DialogHeader className="text-center">
+              <DialogTitle className="text-base sm:text-lg font-semibold">
+                提示
+              </DialogTitle>
+              <DialogDescription className="hidden" />
+            </DialogHeader>
+            <div className="text-[17px] sm:text-sm text-[rgba(0,0,0,0.3)] leading-relaxed text-center max-w-lg">
+              该用户尚未开启"允许陌生人连接"权限，您可以先了解ta，或让ta主动来找到你。
+            </div>
+            <div className="flex justify-end mt-5 sm:mt-6 w-full">
+              <Button
+                variant="ghost"
+                className="text-xs sm:text-sm h-8 sm:h-9 px-4 sm:px-6 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] hover:bg-[rgba(0,0,0,0.1)]"
+                onClick={() => setTrustDialogOpen(false)}
+              >
+                我知道了
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* 查看更多悬浮页面 */}
+        {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
+            {/* 内容容器 */}
+            <div className="relative w-full max-w-[480px] bg-white max-h-[90vh] rounded-lg shadow-xl flex flex-col overflow-hidden">
+              {/* 顶部导航 */}
+              <div className="flex-shrink-0 flex items-center justify-between p-3 sm:p-4 border-b border-[rgba(0,0,0,0.05)]">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  {modalType === "abilities" && "更多能力连接"}
+                  {modalType === "activities" && "更多活动"}
+                  {modalType === "declarations" && "更多高燃宣告"}
+                </h3>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors flex-shrink-0"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* 滚动内容区域 */}
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar">
+                {modalType === "abilities" && (
+                  <div>
+                    {connectionItems.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          setShowModal(false);
+                          router.push(`/connection/${item.id}`);
+                        }}
+                        className="relative flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                      >
+                        {/* 角色标签 - 右上角 */}
+                        {item.tagStamp && (
+                          <div
+                            className={`absolute top-[11px] right-0 px-2 py-0.5 text-[12px] font-medium rounded-bl-md z-10 ${
+                              item.tagStamp === "personLookingForJob"
+                                ? "bg-[rgba(34,197,94,0.15)] text-gray-600 border-l-2 border-t-2 border-gray-400"
+                                : item.tagStamp === "jobLookingForPerson"
+                                  ? "bg-blue-100 text-gray-600 border-l-2 border-t-2 border-gray-400"
+                                  : "bg-[rgba(0,0,0,0.05)] text-gray-600 border-l-2 border-t-2 border-gray-400"
+                            }`}
+                          >
+                            {item.tagStamp === "personLookingForJob"
+                              ? "人找事"
+                              : item.tagStamp === "jobLookingForPerson"
+                                ? "事找人"
+                                : "纯交流"}
+                          </div>
+                        )}
+
+                        {/* 头像 */}
+                        <div className="flex-shrink-0 w-[60px] h-[60px] overflow-hidden">
+                          <img
+                            src={item.avatar}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* 内容 */}
+                        <div className="flex-1 min-w-0 pr-16">
+                          {/* 姓名与年龄 */}
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="text-[17px] font-semibold text-gray-900">
+                              {item.name}
+                            </span>
+                            <span className="text-[17px] text-[rgba(0,0,0,0.25)]">
+                              {item.age}岁
+                            </span>
+                            {item.isTrusted && (
+                              <span className="text-[14px] text-green-600">
+                                ✓
+                              </span>
+                            )}
+                          </div>
+
+                          {/* 标签和行业 */}
+                          <div className="flex flex-wrap gap-2 mb-1">
+                            {item.tags.map((tag: string) => (
+                              <span
+                                key={tag}
+                                className="inline-block px-1.5 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] text-[14px] font-normal line-clamp-1"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {/* 绿色行业标签块 */}
+                            <span className="inline-block px-1.5 py-0.5 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal line-clamp-1">
+                              {item.industry}
+                            </span>
+                          </div>
+
+                          {/* 个人需求说明 */}
+                          <p className="text-[15px] text-gray-900 leading-relaxed line-clamp-2">
+                            {item.need}
+                          </p>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
 
                 {modalType === "activities" && (
-                  <div className="space-y-3">
-                    {filteredActivities.map((activity: any) => (
-                      <Link
-                        key={activity.id}
-                        href={`/activity/${activity.id}`}
-                        onClick={() => setShowModal(false)}
-                        className="block bg-gray-50 rounded-xl overflow-hidden hover:bg-gray-100 transition-colors"
+                  <div>
+                    {activityItems.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          setShowModal(false);
+                          router.push(`/activity/${item.id}`);
+                        }}
+                        className="flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                       >
-                        <img
-                          src={activity.image}
-                          alt={activity.title}
-                          className="w-full h-32 object-cover"
-                        />
-                        <div className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-medium text-gray-900">
-                              {activity.title}
-                            </h3>
-                            <ActivityStatusBadge
-                              status={activity.status}
-                              endTime={activity.endTime}
-                            />
-                          </div>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {activity.subtitle}
-                          </p>
-                          <div className="flex items-center justify-between text-xs text-gray-500">
-                            <div className="flex items-center space-x-2">
-                              <Timer className="w-3 h-3" />
-                              <span>{activity.address}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Users className="w-3 h-3" />
-                              <span>
-                                {activity.enrolledCount}/{activity.maxEnrollments}
-                              </span>
-                            </div>
+                        {/* 图片 */}
+                        <div className="flex-shrink-0 w-[60px] h-[60px] overflow-hidden">
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* 内容 */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-[18px] text-gray-900 leading-relaxed line-clamp-2">
+                            {item.title}
+                          </h3>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className="text-[18px] text-[rgba(0,0,0,0.25)]">
+                              {item.category}
+                            </span>
                           </div>
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 )}
 
                 {modalType === "declarations" && (
-                  <div className="space-y-3">
-                    {filteredDeclarations.map((declaration: any) => (
+                  <div>
+                    {declarationItems.slice(0, 3).map((item) => (
                       <div
-                        key={declaration.id}
-                        className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors"
+                        key={item.id}
+                        onClick={() => {
+                          setShowModal(false);
+                          router.push(`/declaration/${item.id}`);
+                        }}
+                        className="flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
                       >
-                        <div className="flex items-start space-x-3">
-                          <Avatar className="w-12 h-12 flex-shrink-0">
-                            <AvatarImage
-                              src={declaration.image}
-                              alt={declaration.title}
-                            />
-                            <AvatarFallback>
-                              {getIcon(declaration.iconType)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-medium text-gray-900">
-                                {declaration.title}
-                              </h3>
-                              <button
-                                onClick={() =>
-                                  playDeclarationAudio(
-                                    declaration.id,
-                                    declaration.audio,
-                                  )
-                                }
-                                className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 hover:bg-blue-100 transition-colors"
-                              >
-                                {playingDeclarationId === declaration.id ? (
-                                  <PauseCircle className="w-5 h-5" />
-                                ) : (
-                                  <PlayCircle className="w-5 h-5" />
-                                )}
-                              </button>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-2">
-                              {declaration.summary}
-                            </p>
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                              <div className="flex items-center space-x-2">
-                                <Play className="w-3 h-3" />
-                                <span>{declaration.views} 次播放</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Timer className="w-3 h-3" />
-                                <span>{declaration.duration}</span>
-                              </div>
-                            </div>
+                        {/* 图标 */}
+                        <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center bg-[rgba(0,0,0,0.05]">
+                          <img
+                            src={item.icon}
+                            alt={item.iconType}
+                            className="w-8 h-8 object-contain"
+                          />
+                        </div>
+
+                        {/* 内容 */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-[18px] text-gray-900 leading-relaxed line-clamp-2">
+                            {item.title}
+                          </h3>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className="text-[12px] text-[rgba(0,0,0,0.25)]">
+                              {item.profile}
+                            </span>
                           </div>
                         </div>
-                        {/* 音频元素 */}
-                        {declaration.audio && (
-                          <audio
-                            ref={(el) => {
-                              if (el) {
-                                declarationAudioRefs.current[declaration.id] =
-                                  el;
-                              }
-                            }}
-                            src={declaration.audio}
-                            onEnded={() => setPlayingDeclarationId(null)}
-                          />
-                        )}
+
+                        {/* 播放按钮 */}
+                        <button
+                          className="flex-shrink-0 text-blue-400"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePlayDeclaration(item.id);
+                          }}
+                        >
+                          <Play className="w-5 h-5" />
+                        </button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-            </DialogContent>
-          </Dialog>
+            </div>
+          </div>
+        )}
+
+        {/* 大鱼的认知库模态框 */}
+        {showAssetsModal && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-3 sm:p-4">
+            {/* 内容容器 */}
+            <div className="relative w-full max-w-[480px] bg-white max-h-[90vh] rounded-lg shadow-xl flex flex-col overflow-hidden">
+              {/* 顶部导航 */}
+              <div className="flex-shrink-0 flex items-center justify-between p-3 sm:p-4 border-b border-[rgba(0,0,0,0.05)]">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  大鱼的认知库
+                </h3>
+                <button
+                  onClick={() => setShowAssetsModal(false)}
+                  className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors flex-shrink-0"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* 文档列表 */}
+              <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar">
+                {documentItems.map((doc) => (
+                  <div
+                    key={doc.id}
+                    onClick={() => handleDocClick(doc)}
+                    className="flex items-start space-x-[8px] py-[11px] border-b border-[rgba(0,0,0,0.05)] last:border-b-0 hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer"
+                  >
+                    {/* 图标 */}
+                    <div className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center bg-[rgba(0,0,0,0.05)] rounded-none">
+                      <span className="text-[18px]">{getIcon(doc.icon)}</span>
+                    </div>
+
+                    {/* 文档标题 */}
+                    <div className="flex-1">
+                      <h3 className="text-[18px] text-gray-900 leading-relaxed">
+                        {doc.title}
+                      </h3>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* 文档详情模态框 */}
@@ -1217,7 +1363,7 @@ export default function DiscoveryPage() {
                     <Share2 className="w-5 h-5" />
                   </Button>
                   <button
-                    onClick={handleCloseDocModal}
+                    onClick={() => setIsDocModalOpen(false)}
                     className="w-8 h-8 flex items-center justify-center text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] transition-colors flex-shrink-0"
                   >
                     <X className="w-5 h-5" />
@@ -1266,7 +1412,6 @@ export default function DiscoveryPage() {
           </div>
         )}
       </div>
-      <BottomNav />
     </div>
   );
 }

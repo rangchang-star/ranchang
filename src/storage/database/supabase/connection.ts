@@ -2,8 +2,8 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
-// 创建PostgreSQL连接 - 直接使用环境变量配置的数据库
-const connectionString = process.env.DATABASE_URL || '';
+// 创建PostgreSQL连接 - 使用 ran_field 数据库
+const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
 
 // 打印连接信息用于调试
 console.log('DATABASE_URL配置:', connectionString);
@@ -19,12 +19,11 @@ const client = postgres(connectionString, {
   connect_timeout: 5, // 连接超时时间
   connection: {
     application_name: 'ran-field-app',
-    options: `-c search_path=public`, // 设置 search_path 为 public
   },
 });
 
 // 创建Drizzle ORM实例
 export const db = drizzle(client, { schema });
 
-// 导出 supabase schema
+// 导出schema
 export * from './schema';

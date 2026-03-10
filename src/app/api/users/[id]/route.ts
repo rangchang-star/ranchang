@@ -15,54 +15,22 @@ export async function GET(
       }, { status: 500 });
     }
 
-    // 直接创建数据库连接
-    const connectionString = process.env.DATABASE_URL || '';
-    const postgres = (await import('postgres')).default;
+    const { db, users } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-    // 创建单个连接（不使用连接池）
-    const client = postgres(connectionString, {
-      max: 1,
-      ssl: false,
-    });
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
 
-    try {
-      // 使用原始 SQL 查询
-      const result = await client`
-        SELECT
-          id, name, nickname, avatar, age, phone,
-          company, position, industry, bio, need,
-          hardcore_tags, resource_tags, tag_stamp,
-          is_trusted, is_featured,
-          connection_count, activity_count,
-          role, status,
-          created_at, updated_at
-        FROM users
-        WHERE id::text = ${id}
-        LIMIT 1
-      `;
-
-      // 立即关闭连接
-      await client.end();
-
-      if (result.length === 0) {
-        return NextResponse.json({
-          success: false,
-          error: '用户不存在'
-        }, { status: 404 });
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: result[0]
-      });
-    } catch (queryError: any) {
-      await client.end();
-      console.error('GET API - Query error:', queryError.message);
+    if (result.length === 0) {
       return NextResponse.json({
         success: false,
-        error: '查询用户信息失败: ' + queryError.message
-      }, { status: 500 });
+        error: '用户不存在'
+      }, { status: 404 });
     }
+
+    return NextResponse.json({
+      success: true,
+      data: result[0]
+    });
   } catch (error: any) {
     console.error('获取用户详情失败:', error);
     return NextResponse.json({
@@ -88,9 +56,13 @@ export async function PUT(
       }, { status: 500 });
     }
 
-    // 直接创建数据库连接
-    const connectionString = process.env.DATABASE_URL || '';
+    // 直接创建数据库连接，避免连接池满的问题
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+
     const postgres = (await import('postgres')).default;
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const { users } = await import('@/storage/database/supabase/schema');
+    const { eq } = await import('drizzle-orm');
 
     // 创建单个连接（不使用连接池）
     const client = postgres(connectionString, {
@@ -98,113 +70,45 @@ export async function PUT(
       ssl: false,
     });
 
-    try {
-      // 构建更新 SQL
-      const updateFields = [];
-      const updateValues = [];
+    const db = drizzle(client);
 
-      if (body.name !== undefined) {
-        updateFields.push('name = $1');
-        updateValues.push(body.name);
-      }
-      if (body.nickname !== undefined) {
-        updateFields.push('nickname = $' + (updateValues.length + 1));
-        updateValues.push(body.nickname);
-      }
-      if (body.avatar !== undefined) {
-        updateFields.push('avatar = $' + (updateValues.length + 1));
-        updateValues.push(body.avatar);
-      }
-      if (body.age !== undefined) {
-        updateFields.push('age = $' + (updateValues.length + 1));
-        updateValues.push(body.age);
-      }
-      if (body.company !== undefined) {
-        updateFields.push('company = $' + (updateValues.length + 1));
-        updateValues.push(body.company);
-      }
-      if (body.position !== undefined) {
-        updateFields.push('position = $' + (updateValues.length + 1));
-        updateValues.push(body.position);
-      }
-      if (body.industry !== undefined) {
-        updateFields.push('industry = $' + (updateValues.length + 1));
-        updateValues.push(body.industry);
-      }
-      if (body.need !== undefined) {
-        updateFields.push('need = $' + (updateValues.length + 1));
-        updateValues.push(body.need);
-      }
-      if (body.bio !== undefined) {
-        updateFields.push('bio = $' + (updateValues.length + 1));
-        updateValues.push(body.bio);
-      }
-      if (body.hardcore_tags !== undefined) {
-        updateFields.push('hardcore_tags = $' + (updateValues.length + 1));
-        updateValues.push(JSON.stringify(body.hardcore_tags));
-      }
-      if (body.resource_tags !== undefined) {
-        updateFields.push('resource_tags = $' + (updateValues.length + 1));
-        updateValues.push(JSON.stringify(body.resource_tags));
-      }
-      if (body.tag_stamp !== undefined) {
-        updateFields.push('tag_stamp = $' + (updateValues.length + 1));
-        updateValues.push(body.tag_stamp);
-      }
+    // 构建更新对象，只包含传入的字段
+    const updateData: any = {
+      updated_at: new Date(),
+    };
 
-      // 添加 updated_at
-      updateFields.push('updated_at = $' + (updateValues.length + 1));
-      updateValues.push(new Date());
+    // 动态添加字段
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.avatar !== undefined) updateData.avatar = body.avatar;
+    if (body.age !== undefined) updateData.age = body.age;
+    if (body.company !== undefined) updateData.company = body.company;
+    if (body.position !== undefined) updateData.position = body.position;
+    if (body.industry !== undefined) updateData.industry = body.industry;
+    if (body.need !== undefined) updateData.need = body.need;
+    if (body.bio !== undefined) updateData.bio = body.bio;
+    if (body.tag_stamp !== undefined) updateData.tag_stamp = body.tag_stamp;
+    if (body.tags !== undefined) updateData.tags = body.tags;
+    if (body.hardcore_tags !== undefined) updateData.hardcore_tags = body.hardcore_tags;
+    if (body.resource_tags !== undefined) updateData.resource_tags = body.resource_tags;
 
-      // 添加 id 作为最后一个参数
-      updateValues.push(id);
+    // 更新用户数据
+    await db.update(users)
+      .set(updateData)
+      .where(eq(users.id, id));
 
-      if (updateFields.length === 0) {
-        await client.end();
-        return NextResponse.json({
-          success: false,
-          error: '没有提供要更新的字段'
-        }, { status: 400 });
-      }
+    // 立即关闭连接
+    await client.end();
 
-      const sql = `
-        UPDATE users
-        SET ${updateFields.join(', ')}
-        WHERE id::text = $${updateValues.length}
-        RETURNING id, name, nickname, avatar, age, phone, company, position,
-                  industry, bio, need, hardcore_tags, resource_tags, tag_stamp,
-                  is_trusted, is_featured, connection_count, activity_count,
-                  role, status, created_at, updated_at
-      `;
-
-      const result = await client.unsafe(sql, updateValues);
-      await client.end();
-
-      if (result.length === 0) {
-        return NextResponse.json({
-          success: false,
-          error: '用户不存在'
-        }, { status: 404 });
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: '用户信息更新成功',
-        data: result[0]
-      });
-    } catch (queryError: any) {
-      await client.end();
-      console.error('PUT API - Query error:', queryError.message);
-      return NextResponse.json({
-        success: false,
-        error: '更新用户信息失败: ' + queryError.message
-      }, { status: 500 });
-    }
+    return NextResponse.json({
+      success: true,
+      message: '用户信息更新成功',
+      data: { id }
+    });
   } catch (error: any) {
-    console.error('更新用户详情失败:', error);
+    console.error('更新用户信息失败:', error);
     return NextResponse.json({
       success: false,
-      error: '更新用户详情失败: ' + error.message
+      error: '更新用户信息失败: ' + error.message
     }, { status: 500 });
   }
 }

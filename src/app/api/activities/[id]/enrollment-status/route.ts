@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { MockDatabase } from '@/lib/mock-database';
 
 export async function GET(
   request: NextRequest,
@@ -16,42 +17,19 @@ export async function GET(
       }, { status: 400 });
     }
 
-    // 检查是否配置了数据库连接
-    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
-      return NextResponse.json({
-        success: false,
-        error: '数据库未配置'
-      }, { status: 500 });
-    }
-
-    const { db, activityApplications, activityRegistrations } = await import('@/storage/database/supabase/connection');
-    const { eq, and } = await import('drizzle-orm');
-
     // 检查用户是否有待审核的申请
-    const applications = await db.select()
-      .from(activityApplications)
-      .where(
-        and(
-          eq(activityApplications.user_id, parseInt(userId)),
-          eq(activityApplications.activity_id, parseInt(activityId))
-        )
-      );
+    const application = MockDatabase.getActivityApplicationsByUserId(userId).find(
+      app => app.activityId === activityId
+    );
 
     // 检查用户是否已经有参与记录
-    const registrations = await db.select()
-      .from(activityRegistrations)
-      .where(
-        and(
-          eq(activityRegistrations.user_id, parseInt(userId)),
-          eq(activityRegistrations.activity_id, parseInt(activityId))
-        )
-      );
+    const registrationStatus = MockDatabase.getUserActivityRegistrationStatus(userId, activityId);
 
     let status = null;
-    if (applications.length > 0 && applications[0].status === 'pending') {
+    if (application && application.status === 'pending') {
       status = 'pending';
-    } else if (registrations.length > 0) {
-      status = registrations[0].status;
+    } else if (registrationStatus) {
+      status = registrationStatus;
     }
 
     return NextResponse.json({

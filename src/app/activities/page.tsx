@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Calendar, MapPin, Users, Clock, X, Bell, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ interface Activity {
   max: number;
   tags: string[];
   status: string;
-  applicationStatus: 'approved' | 'pending' | 'none' | undefined;
+  applicationStatus: 'approved' | 'pending' | 'none';
   description: string;
   image: string;
 }
@@ -42,75 +42,132 @@ const filters = [
   { id: 'pending', label: '待审核' },
 ];
 
+// 模拟数据 - 从localStorage读取或使用默认值
+const defaultActivities = [
+  {
+    id: '1',
+    type: 'private',
+    title: '转型期私董会：如何找到第二曲线',
+    date: '2024-04-10',
+    time: '14:00-17:00',
+    location: '上海·静安',
+    address: '上海市静安区南京西路1788号',
+    enrolled: 8,
+    max: 12,
+    tags: ['私董会', '名额紧张'],
+    status: 'ongoing',
+    applicationStatus: 'approved', // approved | pending | none
+    description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。我们将围绕"如何利用过往经验"、"如何降低试错成本"等话题展开讨论。',
+    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=200&fit=crop',
+  },
+  {
+    id: '2',
+    type: 'salon',
+    title: '跨界沙龙：AI时代的商业创新',
+    date: '2024-04-15',
+    time: '19:00-21:00',
+    location: '北京·朝阳',
+    address: '北京市朝阳区CBD国贸大厦',
+    enrolled: 20,
+    max: 30,
+    tags: ['跨界', 'AI'],
+    status: 'ongoing',
+    applicationStatus: 'pending', // 待审核
+    description: '邀请不同领域的专家分享AI在各行业的应用实践，促进跨界交流与合作。适合对AI商业化感兴趣的朋友参与。',
+    image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=200&fit=crop',
+  },
+  {
+    id: '3',
+    type: 'ai',
+    title: 'AI实战赋能营（第一期）',
+    date: '2024-04-20',
+    time: '09:00-17:00',
+    location: '深圳·南山',
+    address: '深圳市南山区科技园',
+    enrolled: 25,
+    max: 30,
+    tags: ['AI实战', '工作坊'],
+    status: 'ended',
+    applicationStatus: 'approved',
+    description: '全天候AI工具实战培训，从工具选型到场景落地，帮你快速掌握AI辅助工作的核心技能。',
+    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=200&fit=crop',
+  },
+  {
+    id: '4',
+    type: 'private',
+    title: '35+职场转型工作坊',
+    date: '2024-04-25',
+    time: '13:00-17:00',
+    location: '广州·天河',
+    address: '广州市天河区珠江新城',
+    enrolled: 5,
+    max: 15,
+    tags: ['工作坊', '即将开始'],
+    status: 'ongoing',
+    applicationStatus: 'none', // 未报名
+    description: '为35+职场人提供转型指导，涵盖简历优化、面试技巧、行业分析等内容，帮助你顺利实现职业转型。',
+    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=200&fit=crop',
+  },
+];
+
+// 从localStorage读取活动数据或使用默认值
+const loadActivitiesFromStorage = () => {
+  if (typeof window === 'undefined') return defaultActivities;
+  try {
+    const stored = localStorage.getItem('activities');
+    return stored ? JSON.parse(stored) : defaultActivities;
+  } catch {
+    return defaultActivities;
+  }
+};
+
+// 保存活动数据到localStorage
+const saveActivitiesToStorage = (activities: typeof defaultActivities) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('activities', JSON.stringify(activities));
+  } catch (error) {
+    console.error('保存活动数据失败:', error);
+  }
+};
+
+// 初始化活动数据
+const getActivities = () => loadActivitiesFromStorage();
+
 export default function ActivitiesPage() {
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<typeof defaultActivities[0] | null>(null);
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
-  const [activityToApply, setActivityToApply] = useState<Activity | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [activityToApply, setActivityToApply] = useState<typeof defaultActivities[0] | null>(null);
+  const [activities, setActivities] = useState(() => getActivities());
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // 从 API 加载活动数据
-  useEffect(() => {
-    async function loadActivities() {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const response = await fetch('/api/activities');
-
-        if (!response.ok) {
-          throw new Error('加载活动列表失败');
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          // 将 API 数据转换为前端需要的格式
-          const formattedActivities = data.data.map((activity: any) => ({
-            id: activity.id.toString(),
-            type: activity.category || 'private',
-            title: activity.title,
-            date: activity.start_date ? new Date(activity.start_date).toISOString().split('T')[0] : '',
-            time: activity.start_date && activity.end_date
-              ? `${new Date(activity.start_date).getHours()}:${String(new Date(activity.start_date).getMinutes()).padStart(2, '0')}-${new Date(activity.end_date).getHours()}:${String(new Date(activity.end_date).getMinutes()).padStart(2, '0')}`
-              : '14:00-17:00',
-            location: activity.address?.split('·')[0] || '上海',
-            address: activity.address || '',
-            enrolled: 0,
-            max: activity.capacity || 12,
-            tags: [activity.category === 'private' ? '私董会' : activity.category],
-            status: activity.status === 'published' ? 'ongoing' : 'ended',
-            applicationStatus: 'none' as 'approved' | 'pending' | 'none',
-            description: activity.description,
-            image: activity.image || '',
-          }));
-
-          setActivities(formattedActivities);
-        } else {
-          throw new Error(data.error || '加载活动列表失败');
-        }
-      } catch (err: any) {
-        console.error('加载活动列表失败:', err);
-        setError(err.message || '加载活动列表失败');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadActivities();
-  }, []);
-
-  // 添加通知（从 API 创建）
+  // 添加通知
   const addNotification = (notification: Notification) => {
     setNotifications((prev) => [notification, ...prev]);
+    // 同时保存到localStorage
+    try {
+      const stored = localStorage.getItem('notifications');
+      const existing = stored ? JSON.parse(stored) : [];
+      localStorage.setItem('notifications', JSON.stringify([notification, ...existing]));
+    } catch (error) {
+      console.error('保存通知失败:', error);
+    }
   };
 
-  // 标记通知为已读（前端本地状态，不再保存到 localStorage）
+  // 标记通知为已读
   const markAsRead = (id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    try {
+      const stored = localStorage.getItem('notifications');
+      if (stored) {
+        const existing = JSON.parse(stored);
+        const updated = existing.map((n: Notification) => (n.id === id ? { ...n, read: true } : n));
+        localStorage.setItem('notifications', JSON.stringify(updated));
+      }
+    } catch (error) {
+      console.error('更新通知状态失败:', error);
+    }
   };
 
   // 获取通知图标
@@ -130,12 +187,16 @@ export default function ActivitiesPage() {
   const filteredActivities = (() => {
     switch (selectedFilter) {
       case 'upcoming':
-        return activities.filter((a) => a.status === 'ongoing' && a.applicationStatus === 'approved');
+        // 待参加：只显示报名并通过审核的项目（进行中 + 已通过）
+        return activities.filter((a: Activity) => a.status === 'ongoing' && a.applicationStatus === 'approved');
       case 'ended':
-        return activities.filter((a) => a.status === 'ended');
+        // 已结束：只显示已结束的活动
+        return activities.filter((a: Activity) => a.status === 'ended');
       case 'pending':
-        return activities.filter((a) => a.applicationStatus === 'pending');
+        // 待审核：只显示待审核的报名
+        return activities.filter((a: Activity) => a.applicationStatus === 'pending');
       default:
+        // 全部活动：显示所有活动
         return activities;
     }
   })();
@@ -145,82 +206,70 @@ export default function ActivitiesPage() {
     setShowApplyConfirm(true);
   };
 
-  const confirmApply = async () => {
+  const confirmApply = () => {
     if (!activityToApply) return;
 
+    // 防重复提交检查
     if (sessionStorage.getItem('activity-applying') === 'true') {
       alert('正在报名中，请勿重复提交');
       return;
     }
     sessionStorage.setItem('activity-applying', 'true');
 
-    try {
-      const response = await fetch('/api/activities/enroll', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ activityId: activityToApply.id }),
-      });
+    // 更新活动状态为待审核
+    const updatedActivities = activities.map((a: Activity) =>
+      a.id === activityToApply.id
+        ? { ...a, applicationStatus: 'pending' as const, enrolled: a.enrolled + 1 }
+        : a
+    );
 
-      const data = await response.json();
+    setActivities(updatedActivities);
+    saveActivitiesToStorage(updatedActivities);
+    setShowApplyConfirm(false);
+    setActivityToApply(null);
 
-      if (data.success) {
-        const updatedActivities = activities.map((a) =>
-          a.id === activityToApply.id
-            ? { ...a, applicationStatus: 'pending' as const, enrolled: a.enrolled + 1 }
-            : a
-        );
-        setActivities(updatedActivities);
-        setShowApplyConfirm(false);
-        setActivityToApply(null);
-        addNotification({
-          id: `apply-${Date.now()}`,
-          type: 'success',
-          title: '报名成功',
-          message: `您已成功报名「${activityToApply.title}」，等待审核`,
-          time: new Date().toLocaleString('zh-CN'),
-          read: false,
-        });
-      } else {
-        alert(data.error || '报名失败');
-      }
-    } catch (error) {
-      console.error('报名失败:', error);
-      alert('报名失败，请稍后重试');
-    } finally {
+    // 清除提交状态
+    setTimeout(() => {
       sessionStorage.removeItem('activity-applying');
-    }
+    }, 1000);
   };
 
-  const handleCancel = async (activity: Activity) => {
-    if (!confirm(`确定要取消报名「${activity.title}」吗？`)) return;
+  const handleCancel = (activity: Activity) => {
+    if (!confirm(`确定要取消报名「${activity.title}」吗？`)) {
+      return;
+    }
 
+    // 防重复操作检查
     if (sessionStorage.getItem('activity-canceling') === 'true') {
       alert('正在取消中，请勿重复操作');
       return;
     }
     sessionStorage.setItem('activity-canceling', 'true');
 
-    try {
-      const updatedActivities = activities.map((a) =>
-        a.id === activity.id
-          ? { ...a, applicationStatus: undefined, enrolled: Math.max(0, a.enrolled - 1) }
-          : a
-      );
-      setActivities(updatedActivities);
-      addNotification({
-        id: `cancel-${Date.now()}`,
-        type: 'info',
-        title: '报名已取消',
-        message: `您已取消「${activity.title}」的报名`,
-        time: new Date().toLocaleString('zh-CN'),
-        read: false,
-      });
-    } catch (error) {
-      console.error('取消报名失败:', error);
-      alert('取消报名失败，请稍后重试');
-    } finally {
+    // 更新活动状态为未报名
+    const updatedActivities = activities.map((a: Activity) =>
+      a.id === activity.id
+        ? { ...a, applicationStatus: undefined, enrolled: Math.max(0, a.enrolled - 1) }
+        : a
+    );
+
+    setActivities(updatedActivities);
+    saveActivitiesToStorage(updatedActivities);
+
+    // 添加取消通知
+    addNotification({
+      id: `cancel-${Date.now()}`,
+      type: 'info',
+      title: '报名已取消',
+      message: `您已取消「${activity.title}」的报名`,
+      time: new Date().toLocaleString('zh-CN'),
+      read: false,
+    });
+
+    // 清除操作状态
+    setTimeout(() => {
       sessionStorage.removeItem('activity-canceling');
-    }
+    }, 1000);
   };
 
   return (
@@ -273,146 +322,145 @@ export default function ActivitiesPage() {
 
           {/* 活动列表 */}
           <div className="divide-y divide-[rgba(0,0,0,0.05)]">
-            {isLoading ? (
-              <div className="py-10 text-center text-gray-400">
-                加载中...
-              </div>
-            ) : error ? (
-              <div className="py-10 text-center text-red-400">
-                {error}
-              </div>
-            ) : filteredActivities.length === 0 ? (
-              <div className="py-10 text-center text-gray-400">
-                暂无活动
-              </div>
-            ) : (
-              filteredActivities.map((activity) => (
-                <div key={activity.id} className="py-5 space-y-4">
-                  {/* 活动图片 */}
-                  {activity.image && (
-                    <div className="w-full h-40 overflow-hidden">
-                      <img
-                        src={activity.image}
-                        alt={activity.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+            {filteredActivities.map((activity: Activity) => (
+              <div key={activity.id} className="py-5 space-y-4">
+                {/* 活动图片 */}
+                {activity.image && (
+                  <div className="w-full h-40 overflow-hidden">
+                    <img
+                      src={activity.image}
+                      alt={activity.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* 活动标题 */}
+                <div>
+                  <h3 className="text-[15px] font-semibold text-gray-900 mb-2">
+                    {activity.title}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {activity.tags.map((tag: string) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 活动信息 */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.date}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.time}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.location}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                      {activity.enrolled}/{activity.max}人
+                    </span>
+                  </div>
+                </div>
+
+                {/* 活动状态 */}
+                <div>
+                  {activity.status === 'ended' ? (
+                    <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.4)] text-[11px] font-normal">
+                      已结束
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal">
+                      进行中
+                    </span>
                   )}
+                </div>
 
-                  {/* 活动标题 */}
-                  <div>
-                    <h3 className="text-[15px] font-semibold text-gray-900 mb-2">
-                      {activity.title}
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {activity.tags.map((tag: string) => (
-                        <span
-                          key={tag}
-                          className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 活动信息 */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
-                      <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.date}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Clock className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
-                      <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.time}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
-                      <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.location}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Users className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
-                      <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                        {activity.enrolled}/{activity.max}人
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 活动状态 */}
-                  <div>
-                    {activity.status === 'ended' ? (
-                      <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.4)] text-[11px] font-normal">
-                        已结束
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal">
-                        进行中
-                      </span>
-                    )}
-                  </div>
-
-                  {/* 操作按钮 */}
-                  <div className="flex gap-3 pt-2">
-                    {activity.status === 'ended' ? (
+                {/* 操作按钮 */}
+                <div className="flex gap-3 pt-2">
+                  {activity.status === 'ended' ? (
+                    // 已结束：只显示"查看详情"按钮
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                      onClick={() => setSelectedActivity(activity)}
+                    >
+                      查看详情
+                    </Button>
+                  ) : activity.applicationStatus === 'none' ? (
+                    // 未报名：显示"查看详情"和"立即报名"
+                    <>
                       <Button
                         variant="outline"
-                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
                         onClick={() => setSelectedActivity(activity)}
                       >
                         查看详情
                       </Button>
-                    ) : activity.applicationStatus === 'none' ? (
-                      <>
-                        <Button
-                          variant="outline"
-                          className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
-                          onClick={() => setSelectedActivity(activity)}
-                        >
-                          查看详情
-                        </Button>
-                        <Button
-                          className="flex-1 bg-blue-400 hover:bg-blue-500 h-10 text-[13px] font-normal"
-                          onClick={() => handleApply(activity)}
-                        >
-                          立即报名
-                        </Button>
-                      </>
-                    ) : activity.applicationStatus === 'pending' ? (
-                      <>
-                        <Button
-                          variant="outline"
-                          className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
-                          onClick={() => setSelectedActivity(activity)}
-                        >
-                          查看详情
-                        </Button>
-                        <div className="flex-1 flex items-center justify-center bg-[rgba(251,191,36,0.15)] text-yellow-600 text-[13px] h-10">
-                          待审核
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          variant="outline"
-                          className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
-                          onClick={() => setSelectedActivity(activity)}
-                        >
-                          查看详情
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="flex-1 border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400 h-10 text-[13px] font-normal"
-                          onClick={() => handleCancel(activity)}
-                        >
-                          取消报名
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                      <Button
+                        className="flex-1 bg-blue-400 hover:bg-blue-500 h-10 text-[13px] font-normal"
+                        onClick={() => handleApply(activity)}
+                      >
+                        立即报名
+                      </Button>
+                    </>
+                  ) : activity.applicationStatus === 'pending' ? (
+                    // 待审核：显示"查看详情"和"待审核"状态
+                    <>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                        onClick={() => setSelectedActivity(activity)}
+                      >
+                        查看详情
+                      </Button>
+                      <div className="flex-1 flex items-center justify-center bg-[rgba(251,191,36,0.15)] text-yellow-600 text-[13px] h-10">
+                        待审核
+                      </div>
+                    </>
+                  ) : (
+                    // 已通过：显示"查看详情"和"取消报名"按钮
+                    <>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                        onClick={() => setSelectedActivity(activity)}
+                      >
+                        查看详情
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400 h-10 text-[13px] font-normal"
+                        onClick={() => handleCancel(activity)}
+                      >
+                        取消报名
+                      </Button>
+                    </>
+                  )}
                 </div>
-              ))
-            )}
+              </div>
+            ))}
           </div>
+
+          {/* 空状态 */}
+          {filteredActivities.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
+                {selectedFilter === 'pending' ? '暂无待审核的活动' : selectedFilter === 'upcoming' ? '暂无待参加的活动' : '暂无相关活动'}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

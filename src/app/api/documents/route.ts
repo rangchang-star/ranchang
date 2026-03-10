@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { MockDatabase } from '@/lib/mock-database';
 import { requireAdmin } from '@/lib/auth-utils';
 
 // GET - 获取文档列表
@@ -7,43 +8,22 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
 
-    // 检查是否配置了数据库连接
-    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
-      return NextResponse.json({
-        success: false,
-        error: '数据库未配置'
-      }, { status: 500 });
-    }
+    let documents = MockDatabase.getDocuments();
 
-    const { db, documents } = await import('@/storage/database/supabase/connection');
-
-    // 添加调试信息
-    console.log('开始查询 documents 表...');
-    console.log('DATABASE_URL:', process.env.DATABASE_URL?.split('@')[1]); // 只显示主机部分
-
-    let result;
-    try {
-      if (category) {
-        const { eq } = await import('drizzle-orm');
-        result = await db.select().from(documents).where(eq(documents.category, category));
-      } else {
-        result = await db.select().from(documents);
-      }
-      console.log('查询成功，返回', result.length, '条记录');
-    } catch (dbError: any) {
-      console.error('数据库查询失败:', dbError.message);
-      throw dbError;
+    // 按分类筛选
+    if (category) {
+      documents = documents.filter(doc => doc.category === category);
     }
 
     // 按创建时间倒序排列
-    const sortedDocuments = result.sort((a, b) => {
-      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    documents = documents.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
     return NextResponse.json({
       success: true,
-      data: sortedDocuments,
-      total: sortedDocuments.length,
+      data: documents,
+      total: documents.length,
     });
   } catch (error: any) {
     console.error('获取文档列表失败:', error);
@@ -77,32 +57,20 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // 检查是否配置了数据库连接
-    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
-      return NextResponse.json({
-        success: false,
-        error: '数据库未配置'
-      }, { status: 500 });
-    }
-
-    const { db, documents } = await import('@/storage/database/supabase/connection');
-
-    const result = await db.insert(documents).values({
+    const newDocument = MockDatabase.createDocument({
       title: body.title,
       description: body.description || '',
-      file_url: body.fileUrl,
-      file_type: body.fileType,
-      file_size: body.fileSize || 0,
+      fileUrl: body.fileUrl,
+      fileType: body.fileType,
+      fileSize: body.fileSize || 0,
       category: body.category || '其他',
-      created_by: authResult.user.id,
-      created_at: new Date(),
-      updated_at: new Date(),
-    }).returning();
+      createdBy: authResult.user.id,
+    });
 
     return NextResponse.json({
       success: true,
       message: '文档创建成功',
-      data: result[0]
+      data: newDocument
     });
   } catch (error: any) {
     console.error('创建文档失败:', error);

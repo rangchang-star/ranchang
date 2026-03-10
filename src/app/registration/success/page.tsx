@@ -1,75 +1,40 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, Calendar, MapPin, Users, Clock, Share2, Bell, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Calendar, MapPin, Users, Clock, Share2, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-interface RegistrationData {
-  activityId: string;
-  activityName: string;
-  activityImage: string;
-  activityDate: string;
-  activityLocation: string;
-  fee: number;
-  participants: number;
-  registrationId: string;
-  registrationTime: string;
+// 模拟数据
+const mockRegistration = {
+  activityId: '1',
+  activityName: 'AI时代创业者论坛',
+  activityImage: 'https://images.unsplash.com/photo-1544526223-9db7cc7435e9?w=800&h=400&fit=crop',
+  activityDate: '2024年3月20日 14:00-17:00',
+  activityLocation: '北京市朝阳区国贸大厦A座会议室',
+  fee: 99,
+  participants: 45,
+  registrationId: 'REG2024031500123',
+  registrationTime: '2024年3月15日 10:30',
   host: {
-    name: string;
-    avatar: string;
-  };
-  nextActivities: Array<{
-    id: string;
-    name: string;
-    date: string;
-    image: string;
-  }>;
-}
+    name: '燃场',
+    avatar: '/logo.png',
+  },
+  nextActivities: [
+    {
+      id: '2',
+      name: '35+创业者闭门会',
+      date: '2024年3月25日',
+      image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=200&h=120&fit=crop',
+    },
+  ],
+};
 
 export default function RegistrationSuccessPage() {
-  const searchParams = useSearchParams();
-  const registrationId = searchParams.get('id');
-  const [registration, setRegistration] = useState<RegistrationData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadRegistrationData() {
-      if (!registrationId) {
-        setError('缺少报名ID');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // 从 API 获取报名数据
-        // 注意：需要创建对应的 API 接口 /api/registrations/[id]
-        const response = await fetch(`/api/registrations/${registrationId}`);
-        const data = await response.json();
-
-        if (data.success) {
-          setRegistration(data.data);
-        } else {
-          setError('加载报名数据失败');
-        }
-      } catch (err) {
-        console.error('Failed to load registration data:', err);
-        setError('网络错误，请稍后重试');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadRegistrationData();
-  }, [registrationId]);
-
   const handleShare = () => {
-    if (navigator.share && registration) {
+    if (navigator.share) {
       navigator.share({
-        title: `我报名了${registration.activityName}`,
+        title: `我报名了${mockRegistration.activityName}`,
         text: `快来一起参加吧！`,
         url: window.location.href,
       });
@@ -77,42 +42,14 @@ export default function RegistrationSuccessPage() {
   };
 
   const handleAddToCalendar = () => {
+    // 这里应该实现添加到日历功能
+    console.log('添加到日历');
     alert('已添加到日历提醒');
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-gray-500">加载中...</div>
-      </div>
-    );
-  }
-
-  if (error || !registration) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-5">
-        <div className="text-center space-y-4">
-          <p className="text-red-500">{error || '报名数据加载失败'}</p>
-          <Link href="/activities/my">
-            <Button>返回我的活动</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white">
       <div className="w-full max-w-md mx-auto">
-        {/* 顶部导航 */}
-        <div className="px-4 py-3 flex items-center">
-          <Link href="/activities/my">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-
         {/* 成功提示 */}
         <div className="bg-green-400 px-5 py-8">
           <div className="text-center text-white">
@@ -128,22 +65,22 @@ export default function RegistrationSuccessPage() {
             <div className="flex items-start space-x-3">
               <div className="w-20 h-14 flex-shrink-0 overflow-hidden">
                 <img
-                  src={registration.activityImage}
-                  alt={registration.activityName}
+                  src={mockRegistration.activityImage}
+                  alt={mockRegistration.activityName}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                  {registration.activityName}
+                  {mockRegistration.activityName}
                 </h3>
                 <p className="text-[11px] text-[rgba(0,0,0,0.4)] mb-2">
-                  报名编号：{registration.registrationId}
+                  报名编号：{mockRegistration.registrationId}
                 </p>
                 <div className="flex items-center space-x-1">
                   <Users className="w-3 h-3 text-[rgba(0,0,0,0.3)]" />
                   <span className="text-[10px] text-[rgba(0,0,0,0.4)]">
-                    {registration.participants}人已报名
+                    {mockRegistration.participants}人已报名
                   </span>
                 </div>
               </div>
@@ -156,7 +93,7 @@ export default function RegistrationSuccessPage() {
               <Calendar className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                  {registration.activityDate}
+                  {mockRegistration.activityDate}
                 </div>
                 <div className="text-[10px] text-[rgba(0,0,0,0.4)]">活动时间</div>
               </div>
@@ -165,7 +102,7 @@ export default function RegistrationSuccessPage() {
               <MapPin className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                  {registration.activityLocation}
+                  {mockRegistration.activityLocation}
                 </div>
                 <div className="text-[10px] text-[rgba(0,0,0,0.4)]">活动地点</div>
               </div>
@@ -174,7 +111,7 @@ export default function RegistrationSuccessPage() {
               <Clock className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                  报名于 {registration.registrationTime}
+                  报名于 {mockRegistration.registrationTime}
                 </div>
                 <div className="text-[10px] text-[rgba(0,0,0,0.4)]">报名时间</div>
               </div>
@@ -183,7 +120,7 @@ export default function RegistrationSuccessPage() {
               <Users className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                  ¥{registration.fee} 茶水费
+                  ¥{mockRegistration.fee} 茶水费
                 </div>
                 <div className="text-[10px] text-[rgba(0,0,0,0.4)]">活动费用</div>
               </div>
@@ -194,17 +131,17 @@ export default function RegistrationSuccessPage() {
           <div className="flex items-center justify-between p-4 bg-[rgba(0,0,0,0.02)]">
             <div className="flex items-center space-x-3">
               <Avatar className="w-10 h-10">
-                <AvatarImage src={registration.host.avatar} alt={registration.host.name} />
-                <AvatarFallback>{registration.host.name[0]}</AvatarFallback>
+                <AvatarImage src={mockRegistration.host.avatar} alt={mockRegistration.host.name} />
+                <AvatarFallback>{mockRegistration.host.name[0]}</AvatarFallback>
               </Avatar>
               <div>
                 <div className="text-[13px] font-semibold text-gray-900">
-                  {registration.host.name}
+                  {mockRegistration.host.name}
                 </div>
                 <div className="text-[10px] text-[rgba(0,0,0,0.4)]">主办方</div>
               </div>
             </div>
-            <Link href={`/connection/${registration.host.name}`}>
+            <Link href={`/connection/${mockRegistration.host.name}`}>
               <Button variant="outline" className="text-[11px]">
                 查看主页
               </Button>
@@ -238,13 +175,13 @@ export default function RegistrationSuccessPage() {
           </div>
 
           {/* 推荐活动 */}
-          {registration.nextActivities.length > 0 && (
+          {mockRegistration.nextActivities.length > 0 && (
             <div>
               <h3 className="text-[15px] font-semibold text-gray-900 mb-4">
                 推荐活动
               </h3>
               <div className="space-y-3">
-                {registration.nextActivities.map((activity) => (
+                {mockRegistration.nextActivities.map((activity) => (
                   <Link
                     key={activity.id}
                     href={`/activity/${activity.id}`}
@@ -262,9 +199,9 @@ export default function RegistrationSuccessPage() {
                         <h4 className="text-sm font-semibold text-gray-900 mb-1">
                           {activity.name}
                         </h4>
-                        <div className="text-[10px] text-[rgba(0,0,0,0.4)]">
+                        <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
                           {activity.date}
-                        </div>
+                        </p>
                       </div>
                     </div>
                   </Link>
@@ -272,6 +209,13 @@ export default function RegistrationSuccessPage() {
               </div>
             </div>
           )}
+
+          {/* 返回按钮 */}
+          <Link href="/discovery">
+            <Button variant="ghost" className="w-full font-normal text-[13px]">
+              返回发现页
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

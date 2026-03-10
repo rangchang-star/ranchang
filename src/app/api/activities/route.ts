@@ -1,15 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// 从 DATABASE_URL 解析连接参数
-function parseDatabaseUrl(connectionString: string) {
-  const urlMatch = connectionString.match(/postgresql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-  if (!urlMatch) {
-    throw new Error('DATABASE_URL 格式错误');
-  }
-  const [, user, password, host, port, database] = urlMatch;
-  return { user, password, host, port: parseInt(port), database };
-}
-
 // GET - 获取活动列表
 export async function GET(request: NextRequest) {
   try {
@@ -21,28 +11,30 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    const connectionString = process.env.DATABASE_URL || '';
-    const dbConfig = parseDatabaseUrl(connectionString);
+    // 直接创建数据库连接，避免连接池满的问题
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
 
-    // 创建数据库连接（使用 pg 库）
-    const { default: pg } = await import('pg');
-    const pgClient = new pg.Client({
-      ...dbConfig,
+    const postgres = (await import('postgres')).default;
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const { activities } = await import('@/storage/database/supabase/schema');
+    const { desc } = await import('drizzle-orm');
+
+    // 创建单个连接（不使用连接池）
+    const client = postgres(connectionString, {
+      max: 1,
       ssl: false,
     });
 
-    await pgClient.connect();
+    const db = drizzle(client);
 
-    // 查询活动列表
-    const sqlQuery = 'SELECT * FROM public.activities ORDER BY created_at DESC';
-    const result = await pgClient.query(sqlQuery);
+    const result = await db.select().from(activities).orderBy(desc(activities.created_at));
 
-    // 关闭连接
-    await pgClient.end();
+    // 立即关闭连接
+    await client.end();
 
     return NextResponse.json({
       success: true,
-      data: result.rows
+      data: result
     });
   } catch (error: any) {
     console.error('获取活动列表失败:', error);
@@ -58,11 +50,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // 检查数据库连接
+    // 检查是否配置了数据库连接
     if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
       return NextResponse.json({
         success: false,
-        error: '未配置数据库连接'
+        error: '数据库未配置'
       }, { status: 500 });
     }
 
@@ -74,56 +66,29 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const connectionString = process.env.DATABASE_URL || '';
-    const dbConfig = parseDatabaseUrl(connectionString);
+    // 插入数据库
+    const { db, activities } = await import('@/storage/database/supabase/connection');
+    const { sql } = await import('drizzle-orm');
+    const result = await db.insert(activities).values({
+      id: sql`gen_random_uuid()`,
+      title: body.title,
+      description: body.description,
+      date: body.date ? new Date(body.date) : null,
+      start_time: body.start_time || null,
+      end_time: body.end_time || null,
+      location: body.location || null,
+      capacity: body.capacity || null,
+      type: body.type || null,
+      cover_image: body.cover_image || null,
+      status: body.status || 'active',
+      created_at: new Date(),
+      updated_at: new Date(),
+    }).returning();
 
-    // 创建数据库连接（使用 pg 库）
-    const { default: pg } = await import('pg');
-    const pgClient = new pg.Client({
-      ...dbConfig,
-      ssl: false,
+    return NextResponse.json({
+      success: true,
+      data: result[0]
     });
-
-    await pgClient.connect();
-
-    try {
-      // 插入活动
-      const insertQuery = `
-        INSERT INTO activities (
-          title, subtitle, category, description, image, address,
-          start_date, end_date, capacity, tea_fee, status, created_by,
-          created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-        RETURNING *
-      `;
-
-      const values = [
-        body.title,
-        body.subtitle || null,
-        body.category || 'private',
-        body.description,
-        body.image || null,
-        body.address || null,
-        body.start_date ? new Date(body.start_date) : null,
-        body.end_date ? new Date(body.end_date) : null,
-        body.capacity || 0,
-        body.tea_fee || 0,
-        body.status || 'draft',
-        body.created_by || null,
-        new Date(),
-        new Date(),
-      ];
-
-      const result = await pgClient.query(insertQuery, values);
-
-      return NextResponse.json({
-        success: true,
-        data: result.rows[0]
-      });
-    } finally {
-      // 关闭连接
-      await pgClient.end();
-    }
   } catch (error: any) {
     console.error('创建活动失败:', error);
     return NextResponse.json({
