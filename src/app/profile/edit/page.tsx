@@ -139,7 +139,7 @@ const directions = [
   { id: 'growth', name: '成长', icon: '/icon-growth.jpg' },
 ];
 
-function ProfileEditContent() {
+export function ProfileEditContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
   const { user, isLoggedIn, refreshUser } = useAuth();
@@ -667,6 +667,10 @@ function ProfileEditContent() {
       });
 
       localStorage.setItem('userDeclarations', JSON.stringify(declarationsArray));
+
+      console.log('===== 刷新全局用户状态 =====');
+      // 刷新全局用户状态，确保所有页面都能显示最新数据
+      await refreshUser();
 
       console.log('保存资料:', fullProfile);
       console.log('准备跳转到个人中心');
