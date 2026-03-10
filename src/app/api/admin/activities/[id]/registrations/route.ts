@@ -7,7 +7,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const { db, activities: activitiesTable, registrations: registrationsTable, users: usersTable } = await import('@/storage/database/supabase/connection');
+    const { db, activities: activitiesTable, activityRegistrations: activityRegistrationsTable, users: usersTable } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
     // 获取活动信息
@@ -23,7 +23,7 @@ export async function GET(
     const activity = dbActivities[0];
 
     // 获取活动的参与记录
-    const dbRegistrations = await db.select().from(registrationsTable).where(eq(registrationsTable.activityId, id));
+    const dbRegistrations = await db.select().from(activityRegistrationsTable).where(eq(activityRegistrationsTable.activityId, id));
 
     // 获取报名用户的详细信息
     const registrations = await Promise.all(
@@ -35,13 +35,13 @@ export async function GET(
           id: registration.userId,
           activityId: id,
           userId: registration.userId,
-          userName: user?.nickname || user?.name || '未知',
+          userName: user?.name || '未知',
           userPhone: user?.phone || '未知',
           userCompany: user?.company || '未知',
           userPosition: user?.position || '未知',
           userAvatar: user?.avatar || '',
           status: registration.status,
-          registeredAt: registration.createdAt,
+          registeredAt: registration.registeredAt,
         };
       })
     );
@@ -52,13 +52,14 @@ export async function GET(
         activity: {
           id: activity.id,
           title: activity.title,
-          subtitle: activity.subtitle,
-          category: activity.category,
+          description: activity.description,
+          date: activity.date,
+          startTime: activity.start_time,
+          endTime: activity.end_time,
+          location: activity.location,
           capacity: activity.capacity,
-          teaFee: activity.teaFee,
-          startDate: activity.startDate,
-          endDate: activity.endDate,
-          address: activity.address,
+          type: activity.type,
+          coverImage: activity.cover_image,
         },
         registrations: registrations,
         statistics: {

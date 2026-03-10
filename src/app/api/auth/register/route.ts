@@ -89,23 +89,24 @@ export async function POST(request: NextRequest) {
         const result = await db.insert(users).values({
           id: randomUUID(),
           phone,
-          password: password || '',
-          nickname,
-          name: nickname,
+          name: nickname || '',
           avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
           age: 30,
-          company: '',
-          position: '',
-          industry: '',
-          bio: '',
-          need: '',
-          tagStamp: 'pureExchange',
-          tags: [],
-          hardcoreTags: [],
-          resourceTags: [],
-          isTrusted: false,
-          role: 'user',
+          email: null,
+          connection_type: null,
+          industry: null,
+          need: null,
+          ability_tags: [],
+          resource_tags: [],
+          level: 'user',
+          company: null,
+          position: null,
           status: 'active',
+          is_featured: false,
+          join_date: new Date(),
+          last_login: new Date(),
+          created_at: new Date(),
+          updated_at: new Date(),
         }).returning();
 
         newUser = result[0];
@@ -176,8 +177,8 @@ export async function POST(request: NextRequest) {
     // 生成 token
     const token = generateToken(String(newUser.id));
 
-    // 返回用户信息（排除敏感信息）
-    const { password: _, ...safeUser } = newUser;
+    // 返回用户信息
+    const safeUser = newUser;
 
     return NextResponse.json({
       success: true,

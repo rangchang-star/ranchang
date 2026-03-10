@@ -33,17 +33,17 @@ export async function GET(
 
     // 根据状态判断
     const now = new Date();
-    const startDate = activity.startDate ? new Date(activity.startDate) : null;
-    const endDate = activity.endDate ? new Date(activity.endDate) : null;
-    
+    const startTime = activity.start_time ? new Date(activity.start_time) : null;
+    const endTime = activity.end_time ? new Date(activity.end_time) : null;
+
     let status = 'upcoming';
     if (activity.status === 'ended') {
       status = 'ended';
     } else if (activity.status === 'cancelled') {
       status = 'cancelled';
-    } else if (endDate && now > endDate) {
+    } else if (endTime && now > endTime) {
       status = 'ended';
-    } else if (startDate && now > startDate) {
+    } else if (startTime && now > startTime) {
       status = 'ongoing';
     }
 
@@ -51,29 +51,18 @@ export async function GET(
     const formattedActivity = {
       id: activity.id.toString(),
       title: activity.title,
-      subtitle: activity.subtitle || '',
       description: activity.description,
-      image: activity.image || '',
-      address: activity.address || '',
-      startDate: activity.startDate?.toISOString(),
-      endDate: activity.endDate?.toISOString(),
+      date: activity.date?.toISOString(),
+      startTime: activity.start_time,
+      endTime: activity.end_time,
+      location: activity.location,
       capacity: activity.capacity || 0,
-      teaFee: activity.teaFee || 0,
-      category: activity.category || 'private',
+      registeredCount: activity.registered_count || 0,
+      type: activity.type,
+      coverImage: activity.cover_image,
       status: status,
-      participants: [],
-      enrolledCount: 0,
-      maxParticipants: activity.capacity || 0,
-      organizer: {
-        id: activity.createdBy?.toString() || '',
-        name: '燃场',
-        avatar: '',
-        company: '燃场',
-        position: '主办方',
-      },
-      createdBy: activity.createdBy?.toString() || '',
-      createdAt: activity.createdAt?.toISOString(),
-      updatedAt: activity.updatedAt?.toISOString(),
+      createdAt: activity.created_at?.toISOString(),
+      updatedAt: activity.updated_at?.toISOString(),
     };
 
     return NextResponse.json({
@@ -121,16 +110,16 @@ export async function PUT(
     const result = await db.update(activities)
       .set({
         title: body.title,
-        subtitle: body.subtitle,
         description: body.description,
-        image: body.image,
-        address: body.address,
-        startDate: body.startDate ? new Date(body.startDate) : null,
-        endDate: body.endDate ? new Date(body.endDate) : null,
-        capacity: body.capacity,
-        teaFee: body.teaFee,
+        date: body.date ? new Date(body.date) : null,
+        start_time: body.start_time || null,
+        end_time: body.end_time || null,
+        location: body.location || null,
+        capacity: body.capacity || null,
+        type: body.type || null,
+        cover_image: body.cover_image || null,
         status: body.status,
-        updatedAt: new Date(),
+        updated_at: new Date(),
       })
       .where(eq(activities.id, id))
       .returning();

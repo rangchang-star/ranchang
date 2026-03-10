@@ -33,28 +33,7 @@ export async function GET(request: NextRequest) {
     const frontendDb = drizzle(client);
 
     try {
-      const result = await frontendDb.select({
-        id: users.id,
-        phone: users.phone,
-        nickname: users.nickname,
-        name: users.name,
-        avatar: users.avatar,
-        age: users.age,
-        company: users.company,
-        position: users.position,
-        industry: users.industry,
-        bio: users.bio,
-        need: users.need,
-        tagStamp: users.tagStamp,
-        tags: users.tags,
-        hardcoreTags: users.hardcoreTags,
-        resourceTags: users.resourceTags,
-        isTrusted: users.isTrusted,
-        role: users.role,
-        status: users.status,
-        createdAt: users.createdAt,
-        updatedAt: users.updatedAt,
-      }).from(users).orderBy(desc(users.createdAt));
+      const result = await frontendDb.select().from(users).orderBy(desc(users.created_at));
 
       await client.end();
       
@@ -122,32 +101,31 @@ export async function POST(request: NextRequest) {
       const result = await frontendDb.insert(users).values({
         id: randomUUID(),
         phone: body.phone,
-        password: body.password,
-        nickname: body.nickname,
         name: body.name,
-        avatar: body.avatar,
-        age: body.age,
-        company: body.company,
-        position: body.position,
-        industry: body.industry,
-        bio: body.bio,
-        need: body.need,
-        tagStamp: body.tagStamp,
-        tags: body.tags,
-        hardcoreTags: body.hardcoreTags,
-        resourceTags: body.resourceTags,
-        isTrusted: body.isTrusted || false,
-        role: 'user',
-        status: 'active',
+        avatar: body.avatar || null,
+        age: body.age || null,
+        email: body.email || null,
+        connection_type: body.connection_type || null,
+        industry: body.industry || null,
+        need: body.need || null,
+        ability_tags: body.ability_tags || [],
+        resource_tags: body.resource_tags || [],
+        level: body.level || null,
+        company: body.company || null,
+        position: body.position || null,
+        status: body.status || 'active',
+        is_featured: body.is_featured || false,
+        join_date: new Date(),
+        last_login: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
       }).returning();
-      
+
       await client.end();
-      
-      const { password, ...userWithoutPassword } = result[0];
-      
+
       return NextResponse.json({
         success: true,
-        data: userWithoutPassword
+        data: result[0]
       });
     } catch (dbError: any) {
       await client.end();

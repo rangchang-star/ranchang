@@ -34,13 +34,13 @@ export async function GET(
     // 格式化数据
     const formattedVisit = {
       id: visit.id.toString(),
-      title: visit.title,
+      title: visit.company_name, // 使用 company_name 作为标题
       description: visit.description,
-      image: visit.image,
+      image: visit.cover_image, // 使用 cover_image 作为图片
       location: visit.location,
       date: visit.date?.toISOString(),
       capacity: visit.capacity,
-      teaFee: visit.teaFee,
+      teaFee: 0, // 默认茶水费
       status: visit.status,
       duration: '4小时',
       visitors: [],
@@ -48,9 +48,9 @@ export async function GET(
       tags: ['已审核', '已发布'],
       audioDuration: '',
       audioUrl: '',
-      createdBy: visit.createdBy,
-      createdAt: visit.createdAt?.toISOString(),
-      updatedAt: visit.updatedAt?.toISOString(),
+      companyId: visit.company_id,
+      createdAt: visit.created_at?.toISOString(),
+      updatedAt: visit.updated_at?.toISOString(),
     };
 
     return NextResponse.json({
@@ -84,7 +84,7 @@ export async function PUT(
     }
 
     // 验证必填字段
-    if (!body.title || !body.date || !body.location) {
+    if (!body.company_name || !body.date || !body.location) {
       return NextResponse.json({
         success: false,
         error: '请填写所有必填字段'
@@ -97,15 +97,16 @@ export async function PUT(
 
     const result = await db.update(visits)
       .set({
-        title: body.title,
+        company_name: body.company_name,
+        company_id: body.company_id || null,
+        industry: body.industry || null,
         description: body.description,
-        image: body.image,
+        cover_image: body.cover_image || null,
         location: body.location,
         date: new Date(body.date),
-        capacity: body.capacity,
-        teaFee: body.teaFee,
+        capacity: body.capacity || null,
         status: body.status,
-        updatedAt: new Date(),
+        updated_at: new Date(),
       })
       .where(eq(visits.id, id))
       .returning();

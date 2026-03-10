@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
     const { db, visits: visitsTable } = await import('@/storage/database/supabase/connection');
     const { desc } = await import('drizzle-orm');
 
-    const dbVisits = await db.select().from(visitsTable).orderBy(desc(visitsTable.createdAt));
+    const dbVisits = await db.select().from(visitsTable).orderBy(desc(visitsTable.created_at));
 
     // 转换数据格式以适配后台管理页面
     const visits = dbVisits.map((visit: any) => ({

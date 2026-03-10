@@ -59,7 +59,7 @@ export async function GET(
       }
     }
 
-    if (user.role !== 'admin') {
+    if ((user as any).level !== 'admin') {
       return NextResponse.json({
         success: false,
         error: '该用户不是管理员',
@@ -106,11 +106,12 @@ export async function PUT(
         const { db, users } = await import('@/storage/database/supabase/connection');
         const { eq } = await import('drizzle-orm');
 
-        if (body.password) {
+        if (body.name || body.phone) {
           const result = await db.update(users)
             .set({
-              password: body.password,
-              updatedAt: new Date(),
+              name: body.name || null,
+              phone: body.phone || null,
+              updated_at: new Date(),
             })
             .where(eq(users.id, id))
             .returning();
@@ -175,8 +176,8 @@ export async function DELETE(
 
         const result = await db.update(users)
           .set({
-            role: 'user',
-            updatedAt: new Date(),
+            level: 'user',
+            updated_at: new Date(),
           })
           .where(eq(users.id, id))
           .returning();

@@ -14,29 +14,8 @@ export async function GET(
         const { db, users } = await import('@/storage/database/supabase/connection');
         const { eq } = await import('drizzle-orm');
         
-        const result = await db.select({
-          id: users.id,
-          phone: users.phone,
-          nickname: users.nickname,
-          name: users.name,
-          avatar: users.avatar,
-          age: users.age,
-          company: users.company,
-          position: users.position,
-          industry: users.industry,
-          bio: users.bio,
-          need: users.need,
-          tagStamp: users.tagStamp,
-          tags: users.tags,
-          hardcoreTags: users.hardcoreTags,
-          resourceTags: users.resourceTags,
-          isTrusted: users.isTrusted,
-          role: users.role,
-          status: users.status,
-          createdAt: users.createdAt,
-          updatedAt: users.updatedAt,
-        }).from(users).where(eq(users.id, id)).limit(1);
-        
+        const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+
         if (result.length === 0) {
           return NextResponse.json({
             success: false,
@@ -104,21 +83,21 @@ export async function PUT(
         // 更新用户数据
         await db.update(users)
           .set({
-            name: body.name,
-            nickname: body.nickname || body.name,
-            avatar: body.avatar || '',
-            age: parseInt(body.age) || 0,
-            company: body.company || '',
-            position: body.position || '',
-            industry: body.industry || '',
-            bio: body.bio || '',
-            need: body.need || '',
-            tagStamp: body.tagStamp || 'pureExchange',
-            tags: body.tags || [],
-            hardcoreTags: body.hardcoreTags || [],
-            resourceTags: body.resourceTags || [],
-            isTrusted: body.isTrusted || false,
-            updatedAt: new Date(),
+            name: body.name || null,
+            avatar: body.avatar || null,
+            age: body.age || null,
+            email: body.email || null,
+            connection_type: body.connection_type || null,
+            industry: body.industry || null,
+            need: body.need || null,
+            ability_tags: body.ability_tags || null,
+            resource_tags: body.resource_tags || null,
+            level: body.level || null,
+            company: body.company || null,
+            position: body.position || null,
+            status: body.status || 'active',
+            is_featured: body.is_featured || false,
+            updated_at: new Date(),
           })
           .where(eq(users.id, id));
 

@@ -25,32 +25,32 @@ export async function GET(
     const memberData = {
       id: user.id.toString(),
       // 基本信息
-      name: user.nickname || user.name,
+      name: user.name,
       age: user.age,
       avatar: user.avatar,
-      connectionType: 'personLookingForJob', // 默认值
+      connectionType: user.connection_type || 'personLookingForJob', // 默认值
       industry: user.industry,
       need: user.need,
       hardcoreTags: [], // 数据库中没有该字段
-      resourceTags: user.resourceTags || [],
+      resourceTags: user.resource_tags || [],
 
       // 后台标签（暂时使用空数组）
       adminTags: [],
 
       // 公司信息
       phone: user.phone,
-      email: '', // 数据库中没有email字段
+      email: user.email || '', // 数据库中没有email字段
       company: user.company,
       position: user.position,
       faith: '', // 数据库中没有faith字段
 
       // 其他信息
-      level: user.isFeatured ? '活跃会员' : '种子会员',
-      joinDate: user.joinDate ? new Date(user.joinDate).toISOString().split('T')[0] : new Date(user.createdAt).toISOString().split('T')[0],
+      level: user.is_featured ? '活跃会员' : '种子会员',
+      joinDate: user.join_date ? new Date(user.join_date).toISOString().split('T')[0] : new Date(user.created_at).toISOString().split('T')[0],
       status: user.status || 'active',
-      isFeatured: user.isFeatured,
+      isFeatured: user.is_featured,
       role: 'user',
-      bio: user.bio,
+      bio: user.need, // 使用 need 字段代替 bio
       connectionCount: 0,
       activityCount: 0,
 

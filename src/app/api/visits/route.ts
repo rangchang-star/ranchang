@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
     // 格式化数据（保持与前端需要的格式一致）
     const formattedVisits = dbVisits.map(visit => ({
       id: visit.id.toString(),
-      title: visit.title,
+      title: visit.company_name, // 使用 company_name 作为标题
       description: visit.description,
-      image: visit.image,
+      image: visit.cover_image, // 使用 cover_image 作为图片
       location: visit.location,
       date: visit.date?.toISOString(),
       capacity: visit.capacity,
-      teaFee: visit.teaFee,
+      teaFee: 0, // 默认茶水费
       status: visit.status,
       duration: '4小时', // 默认时长
       visitors: [], // 简化字段，后续可扩展

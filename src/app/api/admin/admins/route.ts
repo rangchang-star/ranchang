@@ -25,8 +25,7 @@ export async function GET(request: NextRequest) {
         const { eq, desc } = await import('drizzle-orm');
 
         const dbAdmins = await db.select().from(users)
-          .where(eq(users.role, 'admin'))
-          .orderBy(desc(users.createdAt));
+          .orderBy(desc(users.created_at));
 
         admins = dbAdmins;
       } catch (dbError: any) {
@@ -97,11 +96,11 @@ export async function POST(request: NextRequest) {
         const result = await db.insert(users).values({
           id: randomUUID(),
           phone: body.phone,
-          password: body.password,
-          nickname: body.nickname,
-          name: body.name,
-          role: 'admin',
+          name: body.name || body.nickname,
           status: 'active',
+          level: 'admin', // 使用 level 字段标识管理员
+          created_at: new Date(),
+          updated_at: new Date(),
         }).returning();
 
         newAdmin = result[0];

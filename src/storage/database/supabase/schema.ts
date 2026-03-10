@@ -61,14 +61,25 @@ export const visits = pgTable('visits', {
   updated_at: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// 报名记录表
-export const registrations = pgTable('registrations', {
-  id: text('id').primaryKey().default(sql`gen_random_uuid()`),
+// 活动报名记录表 - 严格匹配数据库实际结构
+export const activityRegistrations = pgTable('activity_registrations', {
+  id: text('id').primaryKey(),
+  activityId: text('activity_id').notNull().references(() => activities.id),
   userId: text('user_id').notNull().references(() => users.id),
-  activityId: text('activity_id').references(() => activities.id),
-  visitId: text('visit_id').references(() => visits.id),
   status: text('status').default('registered'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  registeredAt: timestamp('registered_at'),
+  reviewedAt: timestamp('reviewed_at'),
+  note: text('note'),
+});
+
+// 探访记录表 - 严格匹配数据库实际结构
+export const visitRecords = pgTable('visit_records', {
+  id: text('id').primaryKey(),
+  visitId: text('visit_id').notNull().references(() => visits.id),
+  userId: text('user_id').notNull().references(() => users.id),
+  status: text('status').default('registered'),
+  registeredAt: timestamp('registered_at'),
+  completedAt: timestamp('completed_at'),
 });
 
 // 每日宣告表
@@ -100,28 +111,36 @@ export const settings = pgTable('settings', {
 
 // 关系定义
 export const usersRelations = relations(users, ({ many }) => ({
-  registrations: many(registrations),
+  activityRegistrations: many(activityRegistrations),
+  visitRecords: many(visitRecords),
 }));
 
 export const activitiesRelations = relations(activities, ({ many }) => ({
-  registrations: many(registrations),
+  activityRegistrations: many(activityRegistrations),
 }));
 
 export const visitsRelations = relations(visits, ({ many }) => ({
-  registrations: many(registrations),
+  visitRecords: many(visitRecords),
 }));
 
-export const registrationsRelations = relations(registrations, ({ one }) => ({
+export const activityRegistrationsRelations = relations(activityRegistrations, ({ one }) => ({
   user: one(users, {
-    fields: [registrations.userId],
+    fields: [activityRegistrations.userId],
     references: [users.id],
   }),
   activity: one(activities, {
-    fields: [registrations.activityId],
+    fields: [activityRegistrations.activityId],
     references: [activities.id],
   }),
+}));
+
+export const visitRecordsRelations = relations(visitRecords, ({ one }) => ({
+  user: one(users, {
+    fields: [visitRecords.userId],
+    references: [users.id],
+  }),
   visit: one(visits, {
-    fields: [registrations.visitId],
+    fields: [visitRecords.visitId],
     references: [visits.id],
   }),
 }));

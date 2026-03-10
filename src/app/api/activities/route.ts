@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
         const { db, activities } = await import('@/storage/database/supabase/connection');
         const { eq, desc } = await import('drizzle-orm');
         
-        const result = await db.select().from(activities).orderBy(desc(activities.createdAt));
+        const result = await db.select().from(activities).orderBy(desc(activities.created_at));
         
         return NextResponse.json({
           success: true,
@@ -56,18 +56,21 @@ export async function POST(request: NextRequest) {
     if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
       try {
         const { db, activities } = await import('@/storage/database/supabase/connection');
+        const { sql } = await import('drizzle-orm');
         const result = await db.insert(activities).values({
-          category: body.category,
+          id: sql`gen_random_uuid()`,
           title: body.title,
-          subtitle: body.subtitle,
           description: body.description,
-          image: body.image,
-          capacity: body.capacity,
-          teaFee: body.teaFee,
-          address: body.address,
-          startDate: body.startDate,
-          endDate: body.endDate,
+          date: body.date ? new Date(body.date) : null,
+          start_time: body.start_time || null,
+          end_time: body.end_time || null,
+          location: body.location || null,
+          capacity: body.capacity || null,
+          type: body.type || null,
+          cover_image: body.cover_image || null,
           status: body.status || 'active',
+          created_at: new Date(),
+          updated_at: new Date(),
         }).returning();
         
         return NextResponse.json({
