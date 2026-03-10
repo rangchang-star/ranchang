@@ -36,32 +36,43 @@ function toSnakeCase(obj: any): any {
 
 // 字段映射：前端字段名 -> 数据库实际列名
 const FIELD_MAPPINGS: Record<string, Record<string, string>> = {
-  users: {
+  app_users: {
     nick_name: 'name',
     occupation: 'company',
     location: 'company_scale', // 将 location 映射到 company_scale
   }
 };
 
+// 资源名称映射：前端请求的资源名 -> 实际数据库表名
+const RESOURCE_NAME_MAPPING: Record<string, string> = {
+  'users': 'app_users',  // 前端使用 /api/users，后端操作 app_users 表
+};
+
+// 应用资源名称映射
+function getTableName(resource: string): string {
+  return RESOURCE_NAME_MAPPING[resource] || resource;
+}
+
 // 应用字段映射
 function applyFieldMapping(resource: string, obj: any): any {
-  if (!FIELD_MAPPINGS[resource]) {
+  const actualTableName = getTableName(resource);
+  if (!FIELD_MAPPINGS[actualTableName]) {
     return obj;
   }
 
   const result: any = {};
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
-      const mappedKey = FIELD_MAPPINGS[resource][key] || key;
+      const mappedKey = FIELD_MAPPINGS[actualTableName][key] || key;
       result[mappedKey] = obj[key];
     }
   }
   return result;
 }
 
-// 安全的资源名称白名单
+// 安全的资源名称白名单（前端可以使用的资源名）
 const VALID_RESOURCES = [
-  'users', 'activities', 'visits', 'declarations', 'daily_declarations',
+  'users', 'app_users', 'activities', 'visits', 'declarations', 'daily_declarations',
   'activity_registrations', 'notifications', 'documents', 'visit_records', 'settings'
 ];
 
@@ -69,9 +80,9 @@ function isValidResource(resource: string): boolean {
   return VALID_RESOURCES.includes(resource);
 }
 
-// 资源到 Drizzle 表的映射
+// 资源到 Drizzle 表的映射（使用实际表名）
 const RESOURCE_TABLES: Record<string, any> = {
-  users: schema.users,
+  app_users: schema.users,  // 注意：这里仍然使用 schema.users，因为 Drizzle Schema 还没有更新
   activities: schema.activities,
   visits: schema.visits,
   declarations: schema.declarations,
@@ -84,7 +95,8 @@ const RESOURCE_TABLES: Record<string, any> = {
 };
 
 function getTable(resource: string) {
-  return RESOURCE_TABLES[resource];
+  const actualTableName = getTableName(resource);
+  return RESOURCE_TABLES[actualTableName];
 }
 
 // GET /api/[resource]/[id] - 查询单条
@@ -101,9 +113,11 @@ export async function GET(
     );
   }
 
+  const actualTableName = getTableName(resource);
+
   try {
     const result = await client`
-      SELECT * FROM public.${client(resource)} WHERE id = ${id}
+      SELECT * FROM public.${client(actualTableName)} WHERE id = ${id}
     `;
 
     if (!result || result.length === 0) {
@@ -140,10 +154,12 @@ export async function PUT(
     );
   }
 
+  const actualTableName = getTableName(resource);
+
   try {
     const body = await request.json();
     const snakeData = toSnakeCase(body);
-    
+
     // 应用字段映射
     const mappedData = applyFieldMapping(resource, snakeData);
     console.log('映射后的数据:', mappedData);
@@ -172,10 +188,17 @@ export async function PUT(
 
     console.log('更新值:', updateValues);
 
-    const result = await db.update(table)
-      .set(updateValues)
-      .where(eq(table.id, id))
-      .returning();
+    // 使用 postgres.js 的模板字符串语法
+    const updateClauses = fields.map(field => client`${client(field)} = ${(updateValues as any)[field]}`);
+    const setClause = updateClauses.reduce((acc, clause, i) => 
+      i === 0 ? clause : client`${acc}, ${clause}`, client``);
+
+    const result = await client`
+      UPDATE ONLY public.${client(actualTableName)}
+      SET ${setClause}
+      WHERE id = ${id}
+      RETURNING *
+    `;
 
     if (!result || result.length === 0) {
       return Response.json(
@@ -212,9 +235,11 @@ export async function DELETE(
     );
   }
 
+  const actualTableName = getTableName(resource);
+
   try {
     const result = await client`
-      DELETE FROM public.${client(resource)} WHERE id = ${id} RETURNING *
+      DELETE FROM public.${client(actualTableName)} WHERE id = ${id} RETURNING *
     `;
 
     if (!result || result.length === 0) {

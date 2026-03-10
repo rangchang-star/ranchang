@@ -34,13 +34,23 @@ function toSnakeCase(obj: any): any {
 
 // 安全的资源名称白名单（防止SQL注入）
 const VALID_RESOURCES = [
-  'users', 'activities', 'visits', 'declarations', 'daily_declarations',
+  'users', 'app_users', 'activities', 'visits', 'declarations', 'daily_declarations',
   'activity_registrations', 'notifications', 'documents', 'visit_records', 'settings'
 ];
 
 // 验证资源名称
 function isValidResource(resource: string): boolean {
   return VALID_RESOURCES.includes(resource);
+}
+
+// 资源名称映射：前端请求的资源名 -> 实际数据库表名
+const RESOURCE_NAME_MAPPING: Record<string, string> = {
+  'users': 'app_users',  // 前端使用 /api/users，后端操作 app_users 表
+};
+
+// 应用资源名称映射
+function getTableName(resource: string): string {
+  return RESOURCE_NAME_MAPPING[resource] || resource;
 }
 
 // GET /api/[resource] - 查询列表
@@ -57,6 +67,8 @@ export async function GET(
       { status: 400 }
     );
   }
+
+  const actualTableName = getTableName(resource);
 
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -83,14 +95,14 @@ export async function GET(
 
     // 查询总数
     const countResult = await client.unsafe(
-      `SELECT COUNT(*) as total FROM public."${resource}" ${whereClause}`,
+      `SELECT COUNT(*) as total FROM public."${actualTableName}" ${whereClause}`,
       params2
     );
     const total = parseInt(countResult[0].total);
 
     // 查询数据
     const dataResult = await client.unsafe(
-      `SELECT * FROM public."${resource}" ${whereClause} ORDER BY "${orderBy}" ${order} LIMIT $${conditions.length + 1} OFFSET $${conditions.length + 2}`,
+      `SELECT * FROM public."${actualTableName}" ${whereClause} ORDER BY "${orderBy}" ${order} LIMIT $${conditions.length + 1} OFFSET $${conditions.length + 2}`,
       [...params2, limit, offset]
     );
 
@@ -130,12 +142,14 @@ export async function POST(
     );
   }
 
+  const actualTableName = getTableName(resource);
+
   try {
     const body = await request.json();
     const snakeData = toSnakeCase(body);
 
     const result = await client`
-      INSERT INTO public.${client(resource)} ${client(snakeData)}
+      INSERT INTO public.${client(actualTableName)} ${client(snakeData)}
       RETURNING *
     `;
 
