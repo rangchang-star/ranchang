@@ -24,23 +24,24 @@ const escapeHtml = (str: string): string => {
 };
 
 // 模拟数据
+// 默认用户资料（仅用于未登录时的空状态展示）
 const mockUserProfile = {
-  avatar: '/avatar-1.jpg',
-  name: '王姐',
-  gender: 'female',
-  age: 38,
-  phone: '13800138888',
-  email: 'wang***@example.com',
+  avatar: '',
+  name: '',
+  gender: '',
+  age: 0,
+  phone: '',
+  email: '',
   companyName: '',
   companyScale: '',
   companyPosition: '',
-  purpose: '人找事', // 人找事/事找人/纯交流
-  industry: '制造业',
-  industryTags: ['供应链', '智能制造', '数字化转型'], // 行业标签（用于行业相关功能）
-  hardcoreTags: ['AI技术', '搞定自己', '会说人话'], // 硬核标签（必填，独立字段）
-  resources: ['AI技术', '供应链资源', '企业培训'],
-  declaration: '用15年供应链管理经验，帮助传统企业实现AI转型',
-  directions: ['信心', '使命', '自我'],
+  purpose: '',
+  industry: '',
+  industryTags: [],
+  hardcoreTags: [],
+  resources: [],
+  declaration: '',
+  directions: [],
 };
 
 const companyScales = [
@@ -146,7 +147,7 @@ function ProfileEditContent() {
   // 根据登录用户数据初始化用户资料
   const getUserProfile = () => {
     if (!isLoggedIn || !user) {
-      // 未登录时返回默认的mock数据，直接返回 mockUserProfile（包含正确的 hardcoreTags）
+      // 未登录时返回空的默认数据
       return mockUserProfile;
     }
 
