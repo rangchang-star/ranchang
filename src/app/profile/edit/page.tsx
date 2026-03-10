@@ -185,7 +185,7 @@ function ProfileEditContent() {
   const [selectedResources, setSelectedResources] = useState<string[]>(profile.resources);
   const [customResource, setCustomResource] = useState('');
   const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>(profile.hardcoreTags || []);
-  const [selectedDirection, setSelectedDirection] = useState<string>(profile.directions[0] || '');
+  const [selectedDirection, setSelectedDirection] = useState<string>(''); // 默认不选择任何方向
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
 
   // 当用户数据变化时，更新profile状态
@@ -463,12 +463,14 @@ function ProfileEditContent() {
     }
 
     // 验证一句说清你的需要
-    if (!profile.declaration || profile.declaration.trim().length < 20) {
-      requiredErrors.push('一句说清你的需要（不少于20字）');
-    } else if (profile.declaration.length > 200) {
-      requiredErrors.push('一句说清你的需要（不超过200字，当前' + profile.declaration.length + '字）');
-    } else if (containsSpecialChars(profile.declaration)) {
-      requiredErrors.push('一句说清你的需要包含非法字符');
+    if (profile.declaration && profile.declaration.trim().length > 0) {
+      if (profile.declaration.trim().length < 20) {
+        requiredErrors.push('一句说清你的需要（不少于20字）');
+      } else if (profile.declaration.length > 200) {
+        requiredErrors.push('一句说清你的需要（不超过200字，当前' + profile.declaration.length + '字）');
+      } else if (containsSpecialChars(profile.declaration)) {
+        requiredErrors.push('一句说清你的需要包含非法字符');
+      }
     }
 
     // 验证能力标签（必选）
@@ -477,7 +479,8 @@ function ProfileEditContent() {
     }
 
     // 验证高燃宣告（如果选中了方向）
-    if (selectedDirection) {
+    // 只有当用户选择了方向且填写了宣告内容时才验证
+    if (selectedDirection && declarations[selectedDirection]?.theme) {
       const declaration = declarations[selectedDirection];
       
       // 验证宣告主题
@@ -541,6 +544,7 @@ function ProfileEditContent() {
           },
           body: JSON.stringify({
             name: profile.name,
+            phone: profile.phone,
             avatar: profile.avatar,
             age: profile.age,
             company: profile.companyName,
