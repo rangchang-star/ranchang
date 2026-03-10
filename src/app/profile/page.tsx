@@ -479,34 +479,14 @@ export default function ProfilePage() {
       };
     }
 
-    // 从 localStorage 读取高燃宣告数据
-    let declarationFromStorage = {
+    // 高燃宣告数据初始值（将从数据库获取）
+    const initialDeclaration = {
       direction: 'confidence',
       text: userData.bio || '',
       summary: userData.bio || '',
-      date: new Date(userData.createdAt).toLocaleDateString('zh-CN'),
+      date: userData.createdAt ? new Date(userData.createdAt).toLocaleDateString('zh-CN') : '',
       views: 0,
     };
-
-    try {
-      const storedDeclarations = localStorage.getItem('userDeclarations');
-      if (storedDeclarations) {
-        const declarations = JSON.parse(storedDeclarations);
-        // 找到第一个有内容的宣告
-        const firstDeclaration = declarations.find((d: any) => d.theme && d.description);
-        if (firstDeclaration) {
-          declarationFromStorage = {
-            direction: firstDeclaration.id,
-            text: firstDeclaration.theme || userData.bio || '',
-            summary: firstDeclaration.description || userData.bio || '',
-            date: new Date().toLocaleDateString('zh-CN'),
-            views: 0,
-          };
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load declarations from localStorage:', error);
-    }
 
     return {
       id: userData.id.toString(),
@@ -518,7 +498,7 @@ export default function ProfilePage() {
       need: userData.need || '',
       hardcoreTags: userData.hardcoreTags || [],
       resourceTags: userData.resourceTags || [],
-      currentDeclaration: declarationFromStorage,
+      currentDeclaration: initialDeclaration,
       assessments: [entrepreneurialPsychologyAssessment, businessCognitionAssessment, aiCognitionAssessment, careerMissionAssessment] as Assessment[],
     };
   };
@@ -529,6 +509,43 @@ export default function ProfilePage() {
   useEffect(() => {
     setUserInfo(getUserInfoFromUser(user));
   }, [user]);
+
+  // 从数据库获取用户的高燃宣告数据
+  useEffect(() => {
+    const fetchUserDeclarations = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await fetch(`/api/declarations?userId=${user.id}`);
+        const result = await response.json();
+
+        if (result.success && result.data && result.data.length > 0) {
+          // 获取最新的高燃宣告
+          const latestDeclaration = result.data[0];
+
+          // 更新 userInfo 中的 currentDeclaration
+          setUserInfo(prev => ({
+            ...prev,
+            currentDeclaration: {
+              direction: latestDeclaration.direction || 'confidence',
+              text: latestDeclaration.text || '',
+              summary: latestDeclaration.summary || '',
+              date: latestDeclaration.date ? new Date(latestDeclaration.date).toLocaleDateString('zh-CN') : '',
+              views: latestDeclaration.views || 0,
+            }
+          }));
+
+          console.log('从数据库获取到高燃宣告:', latestDeclaration);
+        } else {
+          console.log('数据库中没有该用户的高燃宣告数据');
+        }
+      } catch (error) {
+        console.error('获取高燃宣告数据失败:', error);
+      }
+    };
+
+    fetchUserDeclarations();
+  }, [user?.id]);
 
   // 切换量表展开状态
   const toggleAssessmentExpand = (index: number) => {

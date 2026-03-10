@@ -44,32 +44,33 @@ export async function GET(request: NextRequest) {
     }
 
     const { db, declarations } = await import('@/storage/database/supabase/connection');
-    const { desc, sql } = await import('drizzle-orm');
+    const { desc, sql, eq } = await import('drizzle-orm');
 
     console.log('开始查询 declarations...');
 
-    // 调试：检查当前数据库
-    try {
-      const dbResult = await db.execute(sql`SELECT current_database()`);
-      console.log('当前连接的数据库结果:', JSON.stringify(dbResult, null, 2));
-    } catch (e) {
-      console.error('查询当前数据库失败:', e);
+    // 获取查询参数
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    console.log('查询参数 userId:', userId);
+
+    // 构建查询
+    let query = db.select().from(declarations);
+
+    // 如果提供了 userId，则按用户ID过滤
+    if (userId) {
+      query = query.where(eq(declarations.userId, userId));
     }
 
-    // 从数据库获取高燃宣告数据，按创建时间倒序排列
-    const result = await db
-      .select()
-      .from(declarations)
-      .orderBy(desc(declarations.createdAt))
-      .limit(50); // 限制返回数量，避免数据过多
+    // 按创建时间倒序排列
+    const result = await query.orderBy(desc(declarations.createdAt)).limit(50);
 
     console.log('查询结果数量:', result.length);
-    console.log('第一条数据:', JSON.stringify(result[0], null, 2));
 
-    // 暂时不转换，直接返回原始数据
+    // 转换字段名并返回
     return NextResponse.json({
       success: true,
-      data: result
+      data: convertToCamelCase(result)
     });
   } catch (error: any) {
     console.error('获取高燃宣告列表失败:', error);
