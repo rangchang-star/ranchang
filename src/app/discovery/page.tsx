@@ -391,12 +391,12 @@ export default function DiscoveryPage() {
             name: user.name || user.nickname,
             age: user.age || 0,
             avatar: user.avatar || "/avatar-default.jpg",
-            tags: user.hardcoreTags || user.tags || [], // 优先使用 hardcoreTags
+            tags: user.hardcore_tags || user.tags || [], // 优先使用 hardcore_tags
             industry: user.industry || "",
-            tagStamp: user.tagStamp || "pureExchange",
+            tagStamp: user.tag_stamp || "pureExchange",
             need: user.need || "",
-            isTrusted: user.isTrusted || false,
-            isFeatured: user.isFeatured || false, // 保留 isFeatured 字段用于排序
+            isTrusted: user.is_trusted || false,
+            isFeatured: user.is_featured || false, // 保留 is_featured 字段用于排序
             position: user.position || "",
             company: user.company || "",
           }));

@@ -19,6 +19,7 @@ const client = postgres(connectionString, {
   connect_timeout: 5, // 连接超时时间
   connection: {
     application_name: 'ran-field-app',
+    options: `-c search_path=public`, // 设置 search_path 为 public
   },
 });
 

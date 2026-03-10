@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 直接创建数据库连接，避免连接池满的问题
-    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+    const connectionString = process.env.DATABASE_URL || '';
 
     const postgres = (await import('postgres')).default;
     const { drizzle } = await import('drizzle-orm/postgres-js');

@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 从数据库查找用户（强制使用数据库）
-    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+    // 从数据库查找用户
+    const connectionString = process.env.DATABASE_URL || '';
 
     if (!connectionString || connectionString === '') {
       return NextResponse.json({

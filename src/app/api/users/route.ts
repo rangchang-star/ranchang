@@ -12,30 +12,55 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 直接创建数据库连接，避免连接池满的问题
-    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+    const connectionString = process.env.DATABASE_URL || '';
 
-    const postgres = (await import('postgres')).default;
-    const { drizzle } = await import('drizzle-orm/postgres-js');
-    const { users } = await import('@/storage/database/supabase/schema');
-    const { desc } = await import('drizzle-orm');
-
-    // 创建单个连接（不使用连接池）
-    const client = postgres(connectionString, {
-      max: 1,
+    // 直接创建数据库连接（使用 pg 库）
+    const { default: pg } = await import('pg');
+    const pgClient = new pg.Client({
+      host: 'pgm-bp1hq894uq1918e5no.pg.rds.aliyuncs.com',
+      port: 5432,
+      database: 'ran_field',
+      user: 'postgres',
+      password: 'Zy818989',
       ssl: false,
     });
 
-    const db = drizzle(client);
+    await pgClient.connect();
 
-    const result = await db.select().from(users).orderBy(desc(users.created_at));
+    console.log('[DEBUG] Connected to database');
 
-    // 立即关闭连接
-    await client.end();
+    // 查询当前数据库和 schema
+    const currentInfo = await pgClient.query('SELECT current_database(), current_schema();');
+    console.log('[DEBUG] Current database and schema:', currentInfo.rows);
+
+    // 查询 users 表
+    const tables = await pgClient.query("SELECT table_schema, table_name FROM information_schema.tables WHERE table_name = 'users';");
+    console.log('[DEBUG] Users tables:', tables.rows);
+
+    // 测试查询
+    const testQuery = await pgClient.query('SELECT COUNT(*) as count FROM public.users;');
+    console.log('[DEBUG] Test query result:', testQuery.rows);
+
+    // 查询所有字段，找出存在的字段
+    const allFields = await pgClient.query(`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'users'
+      ORDER BY ordinal_position;
+    `);
+    console.log('[DEBUG] Available fields:', allFields.rows);
+
+    // 查询用户列表（只使用存在的字段）
+    const sqlQuery = 'SELECT * FROM public.users ORDER BY created_at DESC LIMIT 10';
+    console.log('[DEBUG] SQL Query:', sqlQuery);
+    const result = await pgClient.query(sqlQuery);
+
+    // 关闭连接
+    await pgClient.end();
 
     return NextResponse.json({
       success: true,
-      data: result
+      data: result.rows
     });
   } catch (error: any) {
     console.error('获取用户列表失败:', error);
@@ -51,8 +76,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // 前台使用真实的 ran_field 数据库
-    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field');
+    // 前台使用配置的数据库
+    const connectionString = process.env.DATABASE_URL || '';
 
     if (!connectionString || connectionString === '') {
       return NextResponse.json({
