@@ -65,7 +65,6 @@ export async function GET(
       id: activity.id.toString(),
       title: activity.title,
       description: activity.description,
-      date: activity.date?.toISOString(),
       startDate: activity.start_date?.toISOString(),
       endDate: activity.end_date?.toISOString(),
       address: activity.address,
@@ -126,18 +125,19 @@ export async function PUT(
     const result = await db.update(activities)
       .set({
         title: body.title,
+        subtitle: body.subtitle || null,
         description: body.description,
-        date: body.date ? new Date(body.date) : null,
-        start_time: body.start_time || null,
-        end_time: body.end_time || null,
-        location: body.location || null,
+        start_date: body.startDate ? new Date(body.startDate) : null,
+        end_date: body.endDate ? new Date(body.endDate) : null,
+        address: body.address || null,
         capacity: body.capacity || null,
-        type: body.type || null,
-        cover_image: body.cover_image || null,
+        category: body.category || null,
+        image: body.image || null,
+        tea_fee: body.teaFee || 0,
         status: body.status,
         updated_at: new Date(),
       })
-      .where(eq(activities.id, id))
+      .where(eq(activities.id, parseInt(id, 10)))
       .returning();
 
     if (!result || result.length === 0) {

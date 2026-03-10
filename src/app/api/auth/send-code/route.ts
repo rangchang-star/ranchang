@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// 简单的内存存储（生产环境应使用 Redis）
-const codeStore = new Map<string, { code: string; expiresAt: number; count: number }>();
-
-// 频率限制
-const rateLimit = new Map<string, { count: number; resetAt: number }>();
+import { generateCode } from '@/lib/verification-code';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,42 +14,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 频率限制：同一手机号1分钟内只能发送3次
-    const now = Date.now();
-    const phoneLimit = rateLimit.get(phone);
-    if (phoneLimit) {
-      if (now < phoneLimit.resetAt) {
-        if (phoneLimit.count >= 3) {
-          return NextResponse.json(
-            { success: false, message: '验证码发送过于频繁，请稍后重试' },
-            { status: 429 }
-          );
-        }
-        phoneLimit.count++;
-      } else {
-        // 重置计数器
-        rateLimit.set(phone, { count: 1, resetAt: now + 60000 });
-      }
-    } else {
-      rateLimit.set(phone, { count: 1, resetAt: now + 60000 });
-    }
-
-    // 生成6位数字验证码
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // 存储验证码（60秒有效期）
-    codeStore.set(phone, {
-      code,
-      expiresAt: now + 60000,
-      count: (codeStore.get(phone)?.count || 0) + 1,
-    });
-
-    // 清理过期的验证码
-    for (const [key, value] of codeStore.entries()) {
-      if (now > value.expiresAt) {
-        codeStore.delete(key);
-      }
-    }
+    // 生成验证码
+    const code = generateCode(phone, type || 'register');
 
     // 在开发环境打印验证码到日志
     console.log(`[${type}] 验证码: ${code}, 手机号: ${phone}, 有效期: 60秒`);
@@ -68,32 +29,19 @@ export async function POST(request: NextRequest) {
       // 开发环境返回验证码（生产环境应该删除）
       ...(process.env.NODE_ENV === 'development' && { devCode: code }),
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('发送验证码失败:', error);
+    
+    if (error.message === '验证码发送过于频繁，请稍后重试') {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: 429 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, message: '服务器错误，请稍后重试' },
       { status: 500 }
     );
   }
-}
-
-// 导出验证码验证函数（供其他接口使用）
-export function verifyCode(phone: string, code: string): boolean {
-  const stored = codeStore.get(phone);
-  if (!stored) {
-    return false;
-  }
-
-  if (Date.now() > stored.expiresAt) {
-    codeStore.delete(phone);
-    return false;
-  }
-
-  if (stored.code !== code) {
-    return false;
-  }
-
-  // 验证成功后删除验证码
-  codeStore.delete(phone);
-  return true;
 }

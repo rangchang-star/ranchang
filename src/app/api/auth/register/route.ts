@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { mockUsers } from '@/lib/mock-database';
-import { verifyCode } from '../send-code/route';
-import { randomUUID } from 'crypto';
+import { verifyCode } from '@/lib/verification-code';
 
 // 简单的 JWT 生成（生产环境应使用 jsonwebtoken 库）
 function generateToken(userId: string): string {
@@ -87,24 +86,21 @@ export async function POST(request: NextRequest) {
         const { db, users } = await import('@/storage/database/supabase/connection');
 
         const result = await db.insert(users).values({
-          id: randomUUID(),
           phone,
           name: nickname || '',
+          nickname: nickname || '',
           avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
           age: 30,
-          email: null,
-          connection_type: null,
           industry: null,
           need: null,
-          ability_tags: [],
+          hardcore_tags: [],
           resource_tags: [],
-          level: 'user',
+          role: 'user',
           company: null,
           position: null,
           status: 'active',
           is_featured: false,
-          join_date: new Date(),
-          last_login: new Date(),
+          password: password || '',
           created_at: new Date(),
           updated_at: new Date(),
         }).returning();
@@ -198,6 +194,3 @@ export async function POST(request: NextRequest) {
 }
 
 // 导出动态用户存储（供登录接口使用）
-export function getDynamicUsers() {
-  return dynamicUsers;
-}
