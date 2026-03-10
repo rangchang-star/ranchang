@@ -15,10 +15,8 @@ export async function GET(
       }, { status: 500 });
     }
 
-    // 直接创建数据库连接，避免连接池满的问题
+    // 直接创建数据库连接
     const connectionString = process.env.DATABASE_URL || '';
-    console.log('GET API - Full connection string:', connectionString);
-
     const postgres = (await import('postgres')).default;
 
     // 创建单个连接（不使用连接池）
@@ -28,18 +26,12 @@ export async function GET(
     });
 
     try {
-      console.log('GET API - Querying user with id:', id);
-
-      // 先执行一个简单的测试查询
-      const testResult = await client`SELECT 1 as test`;
-      console.log('GET API - Test query result:', testResult);
-
-      // 使用原始 SQL 查询，避免 Drizzle ORM 的 Schema 问题
+      // 使用原始 SQL 查询
       const result = await client`
         SELECT
           id, name, nickname, avatar, age, phone,
           company, position, industry, bio, need,
-          ability_tags, hardcore_tags, resource_tags, tag_stamp,
+          hardcore_tags, resource_tags, tag_stamp,
           is_trusted, is_featured,
           connection_count, activity_count,
           role, status,
@@ -49,39 +41,14 @@ export async function GET(
         LIMIT 1
       `;
 
-      console.log('GET API - Query result length:', result.length);
-
       // 立即关闭连接
       await client.end();
 
       if (result.length === 0) {
-        // 如果数据库查询失败，返回模拟数据
-        console.log('GET API - User not found in database, returning mock data');
         return NextResponse.json({
-          success: true,
-          data: {
-            id: id,
-            name: '大鱼',
-            nickname: '大鱼',
-            avatar: '',
-            age: 40,
-            phone: '',
-            company: '',
-            position: '',
-            industry: '',
-            bio: '',
-            need: '',
-            resource_tags: ['政策资源', '融资渠道', '海外客户'],
-            is_trusted: false,
-            is_featured: false,
-            connection_count: 0,
-            activity_count: 0,
-            role: 'user',
-            status: 'active',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        });
+          success: false,
+          error: '用户不存在'
+        }, { status: 404 });
       }
 
       return NextResponse.json({
@@ -91,35 +58,10 @@ export async function GET(
     } catch (queryError: any) {
       await client.end();
       console.error('GET API - Query error:', queryError.message);
-      console.error('GET API - Query error details:', JSON.stringify(queryError, null, 2));
-
-      // 返回模拟数据作为降级方案
       return NextResponse.json({
-        success: true,
-        data: {
-          id: id,
-          name: '大鱼',
-          nickname: '大鱼',
-          avatar: '',
-          age: 40,
-          phone: '',
-          company: '',
-          position: '',
-          industry: '',
-          bio: '',
-          need: '',
-          resource_tags: ['政策资源', '融资渠道', '海外客户'],
-          ability_tags: ['项目投融资', '政策解读', '海外市场'],
-          is_trusted: false,
-          is_featured: false,
-          connection_count: 0,
-          activity_count: 0,
-          role: 'user',
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      });
+        success: false,
+        error: '查询用户信息失败: ' + queryError.message
+      }, { status: 500 });
     }
   } catch (error: any) {
     console.error('获取用户详情失败:', error);
@@ -146,9 +88,8 @@ export async function PUT(
       }, { status: 500 });
     }
 
-    // 直接创建数据库连接，避免连接池满的问题
+    // 直接创建数据库连接
     const connectionString = process.env.DATABASE_URL || '';
-
     const postgres = (await import('postgres')).default;
 
     // 创建单个连接（不使用连接池）
@@ -158,13 +99,17 @@ export async function PUT(
     });
 
     try {
-      // 构建更新 SQL，使用原始 SQL 避免 Drizzle ORM Schema 问题
+      // 构建更新 SQL
       const updateFields = [];
       const updateValues = [];
 
       if (body.name !== undefined) {
         updateFields.push('name = $1');
         updateValues.push(body.name);
+      }
+      if (body.nickname !== undefined) {
+        updateFields.push('nickname = $' + (updateValues.length + 1));
+        updateValues.push(body.nickname);
       }
       if (body.avatar !== undefined) {
         updateFields.push('avatar = $' + (updateValues.length + 1));
@@ -194,60 +139,72 @@ export async function PUT(
         updateFields.push('bio = $' + (updateValues.length + 1));
         updateValues.push(body.bio);
       }
-      if (body.ability_tags !== undefined) {
-        updateFields.push('ability_tags = $' + (updateValues.length + 1));
-        updateValues.push(body.ability_tags);
-      }
       if (body.hardcore_tags !== undefined) {
         updateFields.push('hardcore_tags = $' + (updateValues.length + 1));
-        updateValues.push(body.hardcore_tags);
+        updateValues.push(JSON.stringify(body.hardcore_tags));
+      }
+      if (body.resource_tags !== undefined) {
+        updateFields.push('resource_tags = $' + (updateValues.length + 1));
+        updateValues.push(JSON.stringify(body.resource_tags));
       }
       if (body.tag_stamp !== undefined) {
         updateFields.push('tag_stamp = $' + (updateValues.length + 1));
         updateValues.push(body.tag_stamp);
       }
-      if (body.resource_tags !== undefined) {
-        updateFields.push('resource_tags = $' + (updateValues.length + 1));
-        updateValues.push(body.resource_tags);
-      }
 
-      // 添加 updated_at 字段
+      // 添加 updated_at
       updateFields.push('updated_at = $' + (updateValues.length + 1));
       updateValues.push(new Date());
 
-      // 添加 ID 条件
+      // 添加 id 作为最后一个参数
       updateValues.push(id);
 
-      // 构建完整的 SQL
-      const sql = `UPDATE users SET ${updateFields.join(', ')} WHERE id::text = $${updateValues.length}`;
+      if (updateFields.length === 0) {
+        await client.end();
+        return NextResponse.json({
+          success: false,
+          error: '没有提供要更新的字段'
+        }, { status: 400 });
+      }
 
-      // 执行更新
-      await client.unsafe(sql, updateValues);
+      const sql = `
+        UPDATE users
+        SET ${updateFields.join(', ')}
+        WHERE id::text = $${updateValues.length}
+        RETURNING id, name, nickname, avatar, age, phone, company, position,
+                  industry, bio, need, hardcore_tags, resource_tags, tag_stamp,
+                  is_trusted, is_featured, connection_count, activity_count,
+                  role, status, created_at, updated_at
+      `;
 
-      // 立即关闭连接
+      const result = await client.unsafe(sql, updateValues);
       await client.end();
+
+      if (result.length === 0) {
+        return NextResponse.json({
+          success: false,
+          error: '用户不存在'
+        }, { status: 404 });
+      }
 
       return NextResponse.json({
         success: true,
         message: '用户信息更新成功',
-        data: { id }
+        data: result[0]
       });
     } catch (queryError: any) {
       await client.end();
-      console.error('PUT API - Update error:', queryError.message);
-
-      // 返回成功，模拟保存成功
+      console.error('PUT API - Query error:', queryError.message);
       return NextResponse.json({
-        success: true,
-        message: '用户信息更新成功（模拟模式）',
-        data: { id }
-      });
+        success: false,
+        error: '更新用户信息失败: ' + queryError.message
+      }, { status: 500 });
     }
   } catch (error: any) {
-    console.error('更新用户信息失败:', error);
+    console.error('更新用户详情失败:', error);
     return NextResponse.json({
       success: false,
-      error: '更新用户信息失败: ' + error.message
+      error: '更新用户详情失败: ' + error.message
     }, { status: 500 });
   }
 }

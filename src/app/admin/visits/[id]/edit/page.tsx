@@ -1,5 +1,12 @@
 'use client';
 
+// ⚠️ 注意：此页面包含模拟数据（mockVisit）
+// TODO: 需要后续重构，将模拟数据替换为从真实 API 获取
+// 建议创建以下 API 接口：
+// - GET /api/admin/visits/:id - 获取探访详情
+// - PUT /api/admin/visits/:id - 更新探访信息
+// - GET /api/admin/members - 获取可选成员列表
+
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';

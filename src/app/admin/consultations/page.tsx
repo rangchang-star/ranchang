@@ -1,5 +1,12 @@
 'use client';
 
+// ⚠️ 注意：此页面包含模拟数据（mockUserDetails, mockConsultations）
+// TODO: 需要后续重构，将模拟数据替换为从真实 API 获取
+// 建议创建以下 API 接口：
+// - GET /api/admin/consultations - 获取咨询列表
+// - GET /api/admin/users/:id - 获取用户详情
+// - PUT /api/admin/consultations/:id - 更新咨询状态
+
 import { useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';

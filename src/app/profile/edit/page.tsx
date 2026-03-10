@@ -23,23 +23,23 @@ const escapeHtml = (str: string): string => {
   return div.innerHTML;
 };
 
-// 模拟数据
-const mockUserProfile = {
-  avatar: '/avatar-1.jpg',
-  name: '王姐',
+// 默认值配置（非模拟数据，仅用于空值回退）
+const defaultUserProfile = {
+  avatar: '',
+  name: '',
   gender: 'female',
-  age: 38,
-  phone: '13800138888',
-  email: 'wang***@example.com',
+  age: null,
+  phone: '',
+  email: '',
   companyName: '',
   companyScale: '',
   companyPosition: '',
-  purpose: '人找事', // 人找事/事找人/纯交流
-  industry: '制造业',
-  industryTags: ['供应链', '智能制造', '数字化转型'], // 行业标签（用于行业相关功能）
-  hardcoreTags: ['AI技术', '搞定自己', '会说人话'], // 硬核标签（必填，独立字段）
-  resources: ['AI技术', '供应链资源', '企业培训'],
-  declaration: '用15年供应链管理经验，帮助传统企业实现AI转型',
+  purpose: '纯交流',
+  industry: '',
+  industryTags: [],
+  hardcoreTags: [],
+  resources: [],
+  declaration: '',
   directions: ['信心', '使命', '自我'],
 };
 
@@ -146,28 +146,28 @@ function ProfileEditContent() {
   // 根据登录用户数据初始化用户资料
   const getUserProfile = () => {
     if (!isLoggedIn || !user) {
-      // 未登录时返回默认的mock数据，直接返回 mockUserProfile（包含正确的 hardcoreTags）
-      return mockUserProfile;
+      // 未登录时返回空数据（或重定向到登录页）
+      return defaultUserProfile;
     }
 
     // 将登录用户数据映射到编辑页面需要的格式
     return {
-      avatar: user.avatar || mockUserProfile.avatar,
-      name: user.name || user.nickname || mockUserProfile.name,
-      gender: 'female', // 暂时默认，实际可以从用户数据中获取
-      age: user.age || mockUserProfile.age,
-      phone: user.phone || mockUserProfile.phone,
-      email: '', // 暂时为空
+      avatar: user.avatar || '',
+      name: user.name || user.nickname || '',
+      gender: 'female',
+      age: user.age || null,
+      phone: user.phone || '',
+      email: '',
       companyName: user.company || '',
       companyScale: '',
       companyPosition: user.position || '',
       purpose: getPurposeFromTagStamp(user.tagStamp),
-      industry: user.industry || mockUserProfile.industry,
-      industryTags: mockUserProfile.industryTags, // 保留行业标签用于行业相关功能
-      resources: user.resourceTags || mockUserProfile.resources,
-      hardcoreTags: user.hardcoreTags || mockUserProfile.hardcoreTags || [], // 硬核标签从用户数据中获取，无则使用默认值
-      declaration: user.bio || mockUserProfile.declaration,
-      directions: mockUserProfile.directions,
+      industry: user.industry || '',
+      industryTags: [], // 行业标签功能暂未实现
+      resources: Array.isArray(user.resourceTags) ? user.resourceTags : [],
+      hardcoreTags: Array.isArray(user.hardcoreTags) ? user.hardcoreTags : [],
+      declaration: user.bio || '',
+      directions: ['信心', '使命', '自我'],
     };
   };
 
@@ -688,8 +688,8 @@ function ProfileEditContent() {
                 <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">年龄 <span className="text-red-400">*</span></label>
                 <input
                   type="number"
-                  value={profile.age}
-                  onChange={(e) => setProfile({ ...profile, age: parseInt(e.target.value) })}
+                  value={profile.age || ''}
+                  onChange={(e) => setProfile({ ...profile, age: parseInt(e.target.value) || null })}
                   className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
                   placeholder="请输入年龄"
                 />

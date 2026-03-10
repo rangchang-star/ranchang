@@ -7,40 +7,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Lightbulb, Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const mockCases = [
-  {
-    id: '1',
-    type: '心理',
-    title: '45岁转型，我整整失眠了半年',
-    description: '在大厂工作了20年，突然不知道自己还能做什么，每天都在焦虑中度过...',
-    solution: '通过专业心理咨询和小组支持，慢慢找回自我价值感',
-  },
-  {
-    id: '2',
-    type: '心理',
-    title: '创业失败后，我该如何重新站起来',
-    description: '第一次创业失败，投入的积蓄打了水漂，家人也不支持我继续...',
-    solution: '接受失败是成长的一部分，寻求同行者支持和经验复盘',
-  },
-  {
-    id: '3',
-    type: '商业',
-    title: '传统制造业转型，我该怎么选择方向',
-    description: '做了15年制造，现在想做数字化转型，但不知道从哪里开始...',
-    solution: '先做小范围试点，验证商业模式，再逐步扩大规模',
-  },
-  {
-    id: '4',
-    type: '商业',
-    title: '合伙人分家，我该如何处理股权问题',
-    description: '创业3年，合伙人对方向产生分歧，想要分家但不清楚股权如何处理...',
-    solution: '建议寻求专业法务支持，提前签署好退出机制',
-  },
-];
+interface CaseData {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  solution: string;
+}
 
 export default function ConsultationPage() {
+  const [cases, setCases] = useState<CaseData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     contact: '',
@@ -51,10 +30,30 @@ export default function ConsultationPage() {
     wantCase: 'consider' as 'yes' | 'consider' | 'no',
   });
 
+  useEffect(() => {
+    async function loadCases() {
+      try {
+        // TODO: 创建 /api/consultations/cases 接口
+        const response = await fetch('/api/consultations/cases');
+        const data = await response.json();
+
+        if (data.success) {
+          setCases(data.data);
+        }
+      } catch (err) {
+        console.error('Failed to load cases:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCases();
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: 提交表单
-    alert('已收到您的留言，我们将在3个工作日内反馈，结果可在"个人中心-我的咨询"查看');
+    alert('已收到您的留言，我们将在3个工作日内反馈');
   };
 
   return (
@@ -65,48 +64,59 @@ export default function ConsultationPage() {
           <h3 className="text-sm font-semibold text-muted-foreground mb-6 uppercase tracking-wider">
             真实案例
           </h3>
-          <div className="space-y-8">
-            {mockCases.map((caseItem) => (
-              <div key={caseItem.id} className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <h4 className="font-semibold text-lg text-foreground">
-                    {caseItem.title}
-                  </h4>
-                  <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${
-                      caseItem.type === '心理'
-                        ? 'bg-secondary text-secondary-foreground'
-                        : 'bg-secondary/50 text-secondary-foreground'
-                    }`}
-                  >
-                    {caseItem.type === '心理' ? (
-                      <Heart className="w-3 h-3 mr-1" />
-                    ) : (
-                      <Lightbulb className="w-3 h-3 mr-1" />
-                    )}
-                    {caseItem.type}
-                  </span>
-                </div>
 
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {caseItem.description}
-                </p>
+          {loading ? (
+            <div className="text-center text-muted-foreground py-8">
+              加载中...
+            </div>
+          ) : cases.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              暂无案例
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {cases.map((caseItem) => (
+                <div key={caseItem.id} className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <h4 className="font-semibold text-lg text-foreground">
+                      {caseItem.title}
+                    </h4>
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs ${
+                        caseItem.type === '心理'
+                          ? 'bg-secondary text-secondary-foreground'
+                          : 'bg-secondary/50 text-secondary-foreground'
+                      }`}
+                    >
+                      {caseItem.type === '心理' ? (
+                        <Heart className="w-3 h-3 mr-1" />
+                      ) : (
+                        <Lightbulb className="w-3 h-3 mr-1" />
+                      )}
+                      {caseItem.type}
+                    </span>
+                  </div>
 
-                <div className="bg-secondary/30 rounded-lg p-4">
-                  <p className="text-sm text-foreground leading-relaxed">
-                    <span className="font-medium">启发：</span>
-                    {caseItem.solution}
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {caseItem.description}
                   </p>
+
+                  <div className="bg-secondary/30 rounded-lg p-4">
+                    <p className="text-sm text-foreground leading-relaxed">
+                      <span className="font-medium">启发：</span>
+                      {caseItem.solution}
+                    </p>
+                  </div>
+
+                  <Button variant="outline" className="w-full text-sm">
+                    类似困扰？点这里留言
+                  </Button>
+
+                  <div className="border-t border-border" />
                 </div>
-
-                <Button variant="outline" className="w-full text-sm">
-                  类似困扰？点这里留言
-                </Button>
-
-                <div className="border-t border-border" />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 留言表单 */}
@@ -203,7 +213,7 @@ export default function ConsultationPage() {
             </div>
 
             <div className="space-y-3">
-              <Label>是否愿意成为案主</Label>
+              <Label>是否愿意被做成案例 *</Label>
               <RadioGroup
                 value={formData.wantCase}
                 onValueChange={(value: any) =>
@@ -217,28 +227,17 @@ export default function ConsultationPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="consider" id="consider" />
-                  <Label htmlFor="consider">需要考虑</Label>
+                  <Label htmlFor="consider">考虑</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="no" id="no" />
-                  <Label htmlFor="no">暂不愿意</Label>
+                  <Label htmlFor="no">不愿意</Label>
                 </div>
               </RadioGroup>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="attachment">上传附件（可选）</Label>
-              <Input
-                id="attachment"
-                type="file"
-              />
-              <p className="text-xs text-muted-foreground">
-                支持 BP、文档等文件
-              </p>
-            </div>
-
-            <Button type="submit" className="w-full">
-              提交留言
+            <Button type="submit" className="w-full" size="lg">
+              提交咨询
             </Button>
           </form>
         </div>
