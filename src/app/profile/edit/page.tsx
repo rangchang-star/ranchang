@@ -163,7 +163,7 @@ function ProfileEditContent() {
       companyPosition: user.position || '',
       purpose: getPurposeFromTagStamp(user.tagStamp),
       industry: user.industry || mockUserProfile.industry,
-      industryTags: mockUserProfile.industryTags, // 保留行业标签用于行业相关功能
+      industryTags: user.tags || mockUserProfile.industryTags, // 从 user.tags 加载行业标签
       resources: user.resourceTags || mockUserProfile.resources,
       hardcoreTags: user.hardcoreTags || mockUserProfile.hardcoreTags || [], // 硬核标签从用户数据中获取，无则使用默认值
       declaration: user.bio || mockUserProfile.declaration,
@@ -509,9 +509,9 @@ function ProfileEditContent() {
       }
     }
 
-    // 验证能力标签（必选）
+    // 验证硬核标签（必选）
     if (!selectedAbilityTags || selectedAbilityTags.length === 0) {
-      requiredErrors.push('能力标签（必选）');
+      requiredErrors.push('硬核标签（必选）');
     }
 
     // 验证高燃宣告（如果选中了方向）
