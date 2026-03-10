@@ -5,10 +5,9 @@ import * as schema from './schema';
 // 创建PostgreSQL连接 - 使用 ran_field 数据库
 let connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
 
-// 添加 search_path 选项，确保优先查询 public schema
 // 添加 connect_timeout 来强制重新连接
 const separator = connectionString.includes('?') ? '&' : '?';
-connectionString += `${separator}options=-c%20search_path%3Dpublic&connect_timeout=10`;
+connectionString += `${separator}connect_timeout=10`;
 
 // 打印连接信息用于调试
 console.log('DATABASE_URL配置:', connectionString);

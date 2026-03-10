@@ -8,6 +8,7 @@ export default {
   out: './src/storage/database/supabase/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    url: 'postgresql://postgres:Zy818989@pgm-bp1hq894uq1918e5no.pg.rds.aliyuncs.com:5432/ran_field?sslmode=disable',
   },
+  schemaFilter: ['public'],
 } satisfies Config;

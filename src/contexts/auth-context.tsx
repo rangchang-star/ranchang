@@ -2,33 +2,32 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
-// 用户信息类型
+// 用户信息类型（与新API保持一致）
 export interface User {
-  id: string; // UUID
-  phone: string;
+  id: string;
   name: string;
-  avatar: string;
-  gender: string;
   age: number;
+  avatar: string;
+  phone: string;
   email: string;
-  company: string;
-  companyScale: string;
-  position: string;
+  connectionType: string;
   industry: string;
-  bio: string;
   need: string;
-  tagStamp: string;
   abilityTags: string[];
-  hardcoreTags: string[];
   resourceTags: string[];
   level: string;
-  connectionType: string;
-  isFeatured: boolean;
+  company: string;
+  position: string;
   status: string;
+  isFeatured: boolean;
   joinDate: string;
   lastLogin: string;
   createdAt: string;
   updatedAt: string;
+  tagStamp: string;
+  hardcoreTags: string[];
+  gender: string;
+  companyScale: string;
 }
 
 interface AuthContextType {
