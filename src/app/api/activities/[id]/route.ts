@@ -20,7 +20,16 @@ export async function GET(
     const { db, activities } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    const dbActivities = await db.select().from(activities).where(eq(activities.id, id));
+    // 验证并转换 ID 为数字类型
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      return NextResponse.json({
+        success: false,
+        error: '无效的活动 ID'
+      }, { status: 400 });
+    }
+
+    const dbActivities = await db.select().from(activities).where(eq(activities.id, numericId));
 
     if (!dbActivities || dbActivities.length === 0) {
       return NextResponse.json(
@@ -107,6 +116,15 @@ export async function PUT(
     const { db, activities } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
+    // 验证并转换 ID 为数字类型
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      return NextResponse.json({
+        success: false,
+        error: '无效的活动 ID'
+      }, { status: 400 });
+    }
+
     const result = await db.update(activities)
       .set({
         title: body.title,
@@ -121,7 +139,7 @@ export async function PUT(
         status: body.status,
         updated_at: new Date(),
       })
-      .where(eq(activities.id, id))
+      .where(eq(activities.id, numericId))
       .returning();
 
     if (!result || result.length === 0) {

@@ -20,7 +20,16 @@ export async function GET(
     const { db, visits } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    const dbVisits = await db.select().from(visits).where(eq(visits.id, id));
+    // 验证并转换 ID 为数字类型
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      return NextResponse.json({
+        success: false,
+        error: '无效的探访 ID'
+      }, { status: 400 });
+    }
+
+    const dbVisits = await db.select().from(visits).where(eq(visits.id, numericId));
 
     if (!dbVisits || dbVisits.length === 0) {
       return NextResponse.json(
@@ -95,6 +104,15 @@ export async function PUT(
     const { db, visits } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
+    // 验证并转换 ID 为数字类型
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      return NextResponse.json({
+        success: false,
+        error: '无效的探访 ID'
+      }, { status: 400 });
+    }
+
     const result = await db.update(visits)
       .set({
         company_name: body.company_name,
@@ -108,7 +126,7 @@ export async function PUT(
         status: body.status,
         updated_at: new Date(),
       })
-      .where(eq(visits.id, id))
+      .where(eq(visits.id, numericId))
       .returning();
 
     if (!result || result.length === 0) {

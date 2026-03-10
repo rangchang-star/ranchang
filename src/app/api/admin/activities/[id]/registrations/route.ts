@@ -10,8 +10,17 @@ export async function GET(
     const { db, activities: activitiesTable, activityRegistrations: activityRegistrationsTable, users: usersTable } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
+    // 验证并转换 ID 为数字类型
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      return NextResponse.json(
+        { success: false, error: '无效的活动 ID' },
+        { status: 400 }
+      );
+    }
+
     // 获取活动信息
-    const dbActivities = await db.select().from(activitiesTable).where(eq(activitiesTable.id, id));
+    const dbActivities = await db.select().from(activitiesTable).where(eq(activitiesTable.id, numericId));
 
     if (dbActivities.length === 0) {
       return NextResponse.json(
