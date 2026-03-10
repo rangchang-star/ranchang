@@ -96,13 +96,13 @@ export async function PUT(
             audio: body.audio,
             summary: body.summary || '',
             text: body.text || '',
-            iconType: body.iconType || '',
+            icon_type: body.iconType || '',
             rank: body.rank || 0,
             profile: body.profile || '',
             duration: body.duration || '',
             views: body.views || 0,
-            isFeatured: body.isFeatured || false,
-            updatedAt: new Date(),
+            is_featured: body.isFeatured || false,
+            updated_at: new Date(),
           })
           .where(eq(dailyDeclarations.id, parseInt(id)))
           .returning();

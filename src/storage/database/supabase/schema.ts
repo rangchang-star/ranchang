@@ -2,7 +2,7 @@ import { pgTable, serial, varchar, text, integer, timestamp, boolean, jsonb } fr
 import { sql } from 'drizzle-orm';
 import { relations } from 'drizzle-orm';
 
-// 用户表（就是会员表）- 严格匹配 ran_field 数据库实际结构
+// 用户表（就是会员表）- 匹配数据库实际结构
 export const users = pgTable('users', {
   id: varchar('id').primaryKey(),
   phone: varchar('phone'),
@@ -11,6 +11,7 @@ export const users = pgTable('users', {
   name: varchar('name'),
   avatar: text('avatar'),
   age: integer('age'),
+  email: varchar('email'),
   company: varchar('company'),
   position: varchar('position'),
   industry: varchar('industry'),
@@ -18,14 +19,20 @@ export const users = pgTable('users', {
   need: text('need'),
   tag_stamp: text('tag_stamp'),
   tags: jsonb('tags'),
+  ability_tags: jsonb('ability_tags'),
   hardcore_tags: jsonb('hardcore_tags'),
   resource_tags: jsonb('resource_tags'),
   is_trusted: boolean('is_trusted'),
   is_featured: boolean('is_featured'),
+  is_super_admin: boolean('is_super_admin'),
   connection_count: integer('connection_count'),
   activity_count: integer('activity_count'),
   role: text('role'),
+  level: varchar('level'),
+  connection_type: varchar('connection_type'),
   status: text('status'),
+  last_login: timestamp('last_login'),
+  join_date: timestamp('join_date'),
   created_at: timestamp('created_at'),
   updated_at: timestamp('updated_at'),
 });
@@ -101,11 +108,11 @@ export const declarations = pgTable('declarations', {
   updatedAt: timestamp('updated_at'),
 });
 
-// 每日宣告表 - 严格匹配 ran_field 数据库实际结构
+// 每日宣告表 - 匹配数据库实际结构
 export const dailyDeclarations = pgTable('daily_declarations', {
-  id: integer('id').primaryKey(),
-  title: varchar('title'),
-  date: timestamp('date'),
+  id: serial('id').primaryKey(),
+  title: varchar('title').notNull(),
+  date: timestamp('date').notNull(),
   image: text('image'),
   audio: text('audio'),
   summary: text('summary'),
@@ -114,10 +121,10 @@ export const dailyDeclarations = pgTable('daily_declarations', {
   rank: integer('rank'),
   profile: text('profile'),
   duration: varchar('duration'),
-  views: integer('views'),
-  is_featured: boolean('is_featured'),
-  created_at: timestamp('created_at'),
-  updated_at: timestamp('updated_at'),
+  views: integer('views').default(0),
+  is_featured: boolean('is_featured').default(false),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
 });
 
 // 系统设置表

@@ -46,7 +46,7 @@ export async function GET(
 
       // 其他信息
       level: user.is_featured ? '活跃会员' : '种子会员',
-      joinDate: user.join_date ? new Date(user.join_date).toISOString().split('T')[0] : new Date(user.created_at).toISOString().split('T')[0],
+      joinDate: user.join_date ? user.join_date.toISOString().split('T')[0] : (user.created_at ? user.created_at.toISOString().split('T')[0] : ''),
       status: user.status || 'active',
       isFeatured: user.is_featured,
       role: 'user',

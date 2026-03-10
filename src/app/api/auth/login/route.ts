@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyCode } from '../send-code/route';
 
 // 简单的 JWT 生成（生产环境应使用 jsonwebtoken 库）
-function generateToken(userId: number): string {
+function generateToken(userId: string): string {
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payload = btoa(
     JSON.stringify({
