@@ -375,8 +375,7 @@ export default function DiscoveryPage() {
         if (
           !usersRes.ok ||
           !activitiesRes.ok ||
-          !declarationsRes.ok ||
-          !documentsRes.ok
+          !declarationsRes.ok
         ) {
           throw new Error("加载数据失败");
         }
@@ -479,14 +478,17 @@ export default function DiscoveryPage() {
             id: doc.id.toString(),
             title: doc.title || "",
             description: doc.description || "",
-            cover: doc.cover || "",
+            cover: doc.file_url || "", // 使用 file_url 作为 cover
             date: doc.created_at
               ? new Date(doc.created_at).toLocaleDateString("zh-CN")
               : "",
             views: doc.views || 0,
-            type: doc.type || "document",
+            type: doc.file_type || "document", // 使用 file_type
           }));
           setDocumentItems(formattedDocuments);
+        } else {
+          console.warn("文档加载失败，继续加载其他数据");
+          setDocumentItems([]);
         }
 
         // 处理每日宣告（如果存在）

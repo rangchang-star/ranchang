@@ -17,12 +17,22 @@ export async function GET(request: NextRequest) {
 
     const { db, documents } = await import('@/storage/database/supabase/connection');
 
+    // 添加调试信息
+    console.log('开始查询 documents 表...');
+    console.log('DATABASE_URL:', process.env.DATABASE_URL?.split('@')[1]); // 只显示主机部分
+
     let result;
-    if (category) {
-      const { eq } = await import('drizzle-orm');
-      result = await db.select().from(documents).where(eq(documents.category, category));
-    } else {
-      result = await db.select().from(documents);
+    try {
+      if (category) {
+        const { eq } = await import('drizzle-orm');
+        result = await db.select().from(documents).where(eq(documents.category, category));
+      } else {
+        result = await db.select().from(documents);
+      }
+      console.log('查询成功，返回', result.length, '条记录');
+    } catch (dbError: any) {
+      console.error('数据库查询失败:', dbError.message);
+      throw dbError;
     }
 
     // 按创建时间倒序排列
