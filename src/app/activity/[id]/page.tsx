@@ -107,7 +107,7 @@ export default function ActivityDetailPage() {
             image: data.data.image || '',
             tags: [data.data.category || '', '名额紧张'],
             enrollments: data.data.participants?.map((p: any) => p.id.toString()) || [],
-            enrolledCount: data.data.enrolledCount || 0,
+            enrolledCount: data.data.registeredCount || data.data.enrolledCount || 0,
             maxEnrollments: data.data.capacity || 0,
             participants: data.data.participants?.map((p: any) => ({
               id: p.id.toString(),
@@ -125,7 +125,7 @@ export default function ActivityDetailPage() {
             })) || [],
             address: data.data.address || '',
             teaFee: `茶水费${data.data.teaFee || 0}元`,
-            status: data.data.status === 'active' ? 'ongoing' : 'ended',
+            status: data.data.status === 'active' ? 'ongoing' : data.data.status,
             endTime: data.data.endDate || '',
             startDate: data.data.startDate ? new Date(data.data.startDate).toLocaleString('zh-CN', {
               year: 'numeric',
