@@ -4,7 +4,7 @@ import { relations } from 'drizzle-orm';
 
 // 用户表（就是会员表）- 严格匹配 ran_field 数据库实际结构
 export const users = pgTable('users', {
-  id: integer('id').primaryKey(),
+  id: varchar('id').primaryKey(),
   phone: varchar('phone'),
   password: varchar('password'),
   nickname: varchar('nickname'),
@@ -89,11 +89,11 @@ export const visitRecords = pgTable('visit_records', {
 // 高燃宣告表 - 严格匹配 ran_field 数据库实际结构
 export const declarations = pgTable('declarations', {
   id: varchar('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id),
-  direction: text('direction'),
+  userId: varchar('user_id').notNull().references(() => users.id),
+  direction: varchar('direction'),
   text: text('text').notNull(),
   summary: text('summary'),
-  audioUrl: text('audio_url'),
+  audioUrl: varchar('audio_url'),
   views: integer('views').default(0),
   date: timestamp('date').defaultNow(),
   isFeatured: boolean('is_featured').default(false),

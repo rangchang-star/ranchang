@@ -63,5 +63,8 @@ const client = postgres(connectionString, {
 // 创建Drizzle ORM实例
 export const db = drizzle(client, { schema });
 
+// 导出postgres client
+export { client };
+
 // 导出schema
 export * from './schema';

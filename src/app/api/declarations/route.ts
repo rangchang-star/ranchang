@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    const { db, declarations } = await import('@/storage/database/supabase/connection');
+    const { db, declarations, users, client } = await import('@/storage/database/supabase/connection');
     const { desc, sql, eq } = await import('drizzle-orm');
 
     console.log('开始查询 declarations...');
@@ -54,18 +54,27 @@ export async function GET(request: NextRequest) {
 
     console.log('查询参数 userId:', userId);
 
-    // 构建查询
-    let query = db.select().from(declarations);
+    // 构建查询 - 直接使用 postgres 客户端执行 SQL
+    let queryText = `
+      SELECT 
+        id, user_id, direction, text, summary
+      FROM public.declarations
+    `;
 
     // 如果提供了 userId，则按用户ID过滤
     if (userId) {
-      query = query.where(eq(declarations.userId, userId));
+      queryText += ` WHERE user_id = ${userId}`;
     }
 
-    // 按创建时间倒序排列
-    const result = await query.orderBy(desc(declarations.createdAt)).limit(50);
+    queryText += ` ORDER BY created_at DESC LIMIT 50`;
+
+    const result = await client.unsafe(queryText);
 
     console.log('查询结果数量:', result.length);
+
+    console.log('查询结果:', JSON.stringify(result));
+    console.log('查询结果数量:', result.length);
+    console.log('查询结果类型:', typeof result, Array.isArray(result));
 
     // 转换字段名并返回
     return NextResponse.json({
