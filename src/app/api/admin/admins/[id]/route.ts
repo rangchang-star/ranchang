@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MockDatabase } from '@/lib/mock-database';
 import { requireAdmin } from '@/lib/auth-utils';
 
 // GET - 获取管理员详情
@@ -19,45 +18,28 @@ export async function GET(
     }
 
     const { id } = await params;
-    let user;
 
     // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, users } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
-
-        const dbUsers = await db.select().from(users).where(eq(users.id, id));
-
-        if (dbUsers.length === 0) {
-          return NextResponse.json({
-            success: false,
-            error: '管理员不存在',
-          }, { status: 404 });
-        }
-
-        user = dbUsers[0];
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-        // 降级到模拟数据
-        user = MockDatabase.getUserById(id);
-        if (!user) {
-          return NextResponse.json({
-            success: false,
-            error: '管理员不存在',
-          }, { status: 404 });
-        }
-      }
-    } else {
-      // 使用模拟数据
-      user = MockDatabase.getUserById(id);
-      if (!user) {
-        return NextResponse.json({
-          success: false,
-          error: '管理员不存在',
-        }, { status: 404 });
-      }
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
     }
+
+    const { db, users } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
+
+    const dbUsers = await db.select().from(users).where(eq(users.id, id));
+
+    if (dbUsers.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: '管理员不存在',
+      }, { status: 404 });
+    }
+
+    const user = dbUsers[0];
 
     if ((user as any).level !== 'admin') {
       return NextResponse.json({
@@ -74,7 +56,7 @@ export async function GET(
     console.error('获取管理员详情失败:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || '获取管理员详情失败'
+      error: '获取管理员详情失败: ' + error.message
     }, { status: 500 });
   }
 }
@@ -98,54 +80,51 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
-    let updatedAdmin;
-
     // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, users } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
 
-        if (body.name || body.phone) {
-          const result = await db.update(users)
-            .set({
-              name: body.name || null,
-              phone: body.phone || null,
-              updated_at: new Date(),
-            })
-            .where(eq(users.id, id))
-            .returning();
+    const { db, users } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-          if (result.length === 0) {
-            return NextResponse.json({
-              success: false,
-              error: '管理员不存在',
-            }, { status: 404 });
-          }
+    if (body.name || body.phone) {
+      const result = await db.update(users)
+        .set({
+          name: body.name || null,
+          phone: body.phone || null,
+          updated_at: new Date(),
+        })
+        .where(eq(users.id, id))
+        .returning();
 
-          updatedAdmin = result[0];
-        }
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，仅更新模拟数据:', dbError.message);
-        // 降级到模拟数据
-        updatedAdmin = MockDatabase.updateAdminPassword(id, body.password);
+      if (result.length === 0) {
+        return NextResponse.json({
+          success: false,
+          error: '管理员不存在',
+        }, { status: 404 });
       }
-    } else {
-      // 使用模拟数据
-      updatedAdmin = MockDatabase.updateAdminPassword(id, body.password);
+
+      return NextResponse.json({
+        success: true,
+        data: result[0],
+        message: '管理员信息修改成功',
+      });
     }
 
     return NextResponse.json({
       success: true,
-      data: updatedAdmin,
-      message: '密码修改成功',
+      message: '没有需要修改的信息',
     });
   } catch (error: any) {
     console.error('修改管理员信息失败:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || '修改管理员信息失败'
-    }, { status: error.message === '管理员不存在' ? 404 : 500 });
+      error: '修改管理员信息失败: ' + error.message
+    }, { status: 500 });
   }
 }
 
@@ -166,50 +145,43 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    let updatedUser;
 
     // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, users } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
 
-        const result = await db.update(users)
-          .set({
-            level: 'user',
-            updated_at: new Date(),
-          })
-          .where(eq(users.id, id))
-          .returning();
+    const { db, users } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-        if (result.length === 0) {
-          return NextResponse.json({
-            success: false,
-            error: '管理员不存在',
-          }, { status: 404 });
-        }
+    const result = await db.update(users)
+      .set({
+        level: 'user',
+        updated_at: new Date(),
+      })
+      .where(eq(users.id, id))
+      .returning();
 
-        updatedUser = result[0];
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，仅删除模拟数据:', dbError.message);
-        // 降级到模拟数据
-        updatedUser = MockDatabase.deleteAdmin(id);
-      }
-    } else {
-      // 使用模拟数据
-      updatedUser = MockDatabase.deleteAdmin(id);
+    if (result.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: '管理员不存在',
+      }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      data: updatedUser,
+      data: result[0],
       message: '管理员已降级为普通用户',
     });
   } catch (error: any) {
     console.error('删除管理员失败:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || '删除管理员失败'
-    }, { status: error.message === '管理员不存在' ? 404 : 400 });
+      error: '删除管理员失败: ' + error.message
+    }, { status: 500 });
   }
 }

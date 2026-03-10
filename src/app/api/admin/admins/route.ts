@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MockDatabase } from '@/lib/mock-database';
 import { requireAdmin } from '@/lib/auth-utils';
 import { randomUUID } from 'crypto';
 
@@ -16,27 +15,19 @@ export async function GET(request: NextRequest) {
       }, { status: authResult.statusCode || 403 });
     }
 
-    let admins;
-
     // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, users } = await import('@/storage/database/supabase/connection');
-        const { eq, desc } = await import('drizzle-orm');
-
-        const dbAdmins = await db.select().from(users)
-          .orderBy(desc(users.created_at));
-
-        admins = dbAdmins;
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-        // 降级到模拟数据
-        admins = MockDatabase.getAdmins();
-      }
-    } else {
-      // 使用模拟数据
-      admins = MockDatabase.getAdmins();
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
     }
+
+    const { db, users } = await import('@/storage/database/supabase/connection');
+    const { desc } = await import('drizzle-orm');
+
+    const admins = await db.select().from(users)
+      .orderBy(desc(users.created_at));
 
     return NextResponse.json({
       success: true,
@@ -46,7 +37,7 @@ export async function GET(request: NextRequest) {
     console.error('获取管理员列表失败:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || '获取管理员列表失败'
+      error: '获取管理员列表失败: ' + error.message
     }, { status: 500 });
   }
 }
@@ -67,73 +58,55 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // 验证必填字段
-    if (!body.phone || !body.password || !body.nickname || !body.name) {
+    if (!body.phone || !body.name) {
       return NextResponse.json({
         success: false,
-        error: '请填写完整的管理员信息',
+        error: '请填写手机号和姓名',
       }, { status: 400 });
     }
 
-    let newAdmin;
-
     // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, users } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
-
-        // 检查手机号是否已存在
-        const existing = await db.select().from(users).where(eq(users.phone, body.phone));
-
-        if (existing.length > 0) {
-          return NextResponse.json({
-            success: false,
-            error: '该手机号已被注册'
-          }, { status: 400 });
-        }
-
-        // 创建管理员
-        const result = await db.insert(users).values({
-          id: randomUUID(),
-          phone: body.phone,
-          name: body.name || body.nickname,
-          status: 'active',
-          level: 'admin', // 使用 level 字段标识管理员
-          created_at: new Date(),
-          updated_at: new Date(),
-        }).returning();
-
-        newAdmin = result[0];
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，仅创建模拟数据:', dbError.message);
-        // 降级到模拟数据
-        newAdmin = MockDatabase.createAdmin({
-          phone: body.phone,
-          password: body.password,
-          nickname: body.nickname,
-          name: body.name,
-        });
-      }
-    } else {
-      // 使用模拟数据
-      newAdmin = MockDatabase.createAdmin({
-        phone: body.phone,
-        password: body.password,
-        nickname: body.nickname,
-        name: body.name,
-      });
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
     }
+
+    const { db, users } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
+
+    // 检查手机号是否已存在
+    const existing = await db.select().from(users).where(eq(users.phone, body.phone));
+
+    if (existing.length > 0) {
+      return NextResponse.json({
+        success: false,
+        error: '该手机号已被注册'
+      }, { status: 400 });
+    }
+
+    // 创建管理员
+    const result = await db.insert(users).values({
+      id: randomUUID(),
+      phone: body.phone,
+      name: body.name,
+      status: 'active',
+      level: 'admin',
+      created_at: new Date(),
+      updated_at: new Date(),
+    }).returning();
 
     return NextResponse.json({
       success: true,
-      data: newAdmin,
+      data: result[0],
       message: '管理员创建成功',
     });
   } catch (error: any) {
     console.error('创建管理员失败:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || '创建管理员失败'
-    }, { status: error.message === '该手机号已被注册' ? 400 : 500 });
+      error: '创建管理员失败: ' + error.message
+    }, { status: 500 });
   }
 }
