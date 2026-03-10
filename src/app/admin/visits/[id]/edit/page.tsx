@@ -1,589 +1,260 @@
-'use client';
+"use client";
 
-// ⚠️ 注意：此页面包含模拟数据（mockVisit）
-// TODO: 需要后续重构，将模拟数据替换为从真实 API 获取
-// 建议创建以下 API 接口：
-// - GET /api/admin/visits/:id - 获取探访详情
-// - PUT /api/admin/visits/:id - 更新探访信息
-// - GET /api/admin/members - 获取可选成员列表
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { AdminLayout } from "@/components/admin-layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Save, MapPin, Calendar, Users, Star, Plus, X } from "lucide-react";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import Image from 'next/image';
+interface Visitor {
+  id: string;
+  name: string;
+  avatar?: string;
+  abilityTags?: string[];
+}
 
-import { AdminLayout } from '@/components/admin-layout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ArrowLeft, Save, MapPin, Calendar, Users, Star, Plus, X } from 'lucide-react';
-import Link from 'next/link';
-
-// 可用标签
-const availableTags = ['已结束', '进行中', 'AI', '智能制造', '金融投资', '数字化转型', '工业互联网'];
-
-// 模拟数据（实际项目中应从API获取）
-const mockVisit = {
-  id: '1',
-  date: '2024年3月5日',
-  time: '14:00-16:00',
-  status: 'completed',
+interface Visit {
+  id: string;
+  date: string;
+  time: string;
+  status: string;
   target: {
-    name: '张总',
-    title: '创始人兼CEO',
-    company: '智能制造科技有限公司',
-    avatar: '/avatar-2.jpg',
-  },
-  purpose: '了解企业数字化转型实践，寻求合作机会',
-  location: '北京市海淀区中关村软件园',
-  participants: 3,
-  outcome: '深入了解对方的产品体系和技术路线，初步达成战略合作意向',
-  keyPoints: [
-    '对方正在构建工业互联网平台，需要供应链整合能力',
-    '双方在技术路线和商业模式上高度契合',
-    '计划下个月进行第二次深入交流',
-    '对方对我们的AI解决方案表现出浓厚兴趣',
-  ],
-  nextSteps: [
-    '3月20日前提交技术方案初稿',
-    '4月初进行第二次拜访',
-    '准备相关案例和参考资料',
-  ],
-  rating: 5,
-  notes: '张总是非常务实的企业家，对技术和市场都有深刻理解。团队氛围很好，执行力强。建议重点关注其产品迭代速度。',
-  images: [
-    'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=300&h=200&fit=crop',
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&h=200&fit=crop',
-  ],
-  tags: ['已结束', '智能制造', '数字化转型'],
-  visitors: [
-    { id: '1', name: '王姐', avatar: '/avatar-3.jpg', abilityTags: ['HRBP', '团队管理'] },
-    { id: '2', name: '李明', avatar: '/avatar-2.jpg', abilityTags: ['战略', '金融投资'] },
-  ],
-  createdAt: '2024年3月5日 16:30',
-};
+    name: string;
+    title: string;
+    company: string;
+    avatar?: string;
+  };
+  purpose: string;
+  location: string;
+  participants: number;
+  outcome: string;
+  keyPoints?: string[];
+  nextSteps?: string[];
+  rating: number;
+  notes: string;
+  images?: string[];
+  tags: string[];
+  visitors: Visitor[];
+  createdAt: string;
+}
 
 export default function AdminVisitEditPage() {
   const router = useRouter();
   const params = useParams();
   const visitId = params.id as string;
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // 探访基本信息
-  const [visitDate, setVisitDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [status, setStatus] = useState('completed');
+  const [visit, setVisit] = useState<Visit | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [availableMembers, setAvailableMembers] = useState<Visitor[]>([]);
 
-  // 探访对象信息
-  const [targetName, setTargetName] = useState('');
-  const [targetTitle, setTargetTitle] = useState('');
-  const [targetCompany, setTargetCompany] = useState('');
-  const [targetAvatar, setTargetAvatar] = useState('/avatar-1.jpg');
-
-  // 探访详情
-  const [purpose, setPurpose] = useState('');
-  const [location, setLocation] = useState('');
-  const [participants, setParticipants] = useState('');
-
-  // 富文本内容
-  const [outcome, setOutcome] = useState('');
-  const [notes, setNotes] = useState('');
-
-  // 标签和图片
+  // 表单状态
+  const [visitDate, setVisitDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [status, setStatus] = useState("");
+  const [targetName, setTargetName] = useState("");
+  const [targetTitle, setTargetTitle] = useState("");
+  const [targetCompany, setTargetCompany] = useState("");
+  const [purpose, setPurpose] = useState("");
+  const [location, setLocation] = useState("");
+  const [participants, setParticipants] = useState("");
+  const [outcome, setOutcome] = useState("");
+  const [notes, setNotes] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [rating, setRating] = useState(5);
-
-  // 访客选择
   const [selectedVisitors, setSelectedVisitors] = useState<string[]>([]);
-  const [availableMembers, setAvailableMembers] = useState<any[]>([]);
-  const [isLoadingMembers, setIsLoadingMembers] = useState(true);
-  
-  // 加载会员数据
+
   useEffect(() => {
-    async function loadMembers() {
+    async function loadData() {
+      setIsLoading(true);
       try {
-        const response = await fetch('/admin/api/members/selectable');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setAvailableMembers(data.data);
-          }
+        // 加载探访详情
+        const visitRes = await fetch(`/api/admin/visits/${visitId}`);
+        const visitData = await visitRes.json();
+        if (visitData.success && visitData.data) {
+          const visit = visitData.data;
+          setVisit(visit);
+          setVisitDate(visit.date || "");
+          setStartTime(visit.time?.split("-")[0] || "");
+          setEndTime(visit.time?.split("-")[1] || "");
+          setStatus(visit.status || "");
+          setTargetName(visit.target?.name || "");
+          setTargetTitle(visit.target?.title || "");
+          setTargetCompany(visit.target?.company || "");
+          setPurpose(visit.purpose || "");
+          setLocation(visit.location || "");
+          setParticipants(visit.participants?.toString() || "");
+          setOutcome(visit.outcome || "");
+          setNotes(visit.notes || "");
+          setSelectedTags(visit.tags || []);
+          setRating(visit.rating || 5);
+          setSelectedVisitors(visit.visitors?.map((v: Visitor) => v.id) || []);
+        }
+
+        // 加载可选成员
+        const membersRes = await fetch("/api/admin/members");
+        const membersData = await membersRes.json();
+        if (membersData.success) {
+          setAvailableMembers(membersData.data || []);
         }
       } catch (error) {
-        console.error('加载会员数据失败:', error);
+        console.error("加载数据失败:", error);
       } finally {
-        setIsLoadingMembers(false);
+        setIsLoading(false);
       }
     }
-
-    loadMembers();
-  }, []);
-  
-  // 自定义访客
-  const [showAddCustomVisitor, setShowAddCustomVisitor] = useState(false);
-  const [customVisitorName, setCustomVisitorName] = useState('');
-  const [customVisitorIntro, setCustomVisitorIntro] = useState('');
-  const [customVisitorAvatar, setCustomVisitorAvatar] = useState('');
-  const [customMemberId, setCustomMemberId] = useState('');
-
-  // 关键点（动态数组）
-  const [keyPoints, setKeyPoints] = useState<string[]>(['']);
-
-  // 下一步计划（动态数组）
-  const [nextSteps, setNextSteps] = useState<string[]>(['']);
-
-  // 图片URLs（动态数组）
-  const [imageUrls, setImageUrls] = useState<string[]>(['']);
-
-  // 图片预览
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>(['']);
-
-  // 活动主题
-  const [theme, setTheme] = useState('');
-
-  // 加载现有数据
-  useEffect(() => {
-    const loadData = async () => {
-      if (!visitId) return;
-
-      try {
-        setLoading(true);
-
-        // 从API获取探访数据
-        const response = await fetch(`/api/visits/${visitId}`);
-        if (!response.ok) {
-          throw new Error('加载探访数据失败');
-        }
-        const data = await response.json();
-
-        if (!data.success || !data.data) {
-          throw new Error('探访数据不存在');
-        }
-
-        const visit = data.data;
-
-        // 解析时间
-        const timeParts = visit.duration ? visit.duration.split('-') : ['14:00', '16:00'];
-        const [start, end] = timeParts;
-
-        setVisitDate(visit.date || '');
-        setStartTime(start);
-        setEndTime(end);
-        setStatus(visit.status?.[0] || 'completed');
-        setTargetName(visit.target?.name || '');
-        setTargetTitle(visit.target?.title || '');
-        setTargetCompany(visit.target?.company || '');
-        setTargetAvatar(visit.target?.avatar || '/avatar-1.jpg');
-        setPurpose(visit.record?.substring(0, 100) || '');
-        setLocation(visit.location || '');
-        setParticipants(visit.visitors?.length?.toString() || '0');
-        setOutcome(visit.outcome || '');
-        setNotes(visit.notes || '');
-        setSelectedTags(visit.tags || ['已结束']);
-        setRating(visit.rating || 5);
-        setSelectedVisitors(visit.visitors?.map((v: any) => v.id) || []);
-        setKeyPoints(visit.keyPoints?.length > 0 ? visit.keyPoints : ['']);
-        setNextSteps(visit.nextSteps?.length > 0 ? visit.nextSteps : ['']);
-        setImageUrls(visit.images?.length > 0 ? visit.images : ['']);
-        setImagePreviewUrls(visit.images?.length > 0 ? visit.images : ['']);
-        setMainImage(visit.mainImage || '');
-        setTheme(visit.theme || visit.title?.replace('探访', '') || '');
-      } catch (error) {
-        console.error('加载数据失败:', error);
-        alert('加载数据失败');
-      } finally {
-        setLoading(false);
-      }
-    };
 
     loadData();
   }, [visitId]);
 
-  // 添加标签
-  const handleAddTag = (tag: string) => {
-    if (!selectedTags.includes(tag)) {
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/admin/visits/${visitId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: visitDate,
+          time: `${startTime}-${endTime}`,
+          status,
+          target: {
+            name: targetName,
+            title: targetTitle,
+            company: targetCompany,
+          },
+          purpose,
+          location,
+          participants: parseInt(participants),
+          outcome,
+          notes,
+          tags: selectedTags,
+          rating,
+          visitors: selectedVisitors,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("保存成功");
+        router.push(`/admin/visits/${visitId}`);
+      } else {
+        alert("保存失败: " + (data.message || "未知错误"));
+      }
+    } catch (error) {
+      console.error("保存失败:", error);
+      alert("保存失败");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const toggleTag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
+    } else {
       setSelectedTags([...selectedTags, tag]);
     }
   };
 
-  // 移除标签
-  const handleRemoveTag = (tag: string) => {
-    setSelectedTags(selectedTags.filter((t) => t !== tag));
-  };
-
-  // 自定义标签
-  const [customTag, setCustomTag] = useState('');
-  const [mainImage, setMainImage] = useState<string>('');
-  const [uploadingMainImage, setUploadingMainImage] = useState(false);
-  const handleAddCustomTag = () => {
-    if (customTag.trim() && !selectedTags.includes(customTag.trim())) {
-      setSelectedTags([...selectedTags, customTag.trim()]);
-      setCustomTag('');
+  const toggleVisitor = (visitorId: string) => {
+    if (selectedVisitors.includes(visitorId)) {
+      setSelectedVisitors(selectedVisitors.filter((id) => id !== visitorId));
+    } else {
+      setSelectedVisitors([...selectedVisitors, visitorId]);
     }
   };
 
-  // 添加访客
-  const handleAddVisitor = (memberId: string) => {
-    if (!selectedVisitors.includes(memberId)) {
-      setSelectedVisitors([...selectedVisitors, memberId]);
-    }
-  };
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="p-6">
+          <div className="text-center text-gray-400 py-10">加载中...</div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
-  // 移除访客
-  const handleRemoveVisitor = (memberId: string) => {
-    setSelectedVisitors(selectedVisitors.filter((id) => id !== memberId));
-  };
-
-  // 删除访客（永久删除）
-  const handleDeleteVisitor = (memberId: string) => {
-    // 从已选中列表中移除
-    setSelectedVisitors(selectedVisitors.filter((id) => id !== memberId));
-    // 从可用访客列表中永久删除
-    setAvailableMembers(availableMembers.filter((m) => m.id !== memberId));
-  };
-
-  // 添加关键点
-  const handleAddKeyPoint = () => {
-    setKeyPoints([...keyPoints, '']);
-  };
-
-  // 移除关键点
-  const handleRemoveKeyPoint = (index: number) => {
-    setKeyPoints(keyPoints.filter((_, i) => i !== index));
-  };
-
-  // 更新关键点
-  const handleKeyPointChange = (index: number, value: string) => {
-    const newKeyPoints = [...keyPoints];
-    newKeyPoints[index] = value;
-    setKeyPoints(newKeyPoints);
-  };
-
-  // 添加下一步计划
-  const handleAddNextStep = () => {
-    setNextSteps([...nextSteps, '']);
-  };
-
-  // 移除下一步计划
-  const handleRemoveNextStep = (index: number) => {
-    setNextSteps(nextSteps.filter((_, i) => i !== index));
-  };
-
-  // 更新下一步计划
-  const handleNextStepChange = (index: number, value: string) => {
-    const newNextSteps = [...nextSteps];
-    newNextSteps[index] = value;
-    setNextSteps(newNextSteps);
-  };
-
-  // 添加图片
-  const handleAddImage = () => {
-    setImageUrls([...imageUrls, '']);
-    setImagePreviewUrls([...imagePreviewUrls, '']);
-  };
-
-  // 移除图片
-  const handleRemoveImage = (index: number) => {
-    setImageUrls(imageUrls.filter((_, i) => i !== index));
-    setImagePreviewUrls(imagePreviewUrls.filter((_, i) => i !== index));
-  };
-
-  // 更新图片URL
-  const handleImageUrlChange = (index: number, value: string) => {
-    const newUrls = [...imageUrls];
-    newUrls[index] = value;
-    setImageUrls(newUrls);
-    setImagePreviewUrls(newUrls);
-  };
-
-  // 表单验证
-  const validateForm = (): boolean => {
-    if (!targetName.trim()) {
-      alert('请输入探访对象姓名');
-      return false;
-    }
-    if (!targetTitle.trim()) {
-      alert('请输入探访对象职位');
-      return false;
-    }
-    if (!targetCompany.trim()) {
-      alert('请输入探访对象公司');
-      return false;
-    }
-    if (!visitDate.trim()) {
-      alert('请选择探访日期');
-      return false;
-    }
-    if (!startTime.trim()) {
-      alert('请输入开始时间');
-      return false;
-    }
-    if (!endTime.trim()) {
-      alert('请输入结束时间');
-      return false;
-    }
-    if (!purpose.trim()) {
-      alert('请输入探访目的');
-      return false;
-    }
-    if (!location.trim()) {
-      alert('请输入探访地点');
-      return false;
-    }
-    return true;
-  };
-
-  // 提交表单
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // 构造数据
-      const industry = selectedTags.find(tag =>
-        ['企业服务', '金融投资', '制造业', '教育培训', '医疗健康',
-         '消费零售', '房地产', '互联网', '人工智能', '新能源',
-         '汽车行业', '物流运输', '传媒娱乐', '农业', '政府公共',
-         '法律咨询', '建筑设计', '化工环保', '通信', '其他'].includes(tag)
-      ) || '';
-
-      const visitData = {
-        title: theme ? `${theme}` : `${visitDate} ${industry}探访`,
-        theme: theme,
-        date: visitDate,
-        location,
-        industry,
-        record: purpose,
-        outcome,
-        keyPoints: keyPoints.filter((kp) => kp.trim()),
-        nextSteps: nextSteps.filter((ns) => ns.trim()),
-        notes,
-        rating,
-        tags: selectedTags,
-        images: imageUrls.filter((url) => url.trim()),
-        mainImage: mainImage,
-        visitors: selectedVisitors.map((memberId) => {
-          const member = availableMembers.find((m) => m.id === memberId);
-          return member
-            ? {
-                id: member.id,
-                name: member.name,
-                avatar: member.avatar,
-                skill: member.abilityTags?.[0] || '',
-              }
-            : null;
-        }).filter(Boolean),
-      };
-
-      // 调用API保存
-      const response = await fetch(`/api/visits/${params.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(visitData),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || '保存探访失败');
-      }
-
-      alert('探访更新成功！');
-      router.push('/admin/visits');
-    } catch (error: any) {
-      console.error('更新探访失败:', error);
-      alert(`更新探访失败：${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!visit) {
+    return (
+      <AdminLayout>
+        <div className="p-6">
+          <div className="text-center text-gray-400 py-10">加载失败</div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
-      <div className="space-y-5">
-        {/* 顶部导航 */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link href="/admin/visits">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                返回
-              </Button>
+      <div className="p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Link href={`/admin/visits/${visitId}`}>
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
             </Link>
-            <div>
-              <h2 className="text-[15px] font-bold text-gray-900 mb-1">编辑探访</h2>
-              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">编辑探访记录信息</p>
-            </div>
+            <h1 className="text-2xl font-bold text-gray-900">编辑探访</h1>
           </div>
-          <Button onClick={handleSubmit} disabled={loading}>
+          <Button onClick={handleSave} disabled={isSaving}>
             <Save className="w-4 h-4 mr-2" />
-            {loading ? '保存中...' : '保存'}
+            {isSaving ? "保存中..." : "保存"}
           </Button>
         </div>
 
-        {/* 表单内容 */}
-        <div className="space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6">
           {/* 基本信息 */}
-          <div className="border border-[rgba(0,0,0,0.1)]">
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">基本信息</h3>
-            </div>
-            <div className="p-4 space-y-4">
-              {/* 探访对象信息 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    探访对象姓名 <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    value={targetName}
-                    onChange={(e) => setTargetName(e.target.value)}
-                    placeholder="请输入探访对象姓名"
-                    className="text-[13px]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    职位 <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    value={targetTitle}
-                    onChange={(e) => setTargetTitle(e.target.value)}
-                    placeholder="如：创始人兼CEO"
-                    className="text-[13px]"
-                  />
-                </div>
-              </div>
-
+          <div className="bg-white border rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">基本信息</h2>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  公司 <span className="text-red-500">*</span>
+                  探访日期
                 </label>
                 <Input
-                  value={targetCompany}
-                  onChange={(e) => setTargetCompany(e.target.value)}
-                  placeholder="请输入公司名称"
-                  className="text-[13px]"
+                  type="date"
+                  value={visitDate}
+                  onChange={(e) => setVisitDate(e.target.value)}
                 />
               </div>
-
-              {/* 探访对象头像 */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    开始时间
+                  </label>
+                  <Input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    结束时间
+                  </label>
+                  <Input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                  />
+                </div>
+              </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  探访对象头像
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  状态
                 </label>
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    {targetAvatar ? (
-                      <Image
-                        src={targetAvatar}
-                        alt="头像预览"
-                        width={80}
-                        height={80}
-                        className="w-20 h-20 rounded-lg object-cover border-2 border-[rgba(0,0,0,0.1)]"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-20 h-20 rounded-lg bg-[rgba(0,0,0,0.05)] border-2 border-dashed border-[rgba(0,0,0,0.2)] flex items-center justify-center">
-                        <span className="text-[11px] text-[rgba(0,0,0,0.4)]">暂无头像</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const url = URL.createObjectURL(file);
-                          setTargetAvatar(url);
-                        }
-                      }}
-                      className="text-[13px]"
-                    />
-                    <Input
-                      value={targetAvatar}
-                      onChange={(e) => setTargetAvatar(e.target.value)}
-                      placeholder="或输入头像图片URL"
-                      className="text-[13px]"
-                    />
-                    <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      支持上传图片或输入图片链接
-                    </p>
-                  </div>
-                </div>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                >
+                  <option value="pending">待开始</option>
+                  <option value="processing">进行中</option>
+                  <option value="completed">已完成</option>
+                </select>
               </div>
-
-              {/* 探访时间 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    探访日期 <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="date"
-                    value={visitDate}
-                    onChange={(e) => setVisitDate(e.target.value)}
-                    className="text-[13px]"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      开始时间 <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="text-[13px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      结束时间 <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="text-[13px]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 探访地点和目的 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    探访地点 <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="请输入探访地点"
-                    className="text-[13px]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    探访目的 <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    value={purpose}
-                    onChange={(e) => setPurpose(e.target.value)}
-                    placeholder="请输入探访目的"
-                    className="text-[13px]"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   参与人数
@@ -592,555 +263,164 @@ export default function AdminVisitEditPage() {
                   type="number"
                   value={participants}
                   onChange={(e) => setParticipants(e.target.value)}
-                  placeholder="请输入参与人数"
-                  className="text-[13px]"
                 />
               </div>
-
-              {/* 活动主题 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  活动主题
-                </label>
-                <Input
-                  value={theme}
-                  onChange={(e) => setTheme(e.target.value)}
-                  placeholder="请输入活动主题，如：AI技术落地实践"
-                  className="text-[13px]"
-                />
-                <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">
-                  活动主题将作为探访的主要标识，与探访ID关联
-                </p>
-              </div>
-
-              {/* 访客选择 */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    选择访客
-                  </label>
-                  <span className="text-[12px] text-[rgba(0,0,0,0.4)]">
-                    已选择 {selectedVisitors.length} 位访客
-                  </span>
-                </div>
-
-                {/* 已选访客 */}
-                {selectedVisitors.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {selectedVisitors.map((memberId) => {
-                      const member = availableMembers.find((m) => m.id === memberId);
-                      if (!member) return null;
-                      return (
-                        <div
-                          key={memberId}
-                          className="flex items-center space-x-2 px-3 py-2 bg-[rgba(59,130,246,0.4)] text-white text-[13px]"
-                        >
-                          <Image
-                            src={member.avatar}
-                            alt={member.name}
-                            width={24}
-                            height={24}
-                            className="w-6 h-6 rounded-full"
-                            unoptimized
-                          />
-                          <span>{member.name}</span>
-                          <button
-                            onClick={() => handleRemoveVisitor(memberId)}
-                            className="hover:text-gray-200"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* 可选访客 */}
-                <div className="space-y-2">
-                  <span className="text-[12px] text-[rgba(0,0,0,0.6)]">可选访客：</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {availableMembers
-                      .filter((member) => !selectedVisitors.includes(member.id))
-                      .map((member) => (
-                        <button
-                          key={member.id}
-                          type="button"
-                          onClick={() => handleAddVisitor(member.id)}
-                          className="flex items-center space-x-2 p-2 bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.08)] transition-colors text-left"
-                        >
-                          <Image
-                            src={member.avatar}
-                            alt={member.name}
-                            width={32}
-                            height={32}
-                            className="w-8 h-8 rounded-full"
-                            unoptimized
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-[13px] font-medium text-gray-900 truncate">
-                              {member.name}
-                            </div>
-                            <div className="text-[11px] text-[rgba(0,0,0,0.6)] truncate">
-                              {member.abilityTags.join(' · ')}
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteVisitor(member.id);
-                            }}
-                            className="w-6 h-6 flex items-center justify-center bg-red-500 hover:bg-red-600 rounded text-white flex-shrink-0 transition-colors"
-                            title="删除访客"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                          <Plus className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
-                        </button>
-                      ))}
-                  </div>
-                </div>
-
-                {/* 自定义访客按钮 */}
-                <button
-                  type="button"
-                  onClick={() => setShowAddCustomVisitor(true)}
-                  className="w-full mt-2 p-2 border-2 border-dashed border-[rgba(0,0,0,0.2)] rounded-lg text-[13px] text-[rgba(0,0,0,0.6)] hover:border-[rgba(59,130,246,0.5)] hover:text-blue-400 transition-colors flex items-center justify-center space-x-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>添加自定义访客</span>
-                </button>
-              </div>
-
-              {/* 自定义访客对话框 */}
-              {showAddCustomVisitor && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">添加自定义访客</h3>
-                      <button
-                        onClick={() => setShowAddCustomVisitor(false)}
-                        className="text-[rgba(0,0,0,0.4)] hover:text-[rgba(0,0,0,0.6)]"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    {/* 上传头像 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        头像 <span className="text-red-500">*</span>
-                      </label>
-                      <div className="flex items-center space-x-4">
-                        {customVisitorAvatar ? (
-                          <Image
-                            src={customVisitorAvatar}
-                            alt="头像预览"
-                            width={64}
-                            height={64}
-                            className="w-16 h-16 rounded-full object-cover"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="w-16 h-16 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
-                            <span className="text-[13px] text-[rgba(0,0,0,0.4)]">暂无</span>
-                          </div>
-                        )}
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const url = URL.createObjectURL(file);
-                              setCustomVisitorAvatar(url);
-                            }
-                          }}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-
-                    {/* 姓名 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        姓名 <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        value={customVisitorName}
-                        onChange={(e) => setCustomVisitorName(e.target.value)}
-                        placeholder="请输入姓名"
-                      />
-                    </div>
-
-                    {/* 介绍 */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        介绍
-                      </label>
-                      <textarea
-                        value={customVisitorIntro}
-                        onChange={(e) => setCustomVisitorIntro(e.target.value)}
-                        placeholder="请输入介绍"
-                        className="w-full min-h-[80px] px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-                      />
-                    </div>
-
-                    {/* 操作按钮 */}
-                    <div className="flex space-x-3 pt-4">
-                      <Button
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => {
-                          setShowAddCustomVisitor(false);
-                          setCustomVisitorName('');
-                          setCustomVisitorIntro('');
-                          setCustomVisitorAvatar('');
-                        }}
-                      >
-                        取消
-                      </Button>
-                      <Button
-                        className="flex-1"
-                        onClick={() => {
-                          if (!customVisitorName || !customVisitorAvatar) {
-                            alert('请填写姓名和上传头像');
-                            return;
-                          }
-
-                          const newMemberId = Date.now().toString();
-                          const newMember = {
-                            id: newMemberId,
-                            name: customVisitorName,
-                            avatar: customVisitorAvatar,
-                            abilityTags: customVisitorIntro ? [customVisitorIntro] : [],
-                          };
-
-                          availableMembers.push(newMember);
-                          setSelectedVisitors([...selectedVisitors, newMemberId]);
-                          setShowAddCustomVisitor(false);
-                          setCustomVisitorName('');
-                          setCustomVisitorIntro('');
-                          setCustomVisitorAvatar('');
-                        }}
-                      >
-                        确认添加
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* 探访成果 */}
-          <div className="border border-[rgba(0,0,0,0.1)]">
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">探访成果</h3>
-            </div>
-            <div className="p-4 space-y-4">
-              {/* 探访对象评价 */}
+          {/* 探访对象 */}
+          <div className="bg-white border rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">探访对象</h2>
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  探访对象评价
+                  姓名
                 </label>
-                <div className="flex items-center space-x-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      className={`text-2xl transition-colors ${
-                        star <= rating ? 'text-yellow-400' : 'text-gray-300'
-                      }`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                  <span className="text-[13px] text-[rgba(0,0,0,0.6)] ml-2">
-                    ({rating}星)
-                  </span>
+                <Input
+                  value={targetName}
+                  onChange={(e) => setTargetName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  职位
+                </label>
+                <Input
+                  value={targetTitle}
+                  onChange={(e) => setTargetTitle(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  公司
+                </label>
+                <Input
+                  value={targetCompany}
+                  onChange={(e) => setTargetCompany(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 探访详情 */}
+          <div className="bg-white border rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">探访详情</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  探访目的
+                </label>
+                <Input
+                  value={purpose}
+                  onChange={(e) => setPurpose(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  地点
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Input
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
               </div>
-
-              {/* 探访成果描述 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  探访成果描述
+                  探访成果
                 </label>
                 <textarea
                   value={outcome}
                   onChange={(e) => setOutcome(e.target.value)}
-                  placeholder="请描述本次探访的成果和收获..."
-                  className="w-full min-h-[120px] px-3 py-2 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                  rows={4}
+                  className="w-full px-3 py-2 border rounded"
                 />
               </div>
-
-              {/* 探访笔记 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  探访笔记
+                  备注
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="请记录探访过程中的重要观察和心得..."
-                  className="w-full min-h-[120px] px-3 py-2 text-[13px] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                  rows={3}
+                  className="w-full px-3 py-2 border rounded"
                 />
               </div>
             </div>
           </div>
 
-          {/* 关键点和下一步计划 */}
-          <div className="border border-[rgba(0,0,0,0.1)]">
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">关键信息</h3>
-            </div>
-            <div className="p-4 space-y-4">
-              {/* 关键点 */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    关键点
-                  </label>
-                  <Button variant="outline" size="sm" onClick={handleAddKeyPoint}>
-                    <Plus className="w-4 h-4 mr-1" />
-                    添加关键点
-                  </Button>
-                </div>
-                {keyPoints.map((keyPoint, index) => (
-                  <div key={index} className="flex items-start space-x-2 mb-2">
-                    <Input
-                      value={keyPoint}
-                      onChange={(e) => handleKeyPointChange(index, e.target.value)}
-                      placeholder="请输入关键点"
-                      className="flex-1 text-[13px]"
-                    />
-                    {keyPoints.length > 1 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRemoveKeyPoint(index)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* 下一步计划 */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    下一步计划
-                  </label>
-                  <Button variant="outline" size="sm" onClick={handleAddNextStep}>
-                    <Plus className="w-4 h-4 mr-1" />
-                    添加计划
-                  </Button>
-                </div>
-                {nextSteps.map((step, index) => (
-                  <div key={index} className="flex items-start space-x-2 mb-2">
-                    <Input
-                      value={step}
-                      onChange={(e) => handleNextStepChange(index, e.target.value)}
-                      placeholder="请输入下一步计划"
-                      className="flex-1 text-[13px]"
-                    />
-                    {nextSteps.length > 1 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRemoveNextStep(index)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 探访图片 */}
-          <div className="border border-[rgba(0,0,0,0.1)]">
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">探访图片</h3>
-            </div>
-            <div className="p-4 space-y-4">
-              {imageUrls.map((url, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-start space-x-2">
-                    <Input
-                      value={url}
-                      onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                      placeholder="请输入图片URL"
-                      className="flex-1 text-[13px]"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveImage(index)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {url && (
-                    <div className="w-full h-32 overflow-hidden bg-gray-100">
-                      <img
-                        src={url}
-                        alt={`探访图片${index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
+          {/* 评分 */}
+          <div className="bg-white border rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">评分</h2>
+            <div className="flex space-x-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className={`text-2xl ${star <= rating ? "text-yellow-500" : "text-gray-300"}`}
+                >
+                  ★
+                </button>
               ))}
-              <Button variant="outline" size="sm" onClick={handleAddImage}>
-                <Plus className="w-4 h-4 mr-2" />
-                添加图片
-              </Button>
             </div>
           </div>
 
           {/* 标签 */}
-          <div className="border border-[rgba(0,0,0,0.1)]">
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">标签</h3>
-            </div>
-            <div className="p-4 space-y-3">
-              <div className="flex items-center flex-wrap gap-2">
-                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">可用标签：</span>
-                {availableTags.map((tag) => (
-                  <button
+          <div className="bg-white border rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">标签</h2>
+            <div className="flex flex-wrap gap-2">
+              {["已结束", "进行中", "AI", "智能制造", "金融投资", "数字化转型", "工业互联网"].map(
+                (tag) => (
+                  <Badge
                     key={tag}
-                    onClick={() => handleAddTag(tag)}
-                    className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
-                      selectedTags.includes(tag)
-                        ? 'bg-[rgba(59,130,246,0.4)] text-white'
-                        : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
-                    }`}
+                    variant={selectedTags.includes(tag) ? "default" : "outline"}
+                    onClick={() => toggleTag(tag)}
+                    className="cursor-pointer"
                   >
                     {tag}
-                  </button>
-                ))}
-              </div>
-              {selectedTags.length > 0 && (
-                <div className="flex items-center flex-wrap gap-2">
-                  <span className="text-[13px] text-[rgba(0,0,0,0.6)]">已选标签：</span>
-                  {selectedTags.map((tag) => (
-                    <div
-                      key={tag}
-                      className="flex items-center space-x-1 px-3 py-1.5 bg-[rgba(59,130,246,0.4)] text-white text-[13px]"
-                    >
-                      <span>{tag}</span>
-                      <button
-                        onClick={() => handleRemoveTag(tag)}
-                        className="hover:text-gray-200"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                  </Badge>
+                )
               )}
-              <div className="flex items-center space-x-2 pt-2 border-t border-[rgba(0,0,0,0.05)]">
-                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">自定义标签：</span>
-                <Input
-                  value={customTag}
-                  onChange={(e) => setCustomTag(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddCustomTag()}
-                  placeholder="输入标签名称"
-                  className="w-48 h-8 text-[13px]"
-                />
-                <Button size="sm" onClick={handleAddCustomTag}>
-                  <Plus className="w-4 h-4 mr-1" />
-                  添加
-                </Button>
-              </div>
             </div>
           </div>
 
-          {/* 活动主图 */}
-          <div className="border border-[rgba(0,0,0,0.1)]">
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">活动主图</h3>
-            </div>
-            <div className="p-4 space-y-4">
-              {mainImage ? (
-                <div className="relative">
-                  <Image
-                    src={mainImage}
-                    alt="活动主图"
-                    width={800}
-                    height={450}
-                    className="w-full h-auto rounded-lg object-cover"
-                    unoptimized
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMainImage('')}
-                    className="absolute top-2 right-2 bg-white/90 hover:bg-white"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    删除
-                  </Button>
-                </div>
-              ) : (
-                <div className="border-2 border-dashed border-[rgba(0,0,0,0.2)] rounded-lg p-8 text-center">
-                  <input
-                    type="file"
-                    id="main-image-upload"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-
-                      setUploadingMainImage(true);
-                      try {
-                        // 读取文件为 base64
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setMainImage(reader.result as string);
-                          setUploadingMainImage(false);
-                        };
-                        reader.readAsDataURL(file);
-                      } catch (error) {
-                        console.error('上传主图失败:', error);
-                        alert('上传主图失败，请重试');
-                        setUploadingMainImage(false);
-                      }
-                    }}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="main-image-upload"
-                    className="cursor-pointer inline-flex flex-col items-center"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-[rgba(59,130,246,0.1)] flex items-center justify-center mb-3">
-                      <Plus className="w-6 h-6 text-blue-500" />
+          {/* 访客选择 */}
+          <div className="bg-white border rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">访客</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {availableMembers.map((member) => (
+                <div
+                  key={member.id}
+                  onClick={() => toggleVisitor(member.id)}
+                  className={`p-3 border rounded cursor-pointer transition-colors ${
+                    selectedVisitors.includes(member.id)
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-blue-300"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    {member.avatar && (
+                      <img
+                        src={member.avatar}
+                        alt={member.name}
+                        className="w-10 h-10 rounded-full"
+                      />
+                    )}
+                    <div>
+                      <div className="font-medium">{member.name}</div>
+                      {member.abilityTags && (
+                        <div className="text-xs text-gray-500">
+                          {member.abilityTags.join(", ")}
+                        </div>
+                      )}
                     </div>
-                    <span className="text-[13px] text-[rgba(0,0,0,0.6)] mb-1">
-                      点击上传活动主图
-                    </span>
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      支持 JPG、PNG 等格式
-                    </span>
-                  </label>
-                  {uploadingMainImage && (
-                    <div className="mt-3 text-[13px] text-blue-500">上传中...</div>
-                  )}
+                  </div>
                 </div>
-              )}
-              <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                * 活动主图将作为探访项目的顶图显示，建议尺寸 16:9
-              </p>
+              ))}
             </div>
           </div>
         </div>

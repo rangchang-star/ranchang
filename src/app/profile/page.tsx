@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
@@ -27,28 +26,6 @@ interface Assessment {
   dimensions: AssessmentDimension[];
 }
 
-// 行业数据项（必选）
-const industryOptions = [
-  '企业服务', '金融投资', '制造业', '教育培训', '医疗健康', 
-  '消费零售', '房地产', '互联网', '人工智能', '新能源',
-  '汽车行业', '物流运输', '传媒娱乐', '农业', '政府公共',
-  '法律咨询', '建筑设计', '化工环保', '通信', '其他'
-];
-
-// 资源标签数据项（必选，参考同类平台）
-const resourceTags = [
-  '资金', '人才', '技术', '渠道', '客户资源',
-  '供应链', '品牌', '专利', '场地', '设备',
-  '数据资源', '政府关系', '媒体资源', '合作伙伴', '其他'
-];
-
-// 人找事/事找人/纯交流选项（必选）
-const connectionType = [
-  { id: 'personLookingForJob', label: '人找事', description: '我有能力，寻找项目机会' },
-  { id: 'jobLookingForPerson', label: '事找人', description: '我有项目，寻找合作伙伴' },
-  { id: 'pureExchange', label: '纯交流', description: '只想交流学习，暂无合作需求' }
-];
-
 // 通知类型定义
 interface Notification {
   id: string;
@@ -60,35 +37,26 @@ interface Notification {
   actionUrl?: string;
 }
 
-// 默认通知数据
-const defaultNotifications: Notification[] = [
-  {
-    id: '1',
-    type: 'success',
-    title: '报名审核通过',
-    message: '您报名的「转型期私董会」已通过审核，请按时参加',
-    time: '2024-03-02 10:30',
-    read: false,
-    actionUrl: '/activities',
-  },
-  {
-    id: '2',
-    type: 'info',
-    title: '新的探访邀请',
-    message: '张明邀请您参与「上海某制造业企业数字化转型探访」',
-    time: '2024-03-01 15:20',
-    read: false,
-    actionUrl: '/profile',
-  },
-  {
-    id: '3',
-    type: 'warning',
-    title: '活动即将开始',
-    message: '「CEO转型期私董会」将在2小时后开始',
-    time: '2024-03-01 08:00',
-    read: true,
-    actionUrl: '/activities',
-  },
+// 行业数据项
+const industryOptions = [
+  '企业服务', '金融投资', '制造业', '教育培训', '医疗健康',
+  '消费零售', '房地产', '互联网', '人工智能', '新能源',
+  '汽车行业', '物流运输', '传媒娱乐', '农业', '政府公共',
+  '法律咨询', '建筑设计', '化工环保', '通信', '其他'
+];
+
+// 资源标签数据项
+const resourceTags = [
+  '资金', '人才', '技术', '渠道', '客户资源',
+  '供应链', '品牌', '专利', '场地', '设备',
+  '数据资源', '政府关系', '媒体资源', '合作伙伴', '其他'
+];
+
+// 人找事/事找人/纯交流选项
+const connectionType = [
+  { id: 'personLookingForJob', label: '人找事', description: '我有能力，寻找项目机会' },
+  { id: 'jobLookingForPerson', label: '事找人', description: '我有项目，寻找合作伙伴' },
+  { id: 'pureExchange', label: '纯交流', description: '只想交流学习，暂无合作需求' }
 ];
 
 // 高燃宣告方向选项
@@ -100,350 +68,92 @@ const declarationDirections = [
   { id: 'environment', name: '环境', icon: 'icon-environment.jpg' }
 ];
 
-// 量表结果数据（基于成熟量表设计）
-
-/**
- * 量表1：创业心理评估
- * 理论基础：心理资本理论（Psychological Capital Theory - Luthans et al.）
- * 参考量表：PCQ-24心理资本问卷、创业自我效能感量表
- */
-const entrepreneurialPsychologyAssessment = {
-  name: '创业心理评估',
-  score: 85,
-  level: '优秀',
-  summary: '您的创业心理素质全面，具备出色的抗压能力、创新思维和风险把控能力，适合在充满不确定性的创业环境中发挥领导力。',
-  dimensions: [
-    { name: '抗压韧性', score: 90, description: '面对挫折和压力时的恢复能力' },
-    { name: '创新思维', score: 85, description: '产生新想法和解决方案的能力' },
-    { name: '团队协作', score: 80, description: '与他人合作并建立信任的能力' },
-    { name: '风险意识', score: 82, description: '识别、评估和管理风险的能力' },
-    { name: '成就动机', score: 88, description: '追求卓越和实现目标的内在驱动力' },
-    { name: '适应性', score: 84, description: '适应变化和环境调整的能力' }
-  ]
-};
-
-/**
- * 量表2：商业认知评估
- * 理论基础：创业认知理论（Entrepreneurial Cognition Theory - Baron & Shane）
- * 参考量表：商业洞察力评估、创业认知量表
- */
-const businessCognitionAssessment = {
-  name: '商业认知评估',
-  score: 78,
-  level: '良好',
-  summary: '您对商业模式和市场策略有基本理解，但在财务分析和战略规划方面还有提升空间，建议加强商业系统性思维的训练。',
-  dimensions: [
-    { name: '市场洞察', score: 75, description: '识别市场机会和用户需求的能力' },
-    { name: '商业模式', score: 80, description: '设计和优化盈利模式的能力' },
-    { name: '财务分析', score: 72, description: '理解和运用财务指标的能力' },
-    { name: '战略规划', score: 85, description: '制定和执行长期战略的能力' },
-    { name: '资源整合', score: 76, description: '有效配置和整合资源的能力' },
-    { name: '竞争分析', score: 79, description: '理解和应对市场竞争的能力' }
-  ]
-};
-
-/**
- * 量表3：AI认知评估
- * 理论基础：AI素养框架（EU DigComp Framework）、数字素养模型
- * 参考量表：AI应用能力评估、数字素养问卷
- */
-const aiCognitionAssessment = {
-  name: 'AI认知评估',
-  score: 88,
-  level: '优秀',
-  summary: '您对AI工具有深入理解和丰富实践经验，具备将AI技术落地应用的能力，是组织中推动AI转型的关键人才。',
-  dimensions: [
-    { name: 'AI工具应用', score: 92, description: '使用各类AI工具解决实际问题的能力' },
-    { name: 'AI趋势理解', score: 85, description: '理解AI发展趋势和技术边界的能力' },
-    { name: 'AI思维模式', score: 88, description: '用AI思维优化工作流程的能力' },
-    { name: 'AI落地实践', score: 85, description: '将AI技术整合到业务中的能力' },
-    { name: 'AI伦理意识', score: 86, description: '理解AI伦理和合规要求的能力' },
-    { name: 'AI学习能力', score: 90, description: '持续学习AI新技术的能力' }
-  ]
-};
-
-/**
- * 量表4：事业使命感评估
- * 理论基础：使命感理论（Calling Theory - Steger et al.）、职业价值观理论（Super）
- * 参考量表：使命承诺量表（Calling and Vocation Questionnaire）、职业价值观问卷
- */
-const careerMissionAssessment = {
-  name: '事业使命感评估',
-  score: 82,
-  level: '良好',
-  summary: '您有清晰的职业使命感，能够将个人价值观与社会价值结合，建议在使命传达和团队感召方面进一步加强影响力。',
-  dimensions: [
-    { name: '使命感清晰度', score: 85, description: '对自身使命和愿景的清晰程度' },
-    { name: '社会价值认同', score: 80, description: '认同工作对社会贡献的程度' },
-    { name: '内在驱动力', score: 84, description: '基于使命感而非外部奖励的工作动力' },
-    { name: '使命坚持', score: 78, description: '在困难中坚持使命的韧性' },
-    { name: '使命传达', score: 79, description: '向他人传达使命和价值观的能力' },
-    { name: '使命整合', score: 86, description: '将使命融入日常工作决策的能力' }
-  ]
-};
-
-
-
-// 探访项目（管理员后台确认后出现）
-const visitRecords = [
-  {
-    id: '1',
-    title: '上海某制造业企业数字化转型探访',
-    date: '2024年3月15日',
-    role: '探访人',
-    skill: '人力资源',
-    industry: '企业转型',
-    visitors: [
-      { id: '2', name: '李明', avatar: '/avatar-2.jpg', skill: '战略' },
-      { id: '1', name: '王芳', avatar: '/avatar-3.jpg', skill: '人力资源' },
-    ],
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=120&fit=crop',
-  },
-];
-
-// 参与的活动
-const activities = [
-  {
-    id: '1',
-    title: 'CEO转型期私董会',
-    date: '2024年3月20日',
-    time: '14:00-17:00',
-    location: '上海·静安',
-    status: '待参加',
-    category: '私董会',
-    description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。我们将围绕"如何利用过往经验"、"如何降低试错成本"等话题展开讨论。',
-    participants: 12,
-    enrolled: 8,
-  },
-  {
-    id: '2',
-    title: 'AI加油圈2026期',
-    date: '2024年3月15日',
-    time: '19:00-21:00',
-    location: '北京·朝阳',
-    status: '待审核',
-    category: '沙龙',
-    description: '邀请不同领域的专家分享AI在各行业的应用实践，促进跨界交流与合作。适合对AI商业化感兴趣的朋友参与。',
-    participants: 30,
-    enrolled: 20,
-  },
-  {
-    id: '3',
-    title: '创业者心理建设工作坊',
-    date: '2024年3月22日',
-    time: '14:00-16:00',
-    location: '上海·徐汇',
-    status: '已参加',
-    category: '工作坊',
-    description: '帮助创业者建立强大的心理素质，应对创业过程中的各种挑战。通过专业指导和同伴支持，提升创业成功率。',
-    participants: 25,
-    enrolled: 20,
-  },
-  {
-    id: '4',
-    title: '商业认知提升沙龙',
-    date: '2024年4月5日',
-    time: '19:00-21:00',
-    location: '深圳·南山',
-    status: '已参加',
-    category: '沙龙',
-    description: '通过案例分析和小组讨论，提升商业洞察力和决策能力。分享实战经验，拓展商业视野。',
-    participants: 35,
-    enrolled: 30,
-  },
-];
-
-// 咨询话题
-// 咨询师信息
-const consultantInfo = {
-  name: '大鱼老师',
-  avatar: '/avatar-1.jpg',
-  tags: ['燃场CEO', 'AICG工程师', '心理咨询师', '投资人'],
-};
-
-// 咨询话题
-const consultationTopics = [
-  {
-    id: 'ai-frontier',
-    name: 'AI前沿',
-    placeholder: '您在AI应用中遇到什么挑战？请描述具体场景，例如：如何将AI整合到现有业务流程中、选择合适的AI工具、AI实施的风险和成本控制等...',
-    icon: '🤖',
-  },
-  {
-    id: 'entrepreneur-psychology',
-    name: '创业心理',
-    placeholder: '作为创业者，您最困扰的是什么？请描述您的心境，例如：如何应对创业不确定性、团队管理中的心理挑战、失败后的心理重建、如何保持创业激情等...',
-    icon: '🧠',
-  },
-  {
-    id: 'business-logic',
-    name: '商业逻辑',
-    placeholder: '您的商业模式中遇到什么困惑？请具体描述，例如：如何找到盈利点、如何设计可持续的商业模式、如何验证市场需求、如何优化成本结构等...',
-    icon: '💡',
-  },
-  {
-    id: 'mission-navigation',
-    name: '使命导航',
-    placeholder: '您对事业使命有什么迷茫？请详细说明，例如：如何找到个人使命感、使命与现实的冲突、如何传递使命给团队、使命与盈利的平衡等...',
-    icon: '🎯',
-  },
-];
-
-// 数字资产产出
-const digitalAssets = [
-  {
-    id: '1',
-    title: 'AI时代HRBP实战手册',
-    description: '基于15年经验总结的AI赋能人力资源管理全流程指南',
-    type: '文档',
-    size: '3.8MB',
-    likes: 156,
-    cover: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=200&h=120&fit=crop',
-  },
-  {
-    id: '2',
-    title: '企业人才培养体系模板',
-    description: '包含招聘、培养、晋升、激励全环节的实用模板',
-    type: '表格',
-    size: '2.1MB',
-    likes: 234,
-    cover: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=200&h=120&fit=crop',
-  },
-];
-
-// 量表图标映射
-const getAssessmentIcon = (name: string) => {
-  if (name === '创业心理评估') return '🧠';
-  if (name === '商业认知评估') return '💼';
-  if (name === 'AI认知评估') return '🤖';
-  if (name === '事业使命感评估') return '🎯';
-  return '📊';
-};
-
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isLoggedIn, logout } = useAuth();
-  
-  // 刷新用户数据，确保显示最新数据
-  useEffect(() => {
-    const refreshUserData = async () => {
-      if (user?.id) {
-        try {
-          const response = await fetch(`/api/users/${user.id}`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data) {
-              // 更新 localStorage 中的用户数据
-              localStorage.setItem('currentUser', JSON.stringify(data.data));
-              // 更新 userInfo state，确保页面显示最新数据
-              setUserInfo(getUserInfoFromUser(data.data));
-            }
-          }
-        } catch (error) {
-          console.error('Failed to refresh user data:', error);
-        }
-      }
-    };
-    
-    refreshUserData();
-  }, [user?.id]);
-  
-  const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [visitRecords, setVisitRecords] = useState<any[]>([]);
+  const [favoriteVisits, setFavoriteVisits] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
 
-  // 从 localStorage.currentUser 同步最新数据到 userInfo
+  // 加载用户通知
   useEffect(() => {
-    const syncFromLocalStorage = () => {
+    async function loadNotifications() {
+      if (!user?.id) return;
       try {
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUserInfo(prev => ({
-            ...prev,
-            hardcoreTags: userData.hardcoreTags || userData.abilityTags || [],
-            resourceTags: userData.resourceTags || [],
-            industry: userData.industry || prev.industry,
-            need: userData.need || prev.need,
-            name: userData.name || userData.nickname || prev.name,
-            age: userData.age || prev.age,
-            avatar: userData.avatar || prev.avatar,
-          }));
+        const response = await fetch(`/api/notifications?user_id=${user.id}`);
+        const data = await response.json();
+        if (data.success) {
+          setNotifications(data.data || []);
         }
-      } catch (error) {
-        console.error('Failed to sync from localStorage:', error);
+      } catch (err) {
+        console.error('加载通知失败:', err);
       }
-    };
-
-    syncFromLocalStorage();
-
-    // 监听 localStorage 的变化（用于同步编辑页面的修改）
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'currentUser' && e.newValue) {
-        syncFromLocalStorage();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  // 根据用户ID加载模拟通知数据
-  useEffect(() => {
-    const loadUserNotifications = () => {
-      if (!user?.id) {
-        setNotifications(defaultNotifications);
-        return;
-      }
-
-      // 根据用户ID生成不同的模拟通知数据
-      const userId = user.id.toString();
-      
-      // 使用用户ID作为种子生成不同的通知
-      const userNotifications: Notification[] = [
-        {
-          id: `${userId}-1`,
-          type: 'success',
-          title: '报名审核通过',
-          message: `用户${userId}，您报名的「转型期私董会」已通过审核，请按时参加`,
-          time: '2024-03-02 10:30',
-          read: false,
-          actionUrl: '/activities',
-        },
-        {
-          id: `${userId}-2`,
-          type: 'info',
-          title: '新的探访邀请',
-          message: `张明邀请您参与「上海某制造业企业数字化转型探访」`,
-          time: '2024-03-01 15:20',
-          read: false,
-          actionUrl: '/profile',
-        },
-        {
-          id: `${userId}-3`,
-          type: 'warning',
-          title: '活动即将开始',
-          message: `「CEO转型期私董会」将在2小时后开始`,
-          time: '2024-03-01 08:00',
-          read: true,
-          actionUrl: '/activities',
-        },
-      ];
-
-      setNotifications(userNotifications);
-    };
-
-    loadUserNotifications();
+    }
+    loadNotifications();
   }, [user?.id]);
 
-  // 加载用户收藏的探访项目
+  // 加载用户信息
   useEffect(() => {
-    const loadFavoriteVisits = async () => {
-      if (!user?.id) {
-        setFavoriteVisits([]);
-        return;
+    async function loadUserInfo() {
+      if (!user?.id) return;
+      try {
+        const response = await fetch(`/api/users/${user.id}`);
+        const data = await response.json();
+        if (data.success) {
+          setUserInfo(data.data);
+        }
+      } catch (err) {
+        console.error('加载用户信息失败:', err);
+      } finally {
+        setIsLoading(false);
       }
+    }
+    loadUserInfo();
+  }, [user?.id]);
 
+  // 加载用户量表评估结果
+  useEffect(() => {
+    async function loadAssessments() {
+      if (!user?.id) return;
+      try {
+        const response = await fetch(`/api/assessments?user_id=${user.id}`);
+        const data = await response.json();
+        if (data.success) {
+          setAssessments(data.data || []);
+        }
+      } catch (err) {
+        console.error('加载量表评估结果失败:', err);
+      }
+    }
+    loadAssessments();
+  }, [user?.id]);
+
+  // 加载用户探访记录
+  useEffect(() => {
+    async function loadVisits() {
+      if (!user?.id) return;
+      try {
+        const response = await fetch(`/api/users/${user.id}/favorites/visits`);
+        const data = await response.json();
+        if (data.success) {
+          setVisitRecords(data.data || []);
+        }
+      } catch (err) {
+        console.error('加载探访记录失败:', err);
+      }
+    }
+    loadVisits();
+  }, [user?.id]);
+
+  // 加载用户收藏的探访
+  useEffect(() => {
+    async function loadFavoriteVisits() {
+      if (!user?.id) return;
       try {
         const response = await fetch(`/api/users/${user.id}/favorites/visits`);
         if (response.ok) {
@@ -455,173 +165,46 @@ export default function ProfilePage() {
       } catch (error) {
         console.error('加载收藏探访项目失败:', error);
       }
-    };
-
+    }
     loadFavoriteVisits();
-
-    // 监听storage事件，当收藏状态变化时刷新列表
-    const handleStorageChange = () => {
-      loadFavoriteVisits();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, [user?.id]);
 
-  const [showActivityDetail, setShowActivityDetail] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
-  const [activitiesExpanded, setActivitiesExpanded] = useState(false);
-  
-  // 量表展开状态 - 默认只展开"创业心理评估"
-  const [expandedAssessments, setExpandedAssessments] = useState<Set<number>>(new Set([0]));
-  
-  // 咨询相关状态
-  const [selectedTopic, setSelectedTopic] = useState<string>('ai-frontier'); // 默认选择第一个话题
-  const [consultationQuestion, setConsultationQuestion] = useState(''); // 清空初始问题
-  const [isSubmittingConsultation, setIsSubmittingConsultation] = useState(false);
-  const [showProfileGuideDialog, setShowProfileGuideDialog] = useState(false);
-  const [guideType, setGuideType] = useState<'login' | 'profile' | null>(null);
-  
-  // 量表测试弹窗状态
-  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-  const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
-  
-  // 测试悬浮页面状态
-  const [showTestModal, setShowTestModal] = useState(false);
-  const [currentTestAssessment, setCurrentTestAssessment] = useState<Assessment | null>(null);
-  const [testQuestionIndex, setTestQuestionIndex] = useState(0);
-  const [testAnswers, setTestAnswers] = useState<Record<number, number>>({});
-
-  // 从登录用户生成用户信息
-  const getUserInfoFromUser = (userData?: any) => {
-    if (!userData) {
-      // 默认值，避免 null 错误
-      return {
-        id: '',
-        name: '',
-        age: 0,
-        avatar: '',
-        connectionType: 'pureExchange',
-        industry: '',
-        need: '',
-        hardcoreTags: [] as string[],
-        resourceTags: [] as string[],
-        currentDeclaration: {
-          direction: 'confidence',
-          text: '',
-          summary: '',
-          date: '',
-          views: 0,
-        },
-        assessments: [] as Assessment[],
-      };
-    }
-
-    return {
-      id: userData.id.toString(),
-      name: userData.name || userData.nickname,
-      age: userData.age,
-      avatar: userData.avatar,
-      connectionType: userData.tagStamp || 'pureExchange',
-      industry: userData.industry || '未设置',
-      need: userData.need || '',
-      hardcoreTags: userData.hardcoreTags || userData.abilityTags || [],
-      resourceTags: userData.resourceTags || [],
-      currentDeclaration: {
-        direction: 'confidence',
-        text: userData.bio || '',
-        summary: userData.bio || '',
-        date: new Date(userData.createdAt).toLocaleDateString('zh-CN'),
-        views: 0,
-      },
-      assessments: [entrepreneurialPsychologyAssessment, businessCognitionAssessment, aiCognitionAssessment, careerMissionAssessment] as Assessment[],
-    };
-  };
-
-  const [userInfo, setUserInfo] = useState(() => getUserInfoFromUser(user));
-
-  // 切换量表展开状态
-  const toggleAssessmentExpand = (index: number) => {
-    setExpandedAssessments(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
+  // 加载用户参与的活动
+  useEffect(() => {
+    async function loadActivities() {
+      if (!user?.id) return;
+      try {
+        const response = await fetch(`/api/activities`);
+        const data = await response.json();
+        if (data.success) {
+          // 过滤出用户参与的活动
+          setActivities(data.data || []);
+        }
+      } catch (err) {
+        console.error('加载活动列表失败:', err);
       }
-      return newSet;
-    });
-  };
+    }
+    loadActivities();
+  }, [user?.id]);
 
-  // 处理重新测试按钮点击
-  const handleRetestClick = (assessment: Assessment) => {
-    setSelectedAssessment(assessment);
-    setShowAssessmentModal(true);
-  };
-
-  // 切换所有量表的展开/收起
-  const toggleAllAssessments = () => {
-    // 如果所有量表都已展开，则收起全部；否则展开全部
-    const allExpanded = expandedAssessments.size === userInfo.assessments.length;
-    if (allExpanded) {
-      // 收起全部：清空展开集合
-      setExpandedAssessments(new Set());
-    } else {
-      // 展开全部：添加所有量表到展开集合
-      setExpandedAssessments(new Set(userInfo.assessments.map((_, idx) => idx)));
+  // 处理通知点击
+  const handleNotificationClick = (notification: Notification) => {
+    setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, read: true } : n));
+    setShowNotifications(false);
+    if (notification.actionUrl) {
+      router.push(notification.actionUrl);
     }
   };
 
-  // 处理开始测试按钮点击
-  const handleStartTest = () => {
-    setShowAssessmentModal(false);
-    setCurrentTestAssessment(selectedAssessment);
-    setTestQuestionIndex(0);
-    setTestAnswers({});
-    setShowTestModal(true);
-  };
-
-  // 处理测试答案
-  const handleTestAnswer = (questionId: number, value: number) => {
-    setTestAnswers({ ...testAnswers, [questionId]: value });
-    
-    // 自动跳到下一题
-    if (testQuestionIndex < 9) {
-      setTestQuestionIndex(testQuestionIndex + 1);
-    } else {
-      // 最后一题完成，提交测试
-      setTimeout(() => {
-        setShowTestModal(false);
-        // 这里可以添加提交到后端的逻辑
-        alert('测试完成！分数已更新。');
-      }, 500);
+  const handleLogout = () => {
+    if (confirm('确定要退出登录吗？')) {
+      logout();
+      router.push('/');
     }
   };
 
-  // 测试问题数据（简化版）
-  const testQuestions = [
-    { id: 1, question: '当面临一个高风险高回报的机会时，您会怎么做？', options: ['完全不会考虑', '会仔细评估但不太可能', '会投入少量尝试', '会投入部分资源', '会全力以赴'] },
-    { id: 2, question: '您的项目遭遇重大挫折时，您会怎么做？', options: ['立即停止项目', '暂停重新评估', '继续更加谨慎', '积极寻找资金', '调整策略重新出发'] },
-    { id: 3, question: '当需要在有限信息下做决策时，您通常会？', options: ['尽量拖延等待', '依赖他人决策', '根据直觉快速决策', '分析现有信息后决策', '快速决策并应对'] },
-    { id: 4, question: '当团队成员对决策有分歧时，您会？', options: ['回避冲突', '采纳多数意见', '自己决定', '引导讨论共识', '快速决策负责'] },
-    { id: 5, question: '当项目进展缓慢时，您会？', options: ['感到沮丧', '感到焦虑怀疑', '调整心态继续', '主动寻求帮助', '从失败中学习'] },
-    { id: 6, question: '当竞争对手推出更好产品时，您会？', options: ['感到恐慌', '等待对手犯错', '模仿对手产品', '分析对手优势', '把竞争视为动力'] },
-    { id: 7, question: '您如何看待传统模式？', options: ['遵循传统', '传统基础上调整', '考虑创新但担心', '积极探索新模式', '主动颠覆传统'] },
-    { id: 8, question: '当您有创新想法时，您会？', options: ['只是想想', '和少数人讨论', '小范围尝试', '制定计划实施', '立即行动验证'] },
-    { id: 9, question: '团队成员应具备的最重要品质是？', options: ['服从领导', '专业技能强', '有责任心', '有创新精神', '共同价值观'] },
-    { id: 10, question: '当团队成员出现矛盾时，您会？', options: ['回避矛盾', '分别谈话了解', '公开讨论解决', '建立规则预防', '转化为成长机会'] }
-  ];
-
-  // 用户收藏的探访项目列表
-  const [favoriteVisits, setFavoriteVisits] = useState<any[]>([]);
-
-  // 过滤出包含当前用户作为访客的探访项目（从收藏数据中读取）
-  const userVisitRecords = favoriteVisits;
-
-  // 获取未读通知数量
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // 获取通知图标
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
       case 'success':
@@ -635,1017 +218,233 @@ export default function ProfilePage() {
     }
   };
 
-  // 标记通知为已读
-  const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => 
-      n.id === id ? { ...n, read: true } : n
-    ));
-  };
-
-  // 标记所有通知为已读
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  // 检查用户基础信息
-  const checkUserProfile = (): boolean => {
-    // 模拟检查是否登录（实际应该从全局状态或cookie获取）
-    const isLoggedIn = true; // 假设已登录
-
-    if (!isLoggedIn) {
-      setGuideType('login');
-      setShowProfileGuideDialog(true);
-      return false;
-    }
-
-    // 检查基础信息是否完整
-    const isProfileComplete = userInfo.name && userInfo.industry && userInfo.connectionType;
-
-    if (!isProfileComplete) {
-      setGuideType('profile');
-      setShowProfileGuideDialog(true);
-      return false;
-    }
-
-    return true;
-  };
-
-  // 处理话题选择
-  const handleTopicSelect = (topicId: string) => {
-    // 切换话题
-    setSelectedTopic(topicId);
-    // 清空问题，让用户重新输入
-    setConsultationQuestion('');
-  };
-
-  // 提交咨询
-  const handleSubmitConsultation = async () => {
-    if (!consultationQuestion.trim()) {
-      alert('请输入您的问题');
-      return;
-    }
-
-    setIsSubmittingConsultation(true);
-    try {
-      // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const topic = consultationTopics.find(t => t.id === selectedTopic);
-      console.log('提交咨询:', {
-        topic: topic?.name,
-        question: consultationQuestion,
-        userId: userInfo.id,
-      });
-
-      alert('咨询提交成功！我们会尽快回复您。');
-      // 只清空问题，保持当前话题
-      setConsultationQuestion('');
-    } catch (error) {
-      console.error('提交咨询失败:', error);
-      alert('提交咨询失败，请重试');
-    } finally {
-      setIsSubmittingConsultation(false);
-    }
-  };
-
-  // 功能菜单数据结构
-  interface MenuItem {
-    icon: any;
-    label: string;
-    subtitle: string;
-    action: string;
-    route: string;
-  }
-
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-
-  // 从localStorage加载宣告数量并动态生成menuItems
-  useEffect(() => {
-    const loadDeclarationCount = () => {
-      try {
-        const storedDeclarations = localStorage.getItem('userDeclarations');
-        let count = 0;
-        if (storedDeclarations) {
-          const declarations = JSON.parse(storedDeclarations);
-          count = Array.isArray(declarations) ? declarations.length : 0;
-        }
-
-        // 动态生成menuItems，"我的宣告"数量从localStorage读取
-        const items: MenuItem[] = [];
-
-        setMenuItems(items);
-      } catch (error) {
-        console.error('Failed to load declaration count:', error);
-        // 如果加载失败，使用默认值
-        const items: MenuItem[] = [];
-        setMenuItems(items);
-      }
-    };
-
-    loadDeclarationCount();
-
-    // 监听localStorage变化（当其他页面添加宣告时，这里也会更新）
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'userDeclarations') {
-        loadDeclarationCount();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
-  return (
-    <>
-      {/* 未登录状态 - 重定向到登录页面 */}
-      {!isLoggedIn && (
-        <div className="min-h-screen bg-white flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-gray-500">正在跳转到登录页面...</p>
-          </div>
-        </div>
-      )}
-
-      {/* 已登录状态 */}
-      {isLoggedIn && (
-        <div className="min-h-screen bg-white pb-14">
-          {/* 手机H5宽度 */}
-          <div className="w-full max-w-md mx-auto">
-            <div className="px-5 pt-[10px] pb-4 space-y-8">
-              {/* 顶部导航 */}
-              <div className="flex items-center justify-between">
-                <h1 className="text-[31px] font-light text-gray-900">个人中心</h1>
-                <div className="flex items-center space-x-2">
-                  {/* 消息按钮 */}
-                  <button
-                    className="relative p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors"
-                    onClick={() => setShowNotifications(!showNotifications)}
-                  >
-                    <Bell className="w-5 h-5 text-blue-400" />
-                    {/* 红点 */}
-                    {unreadCount > 0 ? (
-                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
-                    ) : (
-                      <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-gray-300 rounded-full border-2 border-white" />
-                    )}
-                  </button>
-                  {/* 设置按钮 */}
-                  <Link href="/settings" className="p-2 hover:bg-[rgba(0,0,0,0.05)] transition-colors">
-                    <Settings className="w-5 h-5 text-blue-400" />
-                  </Link>
-                </div>
-              </div>
-
-          {/* 消息弹窗 */}
-          {showNotifications && (
-            <div className="absolute right-0 top-14 w-80 bg-white border border-[rgba(0,0,0,0.1)] rounded-lg shadow-xl z-50 overflow-hidden">
-              {/* 弹窗头部 */}
-              <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-[17px] font-semibold text-gray-900">消息通知</h3>
-                  {unreadCount > 0 && (
-                    <span className="px-2 py-0.5 bg-red-500 text-white text-[13px] rounded-full">
-                      {unreadCount}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2">
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllAsRead}
-                      className="text-[14px] text-blue-600 hover:text-blue-700"
-                    >
-                      全部已读
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setShowNotifications(false)}
-                    className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded"
-                  >
-                    <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
-                  </button>
-                </div>
-              </div>
-
-              {/* 消息列表 */}
-              <div className="max-h-80 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <div className="py-8 text-center text-[17px] text-[rgba(0,0,0,0.6)]">
-                    暂无消息
-                  </div>
-                ) : (
-                  notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`px-4 py-3 border-b border-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.02)] transition-colors cursor-pointer ${
-                        !notification.read ? 'bg-blue-50/30' : ''
-                      }`}
-                      onClick={() => {
-                        markAsRead(notification.id);
-                        if (notification.actionUrl) {
-                          setShowNotifications(false);
-                          // 这里可以添加跳转逻辑
-                        }
-                      }}
-                    >
-                      <div className="flex items-start space-x-3">
-                        {getNotificationIcon(notification.type)}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <h4 className={`text-[17px] font-medium text-gray-900 ${!notification.read ? 'font-semibold' : ''}`}>
-                              {notification.title}
-                            </h4>
-                          </div>
-                          <p className="text-[16px] text-[rgba(0,0,0,0.6)] mb-1 line-clamp-2">
-                            {notification.message}
-                          </p>
-                          <p className="text-[14px] text-[rgba(0,0,0,0.4)]">
-                            {notification.time}
-                          </p>
-                        </div>
-                        {!notification.read && (
-                          <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-2" />
-                        )}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* 底部查看全部 */}
-              {notifications.length > 0 && (
-                <div className="px-4 py-2 border-t border-[rgba(0,0,0,0.1)]">
-                  <button
-                    className="w-full py-2 text-[16px] text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
-                    onClick={() => setShowNotifications(false)}
-                  >
-                    查看全部消息
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* 用户信息卡片 */}
-          <div className="p-4 bg-white relative">
-            {/* 标签戳 */}
-            {userInfo.connectionType && (
-              <div className={`absolute top-0 right-0 px-2 py-0.5 text-[14px] font-medium rounded-bl-md z-10 ${
-                userInfo.connectionType === 'personLookingForJob'
-                  ? 'bg-[rgba(34,197,94,0.2)] text-green-700'
-                  : userInfo.connectionType === 'jobLookingForPerson'
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-gray-100 text-gray-700'
-              }`}>
-                {connectionType.find(t => t.id === userInfo.connectionType)?.label}
-              </div>
-            )}
-
-            {/* 第一行：头像 + 姓名 + 年龄 */}
-            <div className="flex items-center space-x-4 mb-3">
-              {/* 方形头像 */}
-              <div className="w-20 h-20 flex-shrink-0 overflow-hidden relative rounded-lg">
-                <Image
-                  src={userInfo.avatar}
-                  alt={userInfo.name}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                  unoptimized
-                />
-                <button className="absolute bottom-0 right-0 w-6 h-6 bg-blue-400 flex items-center justify-center rounded-tl-lg rounded-br-lg shadow-md">
-                  <Upload className="w-3 h-3 text-white" />
-                </button>
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline space-x-3">
-                  <h2 className="text-[23px] font-semibold text-gray-900">{userInfo.name}</h2>
-                  <span className="text-[17px] text-[rgba(0,0,0,0.25)]">{userInfo.age}岁</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 第二行：行业标签 */}
-            <div className="mb-3">
-              <div className="text-[14px] text-gray-400 mb-1 flex items-center space-x-2">
-                <Building2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
-                行业标签（必填）
-              </div>
-              <span className="block w-full px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal">
-                {userInfo.industry}
-              </span>
-            </div>
-
-            {/* 硬核标签 */}
-            <div className="mb-3">
-              <div className="text-[14px] text-gray-400 mb-2 flex items-center space-x-2">
-                <Zap className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                硬核标签（必填）
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {userInfo.hardcoreTags && userInfo.hardcoreTags.length > 0 ? (
-                  userInfo.hardcoreTags.map((tag: string) => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-1 bg-blue-100 text-black text-[14px]"
-                    >
-                      {tag}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-[13px] text-gray-400">暂未设置硬核标签</span>
-                )}
-              </div>
-            </div>
-
-            {/* 资源标签 */}
-            <div className="mb-3">
-              <div className="text-[14px] text-gray-400 mb-2 flex items-center space-x-2">
-                <Briefcase className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                资源标签（必填）
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {userInfo.resourceTags.map((tag: string) => (
-                  <span
-                    key={tag}
-                    className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[14px] font-normal"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* 一句说清你的需要 */}
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <Info className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                <div className="text-[14px] text-gray-400">一句话说清你的需求</div>
-              </div>
-              <p className="text-[17px] text-gray-700 leading-relaxed line-clamp-3">
-                {userInfo.need}
-              </p>
-            </div>
-
-            {/* 当前宣告 */}
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-start space-x-2">
-                <Flame className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[14px] text-gray-500">
-                      {declarationDirections.find(d => d.id === userInfo.currentDeclaration.direction)?.name}
-                    </span>
-                    <div className="flex items-center space-x-2">
-                      <button className="p-1 hover:bg-gray-200 transition-colors rounded">
-                        <PlayCircle className="w-6 h-6 text-gray-400" />
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-[17px] text-gray-700 leading-relaxed line-clamp-2 mb-2">
-                    {userInfo.currentDeclaration.text}
-                  </p>
-                  <p className="text-[14px] text-gray-500 leading-relaxed line-clamp-2 mb-2">
-                    {userInfo.currentDeclaration.summary}
-                  </p>
-                  <div className="flex items-center justify-between text-[14px] text-gray-400">
-                    <span>{userInfo.currentDeclaration.date}</span>
-                    <span>{userInfo.currentDeclaration.views.toLocaleString()}次查看</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 完善资料按钮 */}
-            <div className="mt-4">
-              <button
-                onClick={() => router.push(`/profile/edit?id=${user?.id}`)}
-                className="w-full py-2.5 bg-[rgba(34,197,94,0.1)] hover:bg-[rgba(34,197,94,0.2)] text-green-600 font-medium rounded-lg transition-colors flex items-center justify-center space-x-2"
-              >
-                <Edit className="w-4 h-4" />
-                <span>完善资料</span>
-              </button>
-            </div>
-          </div>
-
-          {/* 量表结果展示 */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-[26px] font-bold">
-                <span className="text-[rgba(96,165,250,0.6)]">量表</span>
-                <span className="text-blue-400">评估</span>
-              </h2>
-              <button
-                onClick={toggleAllAssessments}
-                className="text-[13px] text-[rgba(0,0,0,0.25)] hover:text-[rgba(0,0,0,0.5)] flex items-center space-x-1"
-              >
-                <span>{expandedAssessments.size === userInfo.assessments.length ? '收起全部' : '展开全部'}</span>
-              </button>
-            </div>
-            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
-            <div className="space-y-5">
-              {userInfo.assessments.map((assessment: Assessment, idx: number) => {
-                const isExpanded = expandedAssessments.has(idx);
-                return (
-                  <div key={idx} className="p-4 bg-white">
-                    {/* 量表标题和总分 */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-[23px]">{getAssessmentIcon(assessment.name)}</span>
-                        <div>
-                          <h3 className="text-[18px] font-semibold text-gray-900">{assessment.name}</h3>
-                          <Badge className={`rounded-none font-normal text-[13px] mt-1 ${
-                            assessment.level === '优秀' ? 'bg-green-100 text-green-600' : 
-                            assessment.level === '良好' ? 'bg-blue-100 text-blue-600' :
-                            'bg-yellow-100 text-yellow-600'
-                          }`}>
-                            {assessment.level} · {assessment.score}分
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleRetestClick(assessment)}
-                          className="bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.25)] font-normal text-[13px] px-3 py-1 h-7 flex items-center space-x-1"
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>重新测试</span>
-                        </button>
-                        <button
-                          onClick={() => toggleAssessmentExpand(idx)}
-                          className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded transition-colors"
-                        >
-                          <ChevronRight className={`w-4 h-4 text-[rgba(0,0,0,0.25)] transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* 一句话总结 */}
-                    <div className="p-3 bg-[rgba(0,0,0,0.02)] mb-3">
-                      <p className="text-[16px] text-gray-700 leading-relaxed">
-                        {assessment.summary}
-                      </p>
-                    </div>
-
-                    {/* 维度条形图 - 根据展开状态显示 */}
-                    {isExpanded && (
-                      <div className="space-y-2">
-                        {assessment.dimensions.map((dimension: AssessmentDimension, dimIdx: number) => (
-                          <div key={dimIdx} className="space-y-1">
-                            <div className="flex items-center justify-between text-[13px] text-[rgba(0,0,0,0.25)]">
-                              <span className="font-medium">{dimension.name}</span>
-                              <span>{dimension.score}分</span>
-                            </div>
-                            <div className="w-full bg-[rgba(0,0,0,0.05)] h-2">
-                              <div 
-                                className={`h-2 rounded-none transition-all ${
-                                  dimension.score >= 90 ? 'bg-green-500' :
-                                  dimension.score >= 80 ? 'bg-blue-500' :
-                                  dimension.score >= 70 ? 'bg-yellow-500' : 'bg-orange-500'
-                                }`}
-                                style={{ width: `${dimension.score}%` }}
-                              />
-                            </div>
-                            <p className="text-[16px] text-[rgba(0,0,0,0.25)] pl-1">
-                              {dimension.description}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 活动详情弹窗 */}
-          {showActivityDetail && selectedActivity && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              {/* 背景遮罩 */}
-              <div 
-                className="absolute inset-0 bg-black/50"
-                onClick={() => setShowActivityDetail(false)}
-              />
-              
-              {/* 弹窗内容 */}
-              <div className="relative bg-white border border-[rgba(0,0,0,0.1)] rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
-                {/* 弹窗头部 */}
-                <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between">
-                  <h3 className="text-[17px] font-semibold text-gray-900">活动详情</h3>
-                  <button
-                    onClick={() => setShowActivityDetail(false)}
-                    className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded"
-                  >
-                    <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
-                  </button>
-                </div>
-
-                {/* 弹窗内容 */}
-                <div className="p-4 space-y-4">
-                  {/* 活动标题 */}
-                  <div>
-                    <h4 className="text-[15px] font-bold text-gray-900 mb-2">{selectedActivity.title}</h4>
-                    <Badge
-                      className={`rounded-none font-normal text-[14px] ${
-                        selectedActivity.status === '待参加'
-                          ? 'bg-blue-400 text-white'
-                          : selectedActivity.status === '待审核'
-                          ? 'bg-yellow-400 text-white'
-                          : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)]'
-                      }`}
-                    >
-                      {selectedActivity.status}
-                    </Badge>
-                  </div>
-
-                  {/* 活动信息 */}
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2 text-[17px] text-[rgba(0,0,0,0.6)]">
-                      <Calendar className="w-4 h-4" />
-                      <span>{selectedActivity.date} {selectedActivity.time}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-[17px] text-[rgba(0,0,0,0.6)]">
-                      <MapPin className="w-4 h-4" />
-                      <span>{selectedActivity.location}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-[17px] text-[rgba(0,0,0,0.6)]">
-                      <Users className="w-4 h-4" />
-                      <span>已报名 {selectedActivity.enrolled}/{selectedActivity.participants} 人</span>
-                    </div>
-                  </div>
-
-                  {/* 活动描述 */}
-                  <div>
-                    <h5 className="text-[17px] font-semibold text-gray-900 mb-2">活动介绍</h5>
-                    <p className="text-[17px] text-[rgba(0,0,0,0.6)] leading-relaxed">
-                      {selectedActivity.description}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 弹窗底部 */}
-                <div className="px-4 py-3 border-t border-[rgba(0,0,0,0.1)]">
-                  <Button
-                    className="w-full bg-blue-400 hover:bg-blue-500 text-white text-[17px]"
-                    onClick={() => setShowActivityDetail(false)}
-                  >
-                    关闭
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 探访项目 */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center space-x-2">
-                <h2 className="text-[26px] font-bold">
-                  <span className="text-[rgba(96,165,250,0.6)]">探访</span>
-                  <span className="text-blue-400">项目</span>
-                </h2>
-                <span className="text-[13px] text-[rgba(0,0,0,0.25)]">
-                  （你的收藏）
-                </span>
-              </div>
-            </div>
-            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
-            <div className="space-y-3">
-              {userVisitRecords.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-[17px] text-[rgba(0,0,0,0.6)]">
-                    暂无探访项目
-                  </p>
-                  <p className="text-[14px] text-[rgba(0,0,0,0.4)] mt-1">
-                    在探访项目详情页点击收藏按钮后，这里会显示你收藏的探访项目
-                  </p>
-                </div>
-              ) : (
-                userVisitRecords.map((record) => {
-                  // 兼容两种数据格式：直接的数据和包含visit对象的数据
-                  const visitData = record.visit || record;
-                  const visitId = visitData.id || record.visitId;
-
-                  return (
-                    <Link
-                      key={visitId}
-                      href={`/visit/${visitId}`}
-                      className="block"
-                    >
-                      <div className="p-3 bg-[rgba(0,0,0,0.02)]">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-16 h-16 flex-shrink-0 overflow-hidden">
-                            <Image
-                              src={visitData.image || visitData.title}
-                              alt={visitData.title}
-                              width={64}
-                              height={64}
-                              className="w-full h-full object-cover"
-                              unoptimized
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-[18px] font-semibold text-gray-900 mb-1 line-clamp-2">
-                              {visitData.title}
-                            </h3>
-                            {/* 显示标签 */}
-                            {visitData.tags && visitData.tags.filter((tag: string) => !['已审核', '已发布'].includes(tag)).length > 0 && (
-                              <div className="flex items-center space-x-1 flex-wrap gap-1 mb-2">
-                                {visitData.tags.filter((tag: string) => !['已审核', '已发布'].includes(tag)).map((tag: string) => (
-                                  <Badge
-                                    key={tag}
-                                    className="rounded-none bg-blue-400/50 text-white font-normal text-[8px]"
-                                  >
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                            {/* 年月日 */}
-                            <div className="text-[13px] text-[rgba(0,0,0,0.25)]">
-                              {visitData.date}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })
-              )}
-            </div>
-          </div>
-
-          {/* 参与的活动 */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-[26px] font-bold">
-                <span className="text-[rgba(96,165,250,0.6)]">参与</span>
-                <span className="text-blue-400">活动</span>
-              </h2>
-            </div>
-            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
-            <div className="space-y-3">
-              {activities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors flex items-center justify-between"
-                >
-                  <div className="flex-1 min-w-0">
-                    <h3 
-                      className="text-[18px] font-semibold text-gray-900 mb-1 line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors"
-                      onClick={() => {
-                        setSelectedActivity(activity);
-                        setShowActivityDetail(true);
-                      }}
-                    >
-                      {activity.title}
-                    </h3>
-                    <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.25)]">
-                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
-                        {activity.category}
-                      </Badge>
-                      <span>{activity.date}</span>
-                    </div>
-                  </div>
-                  <Badge
-                    className={`rounded-none font-normal text-[13px] ml-2 flex-shrink-0 ${
-                      activity.status === '待参加'
-                        ? 'bg-blue-400 text-white'
-                        : activity.status === '待审核'
-                        ? 'bg-yellow-400 text-white'
-                        : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)]'
-                    }`}
-                  >
-                    {activity.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 我要咨询 */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="text-[26px] font-bold">
-                <span className="text-[rgba(96,165,250,0.6)]">我要</span>
-                <span className="text-blue-400">咨询</span>
-              </h2>
-            </div>
-            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
-            
-            {/* 话题选择 */}
-            <div className="space-y-3 mb-4">
-              <div className="flex items-center space-x-2">
-                <span className="text-[16px] text-[rgba(0,0,0,0.6)]">选择话题：</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {consultationTopics.map((topic) => (
-                  <button
-                    key={topic.id}
-                    type="button"
-                    onClick={() => handleTopicSelect(topic.id)}
-                    className={`px-2 py-1.5 text-[15px] font-normal transition-colors flex items-center space-x-1 flex-1 min-w-[calc(25%-8px)] max-w-[calc(25%-8px)] justify-center ${
-                      selectedTopic === topic.id
-                        ? 'bg-[rgba(59,130,246,0.4)] text-white'
-                        : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
-                    }`}
-                  >
-                    <span className="text-[13px]">{topic.icon}</span>
-                    <span className="whitespace-nowrap">{topic.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 问题输入 - 默认显示 */}
-            <div className="space-y-3">
-              {/* 咨询师信息 */}
-              <div className="flex items-start space-x-3">
-                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-blue-400">
-                  <img
-                    src={consultantInfo.avatar}
-                    alt={consultantInfo.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[16px] text-gray-900 mb-2">
-                    你要咨询的人是<span className="font-semibold">"{consultantInfo.name}"</span>
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {consultantInfo.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-0.5 bg-[rgba(59,130,246,0.1)] text-blue-600 text-[13px] font-medium rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <textarea
-                  value={consultationQuestion}
-                  onChange={(e) => setConsultationQuestion(e.target.value)}
-                  placeholder={consultationTopics.find(t => t.id === selectedTopic)?.placeholder}
-                  className="w-full px-3 py-2 text-[15px] placeholder:text-[rgba(0,0,0,0.3)] border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[120px] resize-none"
-                />
-              </div>
-              <Button
-                onClick={handleSubmitConsultation}
-                disabled={isSubmittingConsultation}
-                className="w-full bg-blue-400 hover:bg-blue-500 text-white rounded-none"
-              >
-                {isSubmittingConsultation ? '提交中...' : '提交咨询'}
-              </Button>
-            </div>
-          </div>
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500">请先登录</p>
         </div>
       </div>
+    );
+  }
 
-      {/* 基础信息引导对话框 */}
-      {showProfileGuideDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white w-full max-w-md">
-            {/* 头部 */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-[21px] font-semibold text-gray-900">
-                {guideType === 'login' ? '请先登录' : '请完善基础信息'}
-              </h3>
-              <button
-                onClick={() => setShowProfileGuideDialog(false)}
-                className="p-1 hover:bg-gray-100 rounded-none"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-gray-400">加载中...</div>
+      </div>
+    );
+  }
 
-            {/* 内容 */}
-            <div className="p-4">
-              {guideType === 'login' ? (
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-10 h-10 bg-blue-50 flex items-center justify-center flex-shrink-0">
-                      <User className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[18px] text-gray-900 font-medium mb-1">登录后才可发起咨询</p>
-                      <p className="text-[16px] text-[rgba(0,0,0,0.3)]">请先登录账号，以便我们更好地为您提供服务</p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-10 h-10 bg-blue-50 flex items-center justify-center flex-shrink-0">
-                      <Info className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[18px] text-gray-900 font-medium mb-1">请完善基础信息</p>
-                      <p className="text-[16px] text-[rgba(0,0,0,0.3)] mb-2">为了让咨询师更好地了解您，请先完善以下基础信息：</p>
-                      <ul className="text-[16px] text-[rgba(0,0,0,0.3)] space-y-1">
-                        <li>• 姓名</li>
-                        <li>• 行业</li>
-                        <li>• 连接类型（人找事/事找人/纯交流）</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 底部按钮 */}
-            <div className="flex border-t border-gray-200">
-              <button
-                onClick={() => setShowProfileGuideDialog(false)}
-                className="flex-1 py-3 text-[18px] text-[rgba(0,0,0,0.3)] hover:bg-gray-50 border-r border-gray-200"
-              >
-                稍后再说
-              </button>
-              <button
-                onClick={() => {
-                  setShowProfileGuideDialog(false);
-                  if (guideType === 'login') {
-                    // 跳转到登录页面
-                    window.location.href = '/login';
-                  } else {
-                    // 跳转到个人资料页面
-                    window.location.href = `/profile/edit?id=${user?.id}`;
-                  }
-                }}
-                className="flex-1 py-3 text-[18px] text-white bg-[rgba(59,130,246,0.4)] hover:bg-[rgba(59,130,246,0.5)]"
-              >
-                {guideType === 'login' ? '去登录' : '去完善'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 量表测试弹窗 */}
-      {showAssessmentModal && selectedAssessment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* 背景遮罩 */}
-          <div 
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowAssessmentModal(false)}
-          />
-          
-          {/* 弹窗内容 */}
-          <div className="relative bg-white border border-[rgba(0,0,0,0.1)] rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
-            {/* 弹窗头部 */}
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between">
-              <h3 className="text-[17px] font-semibold text-gray-900">{selectedAssessment.name} - 重新测试</h3>
-              <button
-                onClick={() => setShowAssessmentModal(false)}
-                className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded"
-              >
-                <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
-              </button>
-            </div>
-
-            {/* 弹窗内容 */}
-            <div className="p-4 space-y-4">
-              {/* 提示信息 */}
-              <div className="p-3 bg-[rgba(59,130,246,0.05)] border border-blue-200">
-                <div className="flex items-start space-x-2">
-                  <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-[15px] text-[rgba(0,0,0,0.3)] leading-relaxed">
-                    您即将重新测试「{selectedAssessment.name}」。测试需要约10-15分钟，请在安静的环境下完成。
-                  </p>
-                </div>
-              </div>
-
-              {/* 上次测试结果 */}
+  return (
+    <div className="min-h-screen bg-white pb-20">
+      <div className="w-full max-w-md mx-auto">
+        {/* 顶部导航 */}
+        <div className="sticky top-0 bg-white z-50 px-5 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Avatar className="w-12 h-12">
+                <AvatarImage src={userInfo?.avatar || ''} alt={userInfo?.name} />
+                <AvatarFallback>{userInfo?.name?.[0] || 'U'}</AvatarFallback>
+              </Avatar>
               <div>
-                <h4 className="text-[15px] font-semibold text-gray-900 mb-2">上次测试结果</h4>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Badge className={`rounded-none font-normal text-[13px] ${
-                    selectedAssessment.level === '优秀' ? 'bg-green-100 text-green-600' : 
-                    selectedAssessment.level === '良好' ? 'bg-blue-100 text-blue-600' :
-                    'bg-yellow-100 text-yellow-600'
-                  }`}>
-                    {selectedAssessment.level}
-                  </Badge>
-                  <span className="text-[15px] text-[rgba(0,0,0,0.6)]">{selectedAssessment.score}分</span>
-                </div>
-                <p className="text-[15px] text-gray-700 leading-relaxed">
-                  {selectedAssessment.summary}
-                </p>
+                <h1 className="text-lg font-semibold text-gray-900">{userInfo?.name || '用户'}</h1>
+                <p className="text-xs text-gray-500">{userInfo?.industry || '未设置行业'}</p>
               </div>
-
-              {/* 操作按钮 */}
-              <div className="space-y-2">
-                <button
-                  onClick={handleStartTest}
-                  className="w-full bg-blue-400 hover:bg-blue-500 text-white py-2.5 text-[15px] font-normal"
-                >
-                  开始重新测试
-                </button>
-                <button
-                  onClick={() => setShowAssessmentModal(false)}
-                  className="w-full bg-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] py-2.5 text-[15px] font-normal"
-                >
-                  取消
-                </button>
-              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 hover:bg-gray-100 rounded-full"
+              >
+                <Bell className="w-5 h-5 text-gray-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                )}
+              </button>
+              <Link href="/settings">
+                <Button variant="ghost" className="p-2">
+                  <Settings className="w-5 h-5 text-gray-600" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
-      )}
 
-      {/* 测试悬浮页面 */}
-      {showTestModal && currentTestAssessment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* 背景遮罩 */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowTestModal(false)}
-          />
-          
-          {/* 弹窗内容 */}
-          <div className="relative bg-white border border-[rgba(0,0,0,0.1)] rounded-lg shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
-            {/* 弹窗头部 */}
-            <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)] flex items-center justify-between sticky top-0 bg-white z-10">
-              <div className="flex items-center space-x-2">
-                <h3 className="text-[15px] font-semibold text-gray-900">
-                  {currentTestAssessment.name}
-                </h3>
-                <span className="text-[13px] text-[rgba(0,0,0,0.4)]">
-                  问题 {testQuestionIndex + 1}/{testQuestions.length}
-                </span>
+        {/* 通知下拉面板 */}
+        {showNotifications && (
+          <div className="fixed top-16 left-0 right-0 z-50 max-w-md mx-auto bg-white border-b border-gray-200 shadow-lg">
+            <div className="px-5 py-3 border-b border-gray-100 flex justify-between items-center">
+              <span className="font-semibold text-gray-900">消息通知</span>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => {
+                    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                  }}
+                  className="text-sm text-blue-600"
+                >
+                  全部已读
+                </button>
+                <button onClick={() => setShowNotifications(false)}>
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
               </div>
-              <button
-                onClick={() => setShowTestModal(false)}
-                className="p-1 hover:bg-[rgba(0,0,0,0.05)] rounded"
-              >
-                <X className="w-4 h-4 text-[rgba(0,0,0,0.6)]" />
+            </div>
+            <div className="max-h-96 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="py-8 text-center text-gray-400">暂无通知</div>
+              ) : (
+                notifications.map((notification) => (
+                  <button
+                    key={notification.id}
+                    onClick={() => handleNotificationClick(notification)}
+                    className="w-full px-5 py-3 flex items-start space-x-3 hover:bg-gray-50 border-b border-gray-50"
+                  >
+                    <div className="flex-shrink-0 mt-0.5">
+                      {getNotificationIcon(notification.type)}
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="text-sm font-medium text-gray-900">{notification.title}</p>
+                      <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
+                      <p className="text-xs text-gray-400 mt-1">{notification.time}</p>
+                    </div>
+                    {!notification.read && (
+                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="px-5 py-6 space-y-6">
+          {/* 需求描述 */}
+          {userInfo?.need && (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4">
+              <p className="text-sm text-gray-700 leading-relaxed">{userInfo.need}</p>
+            </div>
+          )}
+
+          {/* 量表评估 */}
+          {assessments.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">量表评估</h2>
+                <Link href="/assessment">
+                  <Button variant="ghost" className="text-blue-600">
+                    查看全部 <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {assessments.map((assessment, index) => (
+                  <div key={index} className="bg-gray-50 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-gray-900">{assessment.name}</span>
+                      <Badge variant={assessment.level === '优秀' ? 'default' : 'secondary'}>
+                        {assessment.level}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2">{assessment.summary}</p>
+                    <div className="flex items-center space-x-2">
+                      <Flame className="w-4 h-4 text-orange-500" />
+                      <span className="text-sm font-semibold text-orange-500">{assessment.score}分</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 参与的活动 */}
+          {activities.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">参与的活动</h2>
+                <Link href="/activities">
+                  <Button variant="ghost" className="text-blue-600">
+                    查看全部 <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {activities.slice(0, 3).map((activity: any) => (
+                  <div key={activity.id} className="bg-gray-50 rounded-xl p-4">
+                    <h3 className="font-medium text-gray-900 mb-1">{activity.title}</h3>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      <span className="flex items-center space-x-1">
+                        <Calendar className="w-4 h-4" />
+                        {activity.date}
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <MapPin className="w-4 h-4" />
+                        {activity.location}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 探访记录 */}
+          {visitRecords.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">探访记录</h2>
+                <Link href="/visits">
+                  <Button variant="ghost" className="text-blue-600">
+                    查看全部 <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {visitRecords.slice(0, 3).map((visit: any) => (
+                  <div key={visit.id} className="bg-gray-50 rounded-xl p-4">
+                    <h3 className="font-medium text-gray-900 mb-1">{visit.title}</h3>
+                    <p className="text-sm text-gray-600">{visit.date}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 快捷操作 */}
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">快捷操作</h2>
+            <div className="grid grid-cols-4 gap-4">
+              <Link href="/profile/edit" className="flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Edit className="w-6 h-6 text-blue-600" />
+                </div>
+                <span className="text-xs text-gray-600">编辑资料</span>
+              </Link>
+              <Link href="/assessment" className="flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <Award className="w-6 h-6 text-green-600" />
+                </div>
+                <span className="text-xs text-gray-600">量表评估</span>
+              </Link>
+              <Link href="/declarations" className="flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Mic className="w-6 h-6 text-purple-600" />
+                </div>
+                <span className="text-xs text-gray-600">高燃宣告</span>
+              </Link>
+              <button onClick={handleLogout} className="flex flex-col items-center space-y-2">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <LogOut className="w-6 h-6 text-red-600" />
+                </div>
+                <span className="text-xs text-gray-600">退出登录</span>
               </button>
             </div>
-
-            {/* 弹窗内容 */}
-            <div className="p-4 space-y-4">
-              {/* 进度条 */}
-              <div className="w-full bg-[rgba(0,0,0,0.05)] h-1.5 rounded-full overflow-hidden">
-                <div
-                  className="bg-blue-400 h-full transition-all duration-300"
-                  style={{ width: `${((testQuestionIndex + 1) / testQuestions.length) * 100}%` }}
-                />
-              </div>
-
-              {/* 问题 */}
-              {testQuestionIndex < testQuestions.length && (
-                <div className="space-y-3">
-                  <p className="text-[15px] text-gray-900 leading-relaxed">
-                    {testQuestions[testQuestionIndex].question}
-                  </p>
-                  
-                  {/* 选项 */}
-                  <div className="space-y-2">
-                    {testQuestions[testQuestionIndex].options.map((option, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleTestAnswer(testQuestions[testQuestionIndex].id, idx + 1)}
-                        className="w-full text-left px-4 py-3 border border-[rgba(0,0,0,0.1)] rounded-none hover:bg-[rgba(0,0,0,0.02)] hover:border-blue-400 transition-colors text-[15px] text-gray-700"
-                      >
-                        <span className="font-normal text-[rgba(0,0,0,0.4)] mr-2">{['A', 'B', 'C', 'D', 'E'][idx]}.</span>
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 完成提示 */}
-              {testQuestionIndex >= testQuestions.length && (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-green-400 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h4 className="text-[17px] font-semibold text-gray-900 mb-1">测试完成</h4>
-                  <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
-                    感谢您完成测试，正在生成评估报告...
-                  </p>
-                </div>
-              )}
-            </div>
           </div>
         </div>
-      )}
 
-      {/* 底部导航 */}
-      <BottomNav />
+        {/* 底部导航 */}
+        <BottomNav />
+      </div>
     </div>
-      )}
-    </>
   );
 }
