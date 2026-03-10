@@ -6,8 +6,12 @@ function convertToCamelCase(data: any): any {
     return null;
   }
 
-  // 如果是 Date 对象，直接返回
+  // 如果是 Date 对象，检查是否有效
   if (data instanceof Date) {
+    // 检查日期是否有效
+    if (isNaN(data.getTime())) {
+      return null; // 无效日期返回 null
+    }
     return data.toISOString();
   }
 
@@ -29,6 +33,7 @@ function convertToCamelCase(data: any): any {
     return camelCaseResult;
   }
 
+  // 对于字符串，不进行日期转换，直接返回
   return data;
 }
 
