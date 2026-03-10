@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
       bio: user.need,
       position: user.position,
       company: user.company,
-      hardcoreTags: user.ability_tags || [],
+      hardcoreTags: user.hardcore_tags || [],
+      tags: user.tags || [],
       industry: user.industry,
     }));
 

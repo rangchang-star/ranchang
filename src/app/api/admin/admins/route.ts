@@ -88,11 +88,11 @@ export async function POST(request: NextRequest) {
 
     // 创建管理员
     const result = await db.insert(users).values({
-      id: randomUUID(),
       phone: body.phone,
+      password: body.password || '',
       name: body.name,
       status: 'active',
-      level: 'admin',
+      role: 'admin',
       created_at: new Date(),
       updated_at: new Date(),
     }).returning();

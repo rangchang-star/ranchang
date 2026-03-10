@@ -18,6 +18,7 @@ export async function GET(
     }
 
     const { id } = await params;
+    const userId = parseInt(id);
 
     // 检查是否配置了数据库连接
     if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
@@ -30,7 +31,7 @@ export async function GET(
     const { db, users } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    const dbUsers = await db.select().from(users).where(eq(users.id, id));
+    const dbUsers = await db.select().from(users).where(eq(users.id, userId));
 
     if (dbUsers.length === 0) {
       return NextResponse.json({
@@ -78,6 +79,7 @@ export async function PUT(
     }
 
     const { id } = await params;
+    const userId = parseInt(id);
     const body = await request.json();
 
     // 检查是否配置了数据库连接
@@ -98,7 +100,7 @@ export async function PUT(
           phone: body.phone || null,
           updated_at: new Date(),
         })
-        .where(eq(users.id, id))
+        .where(eq(users.id, userId))
         .returning();
 
       if (result.length === 0) {
@@ -145,6 +147,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const userId = parseInt(id);
 
     // 检查是否配置了数据库连接
     if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
@@ -159,10 +162,10 @@ export async function DELETE(
 
     const result = await db.update(users)
       .set({
-        level: 'user',
+        role: 'user',
         updated_at: new Date(),
       })
-      .where(eq(users.id, id))
+      .where(eq(users.id, userId))
       .returning();
 
     if (result.length === 0) {

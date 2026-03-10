@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/storage/database/supabase/connection';
-import { activityRegistrations, visitRecords, activities, visits, users } from '@/storage/database/supabase/schema';
-import { eq, and, desc, sql } from 'drizzle-orm';
 
 // GET - 获取报名列表
 export async function GET(request: NextRequest) {
@@ -11,81 +8,42 @@ export async function GET(request: NextRequest) {
     const activityId = searchParams.get('activityId');
     const visitId = searchParams.get('visitId');
 
+    if (!userId && !activityId && !visitId) {
+      return NextResponse.json({
+        success: false,
+        error: '请提供至少一个查询参数'
+      }, { status: 400 });
+    }
+
+    const { db, registrations, activityRegistrations } = await import('@/storage/database/supabase/connection');
+    const { eq, and, desc, sql } = await import('drizzle-orm');
+
     let result;
 
     // 根据查询参数选择查询哪个表
     if (activityId) {
       // 查询活动报名记录
       const conditions = [];
-      if (userId) conditions.push(eq(activityRegistrations.userId, userId));
-      conditions.push(eq(activityRegistrations.activityId, activityId));
+      if (userId) conditions.push(eq(activityRegistrations.user_id, parseInt(userId)));
+      conditions.push(eq(activityRegistrations.activity_id, parseInt(activityId)));
 
-      result = await db.select({
-        id: activityRegistrations.id,
-        userId: activityRegistrations.userId,
-        activityId: activityRegistrations.activityId,
-        type: sql<string>`'activity'`,
-        status: activityRegistrations.status,
-        registeredAt: activityRegistrations.registeredAt,
-        reviewedAt: activityRegistrations.reviewedAt,
-        note: activityRegistrations.note,
-      }).from(activityRegistrations)
+      result = await db.select().from(activityRegistrations)
         .where(and(...conditions))
-        .orderBy(desc(activityRegistrations.registeredAt));
+        .orderBy(desc(activityRegistrations.registered_at));
     } else if (visitId) {
-      // 查询探访记录
+      // 查询探访报名记录
       const conditions = [];
-      if (userId) conditions.push(eq(visitRecords.userId, userId));
-      conditions.push(eq(visitRecords.visitId, visitId));
+      if (userId) conditions.push(eq(registrations.user_id, parseInt(userId)));
+      conditions.push(eq(registrations.visit_id, parseInt(visitId)));
 
-      result = await db.select({
-        id: visitRecords.id,
-        userId: visitRecords.userId,
-        visitId: visitRecords.visitId,
-        type: sql<string>`'visit'`,
-        status: visitRecords.status,
-        registeredAt: visitRecords.registeredAt,
-        completedAt: visitRecords.completedAt,
-      }).from(visitRecords)
+      result = await db.select().from(registrations)
         .where(and(...conditions))
-        .orderBy(desc(visitRecords.registeredAt));
+        .orderBy(desc(registrations.created_at));
     } else if (userId) {
-      // 查询用户的所有报名记录（活动和探访）
-      const activityResults = await db.select({
-        id: activityRegistrations.id,
-        userId: activityRegistrations.userId,
-        activityId: activityRegistrations.activityId,
-        type: sql<string>`'activity'`,
-        status: activityRegistrations.status,
-        registeredAt: activityRegistrations.registeredAt,
-        reviewedAt: activityRegistrations.reviewedAt,
-        note: activityRegistrations.note,
-      }).from(activityRegistrations)
-        .where(eq(activityRegistrations.userId, userId))
-        .orderBy(desc(activityRegistrations.registeredAt));
-
-      const visitResults = await db.select({
-        id: visitRecords.id,
-        userId: visitRecords.userId,
-        visitId: visitRecords.visitId,
-        type: sql<string>`'visit'`,
-        status: visitRecords.status,
-        registeredAt: visitRecords.registeredAt,
-        completedAt: visitRecords.completedAt,
-      }).from(visitRecords)
-        .where(eq(visitRecords.userId, userId))
-        .orderBy(desc(visitRecords.registeredAt));
-
-      result = [...activityResults, ...visitResults].sort((a, b) => {
-        const aTime = a.registeredAt ? new Date(a.registeredAt).getTime() : 0;
-        const bTime = b.registeredAt ? new Date(b.registeredAt).getTime() : 0;
-        return bTime - aTime;
-      });
-    } else {
-      return NextResponse.json({
-        success: false,
-        error: '请提供至少一个查询参数'
-      }, { status: 400 });
+      // 查询用户的所有报名记录（使用 registrations 表）
+      result = await db.select().from(registrations)
+        .where(eq(registrations.user_id, parseInt(userId)))
+        .orderBy(desc(registrations.created_at));
     }
 
     return NextResponse.json({
@@ -121,16 +79,19 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // 根据类型创建报名记录
+    const { db, registrations, activityRegistrations } = await import('@/storage/database/supabase/connection');
+    const { eq, and, count } = await import('drizzle-orm');
+
     let result;
+
+    // 根据类型创建报名记录
     if (activityId) {
       // 检查是否已经报名
       const existingRegistration = await db.select()
         .from(activityRegistrations)
         .where(and(
-          eq(activityRegistrations.userId, userId),
-          eq(activityRegistrations.activityId, activityId),
-          eq(activityRegistrations.status, 'registered')
+          eq(activityRegistrations.user_id, parseInt(userId)),
+          eq(activityRegistrations.activity_id, parseInt(activityId)),
         ));
 
       if (existingRegistration && existingRegistration.length > 0) {
@@ -142,20 +103,20 @@ export async function POST(request: NextRequest) {
 
       // 创建活动报名记录
       result = await db.insert(activityRegistrations).values({
-        id: sql`gen_random_uuid()`,
-        userId,
-        activityId,
+        activity_id: parseInt(activityId),
+        user_id: parseInt(userId),
         status: 'registered',
-        registeredAt: new Date(),
+        registered_at: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
       }).returning();
     } else {
       // 检查是否已经报名
       const existingRegistration = await db.select()
-        .from(visitRecords)
+        .from(registrations)
         .where(and(
-          eq(visitRecords.userId, userId),
-          eq(visitRecords.visitId, visitId!),
-          eq(visitRecords.status, 'registered')
+          eq(registrations.user_id, parseInt(userId)),
+          eq(registrations.visit_id, parseInt(visitId!)),
         ));
 
       if (existingRegistration && existingRegistration.length > 0) {
@@ -165,13 +126,12 @@ export async function POST(request: NextRequest) {
         }, { status: 400 });
       }
 
-      // 创建探访记录
-      result = await db.insert(visitRecords).values({
-        id: sql`gen_random_uuid()`,
-        userId,
-        visitId,
+      // 创建探访报名记录
+      result = await db.insert(registrations).values({
+        user_id: parseInt(userId),
+        visit_id: parseInt(visitId!),
         status: 'registered',
-        registeredAt: new Date(),
+        created_at: new Date(),
       }).returning();
     }
 
@@ -185,7 +145,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: false,
-      error: '创建报名失败'
+      error: '创建报名失败: ' + error.message
     }, { status: 500 });
   }
 }

@@ -6,11 +6,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const userId = parseInt(id);
 
     const { db, users } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    const dbUsers = await db.select().from(users).where(eq(users.id, id));
+    const dbUsers = await db.select().from(users).where(eq(users.id, userId));
 
     if (dbUsers.length === 0) {
       return NextResponse.json({
@@ -28,31 +29,27 @@ export async function GET(
       name: user.name,
       age: user.age,
       avatar: user.avatar,
-      connectionType: user.connection_type || 'personLookingForJob', // 默认值
       industry: user.industry,
       need: user.need,
-      hardcoreTags: [], // 数据库中没有该字段
+      hardcoreTags: user.hardcore_tags || [],
       resourceTags: user.resource_tags || [],
-
-      // 后台标签（暂时使用空数组）
-      adminTags: [],
+      tags: user.tags || [],
 
       // 公司信息
       phone: user.phone,
-      email: user.email || '', // 数据库中没有email字段
       company: user.company,
       position: user.position,
-      faith: '', // 数据库中没有faith字段
+      bio: user.bio,
 
       // 其他信息
       level: user.is_featured ? '活跃会员' : '种子会员',
-      joinDate: user.join_date ? user.join_date.toISOString().split('T')[0] : (user.created_at ? user.created_at.toISOString().split('T')[0] : ''),
+      joinDate: user.created_at ? user.created_at.toISOString().split('T')[0] : '',
       status: user.status || 'active',
       isFeatured: user.is_featured,
-      role: 'user',
-      bio: user.need, // 使用 need 字段代替 bio
-      connectionCount: 0,
-      activityCount: 0,
+      role: user.role,
+      connectionCount: user.connection_count || 0,
+      activityCount: user.activity_count || 0,
+      isTrusted: user.is_trusted || false,
 
       // 高燃宣告（暂时为空）
       declaration: null,
@@ -86,6 +83,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    const userId = parseInt(id);
     const body = await request.json();
 
     const { db, users } = await import('@/storage/database/supabase/connection');
@@ -99,12 +97,16 @@ export async function PUT(
         company: body.company,
         position: body.position,
         need: body.need,
+        bio: body.bio,
+        tags: body.tags,
+        hardcore_tags: body.hardcoreTags,
         resource_tags: body.resourceTags,
+        is_trusted: body.isTrusted,
         is_featured: body.isFeatured,
         avatar: body.avatar,
         updated_at: new Date(),
       })
-      .where(eq(users.id, id))
+      .where(eq(users.id, userId))
       .returning();
 
     if (result.length === 0) {

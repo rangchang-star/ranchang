@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
 
 // GET - 获取用户列表
 export async function GET(request: NextRequest) {
@@ -12,26 +11,10 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 直接创建数据库连接，避免连接池满的问题
-    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
-
-    const postgres = (await import('postgres')).default;
-    const { drizzle } = await import('drizzle-orm/postgres-js');
-    const { users } = await import('@/storage/database/supabase/schema');
+    const { db, users } = await import('@/storage/database/supabase/connection');
     const { desc } = await import('drizzle-orm');
 
-    // 创建单个连接（不使用连接池）
-    const client = postgres(connectionString, {
-      max: 1,
-      ssl: false,
-    });
-
-    const db = drizzle(client);
-
     const result = await db.select().from(users).orderBy(desc(users.created_at));
-
-    // 立即关闭连接
-    await client.end();
 
     return NextResponse.json({
       success: true,
@@ -51,64 +34,39 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // 前台使用真实的 ran_field 数据库
-    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field');
-
-    if (!connectionString || connectionString === '') {
-      return NextResponse.json({
-        success: false,
-        error: '未配置数据库连接'
-      }, { status: 500 });
-    }
-
     // 验证必填字段
-    if (!body.phone || !body.name) {
+    if (!body.phone || !body.password) {
       return NextResponse.json({
         success: false,
-        error: '手机号和姓名不能为空'
+        error: '手机号和密码不能为空'
       }, { status: 400 });
     }
 
-    // 创建临时的数据库连接
-    const postgres = (await import('postgres')).default;
-    const { drizzle } = await import('drizzle-orm/postgres-js');
-    const { users } = await import('@/storage/database/supabase/schema');
+    const { db, users } = await import('@/storage/database/supabase/connection');
 
-    // 使用 ran_field 数据库
-    const client = postgres(connectionString, {
-      max: 10,
-      ssl: false,
-      connection: {
-        application_name: 'ran-field-app-frontend',
-      },
-    });
-
-    const frontendDb = drizzle(client);
-
-    const result = await frontendDb.insert(users).values({
-      id: randomUUID(),
+    const result = await db.insert(users).values({
       phone: body.phone,
-      name: body.name,
+      password: body.password,
+      name: body.name || null,
       avatar: body.avatar || null,
       age: body.age || null,
-      email: body.email || null,
-      connection_type: body.connection_type || null,
-      industry: body.industry || null,
-      need: body.need || null,
-      ability_tags: body.ability_tags || [],
-      resource_tags: body.resource_tags || [],
-      level: body.level || null,
       company: body.company || null,
       position: body.position || null,
+      industry: body.industry || null,
+      bio: body.bio || null,
+      need: body.need || null,
+      tags: body.tags || null,
+      hardcore_tags: body.hardcore_tags || null,
+      resource_tags: body.resource_tags || null,
       status: body.status || 'active',
+      is_trusted: body.is_trusted || false,
       is_featured: body.is_featured || false,
-      join_date: new Date(),
-      last_login: new Date(),
+      connection_count: 0,
+      activity_count: 0,
+      role: body.role || 'user',
       created_at: new Date(),
       updated_at: new Date(),
     }).returning();
-
-    await client.end();
 
     return NextResponse.json({
       success: true,

@@ -6,7 +6,7 @@ export async function GET(
 ) {
   try {
     const params = await context.params;
-    const id = params.id;
+    const id = parseInt(params.id);
 
     // 检查是否配置了数据库连接
     if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
@@ -33,34 +33,35 @@ export async function GET(
 
     // 根据状态判断
     const now = new Date();
-    const startTime = activity.start_time ? new Date(activity.start_time) : null;
-    const endTime = activity.end_time ? new Date(activity.end_time) : null;
+    const startDate = activity.start_date ? new Date(activity.start_date) : null;
+    const endDate = activity.end_date ? new Date(activity.end_date) : null;
 
     let status = 'upcoming';
     if (activity.status === 'ended') {
       status = 'ended';
     } else if (activity.status === 'cancelled') {
       status = 'cancelled';
-    } else if (endTime && now > endTime) {
+    } else if (endDate && now > endDate) {
       status = 'ended';
-    } else if (startTime && now > startTime) {
+    } else if (startDate && now > startDate) {
       status = 'ongoing';
     }
 
     // 格式化数据
     const formattedActivity = {
-      id: activity.id.toString(),
+      id: activity.id,
       title: activity.title,
+      subtitle: activity.subtitle,
       description: activity.description,
-      date: activity.date?.toISOString(),
-      startTime: activity.start_time,
-      endTime: activity.end_time,
-      location: activity.location,
+      startDate: activity.start_date?.toISOString(),
+      endDate: activity.end_date?.toISOString(),
+      location: activity.address,
       capacity: activity.capacity || 0,
-      registeredCount: activity.registered_count || 0,
-      type: activity.type,
-      coverImage: activity.cover_image,
+      teaFee: activity.tea_fee || 0,
+      category: activity.category,
+      image: activity.image,
       status: status,
+      createdBy: activity.created_by,
       createdAt: activity.created_at?.toISOString(),
       updatedAt: activity.updated_at?.toISOString(),
     };
@@ -84,7 +85,7 @@ export async function PUT(
 ) {
   try {
     const params = await context.params;
-    const id = params.id;
+    const id = parseInt(params.id);
     const body = await request.json();
 
     // 检查是否配置了数据库连接
@@ -110,13 +111,15 @@ export async function PUT(
     const result = await db.update(activities)
       .set({
         title: body.title,
+        subtitle: body.subtitle || null,
+        category: body.category || null,
         description: body.description,
-        start_time: body.start_time || null,
-        end_time: body.end_time || null,
-        location: body.location || null,
+        image: body.image || null,
+        address: body.address || null,
+        start_date: body.start_date ? new Date(body.start_date) : null,
+        end_date: body.end_date ? new Date(body.end_date) : null,
         capacity: body.capacity || null,
-        type: body.type || null,
-        cover_image: body.cover_image || null,
+        tea_fee: body.tea_fee || null,
         status: body.status,
         updated_at: new Date(),
       })
@@ -133,7 +136,7 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       message: '活动更新成功',
-      data: { id }
+      data: result[0]
     });
   } catch (error: any) {
     console.error('更新活动失败:', error);

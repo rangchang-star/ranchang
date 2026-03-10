@@ -43,38 +43,21 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    const { db, declarations, users, client } = await import('@/storage/database/supabase/connection');
-    const { desc, sql, eq } = await import('drizzle-orm');
-
-    console.log('开始查询 declarations...');
+    const { db, declarations } = await import('@/storage/database/supabase/connection');
+    const { desc, eq } = await import('drizzle-orm');
 
     // 获取查询参数
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
-    console.log('查询参数 userId:', userId);
-
-    // 构建查询 - 直接使用 postgres 客户端执行 SQL
-    let queryText = `
-      SELECT 
-        id, user_id, direction, text, summary
-      FROM public.declarations
-    `;
+    let result;
 
     // 如果提供了 userId，则按用户ID过滤
     if (userId) {
-      queryText += ` WHERE user_id = ${userId}`;
+      result = await db.select().from(declarations).where(eq(declarations.user_id, userId)).orderBy(desc(declarations.created_at));
+    } else {
+      result = await db.select().from(declarations).orderBy(desc(declarations.created_at));
     }
-
-    queryText += ` ORDER BY created_at DESC LIMIT 50`;
-
-    const result = await client.unsafe(queryText);
-
-    console.log('查询结果数量:', result.length);
-
-    console.log('查询结果:', JSON.stringify(result));
-    console.log('查询结果数量:', result.length);
-    console.log('查询结果类型:', typeof result, Array.isArray(result));
 
     // 转换字段名并返回
     return NextResponse.json({
@@ -97,7 +80,7 @@ export async function POST(request: NextRequest) {
     const { userId, direction, text, summary, audioUrl, views, isFeatured } = body;
 
     // 验证必填字段
-    if (!userId || !direction || !text) {
+    if (!userId || !text) {
       return NextResponse.json({
         success: false,
         error: '缺少必填字段'
@@ -113,22 +96,20 @@ export async function POST(request: NextRequest) {
     }
 
     const { db, declarations } = await import('@/storage/database/supabase/connection');
-    const { sql } = await import('drizzle-orm');
-
-    // 生成新的 ID
-    const id = sql`gen_random_uuid()`;
 
     // 插入数据
     const insertResult = await db.insert(declarations).values({
-      id: id,
-      userId: String(userId),
-      direction: direction,
+      id: crypto.randomUUID(),
+      user_id: String(userId),
+      direction: direction || null,
       text: text,
       summary: summary || null,
-      audioUrl: audioUrl || null,
+      audio_url: audioUrl || null,
       views: views || 0,
-      isFeatured: isFeatured || false,
+      is_featured: isFeatured || false,
       date: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
     }).returning();
 
     return NextResponse.json({

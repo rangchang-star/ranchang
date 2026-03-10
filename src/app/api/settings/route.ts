@@ -146,16 +146,15 @@ export async function PUT(request: NextRequest) {
           await db.update(settings)
             .set({
               value: body,
-              updatedAt: new Date(),
+              updated_at: new Date(),
             })
             .where(eq(settings.key, 'default_settings'));
         } else {
           // 创建新设置
           await db.insert(settings).values({
-            id: randomUUID(),
             key: 'default_settings',
             value: body,
-            updatedAt: new Date(),
+            updated_at: new Date(),
           });
         }
       } catch (dbError: any) {

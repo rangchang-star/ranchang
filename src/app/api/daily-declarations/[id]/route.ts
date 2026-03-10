@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MockDatabase } from '@/lib/mock-database';
 
 // 获取单个每日宣告
 export async function GET(
@@ -8,50 +7,31 @@ export async function GET(
 ) {
   try {
     const params = await context.params;
-    const id = params.id;
-    let declaration;
+    const id = parseInt(params.id);
 
     // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
 
-        const dbDeclarations = await db.select().from(dailyDeclarations).where(eq(dailyDeclarations.id, parseInt(id)));
+    const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-        if (dbDeclarations.length === 0) {
-          return NextResponse.json(
-            { success: false, error: '每日宣告不存在' },
-            { status: 404 }
-          );
-        }
+    const dbDeclarations = await db.select().from(dailyDeclarations).where(eq(dailyDeclarations.id, id));
 
-        declaration = dbDeclarations[0];
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-        // 降级到模拟数据
-        declaration = MockDatabase.getDailyDeclarationById(id);
-        if (!declaration) {
-          return NextResponse.json(
-            { success: false, error: '每日宣告不存在' },
-            { status: 404 }
-          );
-        }
-      }
-    } else {
-      // 使用模拟数据
-      declaration = MockDatabase.getDailyDeclarationById(id);
-      if (!declaration) {
-        return NextResponse.json(
-          { success: false, error: '每日宣告不存在' },
-          { status: 404 }
-        );
-      }
+    if (dbDeclarations.length === 0) {
+      return NextResponse.json(
+        { success: false, error: '每日宣告不存在' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
       success: true,
-      data: declaration,
+      data: dbDeclarations[0],
     });
   } catch (error) {
     console.error('获取每日宣告失败:', error);
@@ -69,78 +49,50 @@ export async function PUT(
 ) {
   try {
     const params = await context.params;
-    const id = params.id;
+    const id = parseInt(params.id);
     const body = await request.json();
 
     // 验证必填字段
-    if (!body.title || !body.date || !body.image || !body.audio) {
+    if (!body.title || !body.date) {
       return NextResponse.json({
         success: false,
-        error: '请填写所有必填字段'
+        error: '请填写标题和日期'
       }, { status: 400 });
     }
 
-    let updated;
+    const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
+    const result = await db.update(dailyDeclarations)
+      .set({
+        title: body.title,
+        date: new Date(body.date),
+        image: body.image || null,
+        audio: body.audio || null,
+        summary: body.summary || null,
+        text: body.text || null,
+        icon_type: body.icon_type || null,
+        rank: body.rank || null,
+        profile: body.profile || null,
+        duration: body.duration || null,
+        views: body.views || 0,
+        is_featured: body.is_featured || false,
+        updated_at: new Date(),
+      })
+      .where(eq(dailyDeclarations.id, id))
+      .returning();
 
-        const result = await db.update(dailyDeclarations)
-          .set({
-            title: body.title,
-            date: new Date(body.date),
-            image: body.image,
-            audio: body.audio,
-            summary: body.summary || '',
-            text: body.text || '',
-            icon_type: body.iconType || '',
-            rank: body.rank || 0,
-            profile: body.profile || '',
-            duration: body.duration || '',
-            views: body.views || 0,
-            is_featured: body.isFeatured || false,
-            updated_at: new Date(),
-          })
-          .where(eq(dailyDeclarations.id, parseInt(id)))
-          .returning();
-
-        if (result.length === 0) {
-          return NextResponse.json(
-            { success: false, error: '每日宣告不存在' },
-            { status: 404 }
-          );
-        }
-
-        updated = result[0];
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，仅更新模拟数据:', dbError.message);
-        // 降级到模拟数据
-        updated = MockDatabase.updateDailyDeclaration(id, body);
-        if (!updated) {
-          return NextResponse.json(
-            { success: false, error: '每日宣告不存在' },
-            { status: 404 }
-          );
-        }
-      }
-    } else {
-      // 使用模拟数据
-      updated = MockDatabase.updateDailyDeclaration(id, body);
-      if (!updated) {
-        return NextResponse.json(
-          { success: false, error: '每日宣告不存在' },
-          { status: 404 }
-        );
-      }
+    if (result.length === 0) {
+      return NextResponse.json(
+        { success: false, error: '每日宣告不存在' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
       success: true,
       message: '每日宣告更新成功',
-      data: updated
+      data: result[0]
     });
   } catch (error) {
     console.error('更新每日宣告失败:', error);
@@ -158,31 +110,16 @@ export async function DELETE(
 ) {
   try {
     const params = await context.params;
-    const id = params.id;
-    let success = false;
+    const id = parseInt(params.id);
 
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
+    const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-        const result = await db.delete(dailyDeclarations)
-          .where(eq(dailyDeclarations.id, parseInt(id)))
-          .returning();
+    const result = await db.delete(dailyDeclarations)
+      .where(eq(dailyDeclarations.id, id))
+      .returning();
 
-        success = result.length > 0;
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，仅删除模拟数据:', dbError.message);
-        // 降级到模拟数据
-        success = MockDatabase.deleteDailyDeclaration(id);
-      }
-    } else {
-      // 使用模拟数据
-      success = MockDatabase.deleteDailyDeclaration(id);
-    }
-
-    if (!success) {
+    if (result.length === 0) {
       return NextResponse.json(
         { success: false, error: '每日宣告不存在' },
         { status: 404 }

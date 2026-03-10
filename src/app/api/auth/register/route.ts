@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { mockUsers } from '@/lib/mock-database';
 import { verifyCode } from '../send-code/route';
-import { randomUUID } from 'crypto';
 
 // 简单的 JWT 生成（生产环境应使用 jsonwebtoken 库）
-function generateToken(userId: string): string {
+function generateToken(userId: number): string {
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payload = btoa(
     JSON.stringify({
-      userId,
+      userId: String(userId),
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7天有效期
     })
@@ -16,9 +14,6 @@ function generateToken(userId: string): string {
   const signature = btoa(`${header}.${payload}.secret`);
   return `${header}.${payload}.${signature}`;
 }
-
-// 动态用户存储（内存，重启后清空）
-const dynamicUsers: any[] = [];
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,136 +44,54 @@ export async function POST(request: NextRequest) {
     }
 
     // 检查手机号是否已注册
-    let existingUser = null;
+    const { db, users } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, users } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
+    const dbUsers = await db.select().from(users).where(eq(users.phone, phone));
 
-        const dbUsers = await db.select().from(users).where(eq(users.phone, phone));
-        if (dbUsers.length > 0) {
-          existingUser = dbUsers[0];
-        }
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据检查:', dbError.message);
-      }
-    }
-
-    // 如果数据库中没有找到，从模拟数据中检查
-    if (!existingUser) {
-      existingUser = mockUsers.find((u) => u.phone === phone) ||
-                    dynamicUsers.find((u) => u.phone === phone);
-    }
-
-    if (existingUser) {
+    if (dbUsers.length > 0) {
       return NextResponse.json(
         { success: false, message: '该手机号已注册，请直接登录' },
         { status: 409 }
       );
     }
 
-    let newUser;
+    // 创建新用户（ID 由数据库自增生成）
+    const result = await db.insert(users).values({
+      phone,
+      password: password || '',
+      name: nickname || '',
+      nickname: nickname || '',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
+      age: 30,
+      company: null,
+      position: null,
+      industry: null,
+      bio: null,
+      need: null,
+      tag_stamp: 'pureExchange',
+      tags: null,
+      hardcore_tags: null,
+      resource_tags: null,
+      is_trusted: false,
+      is_featured: false,
+      connection_count: 0,
+      activity_count: 0,
+      role: 'user',
+      status: 'active',
+      created_at: new Date(),
+      updated_at: new Date(),
+    }).returning();
 
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, users } = await import('@/storage/database/supabase/connection');
-
-        const result = await db.insert(users).values({
-          id: randomUUID(),
-          phone,
-          name: nickname || '',
-          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
-          age: 30,
-          email: null,
-          connection_type: null,
-          industry: null,
-          need: null,
-          ability_tags: [],
-          resource_tags: [],
-          level: 'user',
-          company: null,
-          position: null,
-          status: 'active',
-          is_featured: false,
-          join_date: new Date(),
-          last_login: new Date(),
-          created_at: new Date(),
-          updated_at: new Date(),
-        }).returning();
-
-        newUser = result[0];
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，仅创建模拟数据:', dbError.message);
-        // 降级到模拟数据
-        newUser = {
-          id: mockUsers.length + dynamicUsers.length + 1000,
-          phone,
-          password: password || '',
-          nickname,
-          name: nickname,
-          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
-          age: 30,
-          company: '',
-          position: '',
-          industry: '',
-          bio: '',
-          need: '',
-          tagStamp: 'pureExchange',
-          tags: [],
-          hardcoreTags: [],
-          resourceTags: [],
-          isTrusted: false,
-          isFeatured: false,
-          role: 'user',
-          status: 'active',
-          connectionCount: 0,
-          activityCount: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        dynamicUsers.push(newUser);
-      }
-    } else {
-      // 使用模拟数据
-      newUser = {
-        id: mockUsers.length + dynamicUsers.length + 1000,
-        phone,
-        password: password || '',
-        nickname,
-        name: nickname,
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
-        age: 30,
-        company: '',
-        position: '',
-        industry: '',
-        bio: '',
-        need: '',
-        tagStamp: 'pureExchange',
-        tags: [],
-        hardcoreTags: [],
-        resourceTags: [],
-        isTrusted: false,
-        isFeatured: false,
-        role: 'user',
-        status: 'active',
-        connectionCount: 0,
-        activityCount: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      dynamicUsers.push(newUser);
-    }
+    const newUser = result[0];
 
     console.log('新用户注册:', { phone, nickname, userId: newUser.id });
 
-    // 生成 token
-    const token = generateToken(String(newUser.id));
+    // 生成 token（user.id 是 integer）
+    const token = generateToken(newUser.id);
 
     // 返回用户信息
-    const safeUser = newUser;
+    const { password: pwd, ...safeUser } = newUser;
 
     return NextResponse.json({
       success: true,
@@ -188,16 +101,11 @@ export async function POST(request: NextRequest) {
         token,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('注册失败:', error);
     return NextResponse.json(
       { success: false, message: '服务器错误，请稍后重试' },
       { status: 500 }
     );
   }
-}
-
-// 导出动态用户存储（供登录接口使用）
-export function getDynamicUsers() {
-  return dynamicUsers;
 }

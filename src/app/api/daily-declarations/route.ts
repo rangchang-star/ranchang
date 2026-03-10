@@ -11,26 +11,10 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 直接创建数据库连接，避免连接池满的问题
-    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
-
-    const postgres = (await import('postgres')).default;
-    const { drizzle } = await import('drizzle-orm/postgres-js');
-    const { dailyDeclarations } = await import('@/storage/database/supabase/schema');
+    const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
     const { desc } = await import('drizzle-orm');
 
-    // 创建单个连接（不使用连接池）
-    const client = postgres(connectionString, {
-      max: 1,
-      ssl: false,
-    });
-
-    const db = drizzle(client);
-
     const declarations = await db.select().from(dailyDeclarations).orderBy(desc(dailyDeclarations.date));
-
-    // 立即关闭连接
-    await client.end();
 
     return NextResponse.json({
       success: true,
@@ -59,10 +43,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 验证必填字段
-    if (!body.title || !body.date || !body.image || !body.audio) {
+    if (!body.title || !body.date) {
       return NextResponse.json({
         success: false,
-        error: '请填写所有必填字段'
+        error: '请填写标题和日期'
       }, { status: 400 });
     }
 
@@ -71,14 +55,14 @@ export async function POST(request: NextRequest) {
     const result = await db.insert(dailyDeclarations).values({
       title: body.title,
       date: new Date(body.date),
-      image: body.image,
-      audio: body.audio,
-      summary: body.summary || '',
-      text: body.text || '',
-      icon_type: body.icon_type || '',
-      rank: body.rank || 0,
-      profile: body.profile || '',
-      duration: body.duration || '',
+      image: body.image || null,
+      audio: body.audio || null,
+      summary: body.summary || null,
+      text: body.text || null,
+      icon_type: body.icon_type || null,
+      rank: body.rank || null,
+      profile: body.profile || null,
+      duration: body.duration || null,
       views: body.views || 0,
       is_featured: body.is_featured || false,
     }).returning();

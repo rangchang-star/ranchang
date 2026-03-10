@@ -6,7 +6,7 @@ export async function GET(
 ) {
   try {
     const params = await context.params;
-    const id = params.id;
+    const id = parseInt(params.id);
 
     // 检查是否配置了数据库连接
     if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
@@ -33,14 +33,14 @@ export async function GET(
 
     // 格式化数据
     const formattedVisit = {
-      id: visit.id.toString(),
-      title: visit.company_name, // 使用 company_name 作为标题
+      id: visit.id,
+      title: visit.title,
       description: visit.description,
-      image: visit.cover_image, // 使用 cover_image 作为图片
+      image: visit.image,
       location: visit.location,
       date: visit.date?.toISOString(),
-      capacity: visit.capacity,
-      teaFee: 0, // 默认茶水费
+      capacity: visit.capacity || 0,
+      teaFee: visit.tea_fee || 0,
       status: visit.status,
       duration: '4小时',
       visitors: [],
@@ -48,7 +48,7 @@ export async function GET(
       tags: ['已审核', '已发布'],
       audioDuration: '',
       audioUrl: '',
-      companyId: visit.company_id,
+      createdBy: visit.created_by,
       createdAt: visit.created_at?.toISOString(),
       updatedAt: visit.updated_at?.toISOString(),
     };
@@ -72,7 +72,7 @@ export async function PUT(
 ) {
   try {
     const params = await context.params;
-    const id = params.id;
+    const id = parseInt(params.id);
     const body = await request.json();
 
     // 检查是否配置了数据库连接
@@ -84,7 +84,7 @@ export async function PUT(
     }
 
     // 验证必填字段
-    if (!body.company_name || !body.date || !body.location) {
+    if (!body.title || !body.description) {
       return NextResponse.json({
         success: false,
         error: '请填写所有必填字段'
@@ -97,14 +97,13 @@ export async function PUT(
 
     const result = await db.update(visits)
       .set({
-        company_name: body.company_name,
-        company_id: body.company_id || null,
-        industry: body.industry || null,
+        title: body.title,
         description: body.description,
-        cover_image: body.cover_image || null,
-        location: body.location,
-        date: new Date(body.date),
+        image: body.image || null,
+        location: body.location || null,
+        date: body.date ? new Date(body.date) : null,
         capacity: body.capacity || null,
+        tea_fee: body.tea_fee || null,
         status: body.status,
         updated_at: new Date(),
       })
@@ -121,7 +120,7 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       message: '探访更新成功',
-      data: { id }
+      data: result[0]
     });
   } catch (error: any) {
     console.error('更新探访失败:', error);

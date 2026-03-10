@@ -6,12 +6,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const activityId = parseInt(id);
 
     const { db, activities: activitiesTable, activityRegistrations: activityRegistrationsTable, users: usersTable } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
     // 获取活动信息
-    const dbActivities = await db.select().from(activitiesTable).where(eq(activitiesTable.id, id));
+    const dbActivities = await db.select().from(activitiesTable).where(eq(activitiesTable.id, activityId));
 
     if (dbActivities.length === 0) {
       return NextResponse.json(
@@ -23,25 +24,26 @@ export async function GET(
     const activity = dbActivities[0];
 
     // 获取活动的参与记录
-    const dbRegistrations = await db.select().from(activityRegistrationsTable).where(eq(activityRegistrationsTable.activityId, id));
+    const dbRegistrations = await db.select().from(activityRegistrationsTable).where(eq(activityRegistrationsTable.activity_id, activityId));
 
     // 获取报名用户的详细信息
     const registrations = await Promise.all(
       dbRegistrations.map(async (registration) => {
-        const dbUsers = await db.select().from(usersTable).where(eq(usersTable.id, registration.userId));
+        const dbUsers = await db.select().from(usersTable).where(eq(usersTable.id, registration.user_id));
         const user = dbUsers[0];
 
         return {
-          id: registration.userId,
-          activityId: id,
-          userId: registration.userId,
+          id: registration.id,
+          activityId: activityId,
+          userId: registration.user_id,
           userName: user?.name || '未知',
           userPhone: user?.phone || '未知',
           userCompany: user?.company || '未知',
           userPosition: user?.position || '未知',
           userAvatar: user?.avatar || '',
           status: registration.status,
-          registeredAt: registration.registeredAt,
+          registeredAt: registration.registered_at?.toISOString(),
+          note: registration.note,
         };
       })
     );
@@ -52,14 +54,15 @@ export async function GET(
         activity: {
           id: activity.id,
           title: activity.title,
+          subtitle: activity.subtitle,
           description: activity.description,
-          date: activity.date,
-          startTime: activity.start_time,
-          endTime: activity.end_time,
-          location: activity.location,
+          startDate: activity.start_date,
+          endDate: activity.end_date,
+          address: activity.address,
           capacity: activity.capacity,
-          type: activity.type,
-          coverImage: activity.cover_image,
+          teaFee: activity.tea_fee,
+          category: activity.category,
+          image: activity.image,
         },
         registrations: registrations,
         statistics: {

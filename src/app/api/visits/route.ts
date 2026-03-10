@@ -10,39 +10,21 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 直接创建数据库连接，避免连接池满的问题
-    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+    const { db, visits } = await import('@/storage/database/supabase/connection');
+    const { desc } = await import('drizzle-orm');
 
-    const postgres = (await import('postgres')).default;
-
-    // 创建单个连接（不使用连接池）
-    const client = postgres(connectionString, {
-      max: 1,
-      ssl: false,
-    });
-
-    // 使用原始 SQL 查询（根据 ran_field 数据库实际结构）
-    const dbVisits = await client`
-      SELECT "id", "title", "description", "image", "location",
-             "date", "capacity", "tea_fee", "status",
-             "created_by", "created_at", "updated_at"
-      FROM "visits"
-      ORDER BY "date" DESC
-    `;
-
-    // 立即关闭连接
-    await client.end();
+    const dbVisits = await db.select().from(visits).orderBy(desc(visits.created_at));
 
     // 格式化数据（保持与前端需要的格式一致）
     const formattedVisits = dbVisits.map(visit => ({
-      id: visit.id.toString(),
-      title: visit.title, // 使用 title 作为标题
+      id: visit.id,
+      title: visit.title,
       description: visit.description,
-      image: visit.image, // 使用 image 作为图片
+      image: visit.image,
       location: visit.location,
       date: visit.date?.toISOString(),
-      capacity: visit.capacity,
-      teaFee: visit.tea_fee || 0, // 使用 tea_fee 字段
+      capacity: visit.capacity || 0,
+      teaFee: visit.tea_fee || 0,
       status: visit.status,
       duration: '4小时', // 默认时长
       visitors: [], // 简化字段，后续可扩展
@@ -50,6 +32,9 @@ export async function GET(request: NextRequest) {
       tags: ['已审核', '已发布'], // 默认标签
       audioDuration: '',
       audioUrl: '',
+      createdBy: visit.created_by,
+      createdAt: visit.created_at?.toISOString(),
+      updatedAt: visit.updated_at?.toISOString(),
     }));
 
     return NextResponse.json({
@@ -61,6 +46,56 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: '获取探访列表失败: ' + error.message
+    }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
+
+    // 验证必填字段
+    if (!body.title || !body.description) {
+      return NextResponse.json({
+        success: false,
+        error: '请填写标题和描述'
+      }, { status: 400 });
+    }
+
+    // 插入数据库
+    const { db, visits } = await import('@/storage/database/supabase/connection');
+
+    const result = await db.insert(visits).values({
+      title: body.title,
+      description: body.description,
+      image: body.image || null,
+      location: body.location || null,
+      date: body.date ? new Date(body.date) : null,
+      capacity: body.capacity || null,
+      tea_fee: body.tea_fee || null,
+      status: body.status || 'draft',
+      created_by: body.created_by || null,
+      created_at: new Date(),
+      updated_at: new Date(),
+    }).returning();
+
+    return NextResponse.json({
+      success: true,
+      data: result[0]
+    });
+  } catch (error: any) {
+    console.error('创建探访失败:', error);
+    return NextResponse.json({
+      success: false,
+      error: '创建探访失败: ' + error.message
     }, { status: 500 });
   }
 }

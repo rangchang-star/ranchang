@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyCode } from '../send-code/route';
 
 // 简单的 JWT 生成（生产环境应使用 jsonwebtoken 库）
-function generateToken(userId: string): string {
+function generateToken(userId: number): string {
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payload = btoa(
     JSON.stringify({
-      userId,
+      userId: String(userId),
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // 7天有效期
     })
@@ -58,33 +58,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 从数据库查找用户（强制使用数据库）
-    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
-
-    if (!connectionString || connectionString === '') {
-      return NextResponse.json({
-        success: false,
-        message: '数据库未配置'
-      }, { status: 500 });
-    }
-
-    const postgres = (await import('postgres')).default;
-    const { drizzle } = await import('drizzle-orm/postgres-js');
-    const { users } = await import('@/storage/database/supabase/schema');
+    // 从数据库查找用户
+    const { db, users } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    // 创建单个连接（不使用连接池）
-    const client = postgres(connectionString, {
-      max: 1,
-      ssl: false,
-    });
-
-    const db = drizzle(client);
-
     const dbUsers = await db.select().from(users).where(eq(users.phone, phone));
-
-    // 立即关闭连接
-    await client.end();
 
     if (dbUsers.length === 0) {
       return NextResponse.json(
@@ -116,7 +94,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 生成 token
+    // 生成 token（user.id 是 integer）
     const token = generateToken(user.id);
 
     // 返回用户信息（排除敏感信息）

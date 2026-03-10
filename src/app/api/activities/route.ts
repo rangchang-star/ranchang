@@ -32,9 +32,29 @@ export async function GET(request: NextRequest) {
     // 立即关闭连接
     await client.end();
 
+    // 转换数据格式以适配前端
+    const formattedResult = result.map((activity: any) => ({
+      id: activity.id,
+      title: activity.title,
+      subtitle: activity.subtitle,
+      description: activity.description,
+      date: activity.date?.toISOString(),
+      startDate: activity.start_date?.toISOString(),
+      endDate: activity.end_date?.toISOString(),
+      location: activity.address,
+      capacity: activity.capacity || 0,
+      teaFee: activity.tea_fee || 0,
+      category: activity.category,
+      image: activity.image,
+      status: activity.status,
+      createdBy: activity.created_by,
+      createdAt: activity.created_at?.toISOString(),
+      updatedAt: activity.updated_at?.toISOString(),
+    }));
+
     return NextResponse.json({
       success: true,
-      data: result
+      data: formattedResult
     });
   } catch (error: any) {
     console.error('获取活动列表失败:', error);
@@ -68,19 +88,20 @@ export async function POST(request: NextRequest) {
 
     // 插入数据库
     const { db, activities } = await import('@/storage/database/supabase/connection');
-    const { sql } = await import('drizzle-orm');
+
     const result = await db.insert(activities).values({
-      id: sql`gen_random_uuid()`,
       title: body.title,
+      subtitle: body.subtitle || null,
+      category: body.category || 'private',
       description: body.description,
-      date: body.date ? new Date(body.date) : null,
-      start_time: body.start_time || null,
-      end_time: body.end_time || null,
-      location: body.location || null,
+      image: body.image || null,
+      address: body.address || null,
+      start_date: body.start_date ? new Date(body.start_date) : null,
+      end_date: body.end_date ? new Date(body.end_date) : null,
       capacity: body.capacity || null,
-      type: body.type || null,
-      cover_image: body.cover_image || null,
-      status: body.status || 'active',
+      tea_fee: body.tea_fee || null,
+      status: body.status || 'draft',
+      created_by: body.created_by || null,
       created_at: new Date(),
       updated_at: new Date(),
     }).returning();
