@@ -548,10 +548,8 @@ function ProfileEditContent() {
             industry: profile.industry,
             need: profile.declaration,
             bio: profile.declaration,
-            tag_stamp: tagStamp,
-            hardcore_tags: selectedAbilityTags,
+            ability_tags: selectedAbilityTags,
             resource_tags: selectedResources,
-            tags: selectedIndustryTag ? [selectedIndustryTag] : [],
           }),
         });
 
@@ -578,9 +576,8 @@ function ProfileEditContent() {
         currentUser.need = profile.declaration;
         currentUser.bio = profile.declaration;
         currentUser.hardcoreTags = selectedAbilityTags;
+        currentUser.abilityTags = selectedAbilityTags;
         currentUser.resourceTags = selectedResources;
-        currentUser.tagStamp = selectedPurpose === '人找事' ? 'personLookingForJob' :
-                             selectedPurpose === '事找人' ? 'jobLookingForPerson' : 'pureExchange';
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
       }
 

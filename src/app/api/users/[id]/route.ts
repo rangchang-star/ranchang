@@ -15,22 +15,54 @@ export async function GET(
       }, { status: 500 });
     }
 
-    const { db, users } = await import('@/storage/database/supabase/connection');
-    const { eq } = await import('drizzle-orm');
+    // 直接创建数据库连接，避免连接池满的问题
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
 
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    console.log('Connection string:', connectionString);
 
-    if (result.length === 0) {
-      return NextResponse.json({
-        success: false,
-        error: '用户不存在'
-      }, { status: 404 });
-    }
+    const postgres = (await import('postgres')).default;
 
-    return NextResponse.json({
-      success: true,
-      data: result[0]
+    // 创建单个连接（不使用连接池）
+    const client = postgres(connectionString, {
+      max: 1,
+      ssl: false,
     });
+
+    try {
+      // 使用原始 SQL 查询，避免 Drizzle ORM 的 Schema 问题
+      // 逐个添加字段，找出问题字段
+      const result = await client`
+        SELECT
+          id, name, nickname, avatar, age, phone,
+          company, position, industry, bio, need,
+          resource_tags,
+          is_trusted, is_featured,
+          connection_count, activity_count,
+          role, status,
+          created_at, updated_at
+        FROM users
+        WHERE id::text = ${id}
+        LIMIT 1
+      `;
+
+      // 立即关闭连接
+      await client.end();
+
+      if (result.length === 0) {
+        return NextResponse.json({
+          success: false,
+          error: '用户不存在'
+        }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: result[0]
+      });
+    } catch (queryError) {
+      await client.end();
+      throw queryError;
+    }
   } catch (error: any) {
     console.error('获取用户详情失败:', error);
     return NextResponse.json({
@@ -86,9 +118,7 @@ export async function PUT(
     if (body.industry !== undefined) updateData.industry = body.industry;
     if (body.need !== undefined) updateData.need = body.need;
     if (body.bio !== undefined) updateData.bio = body.bio;
-    if (body.tag_stamp !== undefined) updateData.tag_stamp = body.tag_stamp;
-    if (body.tags !== undefined) updateData.tags = body.tags;
-    if (body.hardcore_tags !== undefined) updateData.hardcore_tags = body.hardcore_tags;
+    if (body.ability_tags !== undefined) updateData.ability_tags = body.ability_tags;
     if (body.resource_tags !== undefined) updateData.resource_tags = body.resource_tags;
 
     // 更新用户数据

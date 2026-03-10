@@ -4,7 +4,7 @@ import { relations } from 'drizzle-orm';
 
 // 用户表（就是会员表）- 严格匹配 ran_field 数据库实际结构
 export const users = pgTable('users', {
-  id: integer('id').primaryKey(),
+  id: text('id').primaryKey(),
   phone: varchar('phone'),
   password: varchar('password'),
   nickname: varchar('nickname'),
@@ -16,9 +16,7 @@ export const users = pgTable('users', {
   industry: varchar('industry'),
   bio: text('bio'),
   need: text('need'),
-  tag_stamp: text('tag_stamp'),
-  tags: jsonb('tags'),
-  hardcore_tags: jsonb('hardcore_tags'),
+  ability_tags: jsonb('ability_tags'),
   resource_tags: jsonb('resource_tags'),
   is_trusted: boolean('is_trusted'),
   is_featured: boolean('is_featured'),

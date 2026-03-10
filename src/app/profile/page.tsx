@@ -359,7 +359,7 @@ export default function ProfilePage() {
           const userData = JSON.parse(storedUser);
           setUserInfo(prev => ({
             ...prev,
-            hardcoreTags: userData.hardcoreTags || [],
+            hardcoreTags: userData.hardcoreTags || userData.abilityTags || [],
             resourceTags: userData.resourceTags || [],
             industry: userData.industry || prev.industry,
             need: userData.need || prev.need,
@@ -523,7 +523,7 @@ export default function ProfilePage() {
       connectionType: userData.tagStamp || 'pureExchange',
       industry: userData.industry || '未设置',
       need: userData.need || '',
-      hardcoreTags: userData.hardcoreTags || [],
+      hardcoreTags: userData.hardcoreTags || userData.abilityTags || [],
       resourceTags: userData.resourceTags || [],
       currentDeclaration: {
         direction: 'confidence',
