@@ -86,6 +86,21 @@ export const visitRecords = pgTable('visit_records', {
   completedAt: timestamp('completed_at'),
 });
 
+// 高燃宣告表 - 严格匹配 ran_field 数据库实际结构
+export const declarations = pgTable('declarations', {
+  id: varchar('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id),
+  direction: text('direction'),
+  text: text('text').notNull(),
+  summary: text('summary'),
+  audioUrl: text('audio_url'),
+  views: integer('views').default(0),
+  date: timestamp('date').defaultNow(),
+  isFeatured: boolean('is_featured').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at'),
+});
+
 // 每日宣告表 - 严格匹配 ran_field 数据库实际结构
 export const dailyDeclarations = pgTable('daily_declarations', {
   id: integer('id').primaryKey(),

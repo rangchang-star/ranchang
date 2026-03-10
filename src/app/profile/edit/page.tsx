@@ -668,6 +668,47 @@ export function ProfileEditContent() {
 
       localStorage.setItem('userDeclarations', JSON.stringify(declarationsArray));
 
+      // 保存高燃宣告到数据库
+      if (isLoggedIn && user) {
+        try {
+          // 找到有内容的宣告
+          const activeDeclaration = declarationsArray.find((d: any) => d.theme && d.description);
+          
+          if (activeDeclaration) {
+            console.log('保存高燃宣告到数据库:', activeDeclaration);
+            
+            const declarationRequest = {
+              userId: user.id,
+              direction: activeDeclaration.id,
+              text: activeDeclaration.theme,
+              summary: activeDeclaration.description,
+              audioUrl: activeDeclaration.audioUrl || null,
+              views: 0,
+              isFeatured: true,
+            };
+
+            const declarationResponse = await fetch('/api/declarations', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(declarationRequest),
+            });
+
+            if (!declarationResponse.ok) {
+              const errorData = await declarationResponse.json();
+              console.error('保存高燃宣告失败:', errorData);
+              // 不影响主流程，只记录错误
+            } else {
+              console.log('高燃宣告保存成功');
+            }
+          }
+        } catch (error) {
+          console.error('保存高燃宣告到数据库失败:', error);
+          // 不影响主流程，只记录错误
+        }
+      }
+
       console.log('===== 刷新全局用户状态 =====');
       // 刷新全局用户状态，确保所有页面都能显示最新数据
       await refreshUser();
