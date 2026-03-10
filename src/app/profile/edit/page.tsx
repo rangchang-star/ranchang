@@ -141,7 +141,7 @@ const directions = [
 function ProfileEditContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, refreshUser } = useAuth();
 
   // 根据登录用户数据初始化用户资料
   const getUserProfile = () => {
@@ -430,7 +430,7 @@ function ProfileEditContent() {
     setAchievements(achievements.filter((_, i) => i !== index));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // 验证必选项
     const requiredErrors: string[] = [];
 
@@ -527,17 +527,58 @@ function ProfileEditContent() {
       updatedAt: new Date().toISOString(),
     };
 
-    // 保存到localStorage
+    // 保存到localStorage和数据库
     try {
+      // 先调用后端 API 保存到数据库
+      if (isLoggedIn && user) {
+        const tagStamp = selectedPurpose === '人找事' ? 'personLookingForJob' :
+                         selectedPurpose === '事找人' ? 'jobLookingForPerson' : 'pureExchange';
+
+        const response = await fetch(`/api/users/${user.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: profile.name,
+            avatar: profile.avatar,
+            age: profile.age,
+            company: profile.companyName,
+            position: profile.companyPosition,
+            industry: profile.industry,
+            need: profile.declaration,
+            bio: profile.declaration,
+            tag_stamp: tagStamp,
+            hardcore_tags: selectedAbilityTags,
+            resource_tags: selectedResources,
+            tags: selectedIndustryTag ? [selectedIndustryTag] : [],
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || '保存失败');
+        }
+
+        console.log('数据库保存成功');
+      }
+
+      // 同时更新 localStorage 以保持前端一致性
       localStorage.setItem('userProfile', JSON.stringify(fullProfile));
 
-      // 同时更新 currentUser 中的相关字段，确保个人中心页面能读取到最新数据
+      // 更新 currentUser 中的相关字段，确保个人中心页面能读取到最新数据
       if (isLoggedIn && user) {
         const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        currentUser.name = profile.name;
+        currentUser.avatar = profile.avatar;
+        currentUser.age = profile.age;
+        currentUser.company = profile.companyName;
+        currentUser.position = profile.companyPosition;
+        currentUser.industry = profile.industry;
+        currentUser.need = profile.declaration;
+        currentUser.bio = profile.declaration;
         currentUser.hardcoreTags = selectedAbilityTags;
         currentUser.resourceTags = selectedResources;
-        currentUser.industry = profile.industry;
-        currentUser.bio = profile.declaration;
         currentUser.tagStamp = selectedPurpose === '人找事' ? 'personLookingForJob' :
                              selectedPurpose === '事找人' ? 'jobLookingForPerson' : 'pureExchange';
         localStorage.setItem('currentUser', JSON.stringify(currentUser));

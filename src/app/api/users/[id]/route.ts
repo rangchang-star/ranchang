@@ -48,14 +48,6 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
-    // 验证必填字段
-    if (!body.name || !body.phone) {
-      return NextResponse.json({
-        success: false,
-        error: '请填写姓名和手机号'
-      }, { status: 400 });
-    }
-
     // 检查是否配置了数据库连接
     if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
       return NextResponse.json({
@@ -64,29 +56,48 @@ export async function PUT(
       }, { status: 500 });
     }
 
-    const { db, users } = await import('@/storage/database/supabase/connection');
+    // 直接创建数据库连接，避免连接池满的问题
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+
+    const postgres = (await import('postgres')).default;
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const { users } = await import('@/storage/database/supabase/schema');
     const { eq } = await import('drizzle-orm');
+
+    // 创建单个连接（不使用连接池）
+    const client = postgres(connectionString, {
+      max: 1,
+      ssl: false,
+    });
+
+    const db = drizzle(client);
+
+    // 构建更新对象，只包含传入的字段
+    const updateData: any = {
+      updated_at: new Date(),
+    };
+
+    // 动态添加字段
+    if (body.name !== undefined) updateData.name = body.name;
+    if (body.avatar !== undefined) updateData.avatar = body.avatar;
+    if (body.age !== undefined) updateData.age = body.age;
+    if (body.company !== undefined) updateData.company = body.company;
+    if (body.position !== undefined) updateData.position = body.position;
+    if (body.industry !== undefined) updateData.industry = body.industry;
+    if (body.need !== undefined) updateData.need = body.need;
+    if (body.bio !== undefined) updateData.bio = body.bio;
+    if (body.tag_stamp !== undefined) updateData.tag_stamp = body.tag_stamp;
+    if (body.tags !== undefined) updateData.tags = body.tags;
+    if (body.hardcore_tags !== undefined) updateData.hardcore_tags = body.hardcore_tags;
+    if (body.resource_tags !== undefined) updateData.resource_tags = body.resource_tags;
 
     // 更新用户数据
     await db.update(users)
-      .set({
-        name: body.name || null,
-        avatar: body.avatar || null,
-        age: body.age || null,
-        email: body.email || null,
-        connection_type: body.connection_type || null,
-        industry: body.industry || null,
-        need: body.need || null,
-        ability_tags: body.ability_tags || null,
-        resource_tags: body.resource_tags || null,
-        level: body.level || null,
-        company: body.company || null,
-        position: body.position || null,
-        status: body.status || 'active',
-        is_featured: body.is_featured || false,
-        updated_at: new Date(),
-      })
+      .set(updateData)
       .where(eq(users.id, id));
+
+    // 立即关闭连接
+    await client.end();
 
     return NextResponse.json({
       success: true,
