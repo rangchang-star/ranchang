@@ -30,37 +30,37 @@ export const users = pgTable('users', {
   updated_at: timestamp('updated_at'),
 });
 
-// 活动表 - 严格匹配 ran_field 数据库实际结构
+// 活动表 - 匹配数据库实际结构
 export const activities = pgTable('activities', {
-  id: integer('id').primaryKey(),
+  id: varchar('id').primaryKey(),
   title: varchar('title'),
-  subtitle: varchar('subtitle'),
-  category: text('category'),
   description: text('description'),
-  image: text('image'),
-  address: varchar('address'),
-  start_date: timestamp('start_date'),
-  end_date: timestamp('end_date'),
+  date: timestamp('date'),
+  start_time: varchar('start_time'),
+  end_time: varchar('end_time'),
+  location: varchar('location'),
   capacity: integer('capacity'),
-  tea_fee: integer('tea_fee'),
-  status: text('status'),
-  created_by: integer('created_by'),
+  registered_count: integer('registered_count').default(0),
+  type: varchar('type'),
+  cover_image: text('cover_image'),
+  status: varchar('status'),
   created_at: timestamp('created_at'),
   updated_at: timestamp('updated_at'),
 });
 
-// 探访表 - 严格匹配 ran_field 数据库实际结构
+// 探访表 - 匹配数据库实际结构
 export const visits = pgTable('visits', {
-  id: integer('id').primaryKey(),
-  title: varchar('title'),
-  description: text('description'),
-  image: text('image'),
+  id: varchar('id').primaryKey(),
+  company_id: varchar('company_id'),
+  company_name: varchar('company_name'),
+  industry: varchar('industry'),
   location: varchar('location'),
+  description: text('description'),
   date: timestamp('date'),
   capacity: integer('capacity'),
-  tea_fee: integer('tea_fee'),
-  status: text('status'),
-  created_by: integer('created_by'),
+  registered_count: integer('registered_count').default(0),
+  cover_image: text('cover_image'),
+  status: varchar('status'),
   created_at: timestamp('created_at'),
   updated_at: timestamp('updated_at'),
 });

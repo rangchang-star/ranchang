@@ -20,16 +20,7 @@ export async function GET(
     const { db, activities } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    // 验证并转换 ID 为数字类型
-    const numericId = parseInt(id, 10);
-    if (isNaN(numericId)) {
-      return NextResponse.json({
-        success: false,
-        error: '无效的活动 ID'
-      }, { status: 400 });
-    }
-
-    const dbActivities = await db.select().from(activities).where(eq(activities.id, numericId));
+    const dbActivities = await db.select().from(activities).where(eq(activities.id, id));
 
     if (!dbActivities || dbActivities.length === 0) {
       return NextResponse.json(
@@ -116,20 +107,10 @@ export async function PUT(
     const { db, activities } = await import('@/storage/database/supabase/connection');
     const { eq } = await import('drizzle-orm');
 
-    // 验证并转换 ID 为数字类型
-    const numericId = parseInt(id, 10);
-    if (isNaN(numericId)) {
-      return NextResponse.json({
-        success: false,
-        error: '无效的活动 ID'
-      }, { status: 400 });
-    }
-
     const result = await db.update(activities)
       .set({
         title: body.title,
         description: body.description,
-        date: body.date ? new Date(body.date) : null,
         start_time: body.start_time || null,
         end_time: body.end_time || null,
         location: body.location || null,
@@ -139,7 +120,7 @@ export async function PUT(
         status: body.status,
         updated_at: new Date(),
       })
-      .where(eq(activities.id, numericId))
+      .where(eq(activities.id, id))
       .returning();
 
     if (!result || result.length === 0) {
