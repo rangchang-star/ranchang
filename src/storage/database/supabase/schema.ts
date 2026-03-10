@@ -87,23 +87,23 @@ export const visitRecords = pgTable('visit_records', {
   completedAt: timestamp('completed_at'),
 });
 
-// 每日宣告表
+// 每日宣告表 - 严格匹配 ran_field 数据库实际结构
 export const dailyDeclarations = pgTable('daily_declarations', {
-  id: serial('id').primaryKey(),
-  title: varchar('title', { length: 200 }).notNull(),
-  date: timestamp('date').notNull(),
+  id: integer('id').primaryKey(),
+  title: varchar('title'),
+  date: timestamp('date'),
   image: text('image'),
   audio: text('audio'),
   summary: text('summary'),
   text: text('text'),
-  iconType: varchar('icon_type', { length: 50 }),
+  icon_type: varchar('icon_type'),
   rank: integer('rank'),
   profile: text('profile'),
-  duration: varchar('duration', { length: 50 }),
-  views: integer('views').default(0),
-  isFeatured: boolean('is_featured').default(false),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  duration: varchar('duration'),
+  views: integer('views'),
+  is_featured: boolean('is_featured'),
+  created_at: timestamp('created_at'),
+  updated_at: timestamp('updated_at'),
 });
 
 // 系统设置表

@@ -1,37 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MockDatabase } from '@/lib/mock-database';
 
 // 获取所有每日宣告
 export async function GET(request: NextRequest) {
   try {
-    let declarations;
-
     // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
-        const { desc } = await import('drizzle-orm');
-
-        const dbDeclarations = await db.select().from(dailyDeclarations).orderBy(desc(dailyDeclarations.date));
-        declarations = dbDeclarations;
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-        // 降级到模拟数据
-        declarations = MockDatabase.getDailyDeclarations();
-      }
-    } else {
-      // 使用模拟数据
-      declarations = MockDatabase.getDailyDeclarations();
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
     }
+
+    // 直接创建数据库连接，避免连接池满的问题
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+
+    const postgres = (await import('postgres')).default;
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const { dailyDeclarations } = await import('@/storage/database/supabase/schema');
+    const { desc } = await import('drizzle-orm');
+
+    // 创建单个连接（不使用连接池）
+    const client = postgres(connectionString, {
+      max: 1,
+      ssl: false,
+    });
+
+    const db = drizzle(client);
+
+    const declarations = await db.select().from(dailyDeclarations).orderBy(desc(dailyDeclarations.date));
+
+    // 立即关闭连接
+    await client.end();
 
     return NextResponse.json({
       success: true,
       data: declarations,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取每日宣告失败:', error);
     return NextResponse.json(
-      { success: false, error: '获取每日宣告失败' },
+      { success: false, error: '获取每日宣告失败: ' + error.message },
       { status: 500 }
     );
   }
@@ -42,6 +50,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
+
     // 验证必填字段
     if (!body.title || !body.date || !body.image || !body.audio) {
       return NextResponse.json({
@@ -50,49 +66,33 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    let newDeclaration;
+    const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
 
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, dailyDeclarations } = await import('@/storage/database/supabase/connection');
-
-        const result = await db.insert(dailyDeclarations).values({
-          title: body.title,
-          date: new Date(body.date),
-          image: body.image,
-          audio: body.audio,
-          summary: body.summary || '',
-          text: body.text || '',
-          iconType: body.iconType || '',
-          rank: body.rank || 0,
-          profile: body.profile || '',
-          duration: body.duration || '',
-          views: body.views || 0,
-          isFeatured: body.isFeatured || false,
-        }).returning();
-
-        newDeclaration = result[0];
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，仅创建模拟数据:', dbError.message);
-        // 降级到模拟数据
-        newDeclaration = MockDatabase.createDailyDeclaration(body);
-      }
-    } else {
-      // 使用模拟数据
-      newDeclaration = MockDatabase.createDailyDeclaration(body);
-    }
+    const result = await db.insert(dailyDeclarations).values({
+      title: body.title,
+      date: new Date(body.date),
+      image: body.image,
+      audio: body.audio,
+      summary: body.summary || '',
+      text: body.text || '',
+      icon_type: body.icon_type || '',
+      rank: body.rank || 0,
+      profile: body.profile || '',
+      duration: body.duration || '',
+      views: body.views || 0,
+      is_featured: body.is_featured || false,
+    }).returning();
 
     return NextResponse.json({
       success: true,
       message: '每日宣告创建成功',
-      data: newDeclaration
+      data: result[0]
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('创建每日宣告失败:', error);
     return NextResponse.json({
       success: false,
-      error: '创建每日宣告失败'
+      error: '创建每日宣告失败: ' + error.message
     }, { status: 500 });
   }
 }
