@@ -2,8 +2,8 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
-// 创建PostgreSQL连接 - 使用 ran_field 数据库
-const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+// 创建PostgreSQL连接 - 直接使用环境变量配置的数据库
+const connectionString = process.env.DATABASE_URL || '';
 
 // 打印连接信息用于调试
 console.log('DATABASE_URL配置:', connectionString);

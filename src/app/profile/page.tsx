@@ -335,6 +335,8 @@ export default function ProfilePage() {
             if (data.success && data.data) {
               // 更新 localStorage 中的用户数据
               localStorage.setItem('currentUser', JSON.stringify(data.data));
+              // 更新 userInfo state，确保页面显示最新数据
+              setUserInfo(getUserInfoFromUser(data.data));
             }
           }
         } catch (error) {
