@@ -1,5 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// 字段名转换函数：snake_case -> camelCase
+function convertToCamelCase(data: any): any {
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  // 如果是 Date 对象，直接返回
+  if (data instanceof Date) {
+    return data.toISOString();
+  }
+
+  if (Array.isArray(data)) {
+    return data.map(item => convertToCamelCase(item));
+  }
+
+  if (typeof data === 'object') {
+    const result: any = {};
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        // 转换 snake_case 到 camelCase
+        const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+        result[camelCaseKey] = convertToCamelCase(data[key]);
+      }
+    }
+    return result;
+  }
+
+  return data;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -27,9 +57,12 @@ export async function GET(
       }, { status: 404 });
     }
 
+    // 转换字段名为 camelCase
+    const convertedData = convertToCamelCase(result[0]);
+
     return NextResponse.json({
       success: true,
-      data: result[0]
+      data: convertedData
     });
   } catch (error: any) {
     console.error('获取用户详情失败:', error);

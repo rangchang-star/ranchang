@@ -350,42 +350,6 @@ export default function ProfilePage() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // 从 localStorage.currentUser 同步最新数据到 userInfo
-  useEffect(() => {
-    const syncFromLocalStorage = () => {
-      try {
-        const storedUser = localStorage.getItem('currentUser');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUserInfo(prev => ({
-            ...prev,
-            hardcoreTags: userData.hardcoreTags || [],
-            resourceTags: userData.resourceTags || [],
-            industry: userData.industry || prev.industry,
-            need: userData.need || prev.need,
-            name: userData.name || userData.nickname || prev.name,
-            age: userData.age || prev.age,
-            avatar: userData.avatar || prev.avatar,
-          }));
-        }
-      } catch (error) {
-        console.error('Failed to sync from localStorage:', error);
-      }
-    };
-
-    syncFromLocalStorage();
-
-    // 监听 localStorage 的变化（用于同步编辑页面的修改）
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'currentUser' && e.newValue) {
-        syncFromLocalStorage();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
   // 根据用户ID加载模拟通知数据
   useEffect(() => {
     const loadUserNotifications = () => {
@@ -515,6 +479,35 @@ export default function ProfilePage() {
       };
     }
 
+    // 从 localStorage 读取高燃宣告数据
+    let declarationFromStorage = {
+      direction: 'confidence',
+      text: userData.bio || '',
+      summary: userData.bio || '',
+      date: new Date(userData.createdAt).toLocaleDateString('zh-CN'),
+      views: 0,
+    };
+
+    try {
+      const storedDeclarations = localStorage.getItem('userDeclarations');
+      if (storedDeclarations) {
+        const declarations = JSON.parse(storedDeclarations);
+        // 找到第一个有内容的宣告
+        const firstDeclaration = declarations.find((d: any) => d.theme && d.description);
+        if (firstDeclaration) {
+          declarationFromStorage = {
+            direction: firstDeclaration.id,
+            text: firstDeclaration.theme || userData.bio || '',
+            summary: firstDeclaration.description || userData.bio || '',
+            date: new Date().toLocaleDateString('zh-CN'),
+            views: 0,
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load declarations from localStorage:', error);
+    }
+
     return {
       id: userData.id.toString(),
       name: userData.name || userData.nickname,
@@ -525,18 +518,17 @@ export default function ProfilePage() {
       need: userData.need || '',
       hardcoreTags: userData.hardcoreTags || [],
       resourceTags: userData.resourceTags || [],
-      currentDeclaration: {
-        direction: 'confidence',
-        text: userData.bio || '',
-        summary: userData.bio || '',
-        date: new Date(userData.createdAt).toLocaleDateString('zh-CN'),
-        views: 0,
-      },
+      currentDeclaration: declarationFromStorage,
       assessments: [entrepreneurialPsychologyAssessment, businessCognitionAssessment, aiCognitionAssessment, careerMissionAssessment] as Assessment[],
     };
   };
 
   const [userInfo, setUserInfo] = useState(() => getUserInfoFromUser(user));
+
+  // 当 user 变化时，自动更新 userInfo（包括刷新后的最新数据）
+  useEffect(() => {
+    setUserInfo(getUserInfoFromUser(user));
+  }, [user]);
 
   // 切换量表展开状态
   const toggleAssessmentExpand = (index: number) => {
