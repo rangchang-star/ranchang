@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Camera, Upload, Plus, X, Mic, Check } from 'lucide-react';
@@ -200,31 +200,36 @@ function ProfileEditContent() {
     }
   }, [isLoggedIn, user]);
 
-  // 编辑页面加载时，从数据库刷新用户数据，确保显示最新数据
+  // 使用 ref 标记是否已刷新过数据，避免重复刷新导致输入被清空
+  const hasRefreshedData = useRef(false);
+
+  // 编辑页面加载时，从数据库刷新用户数据（只执行一次）
   useEffect(() => {
     const refreshUserDataFromDatabase = async () => {
-      if (isLoggedIn && user) {
-        try {
-          const response = await fetch(`/api/users/${user.id}`);
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data) {
-              // 更新 localStorage 中的用户数据
-              localStorage.setItem('currentUser', JSON.stringify(data.data));
-              // 触发 useAuth 的刷新（如果有的话）
-              if (refreshUser) {
-                await refreshUser();
-              }
-            }
+      // 如果已经刷新过，就不再执行
+      if (hasRefreshedData.current || !isLoggedIn || !user) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/users/${user.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            // 更新 localStorage 中的用户数据
+            localStorage.setItem('currentUser', JSON.stringify(data.data));
+            // 标记已刷新过
+            hasRefreshedData.current = true;
+            // 不再调用 refreshUser，避免触发数据重置
           }
-        } catch (error) {
-          console.error('Failed to refresh user data from database:', error);
         }
+      } catch (error) {
+        console.error('Failed to refresh user data from database:', error);
       }
     };
 
     refreshUserDataFromDatabase();
-  }, [isLoggedIn, user?.id, refreshUser]);
+  }, [isLoggedIn, user?.id]);
 
   // 高燃宣告数据结构 - 每个方向独立管理主题、简介、音频
   const [declarations, setDeclarations] = useState<Record<string, {
