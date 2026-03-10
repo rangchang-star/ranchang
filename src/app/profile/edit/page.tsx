@@ -154,17 +154,17 @@ export function ProfileEditContent() {
     // 将登录用户数据映射到编辑页面需要的格式
     return {
       avatar: user.avatar || mockUserProfile.avatar,
-      name: user.name || user.nickname || mockUserProfile.name,
-      gender: 'female', // 暂时默认，实际可以从用户数据中获取
+      name: user.name || mockUserProfile.name,
+      gender: user.gender || mockUserProfile.gender,
       age: user.age || mockUserProfile.age,
       phone: user.phone || mockUserProfile.phone,
-      email: '', // 暂时为空
+      email: user.email || mockUserProfile.email,
       companyName: user.company || '',
-      companyScale: '',
+      companyScale: user.companyScale || mockUserProfile.companyScale,
       companyPosition: user.position || '',
       purpose: getPurposeFromTagStamp(user.tagStamp),
       industry: user.industry || mockUserProfile.industry,
-      industryTags: user.tags || mockUserProfile.industryTags, // 从 user.tags 加载行业标签
+      industryTags: user.abilityTags || mockUserProfile.industryTags, // 从 user.abilityTags 加载行业标签
       resources: user.resourceTags || mockUserProfile.resources,
       hardcoreTags: user.hardcoreTags || mockUserProfile.hardcoreTags || [], // 硬核标签从用户数据中获取，无则使用默认值
       declaration: user.bio || mockUserProfile.declaration,
@@ -596,16 +596,19 @@ export function ProfileEditContent() {
           name: profile.name,
           phone: profile.phone,
           avatar: profile.avatar,
+          gender: profile.gender,
           age: profile.age,
+          email: profile.email,
           company: profile.companyName,
+          company_scale: profile.companyScale,
           position: profile.companyPosition,
           industry: profile.industry,
           need: profile.declaration,
           bio: profile.declaration,
           tag_stamp: tagStamp,
+          ability_tags: selectedIndustryTag ? [selectedIndustryTag] : [],
           hardcore_tags: selectedAbilityTags,
           resource_tags: selectedResources,
-          tags: selectedIndustryTag ? [selectedIndustryTag] : [],
         };
 
         console.log('请求体:', requestBody);

@@ -2,31 +2,32 @@ import { pgTable, serial, varchar, text, integer, timestamp, boolean, jsonb } fr
 import { relations } from 'drizzle-orm';
 
 // ============================================================
-// 用户表 - 严格匹配数据库实际结构
+// 用户表 - 严格匹配数据库实际结构 (public.users)
 // ============================================================
 export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  phone: varchar('phone', { length: 20 }).notNull(),
-  password: varchar('password', { length: 255 }).notNull(),
-  nickname: varchar('nickname', { length: 50 }),
-  name: varchar('name', { length: 50 }),
-  avatar: text('avatar'),
+  id: varchar('id', { length: 36 }).primaryKey(), // UUID
+  name: varchar('name', { length: 128 }),
   age: integer('age'),
-  company: varchar('company', { length: 100 }),
-  position: varchar('position', { length: 50 }),
-  industry: varchar('industry', { length: 50 }),
-  bio: text('bio'),
+  avatar: text('avatar'),
+  phone: varchar('phone', { length: 20 }),
+  email: varchar('email', { length: 255 }),
+  gender: varchar('gender', { length: 10 }),
+  company: varchar('company', { length: 255 }),
+  company_scale: varchar('company_scale', { length: 50 }),
+  position: varchar('position', { length: 255 }),
+  industry: varchar('industry', { length: 100 }),
+  bio: text('bio'), // 可能不存在，保留以兼容
   need: text('need'),
-  tag_stamp: text('tag_stamp').default('pureExchange'),
-  tags: jsonb('tags'),
+  tag_stamp: varchar('tag_stamp', { length: 50 }),
+  ability_tags: jsonb('ability_tags'),
   hardcore_tags: jsonb('hardcore_tags'),
   resource_tags: jsonb('resource_tags'),
-  is_trusted: boolean('is_trusted').default(false),
+  level: varchar('level', { length: 50 }),
+  connection_type: varchar('connection_type', { length: 50 }),
+  status: varchar('status', { length: 20 }),
   is_featured: boolean('is_featured').default(false),
-  connection_count: integer('connection_count').default(0),
-  activity_count: integer('activity_count').default(0),
-  role: text('role').default('user'),
-  status: text('status').default('active'),
+  join_date: timestamp('join_date'),
+  last_login: timestamp('last_login'),
   created_at: timestamp('created_at').notNull().defaultNow(),
   updated_at: timestamp('updated_at').notNull().defaultNow(),
 });

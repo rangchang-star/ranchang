@@ -4,27 +4,29 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 
 // 用户信息类型
 export interface User {
-  id: number;
+  id: string; // UUID
   phone: string;
-  nickname: string;
   name: string;
   avatar: string;
+  gender: string;
   age: number;
+  email: string;
   company: string;
+  companyScale: string;
   position: string;
   industry: string;
   bio: string;
   need: string;
   tagStamp: string;
-  tags: string[];
+  abilityTags: string[];
   hardcoreTags: string[];
   resourceTags: string[];
-  isTrusted: boolean;
+  level: string;
+  connectionType: string;
   isFeatured: boolean;
-  role: 'user' | 'admin';
   status: string;
-  connectionCount: number;
-  activityCount: number;
+  joinDate: string;
+  lastLogin: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,12 +35,10 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoggedIn: boolean;
-  isAdmin: boolean;
   isLoading: boolean;
   login: (phone: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   refreshUser: () => Promise<void>;
-  setUserRole: (role: 'user' | 'admin') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,25 +115,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  // 更新用户角色（用于管理员登录）
-  const setUserRole = useCallback((role: 'user' | 'admin') => {
-    if (!user) return;
-
-    const updatedUser = { ...user, role };
-    setUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-  }, [user]);
-
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
     isLoggedIn: !!user,
-    isAdmin: user?.role === 'admin',
     isLoading,
     login,
     logout,
     refreshUser,
-    setUserRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
