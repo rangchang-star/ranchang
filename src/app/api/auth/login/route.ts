@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { mockUsers } from '@/lib/mock-database';
 import { verifyCode } from '../send-code/route';
-import { getDynamicUsers } from '../register/route';
 
 // 简单的 JWT 生成（生产环境应使用 jsonwebtoken 库）
 function generateToken(userId: number): string {
@@ -60,43 +58,47 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 查找用户
-    let user = null;
+    // 从数据库查找用户（强制使用数据库）
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
 
-    // 检查是否配置了数据库连接
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL !== '') {
-      try {
-        const { db, users } = await import('@/storage/database/supabase/connection');
-        const { eq } = await import('drizzle-orm');
-
-        const dbUsers = await db.select().from(users).where(eq(users.phone, phone));
-
-        if (dbUsers.length > 0) {
-          user = dbUsers[0];
-        }
-      } catch (dbError: any) {
-        console.warn('数据库连接失败，使用模拟数据:', dbError.message);
-        // 降级到模拟数据
-      }
+    if (!connectionString || connectionString === '') {
+      return NextResponse.json({
+        success: false,
+        message: '数据库未配置'
+      }, { status: 500 });
     }
 
-    // 如果数据库中没有找到，从模拟数据中查找
-    if (!user) {
-      user = mockUsers.find((u) => u.phone === phone) ||
-            getDynamicUsers().find((u) => u.phone === phone);
-    }
+    const postgres = (await import('postgres')).default;
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const { users } = await import('@/storage/database/supabase/schema');
+    const { eq } = await import('drizzle-orm');
 
-    if (!user) {
+    // 创建单个连接（不使用连接池）
+    const client = postgres(connectionString, {
+      max: 1,
+      ssl: false,
+    });
+
+    const db = drizzle(client);
+
+    const dbUsers = await db.select().from(users).where(eq(users.phone, phone));
+
+    // 立即关闭连接
+    await client.end();
+
+    if (dbUsers.length === 0) {
       return NextResponse.json(
         { success: false, message: '该手机号未注册，请先注册' },
         { status: 404 }
       );
     }
 
+    const user = dbUsers[0];
+
     // 密码登录时验证密码
     if (loginType === 'password') {
       // 兼容两种密码字段名称
-      const userPassword = user.password || user.encrypted_password;
+      const userPassword = user.password;
       // 允许空密码登录（用于测试）
       if (userPassword && userPassword !== password) {
         return NextResponse.json(
@@ -118,7 +120,7 @@ export async function POST(request: NextRequest) {
     const token = generateToken(user.id);
 
     // 返回用户信息（排除敏感信息）
-    const { password: pwd, encrypted_password: encryptedPwd, ...safeUser } = user;
+    const { password: pwd, ...safeUser } = user;
 
     return NextResponse.json({
       success: true,
