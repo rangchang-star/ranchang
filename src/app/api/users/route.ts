@@ -4,11 +4,34 @@ import { randomUUID } from 'crypto';
 // GET - 获取用户列表
 export async function GET(request: NextRequest) {
   try {
-    // 连接数据库并查询
-    const { db, users } = await import('@/storage/database/supabase/connection');
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
+
+    // 直接创建数据库连接，避免连接池满的问题
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+
+    const postgres = (await import('postgres')).default;
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const { users } = await import('@/storage/database/supabase/schema');
     const { desc } = await import('drizzle-orm');
 
+    // 创建单个连接（不使用连接池）
+    const client = postgres(connectionString, {
+      max: 1,
+      ssl: false,
+    });
+
+    const db = drizzle(client);
+
     const result = await db.select().from(users).orderBy(desc(users.created_at));
+
+    // 立即关闭连接
+    await client.end();
 
     return NextResponse.json({
       success: true,

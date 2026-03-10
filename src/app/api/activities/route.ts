@@ -11,11 +11,26 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 连接数据库并查询
-    const { db, activities } = await import('@/storage/database/supabase/connection');
+    // 直接创建数据库连接，避免连接池满的问题
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
+
+    const postgres = (await import('postgres')).default;
+    const { drizzle } = await import('drizzle-orm/postgres-js');
+    const { activities } = await import('@/storage/database/supabase/schema');
     const { desc } = await import('drizzle-orm');
 
+    // 创建单个连接（不使用连接池）
+    const client = postgres(connectionString, {
+      max: 1,
+      ssl: false,
+    });
+
+    const db = drizzle(client);
+
     const result = await db.select().from(activities).orderBy(desc(activities.created_at));
+
+    // 立即关闭连接
+    await client.end();
 
     return NextResponse.json({
       success: true,

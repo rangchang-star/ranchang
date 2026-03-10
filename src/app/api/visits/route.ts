@@ -10,21 +10,39 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // 从数据库读取探访数据
-    const { db, visits } = await import('@/storage/database/supabase/connection');
+    // 直接创建数据库连接，避免连接池满的问题
+    const connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
 
-    const dbVisits = await db.select().from(visits);
+    const postgres = (await import('postgres')).default;
+
+    // 创建单个连接（不使用连接池）
+    const client = postgres(connectionString, {
+      max: 1,
+      ssl: false,
+    });
+
+    // 使用原始 SQL 查询（根据 ran_field 数据库实际结构）
+    const dbVisits = await client`
+      SELECT "id", "title", "description", "image", "location",
+             "date", "capacity", "tea_fee", "status",
+             "created_by", "created_at", "updated_at"
+      FROM "visits"
+      ORDER BY "date" DESC
+    `;
+
+    // 立即关闭连接
+    await client.end();
 
     // 格式化数据（保持与前端需要的格式一致）
     const formattedVisits = dbVisits.map(visit => ({
       id: visit.id.toString(),
-      title: visit.company_name, // 使用 company_name 作为标题
+      title: visit.title, // 使用 title 作为标题
       description: visit.description,
-      image: visit.cover_image, // 使用 cover_image 作为图片
+      image: visit.image, // 使用 image 作为图片
       location: visit.location,
       date: visit.date?.toISOString(),
       capacity: visit.capacity,
-      teaFee: 0, // 默认茶水费
+      teaFee: visit.tea_fee || 0, // 使用 tea_fee 字段
       status: visit.status,
       duration: '4小时', // 默认时长
       visitors: [], // 简化字段，后续可扩展

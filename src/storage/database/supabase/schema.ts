@@ -49,21 +49,20 @@ export const activities = pgTable('activities', {
   updated_at: timestamp('updated_at'),
 });
 
-// 探访表 - 严格匹配数据库实际结构
+// 探访表 - 严格匹配 ran_field 数据库实际结构
 export const visits = pgTable('visits', {
-  id: text('id').primaryKey(),
-  company_id: text('company_id'),
-  company_name: text('company_name'),
-  industry: text('industry'),
-  location: text('location'),
-  description: text('description').notNull(),
+  id: integer('id').primaryKey(),
+  title: varchar('title'),
+  description: text('description'),
+  image: text('image'),
+  location: varchar('location'),
   date: timestamp('date'),
-  capacity: integer('capacity').default(0),
-  registered_count: integer('registered_count').default(0),
-  cover_image: text('cover_image'),
-  status: text('status').default('active'),
-  created_at: timestamp('created_at').defaultNow().notNull(),
-  updated_at: timestamp('updated_at').defaultNow().notNull(),
+  capacity: integer('capacity'),
+  tea_fee: integer('tea_fee'),
+  status: text('status'),
+  created_by: integer('created_by'),
+  created_at: timestamp('created_at'),
+  updated_at: timestamp('updated_at'),
 });
 
 // 活动报名记录表 - 严格匹配数据库实际结构
