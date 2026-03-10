@@ -1,12 +1,15 @@
 import { pgTable, index, varchar, text, timestamp, integer, serial, jsonb, boolean, unique } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
+// 生成 UUID 的辅助函数
+function gen_random_uuid() {
+  return sql`gen_random_uuid()`;
+}
 
-// UUID 生成函数
-const genRandomUuid = sql`gen_random_uuid()`;
+
 
 export const activities = pgTable("activities", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	title: varchar({ length: 255 }).notNull(),
 	description: text(),
 	date: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
@@ -32,7 +35,7 @@ export const healthCheck = pgTable("health_check", {
 });
 
 export const activityRegistrations = pgTable("activity_registrations", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	activityId: varchar("activity_id", { length: 36 }).notNull(),
 	userId: varchar("user_id", { length: 36 }).notNull(),
 	status: varchar({ length: 20 }).default('pending'),
@@ -46,7 +49,7 @@ export const activityRegistrations = pgTable("activity_registrations", {
 ]);
 
 export const assessments = pgTable("assessments", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	userId: varchar("user_id", { length: 36 }).notNull(),
 	name: varchar({ length: 128 }).notNull(),
 	score: integer().notNull(),
@@ -62,7 +65,7 @@ export const assessments = pgTable("assessments", {
 ]);
 
 export const consultations = pgTable("consultations", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	userId: varchar("user_id", { length: 36 }).notNull(),
 	topicId: varchar("topic_id", { length: 50 }),
 	topicName: varchar("topic_name", { length: 100 }),
@@ -79,7 +82,7 @@ export const consultations = pgTable("consultations", {
 ]);
 
 export const declarations = pgTable("declarations", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	userId: varchar("user_id", { length: 36 }).notNull(),
 	direction: varchar({ length: 50 }),
 	text: text().notNull(),
@@ -97,7 +100,7 @@ export const declarations = pgTable("declarations", {
 ]);
 
 export const digitalAssets = pgTable("digital_assets", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	userId: varchar("user_id", { length: 36 }).notNull(),
 	title: varchar({ length: 255 }).notNull(),
 	description: text(),
@@ -118,7 +121,7 @@ export const digitalAssets = pgTable("digital_assets", {
 ]);
 
 export const notifications = pgTable("notifications", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	userId: varchar("user_id", { length: 36 }).notNull(),
 	type: varchar({ length: 20 }).notNull(),
 	title: varchar({ length: 255 }).notNull(),
@@ -134,7 +137,7 @@ export const notifications = pgTable("notifications", {
 ]);
 
 export const userFollows = pgTable("user_follows", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	followerId: varchar("follower_id", { length: 36 }).notNull(),
 	followingId: varchar("following_id", { length: 36 }).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -144,7 +147,7 @@ export const userFollows = pgTable("user_follows", {
 ]);
 
 export const users = pgTable("users", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	name: varchar({ length: 128 }).notNull(),
 	age: integer(),
 	avatar: text(),
@@ -153,7 +156,7 @@ export const users = pgTable("users", {
 	connectionType: varchar("connection_type", { length: 50 }),
 	industry: varchar({ length: 100 }),
 	need: text(),
-	hardcoreTags: jsonb("hardcore_tags"),
+	abilityTags: jsonb("ability_tags"),
 	resourceTags: jsonb("resource_tags"),
 	level: varchar({ length: 50 }),
 	company: varchar({ length: 255 }),
@@ -173,7 +176,7 @@ export const users = pgTable("users", {
 ]);
 
 export const visitRecords = pgTable("visit_records", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	visitId: varchar("visit_id", { length: 36 }).notNull(),
 	userId: varchar("user_id", { length: 36 }).notNull(),
 	status: varchar({ length: 20 }).default('registered'),
@@ -186,7 +189,7 @@ export const visitRecords = pgTable("visit_records", {
 ]);
 
 export const visits = pgTable("visits", {
-	id: varchar({ length: 36 }).default(genRandomUuid).primaryKey().notNull(),
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
 	companyId: varchar("company_id", { length: 36 }).notNull(),
 	companyName: varchar("company_name", { length: 255 }).notNull(),
 	industry: varchar({ length: 100 }),
@@ -203,4 +206,36 @@ export const visits = pgTable("visits", {
 	index("visits_company_id_idx").using("btree", table.companyId.asc().nullsLast().op("text_ops")),
 	index("visits_date_idx").using("btree", table.date.asc().nullsLast().op("timestamptz_ops")),
 	index("visits_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+]);
+
+export const dailyDeclarations = pgTable("daily_declarations", {
+	id: serial().primaryKey().notNull(),
+	title: varchar({ length: 200 }).notNull(),
+	date: timestamp({ mode: 'string' }).notNull(),
+	image: text(),
+	audio: text(),
+	summary: text(),
+	text: text(),
+	iconType: varchar("icon_type", { length: 50 }),
+	rank: integer(),
+	profile: text(),
+	duration: varchar({ length: 50 }),
+	views: integer().default(0),
+	isFeatured: boolean("is_featured").default(false),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+});
+
+export const adminUsers = pgTable("admin_users", {
+	id: varchar({ length: 36 }).default(sql`gen_random_uuid()`).primaryKey().notNull(),
+	username: varchar({ length: 100 }).notNull().unique(),
+	email: varchar({ length: 255 }).unique(),
+	password: text().notNull(),
+	role: varchar({ length: 50 }).default('admin'),
+	status: varchar({ length: 20 }).default('active'),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("admin_users_username_idx").on(table.username),
+	index("admin_users_status_idx").on(table.status),
 ]);

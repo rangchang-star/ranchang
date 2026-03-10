@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from './schema';
+import * as schema from '../shared/schema';
 
 // 创建PostgreSQL连接 - 直接使用环境变量配置的数据库
 const connectionString = process.env.DATABASE_URL || '';
@@ -25,5 +25,5 @@ const client = postgres(connectionString, {
 // 创建Drizzle ORM实例
 export const db = drizzle(client, { schema });
 
-// 导出schema
-export * from './schema';
+// 导出shared schema
+export * from '../shared/schema';
