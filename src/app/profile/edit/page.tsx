@@ -199,7 +199,33 @@ function ProfileEditContent() {
       setSelectedAbilityTags(newProfile.hardcoreTags || []); // 使用 newProfile.hardcoreTags
     }
   }, [isLoggedIn, user]);
-  
+
+  // 编辑页面加载时，从数据库刷新用户数据，确保显示最新数据
+  useEffect(() => {
+    const refreshUserDataFromDatabase = async () => {
+      if (isLoggedIn && user) {
+        try {
+          const response = await fetch(`/api/users/${user.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+              // 更新 localStorage 中的用户数据
+              localStorage.setItem('currentUser', JSON.stringify(data.data));
+              // 触发 useAuth 的刷新（如果有的话）
+              if (refreshUser) {
+                await refreshUser();
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to refresh user data from database:', error);
+        }
+      }
+    };
+
+    refreshUserDataFromDatabase();
+  }, [isLoggedIn, user?.id, refreshUser]);
+
   // 高燃宣告数据结构 - 每个方向独立管理主题、简介、音频
   const [declarations, setDeclarations] = useState<Record<string, {
     theme: string;          // 宣告主题
