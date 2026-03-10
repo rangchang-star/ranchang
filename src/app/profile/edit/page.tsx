@@ -188,6 +188,7 @@ function ProfileEditContent() {
   const [selectedAbilityTags, setSelectedAbilityTags] = useState<string[]>(profile.hardcoreTags || []);
   const [selectedDirection, setSelectedDirection] = useState<string>(''); // 默认不选择任何方向
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // 保存状态
 
   // 当用户数据变化时，更新profile状态
   useEffect(() => {
@@ -549,12 +550,13 @@ function ProfileEditContent() {
     console.log('验证通过，准备保存');
 
     // 防重复提交检查
-    if (sessionStorage.getItem('profile-submitting') === 'true') {
-      console.log('检测到重复提交');
-      alert('正在保存中，请勿重复提交');
+    if (isSubmitting) {
+      console.log('检测到重复提交，当前状态:', isSubmitting);
       return;
     }
-    sessionStorage.setItem('profile-submitting', 'true');
+
+    // 设置提交状态
+    setIsSubmitting(true);
     console.log('设置提交状态为 true');
 
     // 组合完整数据
@@ -573,9 +575,15 @@ function ProfileEditContent() {
 
     // 保存到localStorage和数据库
     try {
-      console.log('开始保存数据...');
+      console.log('===== 开始保存数据 =====');
+      console.log('当前提交状态:', isSubmitting);
       console.log('isLoggedIn:', isLoggedIn);
       console.log('user:', user);
+      console.log('profile:', profile);
+      console.log('selectedPurpose:', selectedPurpose);
+      console.log('selectedIndustryTag:', selectedIndustryTag);
+      console.log('selectedResources:', selectedResources);
+      console.log('selectedAbilityTags:', selectedAbilityTags);
 
       // 先调用后端 API 保存到数据库
       if (isLoggedIn && user) {
@@ -666,13 +674,11 @@ function ProfileEditContent() {
       window.location.href = '/profile';
     } catch (error) {
       console.error('保存失败:', error);
-      alert('保存失败，请重试');
+      alert('保存失败，请重试: ' + (error instanceof Error ? error.message : '未知错误'));
     } finally {
       console.log('清除提交状态');
-      // 清除提交状态
-      setTimeout(() => {
-        sessionStorage.removeItem('profile-submitting');
-      }, 1000);
+      // 立即清除提交状态
+      setIsSubmitting(false);
     }
   };
 
@@ -688,8 +694,16 @@ function ProfileEditContent() {
               </Button>
             </Link>
             <h1 className="text-[15px] font-semibold text-gray-900">编辑资料</h1>
-            <Button onClick={handleSave} className="bg-blue-400 hover:bg-blue-500 font-normal text-[11px] px-4 py-1.5 text-white">
-              保存
+            <Button 
+              onClick={handleSave} 
+              disabled={isSubmitting}
+              className={`font-normal text-[11px] px-4 py-1.5 text-white ${
+                isSubmitting 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-blue-400 hover:bg-blue-500'
+              }`}
+            >
+              {isSubmitting ? '保存中...' : '保存'}
             </Button>
           </div>
         </div>
