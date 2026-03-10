@@ -462,6 +462,11 @@ function ProfileEditContent() {
   };
 
   const handleSave = async () => {
+    console.log('===== 保存按钮被点击 =====');
+    console.log('当前用户:', user);
+    console.log('当前profile:', profile);
+    console.log('isLoggedIn:', isLoggedIn);
+
     // 验证必选项
     const requiredErrors: string[] = [];
 
@@ -535,16 +540,21 @@ function ProfileEditContent() {
 
     // 如果有必选项未填写，显示提示
     if (requiredErrors.length > 0) {
+      console.log('验证失败:', requiredErrors);
       alert('请填写星号必选项：\n' + requiredErrors.join('、'));
       return;
     }
 
+    console.log('验证通过，准备保存');
+
     // 防重复提交检查
     if (sessionStorage.getItem('profile-submitting') === 'true') {
+      console.log('检测到重复提交');
       alert('正在保存中，请勿重复提交');
       return;
     }
     sessionStorage.setItem('profile-submitting', 'true');
+    console.log('设置提交状态为 true');
 
     // 组合完整数据
     const fullProfile = {
@@ -562,39 +572,54 @@ function ProfileEditContent() {
 
     // 保存到localStorage和数据库
     try {
+      console.log('开始保存数据...');
+      console.log('isLoggedIn:', isLoggedIn);
+      console.log('user:', user);
+
       // 先调用后端 API 保存到数据库
       if (isLoggedIn && user) {
+        console.log('准备发送 API 请求到:', `/api/users/${user.id}`);
+
         const tagStamp = selectedPurpose === '人找事' ? 'personLookingForJob' :
                          selectedPurpose === '事找人' ? 'jobLookingForPerson' : 'pureExchange';
+
+        const requestBody = {
+          name: profile.name,
+          phone: profile.phone,
+          avatar: profile.avatar,
+          age: profile.age,
+          company: profile.companyName,
+          position: profile.companyPosition,
+          industry: profile.industry,
+          need: profile.declaration,
+          bio: profile.declaration,
+          tag_stamp: tagStamp,
+          hardcore_tags: selectedAbilityTags,
+          resource_tags: selectedResources,
+          tags: selectedIndustryTag ? [selectedIndustryTag] : [],
+        };
+
+        console.log('请求体:', requestBody);
 
         const response = await fetch(`/api/users/${user.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            name: profile.name,
-            phone: profile.phone,
-            avatar: profile.avatar,
-            age: profile.age,
-            company: profile.companyName,
-            position: profile.companyPosition,
-            industry: profile.industry,
-            need: profile.declaration,
-            bio: profile.declaration,
-            tag_stamp: tagStamp,
-            hardcore_tags: selectedAbilityTags,
-            resource_tags: selectedResources,
-            tags: selectedIndustryTag ? [selectedIndustryTag] : [],
-          }),
+          body: JSON.stringify(requestBody),
         });
+
+        console.log('API 响应状态:', response.status);
 
         if (!response.ok) {
           const errorData = await response.json();
+          console.error('API 错误:', errorData);
           throw new Error(errorData.error || '保存失败');
         }
 
         console.log('数据库保存成功');
+      } else {
+        console.log('未登录，跳过数据库保存');
       }
 
       // 同时更新 localStorage 以保持前端一致性
@@ -635,12 +660,14 @@ function ProfileEditContent() {
       localStorage.setItem('userDeclarations', JSON.stringify(declarationsArray));
 
       console.log('保存资料:', fullProfile);
+      console.log('准备跳转到个人中心');
       alert('资料保存成功！');
       window.location.href = '/profile';
     } catch (error) {
       console.error('保存失败:', error);
       alert('保存失败，请重试');
     } finally {
+      console.log('清除提交状态');
       // 清除提交状态
       setTimeout(() => {
         sessionStorage.removeItem('profile-submitting');
