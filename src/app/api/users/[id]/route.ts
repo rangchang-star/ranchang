@@ -39,7 +39,7 @@ export async function GET(
         SELECT
           id, name, nickname, avatar, age, phone,
           company, position, industry, bio, need,
-          resource_tags,
+          ability_tags, hardcore_tags, resource_tags, tag_stamp,
           is_trusted, is_featured,
           connection_count, activity_count,
           role, status,
@@ -197,6 +197,14 @@ export async function PUT(
       if (body.ability_tags !== undefined) {
         updateFields.push('ability_tags = $' + (updateValues.length + 1));
         updateValues.push(body.ability_tags);
+      }
+      if (body.hardcore_tags !== undefined) {
+        updateFields.push('hardcore_tags = $' + (updateValues.length + 1));
+        updateValues.push(body.hardcore_tags);
+      }
+      if (body.tag_stamp !== undefined) {
+        updateFields.push('tag_stamp = $' + (updateValues.length + 1));
+        updateValues.push(body.tag_stamp);
       }
       if (body.resource_tags !== undefined) {
         updateFields.push('resource_tags = $' + (updateValues.length + 1));

@@ -10,6 +10,33 @@ function parseDatabaseUrl(connectionString: string) {
   return { user, password, host, port: parseInt(port), database };
 }
 
+// 将扁平的键值对转换为嵌套对象
+function flattenToNested(flatObj: Record<string, any>): Record<string, any> {
+  const result: Record<string, any> = {};
+
+  for (const key in flatObj) {
+    const parts = key.split('.');
+    let current = result;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+
+      if (i === parts.length - 1) {
+        // 最后一级，设置值
+        current[part] = flatObj[key];
+      } else {
+        // 中间级，创建对象
+        if (!current[part]) {
+          current[part] = {};
+        }
+        current = current[part];
+      }
+    }
+  }
+
+  return result;
+}
+
 // GET - 获取所有设置
 export async function GET(request: NextRequest) {
   try {
@@ -46,9 +73,12 @@ export async function GET(request: NextRequest) {
       return acc;
     }, {});
 
+    // 将扁平的键值对转换为嵌套结构
+    const nestedSettings = flattenToNested(settingsMap);
+
     return NextResponse.json({
       success: true,
-      data: settingsMap,
+      data: nestedSettings,
     });
   } catch (error: any) {
     console.error('获取设置失败:', error);

@@ -113,6 +113,65 @@ export const settings = pgTable('settings', {
   updated_at: timestamp('updated_at').notNull().defaultNow(),
 });
 
+// 管理员表
+export const admins = pgTable('admins', {
+  id: integer('id').primaryKey().notNull().default(sql`nextval('admins_id_seq'::regclass)`),
+  username: varchar('username').notNull().unique(),
+  password: varchar('password').notNull(),
+  role: varchar('role').default('admin'),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+});
+
+// 管理员成员表
+export const adminMembers = pgTable('admin_members', {
+  id: integer('id').primaryKey().notNull().default(sql`nextval('admin_members_id_seq'::regclass)`),
+  name: varchar('name').notNull(),
+  company: varchar('company'),
+  position: varchar('position'),
+  tags: jsonb('tags').$type<string[]>(),
+  industry: varchar('industry'),
+  is_featured: boolean('is_featured').default(false),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// 活动申请表
+export const activityApplications = pgTable('activity_applications', {
+  id: integer('id').primaryKey().notNull().default(sql`nextval('activity_applications_id_seq'::regclass)`),
+  user_id: integer('user_id').notNull(),
+  activity_id: integer('activity_id').notNull(),
+  user_name: varchar('user_name').notNull(),
+  user_phone: varchar('user_phone').notNull(),
+  reason: text('reason'),
+  status: varchar('status').default('pending'),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  reviewed_at: timestamp('reviewed_at'),
+  reviewed_by: integer('reviewed_by'),
+  review_comment: text('review_comment'),
+});
+
+// 文档表
+export const documents = pgTable('documents', {
+  id: integer('id').primaryKey().notNull().default(sql`nextval('documents_id_seq'::regclass)`),
+  title: varchar('title').notNull(),
+  description: text('description'),
+  file_url: text('file_url').notNull(),
+  file_type: varchar('file_type').notNull(),
+  file_size: integer('file_size').default(0),
+  category: varchar('category').default('其他'),
+  created_by: integer('created_by').notNull(),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// 收藏表
+export const favorites = pgTable('favorites', {
+  id: integer('id').primaryKey().notNull().default(sql`nextval('favorites_id_seq'::regclass)`),
+  user_id: integer('user_id').notNull(),
+  visit_id: integer('visit_id').notNull(),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+});
+
 // 关系定义
 export const usersRelations = relations(users, ({ many }) => ({
   activityRegistrations: many(activityRegistrations),

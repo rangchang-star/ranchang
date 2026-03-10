@@ -8,13 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   CheckCircle, XCircle, Search, Send, Mail, 
   User, Calendar, Target, UserCheck, Filter, ChevronRight,
-  MessageSquare, Clock, Bell, ArrowUp, ArrowDown, ChevronUp
+  MessageSquare, Clock, Bell, ArrowUp, ArrowDown, ChevronUp,
+  Phone, Building
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Textarea } from '@/components/ui/textarea';
-import { MockDatabase } from '@/lib/mock-database';
 
 // 申请类型定义
 type ApplicationType = 'activity' | 'visit' | 'boardMember' | 'visitTarget';
@@ -86,32 +86,30 @@ export default function AdminMessagesPage() {
       try {
         setIsLoading(true);
 
-        // 加载活动申请
-        const activityApplications = MockDatabase.getActivityApplications();
-        const activities = MockDatabase.getActivities();
-        const users = MockDatabase.getUsers() as any[];
+        // 从 API 获取活动申请
+        const response = await fetch('/api/admin/activity-applications');
+        const data = await response.json();
 
-        // 转换为统一的申请格式
-        const formattedApplications: Application[] = activityApplications.map(app => {
-          const activity = activities.find(a => String(a.id) === app.activityId);
-          const user = users.find(u => String(u.id) === app.userId);
+        if (data.success && data.data) {
+          // 转换为统一的申请格式
+          const formattedApplications: Application[] = data.data.map((app: any) => {
+            return {
+              id: app.id,
+              type: 'activity',
+              applicantName: app.user_name || '未知',
+              applicantPhone: app.user_phone || '未知',
+              applicantCompany: '',
+              applicantPosition: '',
+              targetName: app.activity_title || '',
+              targetId: app.activity_id,
+              reason: app.reason || '',
+              status: app.status as 'pending' | 'approved' | 'rejected',
+              applyTime: app.created_at,
+            };
+          });
 
-          return {
-            id: app.id,
-            type: 'activity',
-            applicantName: user?.name || '未知',
-            applicantPhone: user?.phone || '未知',
-            applicantCompany: user?.company || '',
-            applicantPosition: user?.position || '',
-            targetName: activity?.title || '',
-            targetId: app.activityId,
-            reason: app.reason || '',
-            status: app.status as 'pending' | 'approved' | 'rejected',
-            applyTime: app.applyTime,
-          };
-        });
-
-        setApplications(formattedApplications);
+          setApplications(formattedApplications);
+        }
       } catch (error) {
         console.error('加载申请数据失败:', error);
       } finally {
@@ -146,108 +144,62 @@ export default function AdminMessagesPage() {
   });
 
   // 审批处理
-  const handleApprove = (applicationId: string) => {
-    // 调用 MockDatabase 审核方法
-    const result = MockDatabase.reviewActivityApplication(applicationId, 'approved');
-    
-    if (!result) {
-      alert('审核失败');
-      return;
-    }
-
-    // 更新前端状态
-    const updatedApplications = applications.map((app) =>
-      app.id === applicationId ? { ...app, status: 'approved' as const } : app
-    );
-    setApplications(updatedApplications);
-    
-    // 发送通知
-    const application = applications.find(app => app.id === applicationId);
-    if (application) {
-      addNotification({
-        type: 'success',
-        title: `申请已通过`,
-        content: `您报名的「${application.targetName}」活动申请已通过审核`,
-        time: new Date().toLocaleString('zh-CN'),
-        read: false,
-        actionUrl: `/activity/${application.targetId}`,
-      });
-    }
-  };
-
-  const handleReject = (applicationId: string) => {
-    // 调用 MockDatabase 审核方法
-    const result = MockDatabase.reviewActivityApplication(applicationId, 'rejected');
-    
-    if (!result) {
-      alert('审核失败');
-      return;
-    }
-
-    // 更新前端状态
-    const updatedApplications = applications.map((app) =>
-      app.id === applicationId ? { ...app, status: 'rejected' as const } : app
-    );
-    setApplications(updatedApplications);
-    
-    // 发送通知
-    const application = applications.find(app => app.id === applicationId);
-    if (application) {
-      addNotification({
-        type: 'error',
-        title: `申请未通过`,
-        content: `您报名的「${application.targetName}」活动申请未通过审核`,
-        time: new Date().toLocaleString('zh-CN'),
-        read: false,
-        actionUrl: `/activity/${application.targetId}`,
-      });
-    }
-  };
-
-  // 添加通知
-  const addNotification = (notification: any) => {
+  const handleApprove = async (applicationId: string) => {
     try {
-      const stored = localStorage.getItem('notifications');
-      const existing = stored ? JSON.parse(stored) : [];
+      const response = await fetch(`/api/admin/activity-applications/${applicationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'approved' }),
+      });
+
+      const data = await response.json();
       
-      // 为通知添加ID和时间
-      const newNotification = {
-        id: `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        ...notification,
-        time: notification.time || new Date().toLocaleString('zh-CN'),
-        read: notification.read !== undefined ? notification.read : false,
-      };
-      
-      localStorage.setItem('notifications', JSON.stringify([newNotification, ...existing]));
+      if (!data.success) {
+        alert('审核失败');
+        return;
+      }
+
+      // 更新前端状态
+      const updatedApplications = applications.map((app) =>
+        app.id === applicationId ? { ...app, status: 'approved' as const } : app
+      );
+      setApplications(updatedApplications);
     } catch (error) {
-      console.error('保存通知失败:', error);
+      console.error('审核失败:', error);
+      alert('审核失败');
     }
   };
 
-  // 切换标签选择
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    );
+  const handleReject = async (applicationId: string) => {
+    try {
+      const response = await fetch(`/api/admin/activity-applications/${applicationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'rejected' }),
+      });
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        alert('审核失败');
+        return;
+      }
+
+      // 更新前端状态
+      const updatedApplications = applications.map((app) =>
+        app.id === applicationId ? { ...app, status: 'rejected' as const } : app
+      );
+      setApplications(updatedApplications);
+    } catch (error) {
+      console.error('审核失败:', error);
+      alert('审核失败');
+    }
   };
 
-  // 发送消息
+  // 消息发送处理
   const handleSendMessage = () => {
-    if (selectedTags.length === 0 || !messageContent.trim()) {
-      alert('请选择标签并填写消息内容');
-      return;
-    }
-
-    // 模拟发送消息
-    const memberCount = Math.floor(Math.random() * 20) + 5;
-    alert(`消息已发送给 ${memberCount} 位标签包含 ${selectedTags.join('、')} 的会员`);
-    
-    // 重置表单
-    setSelectedTags([]);
-    setMessageContent('');
-    setShowMessageDialog(false);
+    // TODO: 实现消息发送功能
+    alert('消息发送功能待实现');
   };
 
   return (
@@ -256,255 +208,307 @@ export default function AdminMessagesPage() {
         {/* 页面标题 */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[20px] font-bold text-gray-900 mb-1">消息管理</h1>
-            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">审批各类申请并群发消息</p>
+            <h1 className="text-2xl font-bold text-gray-900">消息管理</h1>
+            <p className="text-sm text-gray-600 mt-1">管理各类申请和通知消息</p>
           </div>
-          <Button 
-            className="bg-blue-400 hover:bg-blue-500 text-white text-[13px]"
+          <Button
+            variant="outline"
             onClick={() => setShowMessageDialog(true)}
+            className="flex items-center gap-2"
           >
-            <Send className="w-4 h-4 mr-2" />
+            <Send className="h-4 w-4" />
             发送消息
           </Button>
         </div>
 
-        <Tabs defaultValue="pending" className="space-y-4">
-          <TabsList className="bg-[rgba(0,0,0,0.05)] p-1">
-            <TabsTrigger value="pending" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
-              待审批 ({getPendingCount()})
-            </TabsTrigger>
-            <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
-              全部申请
-            </TabsTrigger>
-          </TabsList>
+        {/* 统计卡片 */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">待审核</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {getPendingCount()}
+                </p>
+              </div>
+              <Clock className="h-8 w-8 text-orange-500" />
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">已通过</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {applications.filter(app => app.status === 'approved').length}
+                </p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">已拒绝</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {applications.filter(app => app.status === 'rejected').length}
+                </p>
+              </div>
+              <XCircle className="h-8 w-8 text-red-500" />
+            </div>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">总计</p>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {applications.length}
+                </p>
+              </div>
+              <MessageSquare className="h-8 w-8 text-blue-500" />
+            </div>
+          </div>
+        </div>
 
-          <TabsContent value="pending" className="space-y-4">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+        {/* 筛选和搜索 */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="搜索申请人或公司..."
+                  placeholder="搜索申请人姓名或公司..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-9"
                 />
               </div>
-              <button
-                onClick={() => setTimeSort(timeSort === 'desc' ? null : 'desc')}
-                className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
-                  timeSort === 'desc' 
-                    ? 'border-blue-400 bg-blue-50 text-blue-600' 
-                    : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                }`}
-                title="按时间降序"
-              >
-                <Clock className="w-4 h-4" />
-                <ArrowDown className="w-3 h-3" />
-                <span>最新</span>
-              </button>
-              <button
-                onClick={() => setTimeSort(timeSort === 'asc' ? null : 'asc')}
-                className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
-                  timeSort === 'asc' 
-                    ? 'border-blue-400 bg-blue-50 text-blue-600' 
-                    : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                }`}
-                title="按时间升序"
-              >
-                <Clock className="w-4 h-4" />
-                <ArrowUp className="w-3 h-3" />
-                <span>最早</span>
-              </button>
             </div>
-            {renderApplicationList('pending')}
-          </TabsContent>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSelectedType('all');
+                setSelectedStatus('pending');
+                setSearchTerm('');
+                setTimeSort(null);
+              }}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              重置筛选
+            </Button>
+          </div>
 
-          <TabsContent value="all" className="space-y-4">
-            <div className="space-y-4 mb-4">
-              {/* 搜索框 */}
-              <div className="flex items-center space-x-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
-                  <Input
-                    placeholder="搜索申请人或公司..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <button
-                  onClick={() => setTimeSort(timeSort === 'desc' ? null : 'desc')}
-                  className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
-                    timeSort === 'desc' 
-                      ? 'border-blue-400 bg-blue-50 text-blue-600' 
-                      : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                  }`}
-                  title="按时间降序"
-                >
-                  <Clock className="w-4 h-4" />
-                  <ArrowDown className="w-3 h-3" />
-                  <span>最新</span>
-                </button>
-                <button
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* 类型筛选 */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">类型:</span>
+              <Tabs
+                value={selectedType}
+                onValueChange={(v) => setSelectedType(v as any)}
+                className="flex"
+              >
+                <TabsList className="bg-gray-100">
+                  <TabsTrigger value="all">全部</TabsTrigger>
+                  <TabsTrigger value="activity">活动</TabsTrigger>
+                  <TabsTrigger value="visit">探访</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* 状态筛选 */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">状态:</span>
+              <Tabs
+                value={selectedStatus}
+                onValueChange={(v) => setSelectedStatus(v as any)}
+                className="flex"
+              >
+                <TabsList className="bg-gray-100">
+                  <TabsTrigger value="all">全部</TabsTrigger>
+                  <TabsTrigger value="pending">待审核</TabsTrigger>
+                  <TabsTrigger value="approved">已通过</TabsTrigger>
+                  <TabsTrigger value="rejected">已拒绝</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* 时间排序 */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">时间:</span>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setTimeSort(timeSort === 'asc' ? null : 'asc')}
-                  className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
-                    timeSort === 'asc' 
-                      ? 'border-blue-400 bg-blue-50 text-blue-600' 
-                      : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                  }`}
-                  title="按时间升序"
+                  className={timeSort === 'asc' ? 'bg-blue-50 border-blue-200' : ''}
                 >
-                  <Clock className="w-4 h-4" />
-                  <ArrowUp className="w-3 h-3" />
-                  <span>最早</span>
-                </button>
-              </div>
-
-              {/* 类型标签筛选 */}
-              <div className="flex items-center space-x-3">
-                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">类型筛选：</span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedType('all')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'all'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    全部类型
-                  </button>
-                  <button
-                    onClick={() => setSelectedType('activity')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'activity'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    活动申请
-                  </button>
-                  <button
-                    onClick={() => setSelectedType('boardMember')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'boardMember'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    私董会案主
-                  </button>
-                  <button
-                    onClick={() => setSelectedType('visit')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'visit'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    探访项目
-                  </button>
-                  <button
-                    onClick={() => setSelectedType('visitTarget')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'visitTarget'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    被探访案主
-                  </button>
-                </div>
-              </div>
-
-              {/* 状态筛选 */}
-              <div className="flex items-center space-x-3">
-                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">状态筛选：</span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedStatus('all')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedStatus === 'all'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    全部状态
-                  </button>
-                  <button
-                    onClick={() => setSelectedStatus('pending')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedStatus === 'pending'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    待审批
-                  </button>
-                  <button
-                    onClick={() => setSelectedStatus('approved')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedStatus === 'approved'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    已通过
-                  </button>
-                  <button
-                    onClick={() => setSelectedStatus('rejected')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedStatus === 'rejected'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    已拒绝
-                  </button>
-                </div>
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTimeSort(timeSort === 'desc' ? null : 'desc')}
+                  className={timeSort === 'desc' ? 'bg-blue-50 border-blue-200' : ''}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
               </div>
             </div>
+          </div>
+        </div>
 
-            {renderApplicationList(selectedStatus)}
-          </TabsContent>
-        </Tabs>
+        {/* 申请列表 */}
+        <div className="bg-white rounded-lg border border-gray-200">
+          {isLoading ? (
+            <div className="p-8 text-center text-gray-500">
+              加载中...
+            </div>
+          ) : filteredApplications.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              暂无申请数据
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200">
+              {filteredApplications.map((application) => {
+                const config = typeConfig[application.type];
+                const Icon = config.icon;
 
-        {/* 发送消息弹窗 */}
+                return (
+                  <div
+                    key={application.id}
+                    className="p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* 类型图标 */}
+                      <div className={`p-2 rounded-lg ${config.color}`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+
+                      {/* 主要信息 */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-medium text-gray-900">
+                                {application.applicantName}
+                              </h3>
+                              <Badge variant="outline" className="text-xs">
+                                {config.label}
+                              </Badge>
+                              <Badge
+                                variant={
+                                  application.status === 'approved'
+                                    ? 'default'
+                                    : application.status === 'rejected'
+                                    ? 'destructive'
+                                    : 'secondary'
+                                }
+                                className="text-xs"
+                              >
+                                {application.status === 'pending' && '待审核'}
+                                {application.status === 'approved' && '已通过'}
+                                {application.status === 'rejected' && '已拒绝'}
+                              </Badge>
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-1">
+                              {application.applicantPhone && (
+                                <div className="flex items-center gap-2">
+                                  <Phone className="h-3.5 w-3.5" />
+                                  {application.applicantPhone}
+                                </div>
+                              )}
+                              {application.applicantCompany && (
+                                <div className="flex items-center gap-2">
+                                  <Building className="h-3.5 w-3.5" />
+                                  {application.applicantCompany}
+                                </div>
+                              )}
+                              {application.targetName && (
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  {config.targetLabel}: {application.targetName}
+                                </div>
+                              )}
+                              {application.reason && (
+                                <div className="flex items-start gap-2 mt-2">
+                                  <MessageSquare className="h-3.5 w-3.5 mt-0.5" />
+                                  <span className="text-xs">{application.reason}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 操作按钮 */}
+                          {application.status === 'pending' && (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleReject(application.id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                拒绝
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleApprove(application.id)}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                通过
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 申请时间 */}
+                        <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                          <Clock className="h-3.5 w-3.5" />
+                          申请时间: {new Date(application.applyTime).toLocaleString('zh-CN')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* 发送消息对话框 */}
         <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
-          <DialogContent className="w-[95%] max-w-[600px] max-h-[85vh] overflow-y-auto">
-            <VisuallyHidden>
-              <DialogTitle>发送消息</DialogTitle>
-            </VisuallyHidden>
-            
-            <div className="space-y-6">
-              {/* 标题 */}
-              <div className="flex items-center space-x-3 pb-4 border-b border-[rgba(0,0,0,0.1)]">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-semibold text-gray-900">发送群发消息</h3>
-                  <p className="text-[12px] text-[rgba(0,0,0,0.6)]">按标签向会员发送消息通知</p>
-                </div>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                <VisuallyHidden>发送消息</VisuallyHidden>
+              </DialogTitle>
+              <div className="flex items-center gap-2 mb-4">
+                <Send className="h-5 w-5 text-gray-700" />
+                <h2 className="text-lg font-semibold">发送消息</h2>
               </div>
-
-              {/* 标签选择 */}
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* 会员标签选择 */}
               <div>
-                <label className="block text-[13px] font-medium text-gray-900 mb-3">
-                  选择接收会员标签
-                  <span className="text-[rgba(0,0,0,0.4)] font-normal ml-2">
-                    (已选 {selectedTags.length} 个)
-                  </span>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  接收人标签
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {memberTags.map((tag) => (
                     <button
                       key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className={`px-3 py-1.5 text-[12px] border transition-colors ${
+                      onClick={() => {
+                        setSelectedTags((prev) =>
+                          prev.includes(tag)
+                            ? prev.filter((t) => t !== tag)
+                            : [...prev, tag]
+                        );
+                      }}
+                      className={`px-3 py-1.5 rounded-md text-sm border transition-colors ${
                         selectedTags.includes(tag)
-                          ? 'bg-blue-400 border-blue-400 text-white'
-                          : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
+                          ? 'bg-blue-50 border-blue-500 text-blue-700'
+                          : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
                     >
                       {tag}
@@ -515,42 +519,32 @@ export default function AdminMessagesPage() {
 
               {/* 消息内容 */}
               <div>
-                <label className="block text-[13px] font-medium text-gray-900 mb-3">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   消息内容
                 </label>
                 <Textarea
-                  placeholder="请输入要发送的消息内容..."
                   value={messageContent}
                   onChange={(e) => setMessageContent(e.target.value)}
-                  className="min-h-[150px] text-[13px]"
-                  maxLength={500}
+                  placeholder="请输入消息内容..."
+                  rows={6}
                 />
-                <div className="flex justify-between mt-2">
-                  <span className="text-[12px] text-[rgba(0,0,0,0.4)]">
-                    消息将发送给标签匹配的会员
-                  </span>
-                  <span className="text-[12px] text-[rgba(0,0,0,0.4)]">
-                    {messageContent.length}/500
-                  </span>
-                </div>
               </div>
 
-              {/* 按钮 */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-[rgba(0,0,0,0.1)]">
+              {/* 操作按钮 */}
+              <div className="flex justify-end gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => setShowMessageDialog(false)}
-                  className="border-[rgba(0,0,0,0.1)] text-[13px]"
+                  onClick={() => {
+                    setShowMessageDialog(false);
+                    setSelectedTags([]);
+                    setMessageContent('');
+                  }}
                 >
                   取消
                 </Button>
-                <Button
-                  className="bg-blue-400 hover:bg-blue-500 text-white text-[13px]"
-                  onClick={handleSendMessage}
-                  disabled={selectedTags.length === 0 || !messageContent.trim()}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  发送消息
+                <Button onClick={handleSendMessage}>
+                  <Send className="h-4 w-4 mr-2" />
+                  发送
                 </Button>
               </div>
             </div>
@@ -559,155 +553,4 @@ export default function AdminMessagesPage() {
       </div>
     </AdminLayout>
   );
-
-  function renderApplicationList(statusFilter: 'all' | 'pending' | 'approved' | 'rejected') {
-    let listToRender: Application[];
-
-    if (statusFilter === 'pending') {
-      // 待审批列表：筛选状态为pending，然后应用搜索和排序
-      listToRender = applications
-        .filter(app => app.status === 'pending')
-        .filter(app => {
-          const matchesSearch = app.applicantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                               (app.applicantCompany || '').toLowerCase().includes(searchTerm.toLowerCase());
-          return matchesSearch;
-        })
-        .sort((a, b) => {
-          if (!timeSort) return 0;
-          const dateA = new Date(a.applyTime).getTime();
-          const dateB = new Date(b.applyTime).getTime();
-          return timeSort === 'asc' ? dateA - dateB : dateB - dateA;
-        });
-    } else {
-      // 其他列表使用filteredApplications
-      listToRender = filteredApplications;
-    }
-
-    if (listToRender.length === 0) {
-      return (
-        <div className="text-center py-12 bg-[rgba(0,0,0,0.02)] border border-dashed border-[rgba(0,0,0,0.1)]">
-          <MessageSquare className="w-12 h-12 text-[rgba(0,0,0,0.2)] mx-auto mb-3" />
-          <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
-            暂无相关申请
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-3">
-        {listToRender.map((application) => {
-          const config = typeConfig[application.type];
-          const Icon = config.icon;
-          
-          return (
-            <div
-              key={application.id}
-              className="bg-white border border-[rgba(0,0,0,0.08)] p-4 space-y-3"
-            >
-              {/* 申请头部 */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3 flex-1">
-                  {/* 类型图标 */}
-                  <div className={`w-10 h-10 ${config.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-
-                  {/* 申请信息 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-[13px] font-medium text-gray-900">
-                        {application.applicantName}
-                      </span>
-                      {application.applicantCompany && (
-                        <>
-                          <span className="text-[rgba(0,0,0,0.3)]">·</span>
-                          <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                            {application.applicantCompany}
-                          </span>
-                        </>
-                      )}
-                      {application.applicantPosition && (
-                        <>
-                          <span className="text-[rgba(0,0,0,0.3)]">·</span>
-                          <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                            {application.applicantPosition}
-                          </span>
-                        </>
-                      )}
-                    </div>
-
-                    {/* 申请类型和目标 */}
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Badge className={`text-[11px] font-normal ${config.color}`}>
-                        {config.label}
-                      </Badge>
-                      {application.targetName && (
-                        <>
-                          <ChevronRight className="w-3 h-3 text-[rgba(0,0,0,0.3)]" />
-                          <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                            {application.targetName}
-                          </span>
-                        </>
-                      )}
-                    </div>
-
-                    {/* 申请理由 */}
-                    <p className="text-[13px] text-[rgba(0,0,0,0.6)] line-clamp-2">
-                      {application.reason}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 时间和状态 */}
-                <div className="text-right ml-4">
-                  <div className="flex items-center justify-end space-x-1 mb-2">
-                    <Clock className="w-3 h-3 text-[rgba(0,0,0,0.4)]" />
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      {application.applyTime}
-                    </span>
-                  </div>
-                  <Badge
-                    className={`text-[11px] font-normal ${
-                      application.status === 'pending'
-                        ? 'bg-yellow-50 text-yellow-600'
-                        : application.status === 'approved'
-                        ? 'bg-green-50 text-green-600'
-                        : 'bg-red-50 text-red-600'
-                    }`}
-                  >
-                    {application.status === 'pending' && '待审批'}
-                    {application.status === 'approved' && '已通过'}
-                    {application.status === 'rejected' && '已拒绝'}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* 操作按钮 */}
-              {application.status === 'pending' && (
-                <div className="flex items-center justify-end space-x-3 pt-3 border-t border-[rgba(0,0,0,0.05)]">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleReject(application.id)}
-                    className="border-red-400 text-red-600 hover:bg-red-50 text-[12px]"
-                  >
-                    <XCircle className="w-3 h-3 mr-1" />
-                    拒绝
-                  </Button>
-                  <Button
-                    className="bg-blue-400 hover:bg-blue-500 text-white text-[12px]"
-                    onClick={() => handleApprove(application.id)}
-                  >
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    通过
-                  </Button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
 }

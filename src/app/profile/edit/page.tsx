@@ -548,8 +548,9 @@ function ProfileEditContent() {
             industry: profile.industry,
             need: profile.declaration,
             bio: profile.declaration,
-            ability_tags: selectedAbilityTags,
+            hardcore_tags: selectedAbilityTags,
             resource_tags: selectedResources,
+            tag_stamp: tagStamp,
           }),
         });
 

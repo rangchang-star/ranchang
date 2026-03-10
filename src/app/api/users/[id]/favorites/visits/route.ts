@@ -1,239 +1,181 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MockDatabase } from '@/lib/mock-database';
-import { requireAuth, requireOwnership } from '@/lib/auth-utils';
 
-// 用户收藏数据存储（模拟数据库）
-// Map<userId, Array<{userId, visitId, createdAt}>>
-const userFavorites: Map<string, { userId: string; visitId: string; createdAt: string }[]> = new Map();
-
-// 初始化模拟数据
-const getMockFavorites = (userId: string) => {
-  if (!userFavorites.has(userId)) {
-    userFavorites.set(userId, [
-      {
-        userId,
-        visitId: '1',
-        createdAt: new Date().toISOString(),
-      },
-      {
-        userId,
-        visitId: '2',
-        createdAt: new Date().toISOString(),
-      },
-    ]);
-  }
-  return userFavorites.get(userId) || [];
-};
-
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id: userId } = await params;
+    const params = await context.params;
+    const userId = params.id;
 
-    // 验证用户登录状态和权限
-    const authResult = await requireOwnership(request, parseInt(userId));
-
-    if (!authResult.success) {
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
       return NextResponse.json({
         success: false,
-        error: authResult.error,
-      }, { status: authResult.statusCode || 401 });
+        error: '数据库未配置'
+      }, { status: 500 });
     }
 
-    // 获取用户收藏列表
-    const favorites = getMockFavorites(userId);
+    const { db, favorites, visits } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-    // 根据 visitId 获取真实的探访项目数据
-    const favoritesWithVisit = favorites.map((fav, index) => {
-      const visit = MockDatabase.getVisitById(fav.visitId);
-      return {
-        id: `${userId}-${fav.visitId}-${index}`,
-        userId: userId,
-        visitId: fav.visitId,
-        createdAt: fav.createdAt,
-        visit: visit ? {
-          id: visit.id,
-          title: visit.title,
-          image: visit.image,
-          date: visit.date,
-          industry: visit.industry,
-          tags: visit.tags,
-          role: '探访人',
-        } : null,
-      };
-    }).filter(fav => fav.visit !== null);
+    // 获取用户收藏的探访
+    const userFavorites = await db.select()
+      .from(favorites)
+      .where(eq(favorites.user_id, parseInt(userId)));
+
+    if (userFavorites.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+        total: 0,
+      });
+    }
+
+    // 获取完整的探访信息
+    const visitIds = userFavorites.map(fav => fav.visit_id);
+    const visitsResult: any[] = [];
+
+    for (const visitId of visitIds) {
+      const visitData = await db.select().from(visits).where(eq(visits.id, visitId));
+      if (visitData.length > 0) {
+        visitsResult.push(visitData[0]);
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      data: favoritesWithVisit,
+      data: visitsResult,
+      total: visitsResult.length,
     });
-  } catch (error) {
-    console.error('获取收藏列表失败:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: '获取收藏列表失败',
-      },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    console.error('获取收藏的探访失败:', error);
+    return NextResponse.json({
+      success: false,
+      error: '获取收藏的探访失败'
+    }, { status: 500 });
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id: userId } = await params;
-    const body = await request.json();
-    const { visitId } = body;
-
-    // 验证用户登录状态和权限
-    const authResult = await requireOwnership(request, parseInt(userId));
-
-    if (!authResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: authResult.error,
-        },
-        { status: authResult.statusCode || 401 }
-      );
-    }
+    const params = await context.params;
+    const userId = params.id;
+    const { visitId } = await request.json();
 
     if (!visitId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: '缺少探访项目ID',
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        success: false,
+        error: '请提供探访ID'
+      }, { status: 400 });
     }
 
-    // 验证探访项目是否存在
-    const visit = MockDatabase.getVisitById(visitId);
-    if (!visit) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: '探访项目不存在',
-        },
-        { status: 404 }
-      );
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
     }
 
-    // 获取当前收藏列表
-    const favorites = getMockFavorites(userId);
+    const { db, favorites, visits } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
 
-    // 检查是否已收藏
-    if (favorites.some(fav => fav.visitId === visitId)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: '已经收藏过该探访项目',
-        },
-        { status: 400 }
+    // 验证探访是否存在
+    const visitData = await db.select().from(visits).where(eq(visits.id, parseInt(visitId)));
+    if (visitData.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: '探访不存在'
+      }, { status: 404 });
+    }
+
+    // 检查是否已经收藏
+    const existing = await db.select()
+      .from(favorites)
+      .where(
+        (await import('drizzle-orm')).and(
+          eq(favorites.user_id, parseInt(userId)),
+          eq(favorites.visit_id, parseInt(visitId))
+        )
       );
+
+    if (existing.length > 0) {
+      return NextResponse.json({
+        success: false,
+        error: '已经收藏过该探访'
+      }, { status: 400 });
     }
 
     // 添加收藏
-    const newFavorite = {
-      userId,
-      visitId,
-      createdAt: new Date().toISOString(),
-    };
-
-    favorites.push(newFavorite);
-    userFavorites.set(userId, favorites);
+    const result = await db.insert(favorites).values({
+      user_id: parseInt(userId),
+      visit_id: parseInt(visitId),
+      created_at: new Date(),
+    }).returning();
 
     return NextResponse.json({
       success: true,
       message: '收藏成功',
-      data: {
-        id: `${userId}-${visitId}-${Date.now()}`,
-        userId,
-        visitId,
-        createdAt: newFavorite.createdAt,
-      },
+      data: result[0]
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('添加收藏失败:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: '添加收藏失败',
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: '添加收藏失败'
+    }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const { id: userId } = await params;
-    const body = await request.json();
-    const { visitId } = body;
-
-    // 验证用户登录状态和权限
-    const authResult = await requireOwnership(request, parseInt(userId));
-
-    if (!authResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: authResult.error,
-        },
-        { status: authResult.statusCode || 401 }
-      );
-    }
+    const params = await context.params;
+    const userId = params.id;
+    const { searchParams } = new URL(request.url);
+    const visitId = searchParams.get('visitId');
 
     if (!visitId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: '缺少探访项目ID',
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        success: false,
+        error: '请提供探访ID'
+      }, { status: 400 });
     }
 
-    // 获取当前收藏列表
-    const favorites = getMockFavorites(userId);
-
-    // 检查是否已收藏
-    const index = favorites.findIndex(fav => fav.visitId === visitId);
-    if (index === -1) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: '未收藏该探访项目',
-        },
-        { status: 400 }
-      );
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
     }
+
+    const { db, favorites } = await import('@/storage/database/supabase/connection');
+    const { eq, and } = await import('drizzle-orm');
 
     // 移除收藏
-    favorites.splice(index, 1);
-    userFavorites.set(userId, favorites);
+    const result = await db.delete(favorites)
+      .where(
+        and(
+          eq(favorites.user_id, parseInt(userId)),
+          eq(favorites.visit_id, parseInt(visitId))
+        )
+      )
+      .returning();
+
+    if (result.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: '收藏不存在'
+      }, { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,
-      message: '取消收藏成功',
+      message: '取消收藏成功'
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('取消收藏失败:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: '取消收藏失败',
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: '取消收藏失败'
+    }, { status: 500 });
   }
 }

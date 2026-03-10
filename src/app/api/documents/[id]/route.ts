@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MockDatabase } from '@/lib/mock-database';
 import { requireAdmin } from '@/lib/auth-utils';
 
 // GET - 获取文档详情
@@ -10,9 +9,20 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const document = MockDatabase.getDocumentById(id);
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
 
-    if (!document) {
+    const { db, documents } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
+
+    const result = await db.select().from(documents).where(eq(documents.id, parseInt(id)));
+
+    if (result.length === 0) {
       return NextResponse.json({
         success: false,
         error: '文档不存在'
@@ -21,7 +31,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: document
+      data: result[0]
     });
   } catch (error: any) {
     console.error('获取文档详情失败:', error);
@@ -52,16 +62,31 @@ export async function PUT(
 
     const body = await request.json();
 
-    const updatedDocument = MockDatabase.updateDocument(id, {
-      title: body.title,
-      description: body.description,
-      fileUrl: body.fileUrl,
-      fileType: body.fileType,
-      fileSize: body.fileSize,
-      category: body.category,
-    });
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
 
-    if (!updatedDocument) {
+    const { db, documents } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
+
+    const result = await db.update(documents)
+      .set({
+        title: body.title,
+        description: body.description,
+        file_url: body.fileUrl,
+        file_type: body.fileType,
+        file_size: body.fileSize,
+        category: body.category,
+        updated_at: new Date(),
+      })
+      .where(eq(documents.id, parseInt(id)))
+      .returning();
+
+    if (result.length === 0) {
       return NextResponse.json({
         success: false,
         error: '文档不存在'
@@ -71,7 +96,7 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       message: '文档更新成功',
-      data: updatedDocument
+      data: result[0]
     });
   } catch (error: any) {
     console.error('更新文档失败:', error);
@@ -100,9 +125,22 @@ export async function DELETE(
       }, { status: authResult.statusCode || 403 });
     }
 
-    const success = MockDatabase.deleteDocument(id);
+    // 检查是否配置了数据库连接
+    if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '') {
+      return NextResponse.json({
+        success: false,
+        error: '数据库未配置'
+      }, { status: 500 });
+    }
 
-    if (!success) {
+    const { db, documents } = await import('@/storage/database/supabase/connection');
+    const { eq } = await import('drizzle-orm');
+
+    const result = await db.delete(documents)
+      .where(eq(documents.id, parseInt(id)))
+      .returning();
+
+    if (result.length === 0) {
       return NextResponse.json({
         success: false,
         error: '文档不存在'
