@@ -509,7 +509,6 @@ function ProfileEditContent() {
     }
 
     // 防重复提交检查
-    const submitKey = `profile-submit-${Date.now()}`;
     if (sessionStorage.getItem('profile-submitting') === 'true') {
       alert('正在保存中，请勿重复提交');
       return;
