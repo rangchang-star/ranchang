@@ -30,7 +30,9 @@ export const users = pgTable('users', {
   hardcore_tags: jsonb('hardcore_tags'),
   gender: varchar('gender', { length: 10 }),
   company_scale: varchar('company_scale', { length: 50 }),
-});
+}, (table) => ({
+  // 可以在这里添加索引
+}));
 
 // ============================================================
 // 活动表

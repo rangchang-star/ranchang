@@ -24,6 +24,11 @@ const client = postgres(connectionString, {
   connection: {
     application_name: 'ran-field-app',
   },
+  onconnect: async (connection) => {
+    // 设置 search_path 为 public
+    await connection.unsafe("SET search_path = public");
+    console.log('已设置 search_path = public');
+  },
 });
 
 // 调试：打印当前连接的数据库
