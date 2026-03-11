@@ -18,14 +18,21 @@
 export interface User {
   id: string;
   name: string;              // 必有值（服务层提供默认值）
+  nickname?: string;         // 昵称（可选）
   email: string;             // 必有值
   avatar: string;            // 必有值（默认头像）
   age: number | null;        // 可为空
-  company: string | null;    // 可为空
-  position: string | null;   // 可为空
+  bio?: string;              // 个人简介（可选）
+  password?: string;         // 密码（仅用于注册/登录，可选）
   phone: string | null;      // 可为空
   gender: string | null;     // 可为空
+  company: string | null;    // 可为空
+  position: string | null;   // 可为空
   companyScale: string | null; // 可为空
+  connectionType?: string | null; // 连接类型（可选）
+  industry?: string | null;   // 行业（可选）
+  need?: string | null;       // 需求描述（可选）
+  tagStamp?: string | null;   // 标签戳（可选）
   tags: string[];            // 必有值（默认空数组）
   hardcoreTags: string[];    // 必有值（默认空数组）
   abilityTags: string[];     // 必有值（默认空数组）
@@ -82,6 +89,7 @@ export interface Declaration {
   isFeatured: boolean;       // 必有值
   createdAt: Date;           // 必有值
   updatedAt: Date;           // 必有值
+  creator?: User;            // 创建者信息（可选）
 }
 
 // ============================================================

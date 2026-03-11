@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCode } from '../send-code/route';
+import { verifyCode } from '@/lib/auth-code-utils';
 
 // 简单的 JWT 生成（生产环境应使用 jsonwebtoken 库）
 function generateToken(userId: number): string {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = dbUsers[0];
+    const user = dbUsers[0] as any; // 类型断言以支持 password 字段
 
     // 密码登录时验证密码
     if (loginType === 'password') {
@@ -94,8 +94,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 生成 token（user.id 是 integer）
-    const token = generateToken(user.id);
+    // 生成 token（user.id 可能是 string 或 number）
+    const userId = typeof user.id === 'number' ? user.id : parseInt(user.id);
+    const token = generateToken(userId);
 
     // 返回用户信息（排除敏感信息）
     const { password: pwd, ...safeUser } = user;

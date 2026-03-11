@@ -162,7 +162,7 @@ export function ProfileEditContent() {
       companyName: user.company || '',
       companyScale: user.companyScale || mockUserProfile.companyScale,
       companyPosition: user.position || '',
-      purpose: getPurposeFromTagStamp(user.tagStamp),
+      purpose: getPurposeFromTagStamp(user.tagStamp || undefined),
       industry: user.industry || mockUserProfile.industry,
       industryTags: user.abilityTags || mockUserProfile.industryTags, // 从 user.abilityTags 加载行业标签
       resources: user.resourceTags || mockUserProfile.resources,

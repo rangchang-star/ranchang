@@ -1,37 +1,13 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-
-// 用户信息类型（与新API保持一致）
-export interface User {
-  id: string;
-  name: string;
-  age: number;
-  avatar: string;
-  phone: string;
-  email: string;
-  connectionType: string;
-  industry: string;
-  need: string;
-  abilityTags: string[];
-  resourceTags: string[];
-  level: string;
-  company: string;
-  position: string;
-  status: string;
-  isFeatured: boolean;
-  joinDate: string;
-  lastLogin: string;
-  createdAt: string;
-  updatedAt: string;
-  tagStamp: string;
-  hardcoreTags: string[];
-  gender: string;
-  companyScale: string;
-}
+import type { User } from '@/lib/services/types'; // 使用统一的 User 类型
 
 interface AuthContextType {
   user: User | null;
+  setUser: (user: User | null) => void;  // 添加 setUser
+  setUserRole: (role: string) => void;   // 添加 setUserRole
+  isAdmin: boolean;                      // 添加 isAdmin
   isAuthenticated: boolean;
   isLoggedIn: boolean;
   isLoading: boolean;
@@ -44,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [userRole, setUserRole] = useState<string>('user'); // 添加用户角色状态
   const [isLoading, setIsLoading] = useState(true);
 
   // 从 localStorage 加载用户信息
@@ -51,12 +28,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const loadUserFromStorage = () => {
       try {
         const storedUser = localStorage.getItem('currentUser');
+        const storedRole = localStorage.getItem('userRole');
         if (storedUser) {
           setUser(JSON.parse(storedUser));
+        }
+        if (storedRole) {
+          setUserRole(storedRole);
         }
       } catch (error) {
         console.error('加载用户信息失败:', error);
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('userRole');
       } finally {
         setIsLoading(false);
       }
@@ -94,7 +76,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 用户登出
   const logout = useCallback(() => {
     setUser(null);
+    setUserRole('user');  // 重置角色
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('userRole');
   }, []);
 
   // 刷新用户信息
@@ -114,8 +98,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
+  // 设置用户角色
+  const handleSetUserRole = useCallback((role: string) => {
+    setUserRole(role);
+    localStorage.setItem('userRole', role);
+  }, []);
+
   const value: AuthContextType = {
     user,
+    setUser,                          // 添加 setUser
+    setUserRole: handleSetUserRole,   // 添加 setUserRole
+    isAdmin: userRole === 'admin',   // 添加 isAdmin
     isAuthenticated: !!user,
     isLoggedIn: !!user,
     isLoading,

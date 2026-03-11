@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// 简单的内存存储（生产环境应使用 Redis）
-const codeStore = new Map<string, { code: string; expiresAt: number; count: number }>();
+import { storeCode, cleanupExpiredCodes } from '@/lib/auth-code-utils';
 
 // 频率限制
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
@@ -43,18 +41,10 @@ export async function POST(request: NextRequest) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
 
     // 存储验证码（60秒有效期）
-    codeStore.set(phone, {
-      code,
-      expiresAt: now + 60000,
-      count: (codeStore.get(phone)?.count || 0) + 1,
-    });
+    storeCode(phone, code);
 
     // 清理过期的验证码
-    for (const [key, value] of codeStore.entries()) {
-      if (now > value.expiresAt) {
-        codeStore.delete(key);
-      }
-    }
+    cleanupExpiredCodes();
 
     // 在开发环境打印验证码到日志
     console.log(`[${type}] 验证码: ${code}, 手机号: ${phone}, 有效期: 60秒`);
@@ -75,25 +65,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-// 导出验证码验证函数（供其他接口使用）
-export function verifyCode(phone: string, code: string): boolean {
-  const stored = codeStore.get(phone);
-  if (!stored) {
-    return false;
-  }
-
-  if (Date.now() > stored.expiresAt) {
-    codeStore.delete(phone);
-    return false;
-  }
-
-  if (stored.code !== code) {
-    return false;
-  }
-
-  // 验证成功后删除验证码
-  codeStore.delete(phone);
-  return true;
 }

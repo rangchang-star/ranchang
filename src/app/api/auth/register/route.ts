@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCode } from '../send-code/route';
+import { verifyCode } from '@/lib/auth-code-utils';
 
 // 简单的 JWT 生成（生产环境应使用 jsonwebtoken 库）
 function generateToken(userId: number): string {
@@ -57,7 +57,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 创建新用户（ID 由数据库自增生成）
-    const result = await db.insert(users).values({
+    // 使用类型断言以支持 password 等字段
+    const insertData: any = {
       phone,
       password: password || '',
       name: nickname || '',
@@ -81,14 +82,15 @@ export async function POST(request: NextRequest) {
       status: 'active',
       created_at: new Date(),
       updated_at: new Date(),
-    }).returning();
-
-    const newUser = result[0];
+    };
+    const result = await db.insert(users).values(insertData as any).returning();
+    const newUser = result[0] as any; // 类型断言
 
     console.log('新用户注册:', { phone, nickname, userId: newUser.id });
 
-    // 生成 token（user.id 是 integer）
-    const token = generateToken(newUser.id);
+    // 生成 token（user.id 可能是 string 或 number）
+    const userId = typeof newUser.id === 'number' ? newUser.id : parseInt(newUser.id);
+    const token = generateToken(userId);
 
     // 返回用户信息
     const { password: pwd, ...safeUser } = newUser;
