@@ -290,18 +290,18 @@ export default function DeclarationDetailPage() {
             {/* 创作者信息 */}
             <div className="flex items-center space-x-3 p-4 bg-[rgba(0,0,0,0.02)]">
               <Avatar className="w-12 h-12">
-                <AvatarImage src={declaration.creator.avatar} alt={declaration.creator.name} />
-                <AvatarFallback>{declaration.creator.name[0]}</AvatarFallback>
+                <AvatarImage src={declaration.creator?.avatar || '/default-avatar.png'} alt={declaration.creator?.name || '用户'} />
+                <AvatarFallback>{declaration.creator?.name?.[0] || 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-gray-900">
-                  {declaration.creator.name}
+                  {declaration.creator?.name || '未知用户'}
                 </div>
                 <div className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                  {declaration.creator.industry}
+                  {declaration.creator?.industry || ''}
                 </div>
                 <div className="flex items-center space-x-1 mt-1">
-                  {declaration.creator.tags.map((tag: string) => (
+                  {declaration.creator?.tags?.map((tag: string) => (
                     <span
                       key={tag}
                       className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]"
