@@ -43,9 +43,9 @@ function isValidResource(resource: string): boolean {
   return VALID_RESOURCES.includes(resource);
 }
 
-// 资源名称映射：前端请求的资源名 -> 实际数据库表名（包含 schema）
+// 资源名称映射：前端请求的资源名 -> 实际数据库表名（不包含 schema）
 const RESOURCE_NAME_MAPPING: Record<string, string> = {
-  'users': 'app.app_users',  // 前端使用 /api/users，后端操作 app.app_users 表
+  'users': 'app_users',  // 前端使用 /api/users，后端操作 public.app_users 表（public 是默认 schema）
 };
 
 // 应用资源名称映射
@@ -95,14 +95,14 @@ export async function GET(
 
     // 查询总数
     const countResult = await client.unsafe(
-      `SELECT COUNT(*) as total FROM "${actualTableName}" ${whereClause}`,
+      `SELECT COUNT(*) as total FROM ${actualTableName} ${whereClause}`,
       params2
     );
     const total = parseInt(countResult[0].total);
 
     // 查询数据
     const dataResult = await client.unsafe(
-      `SELECT * FROM "${actualTableName}" ${whereClause} ORDER BY "${orderBy}" ${order} LIMIT $${conditions.length + 1} OFFSET $${conditions.length + 2}`,
+      `SELECT * FROM ${actualTableName} ${whereClause} ORDER BY ${orderBy} ${order} LIMIT $${conditions.length + 1} OFFSET $${conditions.length + 2}`,
       [...params2, limit, offset]
     );
 
@@ -162,7 +162,7 @@ export async function POST(
     const columns = fields.map(f => `"${f}"`).join(', ');
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
 
-    const insertSql = `INSERT INTO "${actualTableName}" (${columns}) VALUES (${placeholders}) RETURNING *`;
+    const insertSql = `INSERT INTO ${actualTableName} (${columns}) VALUES (${placeholders}) RETURNING *`;
     console.log('执行 SQL:', insertSql);
 
     const result = await client.unsafe(insertSql, values as any[]);

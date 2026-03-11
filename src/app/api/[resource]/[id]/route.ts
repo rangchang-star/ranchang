@@ -36,16 +36,16 @@ function toSnakeCase(obj: any): any {
 
 // 字段映射：前端字段名 -> 数据库实际列名
 const FIELD_MAPPINGS: Record<string, Record<string, string>> = {
-  'app.app_users': {
+  'app_users': {
     nick_name: 'name',
     occupation: 'company',
     location: 'company_scale', // 将 location 映射到 company_scale
   }
 };
 
-// 资源名称映射：前端请求的资源名 -> 实际数据库表名（包含 schema）
+// 资源名称映射：前端请求的资源名 -> 实际数据库表名（不包含 schema）
 const RESOURCE_NAME_MAPPING: Record<string, string> = {
-  'users': 'app.app_users',  // 前端使用 /api/users，后端操作 app.app_users 表
+  'users': 'app_users',  // 前端使用 /api/users，后端操作 public.app_users 表（public 是默认 schema）
 };
 
 // 应用资源名称映射
@@ -117,7 +117,7 @@ export async function GET(
 
   try {
     const result = await client.unsafe(
-      `SELECT * FROM "${actualTableName}" WHERE id = $1`,
+      `SELECT * FROM ${actualTableName} WHERE id = $1`,
       [id]
     );
 
@@ -185,7 +185,7 @@ export async function PUT(
       }
     }).join(', ');
 
-    const updateSql = `UPDATE "${actualTableName}" SET ${setClause} WHERE id = $1 RETURNING *`;
+    const updateSql = `UPDATE ${actualTableName} SET ${setClause} WHERE id = $1 RETURNING *`;
     console.log('执行 SQL:', updateSql);
 
     const result = await client.unsafe(updateSql, [id]);
@@ -229,7 +229,7 @@ export async function DELETE(
 
   try {
     const result = await client.unsafe(
-      `DELETE FROM "${actualTableName}" WHERE id = $1 RETURNING *`,
+      `DELETE FROM ${actualTableName} WHERE id = $1 RETURNING *`,
       [id]
     );
 
