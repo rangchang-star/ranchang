@@ -1,7 +1,7 @@
 /**
- * 数据服务层类型定义
+ * 服务层类型定义
  *
- * 这里定义所有前端需要的数据格式，确保：
+ * 这里定义前端需要的数据格式，确保：
  * 1. 所有可选字段都有明确的 null 标记
  * 2. 所有可能为空的字段都有默认值策略
  * 3. 字段名统一使用 camelCase
@@ -38,33 +38,6 @@ export interface User {
   updatedAt: Date | null;    // 可为空
 }
 
-/**
- * API 返回的原始用户数据格式
- */
-export interface RawUser {
-  id: string;
-  name: string;
-  email: string | null;
-  avatar: string | null;
-  age: number | null;
-  company: string | null;
-  position: string | null;
-  phone: string | null;
-  gender: string | null;
-  company_scale: string | null;
-  tags: string[] | null;
-  hardcore_tags: string[] | null;
-  ability_tags: any | null;
-  resource_tags: any | null;
-  status: string | null;
-  is_featured: boolean | null;
-  join_date: string | null;
-  last_login: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  [key: string]: any;
-}
-
 // ============================================================
 // 活动类型
 // ============================================================
@@ -90,28 +63,6 @@ export interface Activity {
   updatedAt: Date;           // 必有值
 }
 
-/**
- * API 返回的原始活动数据格式
- */
-export interface RawActivity {
-  id: number;
-  title: string;
-  subtitle: string | null;
-  category: string | null;
-  description: string | null;
-  image: string | null;
-  address: string | null;
-  start_date: string;
-  end_date: string;
-  capacity: number | null;
-  tea_fee: number | null;
-  status: string | null;
-  created_by: number | null;
-  created_at: string;
-  updated_at: string;
-  [key: string]: any;
-}
-
 // ============================================================
 // 宣告类型
 // ============================================================
@@ -131,24 +82,6 @@ export interface Declaration {
   isFeatured: boolean;       // 必有值
   createdAt: Date;           // 必有值
   updatedAt: Date;           // 必有值
-}
-
-/**
- * API 返回的原始宣告数据格式
- */
-export interface RawDeclaration {
-  id: string;
-  user_id: string;
-  direction: string | null;
-  text: string;
-  summary: string | null;
-  audio_url: string | null;
-  views: number | null;
-  date: string;
-  is_featured: boolean | null;
-  created_at: string;
-  updated_at: string;
-  [key: string]: any;
 }
 
 // ============================================================
@@ -179,42 +112,14 @@ export interface Settings {
     music: string;
     bgImage: string;
   };
-  [key: string]: any;
-}
-
-/**
- * API 返回的原始设置数据格式
- */
-export interface RawSettings {
-  id: number;
-  key: string;
-  value: any;
-  updated_at: string;
-  [key: string]: any;
 }
 
 // ============================================================
-// API 响应类型
+// 分页查询参数
 // ============================================================
 
-/**
- * 统一的 API 响应格式
- */
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-/**
- * 分页查询参数
- */
 export interface PaginationParams {
   page?: number;
   limit?: number;
+  offset?: number;
 }

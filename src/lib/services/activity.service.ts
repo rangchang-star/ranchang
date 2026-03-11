@@ -1,173 +1,261 @@
 /**
  * 活动服务
  *
- * 功能：
- * 1. 统一的活动数据获取
- * 2. 数据格式转换（API → 前端）
- * 3. 默认值处理（防止 undefined）
+ * 提供活动数据的 CRUD 操作
+ * 所有数据格式统一为前端需要的 camelCase 格式
  */
 
-import { fetchApi, postApi, putApi, deleteApi, apiClient } from '@/lib/api/client';
-import type { Activity, RawActivity, PaginationParams } from '@/lib/services/types';
-
-// ============================================================
-// 数据转换函数
-// ============================================================
+import { db, activities } from '@/lib/db';
+import { eq, desc, and, sql, or, like } from 'drizzle-orm';
+import { Activity } from './types';
+import { withDefault, parseDate } from './utils';
 
 /**
- * 将原始活动数据转换为前端格式
+ * 转换活动数据（从数据库格式到前端格式）
  */
-function transformActivity(raw: RawActivity): Activity {
+function transformActivity(data: any): Activity {
   return {
-    id: raw.id.toString(),
-    title: raw.title || '未命名活动',
-    subtitle: raw.subtitle || '',
-    category: raw.category || '其他',
-    description: raw.description || '',
-    image: raw.image || '/default-activity.jpg',
-    address: raw.address || '待定',
-    startDate: new Date(raw.start_date),
-    endDate: new Date(raw.end_date),
-    capacity: raw.capacity || 0,
-    teaFee: raw.tea_fee || 0,
-    status: raw.status || 'draft',
-    createdBy: raw.created_by?.toString() || '',
-    createdAt: new Date(raw.created_at),
-    updatedAt: new Date(raw.updated_at),
+    id: data.id,
+    title: withDefault(data.title, ''),
+    subtitle: withDefault(data.subtitle, ''),
+    category: withDefault(data.type, '其他'),
+    description: withDefault(data.description, ''),
+    image: withDefault(data.cover_image, '/default-activity.png'),
+    address: withDefault(data.location, ''),
+    startDate: parseDate(data.date) || new Date(),
+    endDate: parseDate(data.date) || new Date(),
+    capacity: withDefault(data.capacity, 0),
+    teaFee: withDefault(data.tea_fee, 0),
+    status: withDefault(data.status, 'pending'),
+    createdBy: withDefault(data.created_by, ''),
+    createdAt: parseDate(data.created_at) || new Date(),
+    updatedAt: parseDate(data.updated_at) || new Date(),
   };
 }
 
-// ============================================================
-// 活动服务类
-// ============================================================
-
-export class ActivityService {
-  /**
-   * 获取单个活动
-   */
-  static async getById(id: string | number): Promise<Activity | null> {
-    try {
-      const response = await fetchApi<RawActivity>(`/activities/${id}`);
-      if (response.success && response.data) {
-        return transformActivity(response.data);
-      }
-      return null;
-    } catch (error) {
-      console.error(`获取活动 ${id} 失败:`, error);
+/**
+ * 获取单个活动
+ */
+export async function getActivityById(id: string): Promise<Activity | null> {
+  try {
+    const result = await db.select().from(activities).where(eq(activities.id, id)).limit(1);
+    
+    if (result.length === 0) {
+      console.warn(`活动不存在: ${id}`);
       return null;
     }
+
+    return transformActivity(result[0]);
+  } catch (error) {
+    console.error('获取活动失败:', error);
+    return null;
   }
+}
 
-  /**
-   * 获取活动列表
-   */
-  static async getList(params?: PaginationParams & {
-    status?: string;
-    category?: string;
-  }): Promise<{ activities: Activity[]; total: number }> {
-    try {
-      const queryParams = apiClient.buildQueryParams({
-        page: params?.page || 1,
-        limit: params?.limit || 10,
-        status: params?.status,
-        category: params?.category,
-      });
+/**
+ * 获取所有活动（分页）
+ */
+export async function getActivities(options?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  status?: string;
+  search?: string;
+}): Promise<{ activities: Activity[]; total: number }> {
+  try {
+    const page = options?.page || 1;
+    const limit = options?.limit || 10;
+    const offset = (page - 1) * limit;
 
-      const response = await fetchApi<RawActivity[]>(
-        `/activities?${queryParams}`
+    // 构建查询条件
+    const conditions = [];
+    if (options?.category) {
+      conditions.push(eq(activities.type, options.category));
+    }
+    if (options?.status) {
+      conditions.push(eq(activities.status, options.status));
+    }
+    if (options?.search) {
+      conditions.push(
+        or(
+          like(activities.title, `%${options.search}%`),
+          like(activities.description, `%${options.search}%`)
+        )!
       );
-
-      if (response.success && response.data) {
-        const activities = response.data.map(transformActivity);
-        return {
-          activities,
-          total: response.pagination?.total || 0,
-        };
-      }
-
-      return { activities: [], total: 0 };
-    } catch (error) {
-      console.error('获取活动列表失败:', error);
-      return { activities: [], total: 0 };
     }
+
+    // 获取数据
+    const result = await db
+      .select()
+      .from(activities)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(activities.date))
+      .limit(limit)
+      .offset(offset);
+
+    // 获取总数
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(activities)
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+    return {
+      activities: result.map(transformActivity),
+      total: Number(count),
+    };
+  } catch (error) {
+    console.error('获取活动列表失败:', error);
+    return { activities: [], total: 0 };
   }
+}
 
-  /**
-   * 获取活跃的活动
-   */
-  static async getActive(limit: number = 10): Promise<Activity[]> {
-    const result = await this.getList({ status: 'active', limit });
-    return result.activities;
+/**
+ * 获取热门活动
+ */
+export async function getFeaturedActivities(limit: number = 10): Promise<Activity[]> {
+  try {
+    const result = await db
+      .select()
+      .from(activities)
+      .where(eq(activities.status, 'active'))
+      .orderBy(desc(activities.created_at))
+      .limit(limit);
+
+    return result.map(transformActivity);
+  } catch (error) {
+    console.error('获取热门活动失败:', error);
+    return [];
   }
+}
 
-  /**
-   * 创建活动
-   */
-  static async create(data: Partial<Activity>): Promise<Activity | null> {
-    try {
-      // 转换为 snake_case 格式
-      const createData: any = {};
-      if (data.title) createData.title = data.title;
-      if (data.subtitle) createData.subtitle = data.subtitle;
-      if (data.category) createData.category = data.category;
-      if (data.description) createData.description = data.description;
-      if (data.image) createData.image = data.image;
-      if (data.address) createData.address = data.address;
-      if (data.startDate) createData.date = data.startDate.toISOString();
-      if (data.capacity) createData.capacity = data.capacity;
-      if (data.status) createData.status = data.status;
-      if (data.createdBy) createData.createdBy = parseInt(data.createdBy);
+/**
+ * 获取活动分类列表
+ */
+export async function getActivityCategories(): Promise<string[]> {
+  try {
+    const result = await db
+      .select({ category: activities.type })
+      .from(activities)
+      .groupBy(activities.type);
 
-      const response = await postApi<RawActivity>('/activities', createData);
+    return result
+      .map(r => r.category)
+      .filter((c): c is string => Boolean(c));
+  } catch (error) {
+    console.error('获取活动分类失败:', error);
+    return [];
+  }
+}
 
-      if (response.success && response.data) {
-        return transformActivity(response.data);
-      }
-      return null;
-    } catch (error) {
-      console.error('创建活动失败:', error);
+/**
+ * 创建活动
+ */
+export async function createActivity(activityData: Partial<Activity>): Promise<Activity | null> {
+  try {
+    const result = await db
+      .insert(activities)
+      .values({
+        id: activityData.id,
+        title: activityData.title || '',
+        description: activityData.description || '',
+        date: activityData.startDate || new Date(),
+        start_time: activityData.startDate?.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+        end_time: activityData.endDate?.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+        location: activityData.address || '',
+        capacity: activityData.capacity,
+        type: activityData.category || '其他',
+        cover_image: activityData.image || '/default-activity.png',
+        status: activityData.status || 'draft',
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returning();
+
+    return transformActivity(result[0]);
+  } catch (error) {
+    console.error('创建活动失败:', error);
+    return null;
+  }
+}
+
+/**
+ * 更新活动
+ */
+export async function updateActivity(id: string, activityData: Partial<Activity>): Promise<Activity | null> {
+  try {
+    const updateData: any = {
+      updated_at: new Date(),
+    };
+
+    if (activityData.title !== undefined) updateData.title = activityData.title;
+    if (activityData.description !== undefined) updateData.description = activityData.description;
+    if (activityData.address !== undefined) updateData.location = activityData.address;
+    if (activityData.startDate !== undefined) {
+      updateData.date = activityData.startDate;
+      updateData.start_time = activityData.startDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+    }
+    if (activityData.endDate !== undefined) {
+      updateData.end_time = activityData.endDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+    }
+    if (activityData.capacity !== undefined) updateData.capacity = activityData.capacity;
+    if (activityData.category !== undefined) updateData.type = activityData.category;
+    if (activityData.image !== undefined) updateData.cover_image = activityData.image;
+    if (activityData.status !== undefined) updateData.status = activityData.status;
+
+    const result = await db
+      .update(activities)
+      .set(updateData)
+      .where(eq(activities.id, id))
+      .returning();
+
+    if (result.length === 0) {
+      console.warn(`更新活动失败，活动不存在: ${id}`);
       return null;
     }
+
+    return transformActivity(result[0]);
+  } catch (error) {
+    console.error('更新活动失败:', error);
+    return null;
   }
+}
 
-  /**
-   * 更新活动
-   */
-  static async update(id: string | number, data: Partial<Activity>): Promise<Activity | null> {
-    try {
-      // 转换为 snake_case 格式
-      const updateData: any = {};
-      if (data.title !== undefined) updateData.title = data.title;
-      if (data.subtitle !== undefined) updateData.subtitle = data.subtitle;
-      if (data.category !== undefined) updateData.category = data.category;
-      if (data.description !== undefined) updateData.description = data.description;
-      if (data.image !== undefined) updateData.image = data.image;
-      if (data.address !== undefined) updateData.address = data.address;
-      if (data.capacity !== undefined) updateData.capacity = data.capacity;
-      if (data.status !== undefined) updateData.status = data.status;
+/**
+ * 删除活动
+ */
+export async function deleteActivity(id: string): Promise<boolean> {
+  try {
+    const result = await db
+      .delete(activities)
+      .where(eq(activities.id, id))
+      .returning();
 
-      const response = await putApi<RawActivity>(`/activities/${id}`, updateData);
-
-      if (response.success && response.data) {
-        return transformActivity(response.data);
-      }
-      return null;
-    } catch (error) {
-      console.error(`更新活动 ${id} 失败:`, error);
-      return null;
-    }
+    return result.length > 0;
+  } catch (error) {
+    console.error('删除活动失败:', error);
+    return false;
   }
+}
 
-  /**
-   * 删除活动
-   */
-  static async delete(id: string | number): Promise<boolean> {
-    try {
-      const response = await deleteApi(`/activities/${id}`);
-      return response.success;
-    } catch (error) {
-      console.error(`删除活动 ${id} 失败:`, error);
-      return false;
-    }
+/**
+ * 获取即将开始的活动
+ */
+export async function getUpcomingActivities(limit: number = 10): Promise<Activity[]> {
+  try {
+    const now = new Date();
+    const result = await db
+      .select()
+      .from(activities)
+      .where(and(
+        eq(activities.status, 'active'),
+        sql`${activities.date} >= ${now}`
+      ))
+      .orderBy(activities.date)
+      .limit(limit);
+
+    return result.map(transformActivity);
+  } catch (error) {
+    console.error('获取即将开始的活动失败:', error);
+    return [];
   }
 }

@@ -1,164 +1,91 @@
-# 数据服务层使用指南
+# 服务层使用指南
 
-## 📚 目录
+## 概述
 
-1. [什么是服务层](#什么是服务层)
-2. [为什么需要服务层](#为什么需要服务层)
-3. [如何使用服务层](#如何使用服务层)
-4. [现有服务列表](#现有服务列表)
-5. [创建新服务](#创建新服务)
-6. [常见问题](#常见问题)
+服务层是「燃场」App 的前端数据访问层，基于 Drizzle ORM 构建。它提供了统一的数据访问接口，确保数据格式的一致性和类型安全。
 
----
+## 核心特性
 
-## 什么是服务层
+### 1. 统一的命名规范
+- 数据库字段：`snake_case`（如 `user_name`）
+- 前端字段：`camelCase`（如 `userName`）
+- **服务层自动处理转换，前端无需关心**
 
-服务层是前端代码与 API 之间的中间层，负责：
-- 统一的数据格式转换（API → 前端）
-- 统一的错误处理
-- 统一的默认值处理
-- 类型安全的 TypeScript 接口
+### 2. 类型安全
+- 完整的 TypeScript 类型定义
+- 所有字段都有明确的 null 标记
+- IDE 自动提示和类型检查
 
-**架构图**：
-```
-页面组件 → 数据服务层 → API 客户端 → API 路由 → 数据库
-```
+### 3. 默认值处理
+- 所有可能为空的字段都有默认值
+- 防止 undefined 错误
+- 确保页面不会因为数据缺失而崩溃
 
----
+### 4. 统一错误处理
+- 所有服务方法都有 try-catch
+- 失败时返回 null 或空数组
+- 不会让页面崩溃
 
-## 为什么需要服务层
+## 使用方法
 
-### ❌ 没有服务层的问题
+### 导入服务
 
 ```typescript
-// 问题1：每次都要检查 undefined
-const userName = user.name || '匿名用户';  // ❌ 每次都要写
-const userAvatar = user.avatar || '/default.jpg';  // ❌ 重复代码
+import {
+  getUserById,
+  getActivities,
+  getDeclarations,
+  getSettings,
+  type User,
+  type Activity,
+} from '@/lib/services';
+```
 
-// 问题2：数据转换逻辑分散
-const formattedUser = users.map(u => ({  // ❌ 每个页面都要写
-  id: u.id,
-  name: u.name || '匿名',
-  avatar: u.avatar || '/default.jpg',
-  // ... 还有很多字段
-}));
+### 示例 1: 获取单个用户
 
-// 问题3：错误处理不统一
-try {
-  const res = await fetch('/api/users');
-  if (res.ok) {
-    const data = await res.json();
-    if (data.success) {
-      // ...
-    }
+```typescript
+import { getUserById } from '@/lib/services';
+
+export default async function UserPage({ params }: { params: { id: string } }) {
+  const user = await getUserById(params.id);
+
+  if (!user) {
+    return <div>用户不存在</div>;
   }
-} catch (err) {
-  // ❌ 每个页面都要写
-}
-```
-
-### ✅ 使用服务层
-
-```typescript
-// ✅ 数据格式统一，不会 undefined
-const user = await UserService.getById('123');
-console.log(user.name);  // 一定有值
-console.log(user.avatar);  // 一定有值（默认头像）
-
-// ✅ 错误处理统一
-const result = await UserService.getList({ limit: 10 });
-console.log(result.users);  // 数据格式统一
-
-// ✅ 类型安全
-user.age  // TypeScript 知道这是 number | null
-user.name  // TypeScript 知道这是 string
-```
-
----
-
-## 如何使用服务层
-
-### 1. 导入服务
-
-```typescript
-import { UserService } from '@/lib/services/user.service';
-import { ActivityService } from '@/lib/services/activity.service';
-import { DeclarationService } from '@/lib/services/declaration.service';
-import { SettingsService } from '@/lib/services/settings.service';
-```
-
-### 2. 调用服务方法
-
-```typescript
-// 获取单个用户
-const user = await UserService.getById('123');
-if (user) {
-  console.log(user.name);  // 一定有值
-  console.log(user.avatar);  // 一定有值
-}
-
-// 获取用户列表
-const result = await UserService.getList({ limit: 10 });
-console.log(result.users);  // User[]
-console.log(result.total);  // number
-
-// 获取活跃活动
-const activities = await ActivityService.getActive(10);
-
-// 获取精选宣告
-const declarations = await DeclarationService.getFeatured(5);
-
-// 获取所有设置
-const settings = await SettingsService.getAll();  // 一定有默认值
-```
-
-### 3. 在 React 组件中使用
-
-```typescript
-"use client";
-
-import { useState, useEffect } from "react";
-import { UserService } from "@/lib/services/user.service";
-import { ActivityService } from "@/lib/services/activity.service";
-
-export default function MyPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-
-      try {
-        // 并行加载数据
-        const [usersResult, activitiesResult] = await Promise.all([
-          UserService.getList({ limit: 10 }),
-          ActivityService.getActive(10),
-        ]);
-
-        setUsers(usersResult.users);  // ✅ 数据格式统一
-        setActivities(activitiesResult.activities);
-
-      } catch (error) {
-        console.error('加载数据失败:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadData();
-  }, []);
-
-  if (isLoading) return <div>加载中...</div>;
 
   return (
     <div>
-      {/* ✅ 渲染数据，不需要检查 undefined */}
-      {users.map(user => (
-        <div key={user.id}>
-          <h2>{user.name}</h2>
-          <img src={user.avatar} alt={user.name} />
+      <h1>{user.name}</h1>
+      <p>{user.email}</p>
+      {/* user.avatar 保证有值，不会是 undefined */}
+      <img src={user.avatar} alt={user.name} />
+    </div>
+  );
+}
+```
+
+### 示例 2: 获取活动列表（分页）
+
+```typescript
+import { getActivities } from '@/lib/services';
+
+export default async function ActivitiesPage() {
+  const { activities, total } = await getActivities({
+    page: 1,
+    limit: 10,
+    category: '社交',
+    status: 'active',
+  });
+
+  return (
+    <div>
+      <h1>活动列表</h1>
+      <p>共 {total} 个活动</p>
+      {activities.map(activity => (
+        <div key={activity.id}>
+          <h2>{activity.title}</h2>
+          <p>{activity.category}</p>
+          <img src={activity.image} alt={activity.title} />
         </div>
       ))}
     </div>
@@ -166,253 +93,388 @@ export default function MyPage() {
 }
 ```
 
----
-
-## 现有服务列表
-
-### UserService（用户服务）
+### 示例 3: 获取用户宣告
 
 ```typescript
-import { UserService } from '@/lib/services/user.service';
+import { getUserDeclarations, getUserById } from '@/lib/services';
 
+export default async function UserDeclarationsPage({ params }: { params: { userId: string } }) {
+  const user = await getUserById(params.userId);
+  const declarations = await getUserDeclarations(params.userId);
+
+  if (!user) {
+    return <div>用户不存在</div>;
+  }
+
+  return (
+    <div>
+      <h1>{user.name} 的宣告</h1>
+      {declarations.map(declaration => (
+        <div key={declaration.id}>
+          <p>{declaration.text}</p>
+          <p>浏览次数: {declaration.views}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### 示例 4: 获取应用设置
+
+```typescript
+import { getSettings } from '@/lib/services';
+
+export default async function DiscoveryPage() {
+  const settings = await getSettings();
+
+  // settings 保证不为 null，即使数据库没有数据也会返回默认值
+  return (
+    <div>
+      <h1>{settings.pageTitles.discovery}</h1>
+      <p>{settings.discovery.slogan}</p>
+      <nav>
+        <span>{settings.navigation.discovery.icon} {settings.navigation.discovery.label}</span>
+        <span>{settings.navigation.ignition.icon} {settings.navigation.ignition.label}</span>
+        <span>{settings.navigation.profile.icon} {settings.navigation.profile.label}</span>
+      </nav>
+    </div>
+  );
+}
+```
+
+## 服务列表
+
+### 用户服务
+
+```typescript
 // 获取单个用户
-const user = await UserService.getById(id: string): Promise<User | null>
+getUserById(id: string): Promise<User | null>
 
-// 获取用户列表
-const result = await UserService.getList(params?: {
+// 获取用户列表（分页）
+getUsers(options?: {
   page?: number;
   limit?: number;
   status?: string;
   isFeatured?: boolean;
 }): Promise<{ users: User[]; total: number }>
 
+// 根据邮箱获取用户
+getUserByEmail(email: string): Promise<User | null>
+
 // 创建用户
-const user = await UserService.create(data: Partial<User>): Promise<User | null>
+createUser(userData: Partial<User>): Promise<User | null>
 
 // 更新用户
-const user = await UserService.update(id: string, data: Partial<User>): Promise<User | null>
+updateUser(id: string, userData: Partial<User>): Promise<User | null>
 
 // 删除用户
-const success = await UserService.delete(id: string): Promise<boolean>
+deleteUser(id: string): Promise<boolean>
+
+// 获取精选用户
+getFeaturedUsers(limit?: number): Promise<User[]>
 ```
 
-### ActivityService（活动服务）
+### 活动服务
 
 ```typescript
-import { ActivityService } from '@/lib/services/activity.service';
-
 // 获取单个活动
-const activity = await ActivityService.getById(id: string | number): Promise<Activity | null>
+getActivityById(id: string): Promise<Activity | null>
 
-// 获取活动列表
-const result = await ActivityService.getList(params?: {
+// 获取活动列表（分页）
+getActivities(options?: {
   page?: number;
   limit?: number;
-  status?: string;
   category?: string;
+  status?: string;
+  search?: string;
 }): Promise<{ activities: Activity[]; total: number }>
 
-// 获取活跃活动
-const activities = await ActivityService.getActive(limit: number): Promise<Activity[]>
+// 获取热门活动
+getFeaturedActivities(limit?: number): Promise<Activity[]>
+
+// 获取活动分类列表
+getActivityCategories(): Promise<string[]>
 
 // 创建活动
-const activity = await ActivityService.create(data: Partial<Activity>): Promise<Activity | null>
+createActivity(activityData: Partial<Activity>): Promise<Activity | null>
 
 // 更新活动
-const activity = await ActivityService.update(id: string | number, data: Partial<Activity>): Promise<Activity | null>
+updateActivity(id: string, activityData: Partial<Activity>): Promise<Activity | null>
 
 // 删除活动
-const success = await ActivityService.delete(id: string | number): Promise<boolean>
+deleteActivity(id: string): Promise<boolean>
+
+// 获取即将开始的活动
+getUpcomingActivities(limit?: number): Promise<Activity[]>
 ```
 
-### DeclarationService（宣告服务）
+### 宣告服务
 
 ```typescript
-import { DeclarationService } from '@/lib/services/declaration.service';
-
 // 获取单个宣告
-const declaration = await DeclarationService.getById(id: string): Promise<Declaration | null>
+getDeclarationById(id: string): Promise<Declaration | null>
 
-// 获取宣告列表
-const result = await DeclarationService.getList(params?: {
+// 获取宣告列表（分页）
+getDeclarations(options?: {
   page?: number;
   limit?: number;
   userId?: string;
   isFeatured?: boolean;
+  search?: string;
 }): Promise<{ declarations: Declaration[]; total: number }>
 
+// 获取用户的宣告
+getUserDeclarations(userId: string, limit?: number): Promise<Declaration[]>
+
 // 获取精选宣告
-const declarations = await DeclarationService.getFeatured(limit: number): Promise<Declaration[]>
+getFeaturedDeclarations(limit?: number): Promise<Declaration[]>
 
 // 创建宣告
-const declaration = await DeclarationService.create(data: Partial<Declaration>): Promise<Declaration | null>
+createDeclaration(declarationData: Partial<Declaration>): Promise<Declaration | null>
 
 // 更新宣告
-const declaration = await DeclarationService.update(id: string, data: Partial<Declaration>): Promise<Declaration | null>
+updateDeclaration(id: string, declarationData: Partial<Declaration>): Promise<Declaration | null>
 
 // 删除宣告
-const success = await DeclarationService.delete(id: string): Promise<boolean>
+deleteDeclaration(id: string): Promise<boolean>
+
+// 增加宣告浏览次数
+incrementDeclarationViews(id: string): Promise<Declaration | null>
 ```
 
-### SettingsService（设置服务）
+### 设置服务
 
 ```typescript
-import { SettingsService } from '@/lib/services/settings.service';
-
-// 获取所有设置
-const settings = await SettingsService.getAll(): Promise<Settings>
-
-// 获取单个设置项
-const value = await SettingsService.getByKey(key: string): Promise<any>
-
-// 更新设置
-const success = await SettingsService.update(key: string, value: any): Promise<boolean>
-
-// 批量更新设置
-const success = await SettingsService.updateMany(settings: Partial<Settings>): Promise<boolean>
+// 获取应用设置
+getSettings(): Promise<Settings>
 ```
 
----
+## 数据类型
 
-## 创建新服务
-
-### 步骤1：定义类型（types.ts）
+### User（用户）
 
 ```typescript
-// src/lib/services/types.ts
-
-// 原始数据格式（API 返回）
-export interface RawYourEntity {
-  id: number;
-  field_name: string;
-  created_at: string;
-  [key: string]: any;
-}
-
-// 前端数据格式（页面使用）
-export interface YourEntity {
+interface User {
   id: string;
-  fieldName: string;  // camelCase
-  createdAt: Date;    // Date 类型
-  // ... 其他字段
+  name: string;              // 必有值
+  email: string;             // 必有值
+  avatar: string;            // 必有值（默认头像）
+  age: number | null;        // 可为空
+  company: string | null;    // 可为空
+  position: string | null;   // 可为空
+  phone: string | null;      // 可为空
+  gender: string | null;     // 可为空
+  companyScale: string | null; // 可为空
+  tags: string[];            // 必有值（默认空数组）
+  hardcoreTags: string[];    // 必有值（默认空数组）
+  abilityTags: string[];     // 必有值（默认空数组）
+  resourceTags: string[];    // 必有值（默认空数组）
+  status: string;            // 必有值
+  isFeatured: boolean;       // 必有值
+  joinDate: Date;            // 必有值
+  lastLogin: Date | null;    // 可为空
+  createdAt: Date;           // 必有值
+  updatedAt: Date | null;    // 可为空
 }
 ```
 
-### 步骤2：创建服务（your-entity.service.ts）
+### Activity（活动）
 
 ```typescript
-// src/lib/services/your-entity.service.ts
+interface Activity {
+  id: string;
+  title: string;
+  subtitle: string;          // 必有值（默认空字符串）
+  category: string;          // 必有值（默认"其他"）
+  description: string;       // 必有值（默认空字符串）
+  image: string;             // 必有值（默认图片）
+  address: string;           // 必有值（默认空字符串）
+  startDate: Date;           // 必有值
+  endDate: Date;             // 必有值
+  capacity: number;          // 必有值（默认0）
+  teaFee: number;            // 必有值（默认0）
+  status: string;            // 必有值
+  createdBy: string;         // 必有值
+  createdAt: Date;           // 必有值
+  updatedAt: Date;           // 必有值
+}
+```
 
-import { fetchApi, apiClient } from '@/lib/api/client';
-import type { YourEntity, RawYourEntity, PaginationParams } from '@/lib/services/types';
+### Declaration（宣告）
 
-// 数据转换函数
-function transformYourEntity(raw: RawYourEntity): YourEntity {
-  return {
-    id: raw.id.toString(),
-    fieldName: raw.field_name || '默认值',  // 默认值
-    createdAt: new Date(raw.created_at),
-    // ... 其他字段转换
+```typescript
+interface Declaration {
+  id: string;
+  userId: string;            // 必有值
+  direction: string | null;  // 可为空
+  text: string;              // 必有值
+  summary: string | null;    // 可为空
+  audioUrl: string | null;   // 可为空
+  views: number;             // 必有值（默认0）
+  date: Date;                // 必有值
+  isFeatured: boolean;       // 必有值
+  createdAt: Date;           // 必有值
+  updatedAt: Date;           // 必有值
+}
+```
+
+### Settings（设置）
+
+```typescript
+interface Settings {
+  navigation: {
+    discovery: { icon: string; label: string };
+    ignition: { icon: string; label: string };
+    profile: { icon: string; label: string };
+  };
+  pageTitles: {
+    discovery: string;
+    activities: string;
+    visit: string;
+    assets: string;
+    declarations: string;
+    connection: string;
+    consultation: string;
+  };
+  discovery: {
+    slogan: string;
+    logo: string;
+    music: string;
+    bgImage: string;
   };
 }
+```
 
-// 服务类
-export class YourEntityService {
-  static async getById(id: string | number): Promise<YourEntity | null> {
-    try {
-      const response = await fetchApi<{ data: RawYourEntity }>(`/your-entity/${id}`);
-      if (response.success && response.data) {
-        return transformYourEntity(response.data);
-      }
-      return null;
-    } catch (error) {
-      console.error(`获取实体 ${id} 失败:`, error);
-      return null;
-    }
-  }
+## 最佳实践
 
-  static async getList(params?: PaginationParams): Promise<{ entities: YourEntity[]; total: number }> {
-    try {
-      const queryParams = apiClient.buildQueryParams({
-        page: params?.page || 1,
-        limit: params?.limit || 10,
-      });
+### 1. 始终检查 null
 
-      const response = await fetchApi<{ data: RawYourEntity[] }>(
-        `/your-entity?${queryParams}`
-      );
+```typescript
+// ✅ 好的做法
+const user = await getUserById(id);
+if (!user) {
+  return <div>用户不存在</div>;
+}
 
-      if (response.success && response.data) {
-        const entities = response.data.map(transformYourEntity);
-        return {
-          entities,
-          total: response.pagination?.total || 0,
-        };
-      }
+// ❌ 坏的做法
+const user = await getUserById(id);
+return <div>{user.name}</div>; // 可能为 null
+```
 
-      return { entities: [], total: 0 };
-    } catch (error) {
-      console.error('获取实体列表失败:', error);
-      return { entities: [], total: 0 };
-    }
-  }
+### 2. 使用解构赋值
 
-  // ... 其他方法（create, update, delete）
+```typescript
+// ✅ 好的做法
+const { activities, total } = await getActivities({ page: 1, limit: 10 });
+
+// ❌ 坏的做法
+const result = await getActivities({ page: 1, limit: 10 });
+const activities = result.activities;
+const total = result.total;
+```
+
+### 3. 使用类型提示
+
+```typescript
+import { type User } from '@/lib/services';
+
+const user: User | null = await getUserById(id);
+```
+
+### 4. 错误处理由服务层处理
+
+```typescript
+// ✅ 好的做法（服务层已处理错误）
+const user = await getUserById(id);
+
+// ❌ 坏的做法（重复处理）
+try {
+  const user = await getUserById(id);
+} catch (error) {
+  // 不需要，服务层已经处理了
 }
 ```
 
-### 步骤3：使用服务
+## 迁移指南
+
+如果你之前使用的是 API 客户端，迁移到服务层非常简单：
+
+### 旧代码（API 客户端）
 
 ```typescript
-import { YourEntityService } from '@/lib/services/your-entity.service';
+import { getUser } from '@/lib/api/client';
 
-const entities = await YourEntityService.getList({ limit: 10 });
-console.log(entities.entities);  // YourEntity[]
+const user = await getUser(params.id);
 ```
 
----
+### 新代码（服务层）
+
+```typescript
+import { getUserById } from '@/lib/services';
+
+const user = await getUserById(params.id);
+```
+
+**数据格式完全一致，无需修改 UI 代码！**
 
 ## 常见问题
 
-### Q1: 服务层会影响性能吗？
+### Q1: 为什么服务层返回的是 User | null？
 
-A: 不会。服务层只是做了数据转换，不会增加额外的网络请求。而且服务层内部做了错误处理，反而能提高稳定性。
+A: 因为用户可能不存在，需要前端处理这种情况。所有服务层方法都遵循这个原则。
 
-### Q2: 如果 API 返回的数据格式变了怎么办？
+### Q2: 为什么所有字段都有默认值？
 
-A: 只需修改服务层的 `transform` 函数，页面代码无需修改。
+A: 为了防止页面因为数据缺失而崩溃。数据库可能没有某条记录，或者某条记录的某些字段为空。
 
-### Q3: 如果某个字段真的可能为 null 怎么办？
+### Q3: 服务层会抛出异常吗？
 
-A: 在类型定义中明确标记为 `T | null`，在使用时进行类型检查：
+A: 不会。所有服务层方法都有 try-catch，失败时返回 null 或空数组。
+
+### Q4: 我需要手动处理 snake_case 和 camelCase 转换吗？
+
+A: 不需要。服务层已经自动处理了转换，前端直接使用 camelCase 即可。
+
+### Q5: 可以在客户端组件中使用服务层吗？
+
+A: 不可以。服务层只能在 Server Component 中使用（因为它直接访问数据库）。客户端组件应该通过 props 接收数据。
 
 ```typescript
-if (user.age !== null) {
-  console.log(user.age);  // TypeScript 知道这里不是 null
+// ✅ Server Component
+import { getActivities } from '@/lib/services';
+
+export default async function ActivitiesPage() {
+  const { activities } = await getActivities();
+  return <ActivityList activities={activities} />;
+}
+
+// ✅ Client Component
+'use client';
+
+export default function ActivityList({ activities }: { activities: Activity[] }) {
+  // 可以在这里使用数据
+  return <div>{/* 渲染活动列表 */}</div>;
+}
+
+// ❌ 错误：在客户端组件中直接使用服务层
+'use client';
+
+import { getActivities } from '@/lib/services';
+
+export default function ActivitiesPage() {
+  const { activities } = await getActivities(); // ❌ 错误！
+  return <div>{/* ... */}</div>;
 }
 ```
 
-### Q4: 服务层可以缓存数据吗？
+## 总结
 
-A: 可以。后续可以集成 React Query 或 SWR 来实现数据缓存和自动刷新。
+服务层提供了：
+- ✅ 统一的数据访问接口
+- ✅ 完整的类型安全
+- ✅ 自动处理字段转换
+- ✅ 统一的错误处理
+- ✅ 默认值保护
 
-### Q5: 如何调试服务层？
-
-A: 所有服务方法都有 `console.error` 日志，可以在浏览器控制台查看错误信息。
-
----
-
-## 下一步
-
-1. 查看示例：`src/app/discovery/page-example-service-layer.tsx`
-2. 改造现有页面，逐步使用服务层
-3. 创建新的服务，覆盖更多数据类型
-4. 集成 React Query 实现数据缓存和自动刷新
-
----
-
-## 参考资料
-
-- TypeScript 类型定义：`src/lib/services/types.ts`
-- API 客户端：`src/lib/api/client.ts`
-- 示例页面：`src/app/discovery/page-example-service-layer.tsx`
+使用服务层，你可以专注于业务逻辑，而不用担心数据格式和错误处理！

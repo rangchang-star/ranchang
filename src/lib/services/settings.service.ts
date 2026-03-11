@@ -1,190 +1,92 @@
 /**
  * 设置服务
  *
- * 功能：
- * 1. 统一的设置数据获取
- * 2. 将分散的 key-value 设置组装成前端需要的结构
- * 3. 默认值处理（防止 undefined）
+ * 提供应用设置的获取操作
+ * 所有数据格式统一为前端需要的 camelCase 格式
  */
 
-import { fetchApi, postApi, putApi, apiClient } from '@/lib/api/client';
-import type { Settings, RawSettings } from '@/lib/services/types';
-
-// ============================================================
-// 默认设置值
-// ============================================================
-
-const DEFAULT_SETTINGS: Settings = {
-  navigation: {
-    discovery: { icon: 'flame', label: '发现光亮' },
-    ignition: { icon: 'trending-up', label: '点亮事业' },
-    profile: { icon: 'user', label: '个人中心' },
-  },
-  pageTitles: {
-    discovery: '发现光亮',
-    activities: '活动列表',
-    visit: '探访点亮',
-    assets: '能力资产',
-    declarations: '高燃宣告',
-    connection: '能力连接',
-    consultation: '专家咨询',
-  },
-  discovery: {
-    slogan: '发现光亮，点亮事业',
-    logo: '/logo-ranchang.png',
-    music: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-    bgImage: '/discovery-bg.jpg',
-  },
-};
-
-// ============================================================
-// 数据转换函数
-// ============================================================
+import { db, settings } from '@/lib/db';
+import { eq } from 'drizzle-orm';
+import { Settings } from './types';
+import { safeParseJson, withDefault } from './utils';
 
 /**
- * 将原始设置数据转换为前端格式
- * 将分散的 key-value 设置组装成结构化对象
+ * 转换设置数据（从数据库格式到前端格式）
  */
-function transformSettings(rawList: RawSettings[]): Settings {
-  const settings: Settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-
-  rawList.forEach((item) => {
-    const key = item.key;
-
-    // 处理 navigation.* 设置
-    if (key.startsWith('navigation.')) {
-      const navKey = key.split('.')[1] as keyof Settings['navigation'];
-      if (settings.navigation[navKey]) {
-        settings.navigation[navKey] = item.value;
-      }
-    }
-
-    // 处理 pageTitles.* 设置
-    else if (key.startsWith('pageTitles.')) {
-      const pageTitleKey = key.split('.')[1] as keyof Settings['pageTitles'];
-      if (settings.pageTitles[pageTitleKey]) {
-        settings.pageTitles[pageTitleKey] = item.value;
-      }
-    }
-
-    // 处理 discovery.* 设置
-    else if (key.startsWith('discovery.')) {
-      const discoveryKey = key.split('.')[1] as keyof Settings['discovery'];
-      if (settings.discovery[discoveryKey]) {
-        settings.discovery[discoveryKey] = item.value;
-      }
-    }
-  });
-
-  return settings;
+function transformSettings(settingsData: Record<string, any>): Settings {
+  return {
+    navigation: {
+      discovery: { icon: settingsData.discovery_nav_icon?.icon || '💡', label: settingsData.discovery_nav_icon?.label || '发现光亮' },
+      ignition: { icon: settingsData.ignition_nav_icon?.icon || '🔥', label: settingsData.ignition_nav_icon?.label || '点亮事业' },
+      profile: { icon: settingsData.profile_nav_icon?.icon || '👤', label: settingsData.profile_nav_icon?.label || '个人中心' },
+    },
+    pageTitles: {
+      discovery: settingsData.discovery_title || '发现光亮',
+      activities: settingsData.activities_title || '活动',
+      visit: settingsData.visit_title || '探访',
+      assets: settingsData.assets_title || '资产',
+      declarations: settingsData.declarations_title || '高燃宣告',
+      connection: settingsData.connection_title || '连接',
+      consultation: settingsData.consultation_title || '咨询',
+    },
+    discovery: {
+      slogan: settingsData.discovery_slogan || '能力连接 · 困境解决',
+      logo: settingsData.discovery_logo || '/logo.png',
+      music: settingsData.discovery_music || '/bg-music.mp3',
+      bgImage: settingsData.discovery_bg_image || '/bg-image.jpg',
+    },
+  };
 }
 
-// ============================================================
-// 设置服务类
-// ============================================================
-
-export class SettingsService {
-  /**
-   * 获取所有设置
-   */
-  static async getAll(): Promise<Settings> {
-    try {
-      // 获取所有设置（不分页）
-      const queryParams = apiClient.buildQueryParams({
-        limit: 100, // 获取所有设置
-      });
-
-      const response = await fetchApi<RawSettings[]>(
-        `/settings?${queryParams}`
-      );
-
-      if (response.success && response.data) {
-        return transformSettings(response.data);
-      }
-
-      return DEFAULT_SETTINGS;
-    } catch (error) {
-      console.error('获取设置失败:', error);
-      return DEFAULT_SETTINGS;
+/**
+ * 获取应用设置（从数据库）
+ */
+export async function getSettings(): Promise<Settings | null> {
+  try {
+    const result = await db.select().from(settings);
+    
+    if (result.length === 0) {
+      console.warn('应用设置不存在，使用默认值');
+      return getDefaultSettings();
     }
+
+    // 将键值对转换为对象
+    const settingsData: Record<string, any> = {};
+    result.forEach(item => {
+      settingsData[item.key] = item.value;
+    });
+
+    return transformSettings(settingsData);
+  } catch (error) {
+    console.error('获取应用设置失败:', error);
+    return getDefaultSettings();
   }
+}
 
-  /**
-   * 获取单个设置项
-   */
-  static async getByKey(key: string): Promise<any> {
-    try {
-      const response = await fetchApi<RawSettings[]>(
-        `/settings?key=${key}`
-      );
-
-      if (response.success && response.data && response.data.length > 0) {
-        return response.data[0].value;
-      }
-
-      return null;
-    } catch (error) {
-      console.error(`获取设置 ${key} 失败:`, error);
-      return null;
-    }
-  }
-
-  /**
-   * 更新设置
-   */
-  static async update(key: string, value: any): Promise<boolean> {
-    try {
-      // 检查设置是否存在
-      const existing = await this.getByKey(key);
-
-      if (existing) {
-        // 更新现有设置
-        const response = await putApi(`/settings?key=${key}`, { value });
-        return response.success;
-      } else {
-        // 创建新设置
-        const response = await postApi('/settings', { key, value });
-        return response.success;
-      }
-    } catch (error) {
-      console.error(`更新设置 ${key} 失败:`, error);
-      return false;
-    }
-  }
-
-  /**
-   * 批量更新设置
-   */
-  static async updateMany(settings: Partial<Settings>): Promise<boolean> {
-    try {
-      const promises: Promise<boolean>[] = [];
-
-      // 更新 navigation 设置
-      if (settings.navigation) {
-        Object.entries(settings.navigation).forEach(([key, value]) => {
-          promises.push(this.update(`navigation.${key}`, value));
-        });
-      }
-
-      // 更新 pageTitles 设置
-      if (settings.pageTitles) {
-        Object.entries(settings.pageTitles).forEach(([key, value]) => {
-          promises.push(this.update(`pageTitles.${key}`, value));
-        });
-      }
-
-      // 更新 discovery 设置
-      if (settings.discovery) {
-        Object.entries(settings.discovery).forEach(([key, value]) => {
-          promises.push(this.update(`discovery.${key}`, value));
-        });
-      }
-
-      const results = await Promise.all(promises);
-      return results.every(result => result);
-    } catch (error) {
-      console.error('批量更新设置失败:', error);
-      return false;
-    }
-  }
+/**
+ * 获取默认设置
+ */
+function getDefaultSettings(): Settings {
+  return {
+    navigation: {
+      discovery: { icon: '💡', label: '发现光亮' },
+      ignition: { icon: '🔥', label: '点亮事业' },
+      profile: { icon: '👤', label: '个人中心' },
+    },
+    pageTitles: {
+      discovery: '发现光亮',
+      activities: '活动',
+      visit: '探访',
+      assets: '资产',
+      declarations: '高燃宣告',
+      connection: '连接',
+      consultation: '咨询',
+    },
+    discovery: {
+      slogan: '能力连接 · 困境解决',
+      logo: '/logo.png',
+      music: '/bg-music.mp3',
+      bgImage: '/bg-image.jpg',
+    },
+  };
 }
