@@ -124,6 +124,39 @@ export async function POST(request: NextRequest) {
     `;
     console.log('[数据初始化] declarations 表完成 (5条记录)');
 
+    // 4. 重建 visits 表
+    console.log('[数据初始化] 重建 visits 表...');
+    await client`DROP TABLE IF EXISTS public.visits CASCADE`;
+    await client`
+      CREATE TABLE public.visits (
+        id VARCHAR(36) PRIMARY KEY,
+        company_id VARCHAR(36) NOT NULL,
+        company_name VARCHAR(255) NOT NULL,
+        industry VARCHAR(100),
+        location VARCHAR(255),
+        description TEXT,
+        date TIMESTAMP WITH TIME ZONE NOT NULL,
+        capacity INTEGER,
+        registered_count INTEGER DEFAULT 0,
+        cover_image TEXT,
+        status VARCHAR(20) DEFAULT 'draft',
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE
+      )
+    `;
+
+    // 插入探访数据（前5条）
+    await client`
+      INSERT INTO public.visits (id, company_id, company_name, industry, location, description, date, capacity, registered_count, cover_image, status, created_at)
+      VALUES
+        ('visit-001', 'user-001', '阿里云创新中心', '云计算', '北京市海淀区上地', '参观阿里云创新中心，了解云原生技术发展和创业孵化模式', '2024-12-15', 30, 28, '/images/visit-aliyun.jpg', 'active', NOW()),
+        ('visit-002', 'user-003', '腾讯金融科技实验室', '金融科技', '深圳市南山区科技园', '深入了解腾讯在区块链、风控系统、AI金融等领域的最新技术和应用', '2024-12-18', 25, 22, '/images/visit-tencent.jpg', 'active', NOW()),
+        ('visit-003', 'user-005', '智能制造示范工厂', '智能制造', '苏州市工业园区', '参观工业4.0示范工厂，学习物联网和数字化转型实践经验', '2024-12-22', 40, 35, '/images/visit-smart-factory.jpg', 'active', NOW()),
+        ('visit-004', 'user-007', '百度AI实验室', '人工智能', '北京市海淀区上地', '参观百度AI实验室，了解大模型、自动驾驶等前沿技术', '2024-12-25', 35, 30, '/images/visit-baidu-ai.jpg', 'active', NOW()),
+        ('visit-005', 'user-008', '小红书总部', '社交电商', '上海市黄浦区', '了解小红书的用户增长策略、内容运营模式和商业化路径', '2025-01-08', 40, 38, '/images/visit-xiaohongshu.jpg', 'active', NOW())
+    `;
+    console.log('[数据初始化] visits 表完成 (5条记录)');
+
     console.log('[数据初始化] 完成！');
 
     return NextResponse.json({
@@ -132,7 +165,8 @@ export async function POST(request: NextRequest) {
       stats: {
         users: 10,
         activities: 5,
-        declarations: 5
+        declarations: 5,
+        visits: 5
       }
     });
   } catch (error: any) {
