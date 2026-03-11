@@ -370,19 +370,52 @@ export default function DiscoveryPage() {
             fetch("/api/daily-declarations"),
           ]);
 
-        if (
-          !usersRes.ok ||
-          !activitiesRes.ok ||
-          !declarationsRes.ok ||
-          !documentsRes.ok
-        ) {
-          throw new Error("加载数据失败");
+        // 详细的错误诊断日志
+        if (!usersRes.ok) {
+          const errorText = await usersRes.text();
+          console.error('❌ 用户数据加载失败:', {
+            status: usersRes.status,
+            error: errorText
+          });
+        }
+        if (!activitiesRes.ok) {
+          const errorText = await activitiesRes.text();
+          console.error('❌ 活动数据加载失败:', {
+            status: activitiesRes.status,
+            error: errorText
+          });
+        }
+        if (!declarationsRes.ok) {
+          const errorText = await declarationsRes.text();
+          console.error('❌ 宣告数据加载失败:', {
+            status: declarationsRes.status,
+            error: errorText
+          });
+        }
+        if (!documentsRes.ok) {
+          const errorText = await documentsRes.text();
+          console.error('❌ 文档数据加载失败:', {
+            status: documentsRes.status,
+            error: errorText
+          });
         }
 
-        const usersData = await usersRes.json();
-        const activitiesData = await activitiesRes.json();
-        const declarationsData = await declarationsRes.json();
-        const documentsData = await documentsRes.json();
+        // 检查是否所有请求都失败
+        const allFailed =
+          !usersRes.ok &&
+          !activitiesRes.ok &&
+          !declarationsRes.ok &&
+          !documentsRes.ok;
+
+        if (allFailed) {
+          throw new Error("加载数据失败：所有数据源均不可用");
+        }
+
+        // 安全解析JSON，避免解析失败导致页面崩溃
+        const usersData = usersRes.ok ? await usersRes.json() : { data: [] };
+        const activitiesData = activitiesRes.ok ? await activitiesRes.json() : { data: [] };
+        const declarationsData = declarationsRes.ok ? await declarationsRes.json() : { data: [] };
+        const documentsData = documentsRes.ok ? await documentsRes.json() : { data: [] };
 
         if (usersData.success) {
           // 将用户数据转换为前端需要的格式
@@ -642,7 +675,7 @@ export default function DiscoveryPage() {
                 className="relative w-[126px] h-[126px] flex items-center justify-center transition-colors"
               >
                 <img
-                  src={pageSettings.discovery.logo}
+                  src={pageSettings.discovery?.logo || "/logo-ranchang.png"}
                   alt="燃场Logo"
                   className="w-[90px] h-[90px] object-contain"
                 />

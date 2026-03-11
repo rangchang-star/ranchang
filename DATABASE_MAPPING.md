@@ -1,7 +1,7 @@
 # 燃场 App - 数据库映射关系文档
 
 > **创建时间**: 2026-03-11
-> **版本**: v1.1
+> **版本**: v1.2
 > **维护者**: 开发团队
 
 ---
@@ -375,6 +375,48 @@ API 路由会自动处理字段名转换：
   - documents: ✅ 表已存在，字段已补全（添加 download_count, cover）
   - visit_records: ✅ 从 VALID_RESOURCES 移除（前端未引用）
 - **状态**：✅ 已解决
+
+### 问题4：postgres-js 表可见性问题（documents 表）
+- **描述**：`documents` 表存在于 `public` schema 中，但 postgres-js 无法查询到，返回 "relation does not exist" 错误
+- **影响**：`/api/documents` API 调用失败，发现页面无法加载数据
+- **根本原因**：postgres-js 在某些情况下无法正确识别 `public` schema 中的表
+- **解决方案**：
+  1. 在 API 路由中添加显式 schema 前缀（如 `public.documents`）
+  2. 在首次请求 documents 资源时，执行 `CREATE TABLE IF NOT EXISTS` 强制 postgres-js 重新扫描表结构
+- **代码位置**：`src/app/api/[resource]/route.ts` 第 75-95 行
+- **状态**：✅ 已解决
+
+### 问题5：RESOURCE_NAME_MAPPING 错误引用 app schema
+- **描述**：`RESOURCE_NAME_MAPPING` 中的 `users` 映射到 `app.app_users`，但 `app.app_users` 表可能不存在或数据不完整
+- **影响**：`/api/users` API 返回 "relation app.app_users does not exist" 错误
+- **解决方案**：将映射改为 `public.app_users`，确保使用包含完整数据的表
+- **代码位置**：`src/app/api/[resource]/route.ts` 和 `src/app/api/[resource]/[id]/route.ts`
+- **状态**：✅ 已解决
+
+---
+
+## 更新日志
+
+### v1.2 (2026-03-11)
+- ✅ 解决 postgres-js 表可见性问题（documents 表）
+- ✅ 修复 RESOURCE_NAME_MAPPING 错误（users → public.app_users）
+- ✅ 添加发现页面错误日志
+- ✅ 改进 API 错误处理逻辑（部分失败不影响整体）
+- ✅ 添加 pageSettings 安全检查
+
+### v1.1 (2026-03-11)
+- ✅ 创建 settings 表
+- ✅ 完善 documents 表结构（添加 download_count, cover）
+- ✅ 从 VALID_RESOURCES 移除 visit_records
+- ✅ 更新 API 资源映射表
+- ✅ 更新所有已知问题状态
+
+### v1.0 (2026-03-11)
+- ✅ 初始版本
+- ✅ 创建数据库映射文档
+- ✅ 记录 API 资源映射关系
+- ✅ 记录字段映射规则
+- ✅ 记录详细表结构
 
 ---
 

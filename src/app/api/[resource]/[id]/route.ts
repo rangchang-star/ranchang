@@ -43,14 +43,21 @@ const FIELD_MAPPINGS: Record<string, Record<string, string>> = {
   }
 };
 
-// 资源名称映射：前端请求的资源名 -> 实际数据库表名（不包含 schema）
+// 资源名称映射：前端请求的资源名 -> 实际数据库表名（包含 schema）
+// 注意：在 app schema 中的表需要显式指定 schema，public schema 中的表也显式指定以避免 search_path 问题
 const RESOURCE_NAME_MAPPING: Record<string, string> = {
-  'users': 'app_users',  // 前端使用 /api/users，后端操作 public.app_users 表（public 是默认 schema）
+  'users': 'public.app_users',  // 前端使用 /api/users，后端操作 public.app_users 表
 };
 
 // 应用资源名称映射
+// 返回完整的表名，包含 schema（app.schema_name 或 public.table_name）
 function getTableName(resource: string): string {
-  return RESOURCE_NAME_MAPPING[resource] || resource;
+  const mapped = RESOURCE_NAME_MAPPING[resource];
+  if (mapped) {
+    return mapped;
+  }
+  // 没有在映射表中的资源，默认使用 public schema
+  return `public.${resource}`;
 }
 
 // 应用字段映射

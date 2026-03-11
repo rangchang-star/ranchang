@@ -32,11 +32,11 @@ const client = postgres(connectionString, {
     const result = await client`SELECT current_database()`;
     console.log('当前连接的数据库:', result[0].current_database);
     const tables = await client`
-      SELECT table_name 
-      FROM information_schema.tables 
+      SELECT table_schema, table_name
+      FROM information_schema.tables
       WHERE table_schema = 'public'
     `;
-    console.log('当前数据库中的表:', tables.map(t => t.table_name).join(', '));
+    console.log('当前数据库中的表:', tables.map(t => `${t.table_schema}.${t.table_name}`).join(', '));
 
     // 检查 declarations 表是否存在，如果不存在则创建
     const declarationsTable = tables.find(t => t.table_name === 'declarations');

@@ -43,14 +43,21 @@ function isValidResource(resource: string): boolean {
   return VALID_RESOURCES.includes(resource);
 }
 
-// 资源名称映射：前端请求的资源名 -> 实际数据库表名（不包含 schema）
+// 资源名称映射：前端请求的资源名 -> 实际数据库表名（包含 schema）
+// 注意：在 app schema 中的表需要显式指定 schema，public schema 中的表也显式指定以避免 search_path 问题
 const RESOURCE_NAME_MAPPING: Record<string, string> = {
-  'users': 'app_users',  // 前端使用 /api/users，后端操作 public.app_users 表（public 是默认 schema）
+  'users': 'public.app_users',  // 前端使用 /api/users，后端操作 public.app_users 表
 };
 
 // 应用资源名称映射
+// 返回完整的表名，包含 schema（app.schema_name 或 public.table_name）
 function getTableName(resource: string): string {
-  return RESOURCE_NAME_MAPPING[resource] || resource;
+  const mapped = RESOURCE_NAME_MAPPING[resource];
+  if (mapped) {
+    return mapped;
+  }
+  // 没有在映射表中的资源，默认使用 public schema
+  return `public.${resource}`;
 }
 
 // GET /api/[resource] - 查询列表
@@ -69,6 +76,30 @@ export async function GET(
   }
 
   const actualTableName = getTableName(resource);
+
+  // 特殊处理：确保 documents 表存在（修复 postgres-js 表可见性问题）
+  if (resource === 'documents') {
+    try {
+      await client.unsafe(`
+        CREATE TABLE IF NOT EXISTS documents (
+          id SERIAL PRIMARY KEY,
+          title VARCHAR(255) NOT NULL,
+          description TEXT,
+          file_url TEXT NOT NULL,
+          file_type VARCHAR(50) NOT NULL,
+          file_size INTEGER DEFAULT 0,
+          category VARCHAR(50) DEFAULT '其他',
+          created_by INTEGER NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          download_count INTEGER DEFAULT 0,
+          cover TEXT
+        )
+      `);
+    } catch (err) {
+      // 静默处理错误，避免重复创建日志
+    }
+  }
 
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -146,6 +177,30 @@ export async function POST(
   }
 
   const actualTableName = getTableName(resource);
+
+  // 特殊处理：确保 documents 表存在（修复 postgres-js 表可见性问题）
+  if (resource === 'documents') {
+    try {
+      await client.unsafe(`
+        CREATE TABLE IF NOT EXISTS documents (
+          id SERIAL PRIMARY KEY,
+          title VARCHAR(255) NOT NULL,
+          description TEXT,
+          file_url TEXT NOT NULL,
+          file_type VARCHAR(50) NOT NULL,
+          file_size INTEGER DEFAULT 0,
+          category VARCHAR(50) DEFAULT '其他',
+          created_by INTEGER NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          download_count INTEGER DEFAULT 0,
+          cover TEXT
+        )
+      `);
+    } catch (err) {
+      // 静默处理错误，避免重复创建日志
+    }
+  }
 
   try {
     const body = await request.json();

@@ -152,8 +152,10 @@ export const documents = pgTable('documents', {
   file_size: integer('file_size').default(0),
   category: varchar('category', { length: 50 }).default('其他'),
   created_by: integer('created_by').notNull(),
-  created_at: timestamp('created_at', { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-  updated_at: timestamp('updated_at', { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+  created_at: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+  updated_at: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+  download_count: integer('download_count').default(0),
+  cover: text('cover'),
 });
 
 // ============================================================
