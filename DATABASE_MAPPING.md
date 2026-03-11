@@ -1,7 +1,7 @@
 # 燃场 App - 数据库映射关系文档
 
 > **创建时间**: 2026-03-11
-> **版本**: v1.0
+> **版本**: v1.1
 > **维护者**: 开发团队
 
 ---
@@ -49,9 +49,8 @@
 | `daily_declarations` | `daily_declarations` | `public` | ✅ 正常 |
 | `notifications` | `notifications` | `public` | ✅ 正常 |
 | `activity_registrations` | `activity_registrations` | `public` | ✅ 正常 |
-| `documents` | `documents` | `public` | ⚠️ 未实现 |
-| `visit_records` | `visit_records` | `public` | ⚠️ 未实现 |
-| `settings` | `settings` | `public` | ❌ 表不存在 |
+| `documents` | `documents` | `public` | ✅ 正常 |
+| `settings` | `settings` | `public` | ✅ 正常 |
 
 ---
 
@@ -279,6 +278,82 @@ API 路由会自动处理字段名转换：
 
 ---
 
+### 8. documents（文档表）
+
+**API 资源名**: `documents`
+**数据库表名**: `documents`
+**Schema**: `public`
+
+| 数据库字段名 | 数据类型 | 可空 | 默认值 | 前端字段名 | 说明 |
+|------------|---------|------|--------|-----------|------|
+| id | integer | NO | nextval() | id | 文档ID |
+| title | varchar | NO | - | title | 文档标题 |
+| description | text | YES | - | description | 文档描述 |
+| file_url | text | NO | - | url | 文件URL |
+| file_type | varchar | NO | - | fileType | 文件类型 |
+| file_size | integer | YES | 0 | fileSize | 文件大小 |
+| category | varchar | YES | '其他' | category | 分类 |
+| created_by | integer | NO | - | createdBy | 创建者ID |
+| created_at | timestamp without time zone | YES | CURRENT_TIMESTAMP | createdAt | 创建时间 |
+| updated_at | timestamp without time zone | YES | CURRENT_TIMESTAMP | updatedAt | 更新时间 |
+| download_count | integer | YES | 0 | downloadCount | 下载次数 |
+| cover | text | YES | - | cover | 封面图片 |
+
+---
+
+### 9. settings（系统设置表）
+
+**API 资源名**: `settings`
+**数据库表名**: `settings`
+**Schema**: `public`
+
+| 数据库字段名 | 数据类型 | 可空 | 默认值 | 前端字段名 | 说明 |
+|------------|---------|------|--------|-----------|------|
+| id | integer | NO | - | id | 设置ID（固定为1） |
+| settings | jsonb | NO | '{}' | settings | 系统设置JSON |
+| updated_at | timestamp without time zone | YES | now() | updatedAt | 更新时间 |
+
+**settings 字段结构**：
+
+```json
+{
+  "navigation": {
+    "discovery": {"label": "发现光亮", "icon": "flame"},
+    "ignition": {"label": "点亮事业", "icon": "trending-up"},
+    "profile": {"label": "个人中心", "icon": "user"}
+  },
+  "pageTitles": {
+    "discovery": "发现光亮",
+    "activities": "活动列表",
+    ...
+  },
+  "discovery": {
+    "slogan": "发现光亮，点亮事业",
+    "logo": "/logo-ranchang.png",
+    "music": "https://...",
+    "backgroundImage": "/discovery-bg.jpg"
+  },
+  "ignition": {
+    "visitSlogan": "...",
+    "visitMedia": {"type": null, "url": ""},
+    "aiCircleSlogan": "...",
+    "aiCircleMedia": {"type": null, "url": ""}
+  },
+  "profile": {
+    "businessCognition": {"displayStyle": "radar"},
+    "aiCognition": {"displayStyle": "radar"},
+    "careerMission": {"displayStyle": "cards"},
+    "entrepreneurialPsychology": {"displayStyle": "progress"}
+  },
+  "contactInfo": {
+    "message": "...",
+    "contact": "v:13023699913"
+  }
+}
+```
+
+---
+
 ## 已知问题
 
 ### 问题1：认证系统表名冲突
@@ -290,14 +365,16 @@ API 路由会自动处理字段名转换：
 ### 问题2：settings 表不存在
 - **描述**：`settings` 表不存在于数据库中
 - **影响**：API 调用 `/api/settings` 会报错
-- **建议**：创建 `settings` 表或移除相关 API 路由
-- **状态**：⚠️ 待解决
+- **解决方案**：✅ 已创建 settings 表，使用 JSONB 字段存储系统设置
+- **状态**：✅ 已解决
 
 ### 问题3：documents 和 visit_records 表未实现
-- **描述**：`documents` 和 `visit_records` 表存在于数据库，但 API 路由未实现
-- **影响**：无法通过 API 访问这些表
-- **建议**：实现相应的 API 路由或移除前端引用
-- **状态**：⚠️ 待解决
+- **描述**：`documents` 表存在于数据库，`visit_records` 表存在于数据库，但 API 功能需验证
+- **影响**：`documents` API 已可用，`visit_records` 已从白名单移除（前端未使用）
+- **解决方案**：
+  - documents: ✅ 表已存在，字段已补全（添加 download_count, cover）
+  - visit_records: ✅ 从 VALID_RESOURCES 移除（前端未引用）
+- **状态**：✅ 已解决
 
 ---
 
@@ -538,6 +615,7 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
 | 日期 | 版本 | 更新内容 | 作者 |
 |-----|------|---------|------|
 | 2026-03-11 | v1.0 | 初始版本，完成所有已实现资源的映射 | 开发团队 |
+| 2026-03-11 | v1.1 | 解决已知问题：创建 settings 表，完善 documents 表字段，移除 visit_records | 开发团队 |
 
 ---
 

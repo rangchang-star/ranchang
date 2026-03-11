@@ -35,7 +35,7 @@ function toSnakeCase(obj: any): any {
 // 安全的资源名称白名单（防止SQL注入）
 const VALID_RESOURCES = [
   'users', 'app_users', 'activities', 'visits', 'declarations', 'daily_declarations',
-  'activity_registrations', 'notifications', 'documents', 'visit_records', 'settings'
+  'activity_registrations', 'notifications', 'documents', 'settings'
 ];
 
 // 验证资源名称
@@ -75,7 +75,10 @@ export async function GET(
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = (page - 1) * limit;
-    const orderBy = searchParams.get('orderBy') || 'created_at';
+
+    // 为特定表设置默认的 orderBy 字段
+    const defaultOrderBy = resource === 'settings' ? 'updated_at' : 'created_at';
+    const orderBy = searchParams.get('orderBy') || defaultOrderBy;
     const order = searchParams.get('order') || 'DESC';
 
     // 构建WHERE条件

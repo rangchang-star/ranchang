@@ -73,7 +73,7 @@ function applyFieldMapping(resource: string, obj: any): any {
 // 安全的资源名称白名单（前端可以使用的资源名）
 const VALID_RESOURCES = [
   'users', 'app_users', 'activities', 'visits', 'declarations', 'daily_declarations',
-  'activity_registrations', 'notifications', 'documents', 'visit_records', 'settings'
+  'activity_registrations', 'notifications', 'documents', 'settings'
 ];
 
 function isValidResource(resource: string): boolean {
