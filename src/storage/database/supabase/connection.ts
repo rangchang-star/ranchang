@@ -5,6 +5,9 @@ import * as schema from './schema';
 // 创建PostgreSQL连接 - 使用 ran_field 数据库
 let connectionString = process.env.DATABASE_URL?.replace(/\/postgres$/, '/ran_field') || '';
 
+// 移除硬编码的 search_path 选项（避免覆盖 onconnect 中的设置）
+connectionString = connectionString.replace(/[&?]options=-csearch_path[^&]*/, '');
+
 // 添加 connect_timeout 来强制重新连接
 const separator = connectionString.includes('?') ? '&' : '?';
 connectionString += `${separator}connect_timeout=10`;
@@ -25,9 +28,9 @@ const client = postgres(connectionString, {
     application_name: 'ran-field-app',
   },
   onconnect: async (connection) => {
-    // 设置 search_path 为 public
-    await connection.unsafe("SET search_path = public");
-    console.log('已设置 search_path = public');
+    // 设置 search_path 包含 public 和 app schema
+    await connection.unsafe("SET search_path = public, app");
+    console.log('已设置 search_path = public, app');
   },
 });
 

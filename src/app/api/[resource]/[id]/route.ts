@@ -36,16 +36,16 @@ function toSnakeCase(obj: any): any {
 
 // 字段映射：前端字段名 -> 数据库实际列名
 const FIELD_MAPPINGS: Record<string, Record<string, string>> = {
-  app_users: {
+  'app.app_users': {
     nick_name: 'name',
     occupation: 'company',
     location: 'company_scale', // 将 location 映射到 company_scale
   }
 };
 
-// 资源名称映射：前端请求的资源名 -> 实际数据库表名
+// 资源名称映射：前端请求的资源名 -> 实际数据库表名（包含 schema）
 const RESOURCE_NAME_MAPPING: Record<string, string> = {
-  'users': 'app_users',  // 前端使用 /api/users，后端操作 app_users 表
+  'users': 'app.app_users',  // 前端使用 /api/users，后端操作 app.app_users 表
 };
 
 // 应用资源名称映射
@@ -86,11 +86,11 @@ const RESOURCE_TABLES: Record<string, any> = {
   activities: schema.activities,
   visits: schema.visits,
   declarations: schema.declarations,
-  daily_declarations: schema.daily_declarations,
-  activity_registrations: schema.activity_registrations,
+  daily_declarations: schema.dailyDeclarations,
+  activity_registrations: schema.activityRegistrations,
   notifications: schema.notifications,
   documents: schema.documents,
-  visit_records: schema.visit_records,
+  visit_records: schema.visitRecords,
   settings: schema.settings,
 };
 
@@ -116,9 +116,10 @@ export async function GET(
   const actualTableName = getTableName(resource);
 
   try {
-    const result = await client`
-      SELECT * FROM public.${client(actualTableName)} WHERE id = ${id}
-    `;
+    const result = await client.unsafe(
+      `SELECT * FROM "${actualTableName}" WHERE id = $1`,
+      [id]
+    );
 
     if (!result || result.length === 0) {
       return Response.json(
@@ -164,15 +165,7 @@ export async function PUT(
     const mappedData = applyFieldMapping(resource, snakeData);
     console.log('映射后的数据:', mappedData);
 
-    // 使用 Drizzle ORM 的 sql 模板构建 UPDATE 语句
-    const table = getTable(resource);
-    if (!table) {
-      return Response.json(
-        { success: false, error: `Table not found for resource: ${resource}` },
-        { status: 404 }
-      );
-    }
-
+    // 手动构建 UPDATE SQL 语句（使用 client.unsafe）
     const fields = Object.keys(mappedData).filter(key => mappedData[key] !== undefined);
     if (fields.length === 0) {
       return Response.json(
@@ -181,24 +174,21 @@ export async function PUT(
       );
     }
 
-    const updateValues: any = {};
-    for (const field of fields) {
-      updateValues[field] = (mappedData as any)[field];
-    }
+    const setClause = fields.map(field => {
+      const value = (mappedData as any)[field];
+      if (value === null) {
+        return `"${field}" = NULL`;
+      } else if (typeof value === 'string') {
+        return `"${field}" = '${value.replace(/'/g, "''")}'`;
+      } else {
+        return `"${field}" = ${value}`;
+      }
+    }).join(', ');
 
-    console.log('更新值:', updateValues);
+    const updateSql = `UPDATE "${actualTableName}" SET ${setClause} WHERE id = $1 RETURNING *`;
+    console.log('执行 SQL:', updateSql);
 
-    // 使用 postgres.js 的模板字符串语法
-    const updateClauses = fields.map(field => client`${client(field)} = ${(updateValues as any)[field]}`);
-    const setClause = updateClauses.reduce((acc, clause, i) => 
-      i === 0 ? clause : client`${acc}, ${clause}`, client``);
-
-    const result = await client`
-      UPDATE ONLY public.${client(actualTableName)}
-      SET ${setClause}
-      WHERE id = ${id}
-      RETURNING *
-    `;
+    const result = await client.unsafe(updateSql, [id]);
 
     if (!result || result.length === 0) {
       return Response.json(
@@ -238,9 +228,10 @@ export async function DELETE(
   const actualTableName = getTableName(resource);
 
   try {
-    const result = await client`
-      DELETE FROM public.${client(actualTableName)} WHERE id = ${id} RETURNING *
-    `;
+    const result = await client.unsafe(
+      `DELETE FROM "${actualTableName}" WHERE id = $1 RETURNING *`,
+      [id]
+    );
 
     if (!result || result.length === 0) {
       return Response.json(

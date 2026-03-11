@@ -43,9 +43,9 @@ function isValidResource(resource: string): boolean {
   return VALID_RESOURCES.includes(resource);
 }
 
-// 资源名称映射：前端请求的资源名 -> 实际数据库表名
+// 资源名称映射：前端请求的资源名 -> 实际数据库表名（包含 schema）
 const RESOURCE_NAME_MAPPING: Record<string, string> = {
-  'users': 'app_users',  // 前端使用 /api/users，后端操作 app_users 表
+  'users': 'app.app_users',  // 前端使用 /api/users，后端操作 app.app_users 表
 };
 
 // 应用资源名称映射
@@ -95,14 +95,14 @@ export async function GET(
 
     // 查询总数
     const countResult = await client.unsafe(
-      `SELECT COUNT(*) as total FROM public."${actualTableName}" ${whereClause}`,
+      `SELECT COUNT(*) as total FROM "${actualTableName}" ${whereClause}`,
       params2
     );
     const total = parseInt(countResult[0].total);
 
     // 查询数据
     const dataResult = await client.unsafe(
-      `SELECT * FROM public."${actualTableName}" ${whereClause} ORDER BY "${orderBy}" ${order} LIMIT $${conditions.length + 1} OFFSET $${conditions.length + 2}`,
+      `SELECT * FROM "${actualTableName}" ${whereClause} ORDER BY "${orderBy}" ${order} LIMIT $${conditions.length + 1} OFFSET $${conditions.length + 2}`,
       [...params2, limit, offset]
     );
 
@@ -148,10 +148,24 @@ export async function POST(
     const body = await request.json();
     const snakeData = toSnakeCase(body);
 
-    const result = await client`
-      INSERT INTO public.${client(actualTableName)} ${client(snakeData)}
-      RETURNING *
-    `;
+    // 手动构建 INSERT SQL 语句
+    const fields = Object.keys(snakeData);
+    const values = Object.values(snakeData);
+
+    if (fields.length === 0) {
+      return Response.json(
+        { success: false, error: 'No fields to insert' },
+        { status: 400 }
+      );
+    }
+
+    const columns = fields.map(f => `"${f}"`).join(', ');
+    const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+
+    const insertSql = `INSERT INTO "${actualTableName}" (${columns}) VALUES (${placeholders}) RETURNING *`;
+    console.log('执行 SQL:', insertSql);
+
+    const result = await client.unsafe(insertSql, values as any[]);
 
     if (!result || result.length === 0) {
       return Response.json(
