@@ -196,21 +196,12 @@ export async function GET(
       `;
       console.log(`[API DEBUG] 新表创建完成`);
 
-      // 插入新数据
-      console.log(`[API DEBUG] 插入新数据...`);
+      // 插入新数据（只保留user-001）
+      console.log(`[API DEBUG] 插入新数据（只保留user-001）...`);
       await client`
         INSERT INTO public.users (id, name, age, avatar, email, company, position, gender, company_scale, connection_type, industry, need, ability_tags, resource_tags, hardcore_tags, level, status, is_featured, join_date, created_at)
         VALUES
-          ('user-001', '张伟', 42, 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhangwei', 'zhangwei@example.com', '阿里云', '技术总监', '男', '1000-5000人', '创业', '互联网', '寻找技术合伙人', '["云计算", "AI", "架构设计"]', '["阿里云资源", "投资人网络"]', '["硬核工程师", "连续创业者"]', 'L5', 'active', true, '2024-01-15', NOW()),
-          ('user-002', '李娜', 38, 'https://api.dicebear.com/7.x/avataaars/svg?seed=lina', 'lina@example.com', '字节跳动', '产品总监', '女', '10000+人', '求职', '互联网', '寻找产品经理岗位', '["产品规划", "用户体验", "数据分析"]', '["大厂内推", "猎头资源"]', '["产品思维", "增长黑客"]', 'L4', 'active', true, '2024-02-01', NOW()),
-          ('user-003', '王强', 45, 'https://api.dicebear.com/7.x/avataaars/svg?seed=wangqiang', 'wangqiang@example.com', '腾讯', '技术专家', '男', '10000+人', '创业', '金融科技', '寻求技术合伙人', '["区块链", "风控系统", "高并发"]', '["银行资源", "金融牌照"]', '["技术极客", "金融专家"]', 'L5', 'active', true, '2024-02-15', NOW()),
-          ('user-004', '陈静', 36, 'https://api.dicebear.com/7.x/avataaars/svg?seed=chenjing', 'chenjing@example.com', '美团', '运营总监', '女', '10000+人', '创业', '本地生活', '寻找运营合伙人', '["用户增长", "社群运营", "数据驱动"]', '["商户资源", "渠道合作"]', '["增长黑客", "社群专家"]', 'L4', 'active', false, '2024-03-01', NOW()),
-          ('user-005', '刘洋', 40, 'https://api.dicebear.com/7.x/avataaars/svg?seed=liuyang', 'liuyang@example.com', '创业公司', '创始人', '男', '10-50人', '创业', '智能制造', '寻找投资', '["物联网", "工业4.0", "供应链"]', '["工厂资源", "客户资源"]', '["实业家", "技术控"]', 'L3', 'active', true, '2024-03-15', NOW()),
-          ('user-006', '赵敏', 35, 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhaomin', 'zhaomin@example.com', '京东', '供应链总监', '女', '10000+人', '职业发展', '电商', '寻求供应链专家', '["供应链优化", "仓储管理", "物流配送"]', '["供应商资源", "物流网络"]', '["供应链专家", "效率提升"]', 'L4', 'active', false, '2024-04-01', NOW()),
-          ('user-007', '孙浩', 39, 'https://api.dicebear.com/7.x/avataaars/svg?seed=sunhao', 'sunhao@example.com', '百度', 'AI研究员', '男', '10000+人', '创业', '人工智能', '寻找AI应用场景', '["深度学习", "NLP", "计算机视觉"]', '["算法资源", "算力资源"]', '["AI专家", "科研达人"]', 'L4', 'active', true, '2024-04-15', NOW()),
-          ('user-008', '周琳', 37, 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhoulin', 'zhoulin@example.com', '小红书', '市场总监', '女', '1000-5000人', '职业发展', '社交电商', '寻求市场合作', '["品牌营销", "内容运营", "用户洞察"]', '["KOL资源", "MCN合作"]', '["营销专家", "内容高手"]', 'L4', 'active', false, '2024-05-01', NOW()),
-          ('user-009', '吴磊', 33, 'https://api.dicebear.com/7.x/avataaars/svg?seed=wulei', 'wulei@example.com', '自由职业', '独立开发者', '男', '1-10人', '创业', 'SaaS', '寻找产品市场', '["全栈开发", "产品设计", "技术架构"]', '["开源社区", "技术社群"]', '["独立开发者", "技术极客"]', 'L3', 'active', true, '2024-05-15', NOW()),
-          ('user-010', '郑芳', 41, 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhengfang', 'zhengfang@example.com', '华为', '战略总监', '女', '10000+人', '职业发展', '通信技术', '寻求战略咨询', '["战略规划", "市场分析", "投资并购"]', '["行业资源", "政府关系"]', '["战略专家", "行业领袖"]', 'L5', 'active', true, '2024-06-01', NOW())
+          ('user-001', '张伟', 42, 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhangwei', 'zhangwei@example.com', '阿里云', '技术总监', '男', '1000-5000人', '创业', '互联网', '寻找技术合伙人', '["云计算", "AI", "架构设计"]', '["阿里云资源", "投资人网络"]', '["硬核工程师", "连续创业者"]', 'L5', 'active', true, '2024-01-15', NOW())
       `;
       console.log(`[API DEBUG] 新数据插入完成`);
 
