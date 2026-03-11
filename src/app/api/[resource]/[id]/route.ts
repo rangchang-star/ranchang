@@ -46,7 +46,7 @@ const FIELD_MAPPINGS: Record<string, Record<string, string>> = {
 // 资源名称映射：前端请求的资源名 -> 实际数据库表名（包含 schema）
 // 注意：在 app schema 中的表需要显式指定 schema，public schema 中的表也显式指定以避免 search_path 问题
 const RESOURCE_NAME_MAPPING: Record<string, string> = {
-  'users': 'public.app_users',  // 前端使用 /api/users，后端操作 public.app_users 表
+  'users': 'public.users',  // 前端使用 /api/users，后端操作 public.users 表
 };
 
 // 应用资源名称映射
