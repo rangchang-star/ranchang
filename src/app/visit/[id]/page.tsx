@@ -448,7 +448,7 @@ export default function VisitDetailPage() {
                         visit.target.tags.map((tag: string) => (
                           <span
                             key={tag}
-                            className="px-2 py-0.5 bg-green-100 text-[rgba(0,0,0,0.6)] text-[9px]"
+                            className={`px-2 py-0.5 text-[rgba(0,0,0,0.6)] text-[9px] ${tag === '银行' ? 'bg-green-400' : 'bg-green-100'}`}
                           >
                             {tag}
                           </span>
@@ -629,11 +629,11 @@ export default function VisitDetailPage() {
             </div>
 
             {/* 照片 */}
-            {visit.images && visit.images.length > 0 && (
+            {visit.photos && visit.photos.length > 0 && (
               <div>
                 <h3 className="text-[15px] font-semibold text-gray-900 mb-2">现场照片</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {visit.images.map((image: string, index: number) => (
+                  {visit.photos.map((image: string, index: number) => (
                     <div key={index} className="w-full h-32 overflow-hidden">
                       <img
                         src={image}
@@ -642,50 +642,6 @@ export default function VisitDetailPage() {
                       />
                     </div>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {/* 走访录音 */}
-            {visit.feedbackAudio && (
-              <div>
-                <h3 className="text-[15px] font-semibold text-gray-900 mb-2">走访反馈录音</h3>
-                <div className="p-4 bg-[rgba(0,0,0,0.02)]">
-                  <div className="mb-4">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={progress}
-                      onChange={handleSeek}
-                      className="w-full h-1 bg-[rgba(0,0,0,0.1)] rounded-lg appearance-none cursor-pointer"
-                      style={{
-                        background: `linear-gradient(to right, #60a5fa ${progress}%, rgba(0,0,0,0.1) ${progress}%)`,
-                      }}
-                    />
-                    <div className="flex justify-between text-[10px] text-[rgba(0,0,0,0.4)] mt-1">
-                      <span>{formatTime(currentTime)}</span>
-                      <span>{formatTime(duration)}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <Button
-                      onClick={togglePlay}
-                      className="w-14 h-14 bg-blue-400 hover:bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0"
-                    >
-                      {isPlaying ? (
-                        <Pause className="w-6 h-6 text-white" />
-                      ) : (
-                        <Play className="w-6 h-6 text-white ml-1" />
-                      )}
-                    </Button>
-                    <div className="flex-1">
-                      <p className="text-[14px] text-gray-900 font-medium">走访反馈录音</p>
-                      <p className="text-[12px] text-[rgba(0,0,0,0.4)]">
-                        {visit.audioDuration || formatTime(duration)}
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
             )}
