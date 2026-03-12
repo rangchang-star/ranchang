@@ -20,10 +20,15 @@ export function BottomNav() {
   const { showLoginModal } = useLoginModal();
 
   const handleProfileClick = (e: React.MouseEvent) => {
+    console.log('个人按钮被点击，登录状态:', isLoggedIn);
+    
     if (!isLoggedIn) {
       e.preventDefault();
+      console.log('显示登录模态框');
       // 未登录，弹出登录模态框
       showLoginModal();
+    } else {
+      console.log('已登录，跳转到个人中心');
     }
     // 已登录时，让Link组件正常导航，不做任何处理
   };
