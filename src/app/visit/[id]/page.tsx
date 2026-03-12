@@ -442,7 +442,7 @@ export default function VisitDetailPage() {
                         visit.target.tags.map((tag: string) => (
                           <span
                             key={tag}
-                            className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]"
+                            className="px-2 py-0.5 bg-green-100 text-[rgba(0,0,0,0.6)] text-[9px]"
                           >
                             {tag}
                           </span>
@@ -563,6 +563,49 @@ export default function VisitDetailPage() {
               <h3 className="text-[15px] font-semibold text-gray-900 mb-2">备注</h3>
               <p className="text-[13px] text-gray-700 leading-relaxed">{visit.notes || '暂无备注'}</p>
             </div>
+
+            {/* 走访反馈录音 */}
+            {visit.feedbackAudio && (
+              <div>
+                <h3 className="text-[15px] font-semibold text-gray-900 mb-2">走访反馈录音</h3>
+                <div className="flex items-center space-x-3 bg-[rgba(0,0,0,0.02)] rounded-lg p-3">
+                  <button
+                    onClick={togglePlay}
+                    className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
+                  >
+                    {isPlaying ? (
+                      <Pause className="w-5 h-5 text-white" />
+                    ) : (
+                      <Play className="w-5 h-5 text-white ml-0.5" />
+                    )}
+                  </button>
+                  <div className="flex-1">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={progress}
+                      onChange={handleSeek}
+                      className="w-full h-1.5 bg-[rgba(0,0,0,0.1)] rounded-lg appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, #000 ${progress}%, rgba(0,0,0,0.1) ${progress}%)`,
+                      }}
+                    />
+                    <div className="flex justify-between mt-1 text-[11px] text-[rgba(0,0,0,0.4)]">
+                      <span>{formatTime(currentTime)}</span>
+                      <span>{formatTime(duration)}</span>
+                    </div>
+                  </div>
+                </div>
+                <audio
+                  ref={audioRef}
+                  src={visit.feedbackAudio}
+                  onEnded={handleEnded}
+                  preload="metadata"
+                  className="hidden"
+                />
+              </div>
+            )}
 
             {/* 评分 */}
             <div>
