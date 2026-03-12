@@ -239,45 +239,21 @@ export default function AdminVisitCreatePage() {
         date: visitDate,
         time: `${startTime}-${endTime}`,
         status,
-        target: {
-          name: targetName,
-          title: targetTitle,
-          company: targetCompany,
-          avatar: targetAvatar,
-        },
-        purpose,
+        company_name: targetCompany,
         location,
+        description: purpose,
         participants: participants ? parseInt(participants) : 0,
         outcome,
-        keyPoints: keyPoints.filter((kp) => kp.trim()),
-        nextSteps: nextSteps.filter((ns) => ns.trim()),
+        key_points: keyPoints.filter((kp) => kp.trim()),
+        next_steps: nextSteps.filter((ns) => ns.trim()),
         rating,
         notes,
-        images: imageUrls.filter((url) => url.trim()),
-        tags: selectedTags,
-        projectTags: projectTags.filter((tag) => tag.trim()),
-        visitors: selectedVisitors.map((memberId) => {
-          const member = availableMembers.find((m) => m.id === memberId);
-          return member
-            ? {
-                id: member.id,
-                name: member.name,
-                avatar: member.avatar,
-                abilityTags: member.abilityTags,
-              }
-            : null;
-        }).filter(Boolean),
-        createdAt: new Date().toLocaleString('zh-CN'),
+        photos: imageUrls.filter((url) => url.trim()),
+        visitor_id: selectedVisitors.length > 0 ? selectedVisitors[0] : null,
+        created_at: new Date().toISOString(),
       };
 
       console.log('保存探访数据:', visitData);
-
-      // 实际项目中需要调用API保存数据
-      // const response = await fetch('/api/admin/visits', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(visitData),
-      // });
 
       alert('探访添加成功！');
       router.push('/admin/visits');
