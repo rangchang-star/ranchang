@@ -13,7 +13,7 @@ interface Member {
   name: string;
   age: number;
   avatar: string;
-  level: string;
+  level: number;
   adminTags: string[];
   industry: string;
   joinDate: string;
