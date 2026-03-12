@@ -1,37 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, User } from 'lucide-react';
 import Link from 'next/link';
+
+interface User {
+  id: string;
+  name: string;
+  nickname: string;
+  company: string;
+  position: string;
+}
 
 export default function AdminVisitCreatePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   // 探访基本信息 - 对应数据库字段
-  const [company_name, setCompanyName] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [companyId, setCompanyId] = useState(''); // 必填字段，关联用户ID
   const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [industry, setIndustry] = useState('');
   const [capacity, setCapacity] = useState('');
-  const [participants, setParticipants] = useState('');
-  const [status, setStatus] = useState('active');
-  const [visitor_id, setVisitorId] = useState('');
-  const [outcome, setOutcome] = useState('');
-  const [notes, setNotes] = useState('');
-  const [rating, setRating] = useState(5);
-  const [cover_image, setCoverImage] = useState('');
+  const [status, setStatus] = useState('draft');
+  const [coverImage, setCoverImage] = useState('');
+
+  // 加载用户列表
+  useEffect(() => {
+    async function loadUsers() {
+      setLoadingUsers(true);
+      try {
+        const response = await fetch('/admin/api/members');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setUsers(data.data);
+          }
+        }
+      } catch (error) {
+        console.error('加载用户列表失败:', error);
+      } finally {
+        setLoadingUsers(false);
+      }
+    }
+
+    loadUsers();
+  }, []);
+
+  // 当选择用户时，自动填充公司名称
+  const handleUserSelect = (userId: string) => {
+    const selectedUser = users.find(u => u.id === userId);
+    if (selectedUser) {
+      setCompanyId(selectedUser.id);
+      setCompanyName(selectedUser.company || selectedUser.name || '');
+    }
+  };
 
   // 表单验证
   const validateForm = (): boolean => {
-    if (!company_name.trim()) {
+    if (!companyName.trim()) {
       alert('请输入公司名称');
+      return false;
+    }
+    if (!companyId.trim()) {
+      alert('请选择或输入公司ID（关联用户）');
       return false;
     }
     if (!date.trim()) {
@@ -51,25 +91,18 @@ export default function AdminVisitCreatePage() {
 
     setLoading(true);
     try {
-      // 构造数据 - 只包含数据库表字段
+      // 构造数据 - 只包含数据库表 visits 中存在的字段
       const visitData = {
-        company_name,
-        date,
-        time,
-        location,
-        description,
-        industry,
+        companyId: companyId, // 必填，关联 app_users.id
+        companyName: companyName, // 必填
+        date: date, // 必填
+        location: location || null,
+        description: description || null,
+        industry: industry || null,
         capacity: capacity ? parseInt(capacity) : null,
-        participants: participants ? parseInt(participants) : null,
-        status,
-        visitor_id,
-        outcome,
-        notes,
-        rating,
-        cover_image,
-        key_points: [],
-        next_steps: [],
-        photos: [],
+        status: status, // draft, upcoming, completed, cancelled
+        coverImage: coverImage || null,
+        coverImageKey: null, // 如果有对象存储，这里需要设置
       };
 
       console.log('保存探访数据:', visitData);
@@ -128,10 +161,32 @@ export default function AdminVisitCreatePage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  选择用户（关联公司） <span className="text-red-500">*</span>
+                </label>
+                {loadingUsers ? (
+                  <div className="text-sm text-gray-500">加载用户列表中...</div>
+                ) : (
+                  <select
+                    value={companyId}
+                    onChange={(e) => handleUserSelect(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">请选择用户</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name || user.nickname} - {user.company || '无公司'} ({user.position || '无职位'})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   公司名称 <span className="text-red-500">*</span>
                 </label>
                 <Input
-                  value={company_name}
+                  value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="请输入公司名称"
                 />
@@ -145,17 +200,6 @@ export default function AdminVisitCreatePage() {
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  探访时间
-                </label>
-                <Input
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  placeholder="例如：09:00-17:00"
                 />
               </div>
 
@@ -183,45 +227,6 @@ export default function AdminVisitCreatePage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  状态
-                </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="active">进行中</option>
-                  <option value="completed">已完成</option>
-                  <option value="cancelled">已取消</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  访客ID
-                </label>
-                <Input
-                  value={visitor_id}
-                  onChange={(e) => setVisitorId(e.target.value)}
-                  placeholder="请输入访客ID"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  评分 (1-5)
-                </label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="5"
-                  value={rating}
-                  onChange={(e) => setRating(parseInt(e.target.value))}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
                   容量
                 </label>
                 <Input
@@ -234,13 +239,28 @@ export default function AdminVisitCreatePage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  参与人数
+                  状态
+                </label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="draft">草稿</option>
+                  <option value="upcoming">即将开始</option>
+                  <option value="completed">已完成</option>
+                  <option value="cancelled">已取消</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  封面图片URL
                 </label>
                 <Input
-                  type="number"
-                  value={participants}
-                  onChange={(e) => setParticipants(e.target.value)}
-                  placeholder="请输入参与人数"
+                  value={coverImage}
+                  onChange={(e) => setCoverImage(e.target.value)}
+                  placeholder="请输入封面图片URL"
                 />
               </div>
             </div>
@@ -253,46 +273,9 @@ export default function AdminVisitCreatePage() {
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="请输入探访描述..."
-                className="w-full min-h-[120px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-              />
-            </div>
-
-            {/* 探访成果 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                探访成果
-              </label>
-              <textarea
-                value={outcome}
-                onChange={(e) => setOutcome(e.target.value)}
-                placeholder="请输入探访成果..."
-                className="w-full min-h-[120px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-              />
-            </div>
-
-            {/* 探访笔记 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                探访笔记
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="请输入探访笔记..."
-                className="w-full min-h-[120px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-              />
-            </div>
-
-            {/* 封面图片 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                封面图片URL
-              </label>
-              <Input
-                value={cover_image}
-                onChange={(e) => setCoverImage(e.target.value)}
-                placeholder="请输入封面图片URL"
               />
             </div>
           </div>

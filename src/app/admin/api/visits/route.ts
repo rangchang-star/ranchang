@@ -28,14 +28,21 @@ export async function GET(request: NextRequest) {
 
     // 计算每个探访的报名人数
     const data = await Promise.all(visitList.map(async (visit: any) => {
-      const registrationCount = await db
-        .select({ count: visitRegistrations.id })
-        .from(visitRegistrations)
-        .where(eq(visitRegistrations.visitId, visit.id));
+      let registrationCount = 0;
+      try {
+        const regs = await db
+          .select({ count: visitRegistrations.id })
+          .from(visitRegistrations)
+          .where(eq(visitRegistrations.visitId, visit.id));
+        registrationCount = regs.length;
+      } catch (err) {
+        // 如果查询失败，保持为 0
+        console.warn(`查询探访 ${visit.id} 的报名人数失败:`, err);
+      }
 
       return {
         ...visit,
-        registrationCount: registrationCount.length,
+        registrationCount,
       };
     }));
 
