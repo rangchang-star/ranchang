@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, appUsers } from '@/lib/db';
 import { eq } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 
 // POST - 用户注册
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { phone, name } = body;
+    const { phone, password, name } = await request.json();
 
     // 验证必填字段
-    if (!phone || !name) {
+    if (!phone || !password) {
       return NextResponse.json(
-        { success: false, error: '请填写所有必填项' },
+        { success: false, error: '请填写手机号和密码' },
         { status: 400 }
       );
     }
 
-    // 验证手机号格式（简单验证）
+    // 验证手机号格式
     if (!/^1[3-9]\d{9}$/.test(phone)) {
       return NextResponse.json(
         { success: false, error: '手机号格式不正确' },
@@ -38,13 +38,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 创建新用户（暂不需要密码）
+    // 加密密码
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 创建新用户
     const newUser = await db
       .insert(appUsers)
       .values({
         phone,
-        name,
-        nickname: name,
+        password: hashedPassword,
+        name: name || '',
+        nickname: name || '',
         bio: '',
         level: 1,
         hardcoreTags: [],
@@ -55,9 +59,12 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
+    // 返回用户信息（不返回密码）
+    const { password: _, ...userWithoutPassword } = newUser[0];
+
     return NextResponse.json({
       success: true,
-      data: newUser[0],
+      data: userWithoutPassword,
       message: '注册成功',
     });
   } catch (error) {

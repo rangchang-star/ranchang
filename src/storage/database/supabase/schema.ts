@@ -29,6 +29,7 @@ export const notificationType = pgEnum('notification_type', ['system', 'activity
 export const appUsers = pgTable('app_users', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   phone: varchar('phone', { length: 20 }).notNull().unique(),
+  password: varchar('password', { length: 255 }), // 密码（bcrypt加密）
   nickname: varchar('nickname', { length: 50 }),
   name: varchar('name', { length: 50 }),
   avatar: text('avatar'), // 永久CDN地址

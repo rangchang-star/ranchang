@@ -21,7 +21,7 @@ const LoginModalContext = createContext<LoginModalContextType | undefined>(undef
 export function LoginModalProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [phone, setPhone] = useState('');
-  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -31,7 +31,7 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
     setIsOpen(true);
     setError('');
     setPhone('');
-    setName('');
+    setPassword('');
   }, []);
 
   const hideLoginModal = useCallback(() => {
@@ -44,14 +44,13 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
     setError('');
     setIsLoading(true);
 
-    if (!phone) {
-      setError('请输入手机号');
+    if (!phone || !password) {
+      setError('请输入手机号和密码');
       setIsLoading(false);
       return;
     }
 
-    // 使用固定密码"123456"登录（临时方案）
-    const result = await login(phone, '123456');
+    const result = await login(phone, password);
 
     if (result.success) {
       hideLoginModal();
@@ -67,8 +66,8 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
     setError('');
     setIsLoading(true);
 
-    if (!phone || !name) {
-      setError('请填写所有必填项');
+    if (!phone || !password) {
+      setError('请填写手机号和密码');
       setIsLoading(false);
       return;
     }
@@ -77,14 +76,14 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
     const registerResult = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, name }),
+      body: JSON.stringify({ phone, password }),
     });
 
     const data = await registerResult.json();
 
     if (data.success) {
       // 注册成功后自动登录
-      const loginResult = await login(phone, '123456');
+      const loginResult = await login(phone, password);
       if (loginResult.success) {
         hideLoginModal();
       } else {
@@ -119,77 +118,88 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
 
             {/* 登录表单 */}
             <TabsContent value="login" className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="login-phone">手机号</Label>
-                <Input
-                  id="login-phone"
-                  type="tel"
-                  placeholder="请输入手机号"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              
-              {error && (
-                <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">
-                  {error}
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-phone">手机号</Label>
+                  <Input
+                    id="login-phone"
+                    type="tel"
+                    placeholder="请输入手机号"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    disabled={isLoading}
+                  />
                 </div>
-              )}
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                onClick={handleLogin}
-                disabled={isLoading}
-              >
-                {isLoading ? '登录中...' : '登录'}
-              </Button>
-              
-              <div className="text-center text-xs text-gray-400">
-                <p>使用手机号即可登录</p>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">密码</Label>
+                  <Input
+                    id="login-password"
+                    type="password"
+                    placeholder="请输入密码"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                {error && (
+                  <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">
+                    {error}
+                  </div>
+                )}
+
+                <Button 
+                  type="submit"
+                  className="w-full" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? '登录中...' : '登录'}
+                </Button>
+              </form>
             </TabsContent>
 
             {/* 注册表单 */}
             <TabsContent value="register" className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="register-name">姓名 *</Label>
-                <Input
-                  id="register-name"
-                  type="text"
-                  placeholder="请输入真实姓名"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="register-phone">手机号 *</Label>
-                <Input
-                  id="register-phone"
-                  type="tel"
-                  placeholder="请输入手机号"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              
-              {error && (
-                <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">
-                  {error}
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="register-phone">手机号 *</Label>
+                  <Input
+                    id="register-phone"
+                    type="tel"
+                    placeholder="请输入手机号"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    disabled={isLoading}
+                  />
                 </div>
-              )}
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                onClick={handleRegister}
-                disabled={isLoading}
-              >
-                {isLoading ? '注册中...' : '注册'}
-              </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">密码 *</Label>
+                  <Input
+                    id="register-password"
+                    type="password"
+                    placeholder="请输入密码（6-20位）"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                {error && (
+                  <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">
+                    {error}
+                  </div>
+                )}
+
+                <Button 
+                  type="submit"
+                  className="w-full" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? '注册中...' : '注册'}
+                </Button>
+              </form>
             </TabsContent>
           </Tabs>
         </DialogContent>

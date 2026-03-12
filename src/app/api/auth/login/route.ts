@@ -30,14 +30,14 @@ export async function POST(request: NextRequest) {
 
     const user = users[0];
 
-    // TODO: 验证密码（需要先实现密码加密存储）
-    // const isValidPassword = await bcrypt.compare(password, user.password);
-    // if (!isValidPassword) {
-    //   return NextResponse.json(
-    //     { success: false, error: '密码错误' },
-    //     { status: 401 }
-    //   );
-    // }
+    // 验证密码
+    const isValidPassword = await bcrypt.compare(password, user.password || '');
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { success: false, error: '密码错误' },
+        { status: 401 }
+      );
+    }
 
     // 返回用户信息（不包含敏感信息）
     const userData = {
@@ -62,10 +62,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: {
-        user: userData,
-        // token,
-      },
+      data: userData,
+      // token,
     });
   } catch (error) {
     console.error('登录失败:', error);
