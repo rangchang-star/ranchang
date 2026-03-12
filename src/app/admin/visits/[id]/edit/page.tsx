@@ -107,11 +107,11 @@ export default function AdminVisitEditPage() {
           setRecord(visit.record || '');
           setOutcome(visit.outcome || '');
           setNotes(visit.notes || '');
-          setKeyPoints(visit.keyPoints ? JSON.stringify(visit.keyPoints) : '');
-          setNextSteps(visit.nextSteps ? JSON.stringify(visit.nextSteps) : '');
+          setKeyPoints(visit.keyPoints ? visit.keyPoints.join('\n') : '');
+          setNextSteps(visit.nextSteps ? visit.nextSteps.join('\n') : '');
           setRating(visit.rating?.toString() || '');
           setFeedbackAudio(visit.feedbackAudio || '');
-          setPhotos(visit.photos ? JSON.stringify(visit.photos) : '');
+          setPhotos(visit.photos ? visit.photos.join('\n') : '');
           setParticipants(visit.participants?.toString() || '');
         } else {
           throw new Error(data.error || '加载探访数据失败');
@@ -170,11 +170,11 @@ export default function AdminVisitEditPage() {
         record: record || null,
         outcome: outcome || null,
         notes: notes || null,
-        keyPoints: keyPoints ? JSON.parse(keyPoints) : null,
-        nextSteps: nextSteps ? JSON.parse(nextSteps) : null,
+        keyPoints: keyPoints ? keyPoints.split('\n').filter(item => item.trim()) : null,
+        nextSteps: nextSteps ? nextSteps.split('\n').filter(item => item.trim()) : null,
         rating: rating ? parseInt(rating) : null,
         feedbackAudio: feedbackAudio || null,
-        photos: photos ? JSON.parse(photos) : null,
+        photos: photos ? photos.split('\n').filter(item => item.trim()) : null,
         participants: participants ? parseInt(participants) : null,
       };
 
@@ -425,31 +425,31 @@ export default function AdminVisitEditPage() {
               />
             </div>
 
-            {/* 关键点（JSON格式） */}
+            {/* 关键点 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                关键点（JSON数组格式）
+                关键点（每行一个）
               </label>
               <textarea
                 value={keyPoints}
                 onChange={(e) => setKeyPoints(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder='["关键点1", "关键点2"]'
+                placeholder="关键点1&#10;关键点2&#10;关键点3"
               />
             </div>
 
-            {/* 下一步计划（JSON格式） */}
+            {/* 下一步计划 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                下一步计划（JSON数组格式）
+                下一步计划（每行一个）
               </label>
               <textarea
                 value={nextSteps}
                 onChange={(e) => setNextSteps(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder='["计划1", "计划2"]'
+                placeholder="计划1&#10;计划2&#10;计划3"
               />
             </div>
 
@@ -481,17 +481,17 @@ export default function AdminVisitEditPage() {
               </div>
             </div>
 
-            {/* 照片（JSON格式） */}
+            {/* 照片 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                照片（JSON数组格式）
+                照片（每行一个URL）
               </label>
               <textarea
                 value={photos}
                 onChange={(e) => setPhotos(e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder='["照片URL1", "照片URL2"]'
+                placeholder="照片URL1&#10;照片URL2&#10;照片URL3"
               />
             </div>
           </div>
