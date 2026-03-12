@@ -228,7 +228,9 @@ export function ProfileEditContent() {
 
             // 标记已刷新过
             hasRefreshedData.current = true;
-            // 不再调用 refreshUser，避免触发数据重置
+            
+            // 关键：调用 refreshUser 更新 AuthContext，确保 getUserProfile 能获取最新数据
+            await refreshUser();
           }
         }
       } catch (error) {
@@ -237,7 +239,7 @@ export function ProfileEditContent() {
     };
 
     refreshUserDataFromDatabase();
-  }, [isLoggedIn, user?.id]);
+  }, [isLoggedIn, user?.id, refreshUser]);
 
   // 高燃宣告 - 简化为简单的主题和内容
   const [declarationTheme, setDeclarationTheme] = useState<string>('');
@@ -283,6 +285,42 @@ export function ProfileEditContent() {
         }
       }
     }
+  }, [user?.id]);
+
+  // 从数据库获取用户的高燃宣告数据
+  useEffect(() => {
+    const fetchUserDeclarations = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await fetch(`/api/declarations?userId=${user.id}`);
+        const result = await response.json();
+
+        if (result.success && result.data && result.data.length > 0) {
+          // 获取最新的高燃宣告
+          const latestDeclaration = result.data[0];
+          
+          // 更新高燃宣告状态
+          setDeclarationTheme(latestDeclaration.text || '');
+          setDeclarationDescription(latestDeclaration.summary || '');
+          
+          // 同时保存到 localStorage
+          localStorage.setItem(`userDeclarations_${user.id}`, JSON.stringify([{
+            theme: latestDeclaration.text || '',
+            description: latestDeclaration.summary || '',
+            direction: latestDeclaration.direction || 'confidence',
+          }]));
+
+          console.log('从数据库获取到高燃宣告:', latestDeclaration);
+        } else {
+          console.log('数据库中没有该用户的高燃宣告数据');
+        }
+      } catch (error) {
+        console.error('获取高燃宣告数据失败:', error);
+      }
+    };
+
+    fetchUserDeclarations();
   }, [user?.id]);
 
   const handlePurposeSelect = (purpose: string) => {
