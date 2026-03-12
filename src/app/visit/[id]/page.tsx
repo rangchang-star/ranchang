@@ -403,6 +403,12 @@ export default function VisitDetailPage() {
                   {visit.industry}
                 </Badge>
               )}
+              {/* 浏览量 */}
+              <div className="absolute bottom-5 right-5">
+                <Badge className="rounded-none bg-black/60 text-white font-normal text-[12px]">
+                  {visit.views || 0} 浏览
+                </Badge>
+              </div>
             </div>
           </div>
 
@@ -422,8 +428,6 @@ export default function VisitDetailPage() {
                   <Calendar className="w-4 h-4" />
                   <span>{formatDate(visit.date)}</span>
                 </div>
-                <span>·</span>
-                <span>{visit.views || 0} 浏览</span>
               </div>
             </div>
 
