@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, visits, appUsers } from '@/lib/db';
-import { eq, inArray } from 'drizzle-orm';
+import { db } from '@/storage/database/supabase/connection';
+import { visits, appUsers, declarations } from '@/storage/database/supabase/schema';
+import { eq, inArray, desc } from 'drizzle-orm';
 
 // GET - 获取探访详情
 export async function GET(
@@ -87,6 +88,21 @@ export async function GET(
       })));
     }
 
+    // 查询被探访对象的高燃宣告（最新一条）
+    let targetDeclaration = null;
+    if (visit.companyId) {
+      const declarationList = await db
+        .select()
+        .from(declarations)
+        .where(eq(declarations.userId, visit.companyId))
+        .orderBy(desc(declarations.createdAt))
+        .limit(1);
+
+      if (declarationList.length > 0) {
+        targetDeclaration = declarationList[0];
+      }
+    }
+
     const data = {
       id: visit.id,
       title: visit.companyName, // 兼容前端使用的 title 字段
@@ -125,6 +141,15 @@ export async function GET(
         title: visit.targetPosition,
         company: visit.targetCompany,
         tags: visit.targetTags,
+        declaration: targetDeclaration ? {
+          direction: targetDeclaration.direction,
+          text: targetDeclaration.text,
+          summary: targetDeclaration.summary,
+          audioUrl: targetDeclaration.audioUrl,
+          audioKey: targetDeclaration.audioKey,
+          views: targetDeclaration.views,
+          date: targetDeclaration.date,
+        } : null,
       } : null,
       // 探访人信息
       visitors,

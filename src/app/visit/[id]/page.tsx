@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { useLoginModal } from '@/contexts/login-modal-context-v2';
+import { getImageUrl } from '@/lib/utils/storage-url';
 
 export default function VisitDetailPage() {
   const params = useParams();
@@ -48,6 +49,9 @@ export default function VisitDetailPage() {
   // 收藏状态
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // 被访者头像 URL
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
   // 从 API 加载探访数据
   useEffect(() => {
     async function loadVisit() {
@@ -71,6 +75,12 @@ export default function VisitDetailPage() {
             visitData.date = String(visitData.date).split('T')[0];
           }
           setVisit(visitData);
+
+          // 获取被访者头像 URL
+          if (visitData.target?.avatar) {
+            const url = await getImageUrl(visitData.target.avatar);
+            setAvatarUrl(url);
+          }
 
           // 检查用户是否已收藏该项目
           if (user?.id) {
@@ -444,7 +454,7 @@ export default function VisitDetailPage() {
               {visit.target ? (
                 <div className="flex items-center space-x-3">
                   <Avatar className="w-12 h-12">
-                    <AvatarImage src={visit.target.avatar || ''} alt={visit.target.name || ''} />
+                    <AvatarImage src={avatarUrl || ''} alt={visit.target.name || ''} />
                     <AvatarFallback>{visit.target.name ? visit.target.name[0] : '被'}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
@@ -472,6 +482,33 @@ export default function VisitDetailPage() {
                 <div className="text-[13px] text-[rgba(0,0,0,0.4)]">暂无被访者信息</div>
               )}
             </div>
+
+            {/* 高燃宣告 */}
+            {visit.target?.declaration && (
+              <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-[15px] font-semibold text-gray-900">高燃宣告</h3>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="secondary" className="text-[11px] bg-white text-orange-600 border-orange-300">
+                      {visit.target.declaration.direction === 'confidence' && '信心'}
+                      {visit.target.declaration.direction === 'mission' && '使命'}
+                      {visit.target.declaration.direction === 'self' && '自我'}
+                      {visit.target.declaration.direction === 'opponent' && '对手'}
+                      {visit.target.declaration.direction === 'environment' && '环境'}
+                      {!['confidence', 'mission', 'self', 'opponent', 'environment'].includes(visit.target.declaration.direction) && visit.target.declaration.direction}
+                    </Badge>
+                  </div>
+                </div>
+                <p className="text-[13px] text-gray-700 leading-relaxed mb-2">
+                  {visit.target.declaration.text}
+                </p>
+                {visit.target.declaration.summary && visit.target.declaration.summary !== visit.target.declaration.text && (
+                  <p className="text-[12px] text-gray-600 leading-relaxed">
+                    {visit.target.declaration.summary}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* 拜访信息 */}
             <div className="space-y-3">
