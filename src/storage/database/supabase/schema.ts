@@ -33,11 +33,20 @@ export const appUsers = pgTable('app_users', {
   name: varchar('name', { length: 50 }),
   avatar: text('avatar'), // 永久CDN地址
   bio: text('bio'),
+  age: integer('age'),
+  gender: varchar('gender', { length: 10 }),
   industry: varchar('industry', { length: 50 }),
   company: varchar('company', { length: 100 }),
   position: varchar('position', { length: 50 }),
+  city: varchar('city', { length: 50 }),
   level: integer('level').default(1), // 用户等级
   achievement: text('achievement'), // 成就
+  hardcoreTags: jsonb('hardcore_tags').$type<string[]>(), // 硬核技能标签
+  tags: jsonb('tags').$type<string[]>(), // 普通标签
+  tagStamp: varchar('tag_stamp', { length: 50 }), // 标签类型
+  need: text('need'), // 用户需求
+  isTrusted: boolean('is_trusted').default(false), // 是否信任
+  isFeatured: boolean('is_featured').default(false), // 是否精选
   status: userStatus('status').default('active'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -53,12 +62,18 @@ export const appUsers = pgTable('app_users', {
 export const activities = pgTable('activities', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   title: varchar('title', { length: 200 }).notNull(),
+  subtitle: varchar('subtitle', { length: 200 }),
   description: text('description').notNull(),
+  category: varchar('category', { length: 50 }),
   date: timestamp('date', { withTimezone: true }).notNull(),
+  startDate: timestamp('start_date', { withTimezone: true }).notNull(),
+  endDate: timestamp('end_date', { withTimezone: true }).notNull(),
   startTime: varchar('start_time', { length: 20 }), // 14:00
   endTime: varchar('end_time', { length: 20 }), // 17:00
   location: varchar('location', { length: 200 }),
+  address: varchar('address', { length: 200 }),
   capacity: integer('capacity').default(0),
+  teaFee: integer('tea_fee').default(0), // 茶水费（元）
   type: varchar('type', { length: 50 }).default('salon'), // salon, workshop, meetup
   coverImage: text('cover_image'), // 永久CDN地址
   coverImageKey: text('cover_image_key'), // 对象存储fileKey
@@ -146,12 +161,18 @@ export const declarations = pgTable('declarations', {
   userName: varchar('user_name', { length: 50 }),
   userAvatar: text('user_avatar'), // 永久CDN地址
   userLevel: integer('user_level').default(1),
+  userPosition: varchar('user_position', { length: 100 }), // 用户职位
   direction: varchar('direction', { length: 100 }), // 方向
   text: text('text').notNull(),
   summary: text('summary'),
   audioUrl: varchar('audio_url', { length: 500 }), // 音频URL
+  audioKey: text('audio_key'), // 音频fileKey
+  icon: varchar('icon', { length: 100 }), // 图标URL
+  iconType: varchar('icon_type', { length: 50 }), // 图标类型
+  duration: varchar('duration', { length: 20 }), // 时长，如 "3:45"
   views: integer('views').default(0),
   likes: integer('likes').default(0),
+  rank: integer('rank').default(0), // 排序
   isFeatured: boolean('is_featured').default(false),
   date: date('date').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -172,6 +193,7 @@ export const dailyDeclarations = pgTable('daily_declarations', {
   image: text('image'), // 永久CDN地址
   imageKey: text('image_key'), // 对象存储fileKey
   audio: text('audio'), // 音频CDN地址
+  audioUrl: varchar('audio_url', { length: 500 }), // 音频URL
   audioKey: text('audio_key'), // 音频fileKey
   summary: text('summary'),
   text: text('text'),
@@ -180,6 +202,7 @@ export const dailyDeclarations = pgTable('daily_declarations', {
   profile: text('profile'),
   duration: varchar('duration', { length: 50 }),
   views: integer('views').default(0),
+  isActive: boolean('is_active').default(true), // 是否激活显示
   isFeatured: boolean('is_featured').default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -195,15 +218,19 @@ export const dailyDeclarations = pgTable('daily_declarations', {
 export const documents = pgTable('documents', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   title: varchar('title', { length: 200 }).notNull(),
+  type: varchar('type', { length: 50 }), // 资料类型
   description: text('description'),
   category: varchar('category', { length: 50 }),
+  content: text('content'),
   fileUrl: text('file_url'), // 文件CDN地址
   fileKey: text('file_key'), // 对象存储fileKey
   coverImage: text('cover_image'), // 封面CDN地址
   coverImageKey: text('cover_image_key'), // 封面fileKey
+  icon: varchar('icon', { length: 100 }), // 图标
   fileSize: integer('file_size'),
   fileType: varchar('file_type', { length: 50 }),
   downloads: integer('downloads').default(0),
+  downloadCount: integer('download_count').default(0), // 下载次数
   likes: integer('likes').default(0),
   authorId: varchar('author_id', { length: 36 }).references(() => appUsers.id, { onDelete: 'set null' }),
   status: varchar('status', { length: 20 }).default('published'),

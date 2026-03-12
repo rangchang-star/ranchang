@@ -19,11 +19,20 @@ CREATE TABLE app_users (
   name VARCHAR(50),
   avatar TEXT,
   bio TEXT,
+  age INTEGER,
+  gender VARCHAR(10),
   industry VARCHAR(50),
   company VARCHAR(100),
   position VARCHAR(50),
+  city VARCHAR(50),
   level INTEGER DEFAULT 1,
   achievement TEXT,
+  hardcore_tags JSONB,
+  tags JSONB,
+  tag_stamp VARCHAR(50),
+  need TEXT,
+  is_trusted BOOLEAN DEFAULT FALSE,
+  is_featured BOOLEAN DEFAULT FALSE,
   status user_status DEFAULT 'active',
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
@@ -39,12 +48,18 @@ CREATE INDEX idx_app_users_level ON app_users(level);
 CREATE TABLE activities (
   id VARCHAR(36) PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(200) NOT NULL,
+  subtitle VARCHAR(200),
   description TEXT NOT NULL,
+  category VARCHAR(50),
   date TIMESTAMP WITH TIME ZONE NOT NULL,
+  start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  end_date TIMESTAMP WITH TIME ZONE NOT NULL,
   start_time VARCHAR(20),
   end_time VARCHAR(20),
   location VARCHAR(200),
+  address VARCHAR(200),
   capacity INTEGER DEFAULT 0,
+  tea_fee INTEGER DEFAULT 0,
   type VARCHAR(50) DEFAULT 'salon',
   cover_image TEXT,
   cover_image_key TEXT,
@@ -133,12 +148,18 @@ CREATE TABLE declarations (
   user_name VARCHAR(50),
   user_avatar TEXT,
   user_level INTEGER DEFAULT 1,
+  user_position VARCHAR(100),
   direction VARCHAR(100),
   text TEXT NOT NULL,
   summary TEXT,
   audio_url VARCHAR(500),
+  audio_key TEXT,
+  icon VARCHAR(100),
+  icon_type VARCHAR(50),
+  duration VARCHAR(20),
   views INTEGER DEFAULT 0,
   likes INTEGER DEFAULT 0,
+  rank INTEGER DEFAULT 0,
   is_featured BOOLEAN DEFAULT FALSE,
   date DATE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -159,6 +180,7 @@ CREATE TABLE daily_declarations (
   image TEXT,
   image_key TEXT,
   audio TEXT,
+  audio_url VARCHAR(500),
   audio_key TEXT,
   summary TEXT,
   text TEXT,
@@ -167,6 +189,7 @@ CREATE TABLE daily_declarations (
   profile TEXT,
   duration VARCHAR(50),
   views INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
   is_featured BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
@@ -182,15 +205,19 @@ CREATE INDEX idx_daily_declarations_rank ON daily_declarations(rank);
 CREATE TABLE documents (
   id VARCHAR(36) PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(200) NOT NULL,
+  type VARCHAR(50),
   description TEXT,
   category VARCHAR(50),
+  content TEXT,
   file_url TEXT,
   file_key TEXT,
   cover_image TEXT,
   cover_image_key TEXT,
+  icon VARCHAR(100),
   file_size INTEGER,
   file_type VARCHAR(50),
   downloads INTEGER DEFAULT 0,
+  download_count INTEGER DEFAULT 0,
   likes INTEGER DEFAULT 0,
   author_id VARCHAR(36) REFERENCES app_users(id) ON DELETE SET NULL,
   status VARCHAR(20) DEFAULT 'published',
@@ -229,21 +256,16 @@ CREATE TABLE consultations (
   consultant_id VARCHAR(36) REFERENCES app_users(id) ON DELETE SET NULL,
   topic VARCHAR(200) NOT NULL,
   description TEXT,
-  status VARCHAR(20) DEFAULT 'pending',
-  scheduled_at TIMESTAMP WITH TIME ZONE,
+  status VARCHAR(50) DEFAULT 'pending',
+  scheduled_time TIMESTAMP WITH TIME ZONE,
   duration INTEGER,
-  recording_url TEXT,
-  recording_key TEXT,
   notes TEXT,
-  rating INTEGER,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_consultations_user_id ON consultations(user_id);
-CREATE INDEX idx_consultations_consultant_id ON consultations(consultant_id);
 CREATE INDEX idx_consultations_status ON consultations(status);
-CREATE INDEX idx_consultations_scheduled_at ON consultations(scheduled_at);
 
 -- ============================================================
 -- 11. 评估表（assessments）
@@ -251,21 +273,15 @@ CREATE INDEX idx_consultations_scheduled_at ON consultations(scheduled_at);
 CREATE TABLE assessments (
   id VARCHAR(36) PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id VARCHAR(36) NOT NULL REFERENCES app_users(id) ON DELETE CASCADE,
-  assessor_id VARCHAR(36) REFERENCES app_users(id) ON DELETE SET NULL,
   type VARCHAR(50) NOT NULL,
-  score INTEGER,
-  feedback TEXT,
-  criteria JSONB,
-  results JSONB,
-  status VARCHAR(20) DEFAULT 'draft',
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+  score JSONB,
+  result TEXT,
+  notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_assessments_user_id ON assessments(user_id);
-CREATE INDEX idx_assessments_assessor_id ON assessments(assessor_id);
 CREATE INDEX idx_assessments_type ON assessments(type);
-CREATE INDEX idx_assessments_status ON assessments(status);
 
 -- ============================================================
 -- 12. 管理员表（admin_users）
@@ -273,21 +289,15 @@ CREATE INDEX idx_assessments_status ON assessments(status);
 CREATE TABLE admin_users (
   id VARCHAR(36) PRIMARY KEY DEFAULT gen_random_uuid(),
   username VARCHAR(50) NOT NULL UNIQUE,
-  email VARCHAR(100) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   name VARCHAR(50),
-  avatar TEXT,
-  role VARCHAR(20) DEFAULT 'admin',
-  permissions JSONB,
-  last_login_at TIMESTAMP WITH TIME ZONE,
-  status VARCHAR(20) DEFAULT 'active',
+  role VARCHAR(50) DEFAULT 'admin',
+  status user_status DEFAULT 'active',
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_admin_users_username ON admin_users(username);
-CREATE INDEX idx_admin_users_email ON admin_users(email);
-CREATE INDEX idx_admin_users_role ON admin_users(role);
 CREATE INDEX idx_admin_users_status ON admin_users(status);
 
 -- ============================================================
@@ -296,90 +306,28 @@ CREATE INDEX idx_admin_users_status ON admin_users(status);
 CREATE TABLE settings (
   id VARCHAR(36) PRIMARY KEY DEFAULT gen_random_uuid(),
   key VARCHAR(100) NOT NULL UNIQUE,
-  value JSONB NOT NULL,
+  value TEXT NOT NULL,
   description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_settings_key ON settings(key);
 
 -- ============================================================
--- 插入初始数据
+-- 初始化数据
 -- ============================================================
 
--- 插入默认管理员账户
--- 密码: admin123 (需要用 bcrypt 加密后插入)
-INSERT INTO admin_users (id, username, email, password, name, role, status)
-VALUES (
-  'admin-001',
-  'admin',
-  'admin@ranchang.com',
-  '$2b$10$rqOwZJ1Z0K8w5KpKqK5q5O5qK5qK5qK5qK5qK5qK5qK5qK5qK5qK5q',
-  '系统管理员',
-  'superadmin',
-  'active'
-) ON CONFLICT (username) DO NOTHING;
+-- 创建默认管理员账号（密码: admin123，实际应用中需要加密）
+INSERT INTO admin_users (username, password, name, role, status)
+VALUES ('admin', '$2a$10$rQK8qZqZqZqZqZqZqZqZqO', '超级管理员', 'admin', 'active');
 
--- 插入默认系统设置
+-- 初始化页面设置
 INSERT INTO settings (key, value, description)
 VALUES
-  ('site_name', '"燃场"', '网站名称'),
-  ('site_description', '"点燃创业激情，成就梦想"', '网站描述'),
-  ('site_logo', '""', '网站Logo'),
-  ('site_favicon', '""', '网站Favicon'),
-  ('contact_email', '"contact@ranchang.com"', '联系邮箱'),
-  ('contact_phone', '"400-888-8888"', '联系电话'),
-  ('social_wechat', '""', '微信公众号'),
-  ('social_weibo', '""', '微博账号'),
-  ('social_douyin', '""', '抖音账号')
-ON CONFLICT (key) DO NOTHING;
+  ('discovery', '{"slogan":"发现光亮，点亮事业","logo":"/logo-ranchang.png","music":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3","backgroundImage":"/discovery-bg.jpg"}', '发现页设置'),
+  ('activities', '{"defaultCapacity":20,"defaultTeaFee":100}', '活动页默认设置'),
+  ('visits', '{"defaultCapacity":10}', '探访页默认设置');
 
--- ============================================================
--- 创建更新时间触发器（可选）
--- ============================================================
-
--- 为所有表的 updated_at 字段创建自动更新触发器
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- 为需要的表添加触发器
-CREATE TRIGGER update_app_users_updated_at BEFORE UPDATE ON app_users
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_activities_updated_at BEFORE UPDATE ON activities
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_activity_registrations_updated_at BEFORE UPDATE ON activity_registrations
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_visits_updated_at BEFORE UPDATE ON visits
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_visit_records_updated_at BEFORE UPDATE ON visit_records
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_declarations_updated_at BEFORE UPDATE ON declarations
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_daily_declarations_updated_at BEFORE UPDATE ON daily_declarations
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_documents_updated_at BEFORE UPDATE ON documents
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_consultations_updated_at BEFORE UPDATE ON consultations
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_assessments_updated_at BEFORE UPDATE ON assessments
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_admin_users_updated_at BEFORE UPDATE ON admin_users
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_settings_updated_at BEFORE UPDATE ON settings
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- 注释：以上密码是 admin123 的 bcrypt 哈希值（示例）
+-- 实际部署时需要使用真实的 bcrypt 哈希值
