@@ -128,17 +128,28 @@ export const visits = pgTable('visits', {
   location: varchar('location', { length: 255 }),
   description: text('description'),
   date: timestamp('date', { withTimezone: true }).notNull(),
+  time: varchar('time', { length: 20 }),
   capacity: integer('capacity').default(0),
   registeredCount: integer('registered_count').default(0),
   coverImage: text('cover_image'), // 永久CDN地址
   coverImageKey: text('cover_image_key'), // 对象存储fileKey
   status: visitStatus('status').default('draft'),
+  record: text('record'),
+  outcome: text('outcome'),
+  notes: text('notes'),
+  keyPoints: jsonb('key_points'),
+  nextSteps: jsonb('next_steps'),
+  rating: integer('rating'),
+  feedbackAudio: text('feedback_audio'),
+  photos: jsonb('photos'),
+  participants: integer('participants'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   index('visits_company_id_idx').on(table.companyId),
   index('visits_status_idx').on(table.status),
   index('visits_date_idx').on(table.date),
+  index('visits_cover_image_key_idx').on(table.coverImageKey),
 ]);
 
 // ============================================================

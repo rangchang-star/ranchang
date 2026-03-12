@@ -26,21 +26,21 @@ export async function GET(request: NextRequest) {
       location: visit.location,
       description: visit.description,
       date: visit.date,
-      time: null, // 数据库中不存在此字段
+      time: visit.time,
       capacity: visit.capacity,
-      participants: null, // 数据库中不存在此字段
+      participants: visit.participants,
       registeredCount: visit.registeredCount,
       coverImage: visit.coverImage,
       coverImageKey: visit.coverImageKey,
       status: visit.status,
-      record: null, // 数据库中不存在此字段
-      outcome: null, // 数据库中不存在此字段
-      notes: null, // 数据库中不存在此字段
-      keyPoints: [], // 数据库中不存在此字段
-      nextSteps: [], // 数据库中不存在此字段
-      rating: null, // 数据库中不存在此字段
-      feedbackAudio: null, // 数据库中不存在此字段
-      photos: [], // 数据库中不存在此字段
+      record: visit.record,
+      outcome: visit.outcome,
+      notes: visit.notes,
+      keyPoints: visit.keyPoints,
+      nextSteps: visit.nextSteps,
+      rating: visit.rating,
+      feedbackAudio: visit.feedbackAudio,
+      photos: visit.photos,
       createdAt: visit.createdAt,
       updatedAt: visit.updatedAt,
     }));
@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
         companyId: body.companyId,
         companyName: body.companyName,
         date: new Date(body.date),
+        time: body.time || null,
         capacity: body.capacity,
         coverImage: body.coverImage,
         coverImageKey: body.coverImageKey,
@@ -76,6 +77,15 @@ export async function POST(request: NextRequest) {
         location: body.location || null,
         description: body.description || null,
         industry: body.industry || null,
+        record: body.record || null,
+        outcome: body.outcome || null,
+        notes: body.notes || null,
+        keyPoints: body.keyPoints || null,
+        nextSteps: body.nextSteps || null,
+        rating: body.rating || null,
+        feedbackAudio: body.feedbackAudio || null,
+        photos: body.photos || null,
+        participants: body.participants || null,
       })
       .returning();
 
