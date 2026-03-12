@@ -83,6 +83,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
 
       if (data.success && data.data) {
+        // 清除旧用户的localStorage数据（防止数据污染）
+        if (typeof window !== 'undefined') {
+          // 清除所有用户相关的localStorage数据
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('userExperiences_') || 
+                        key.startsWith('userAchievements_') || 
+                        key.startsWith('userDeclarations_') ||
+                        key.startsWith('userProfile_'))) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(key => localStorage.removeItem(key));
+        }
+
         setUser(data.data);
         localStorage.setItem('currentUser', JSON.stringify(data.data));
         setUserRole(data.data.role || 'user');
@@ -99,11 +115,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 用户登出
   const logout = useCallback(() => {
+    const userId = user?.id;
+
+    // 清除当前用户的localStorage数据
+    if (typeof window !== 'undefined' && userId) {
+      localStorage.removeItem(`userExperiences_${userId}`);
+      localStorage.removeItem(`userAchievements_${userId}`);
+      localStorage.removeItem(`userDeclarations_${userId}`);
+      localStorage.removeItem(`userProfile_${userId}`);
+    }
+
     setUser(null);
     setUserRole('user');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('userRole');
-  }, []);
+  }, [user?.id]);
 
   // 刷新用户信息
   const refreshUser = useCallback(async () => {

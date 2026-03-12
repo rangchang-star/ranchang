@@ -551,11 +551,11 @@ export default function ProfilePage() {
     fetchUserDeclarations();
   }, [user?.id]);
 
-  // 从 localStorage 读取工作经历和主要成就
+  // 从 localStorage 读取工作经历和主要成就（按用户ID隔离）
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && user?.id) {
       // 读取工作经历
-      const savedExperiences = localStorage.getItem('userExperiences');
+      const savedExperiences = localStorage.getItem(`userExperiences_${user.id}`);
       if (savedExperiences) {
         try {
           const experiences = JSON.parse(savedExperiences);
@@ -566,7 +566,7 @@ export default function ProfilePage() {
       }
 
       // 读取主要成就
-      const savedAchievements = localStorage.getItem('userAchievements');
+      const savedAchievements = localStorage.getItem(`userAchievements_${user.id}`);
       if (savedAchievements) {
         try {
           const achievements = JSON.parse(savedAchievements);
@@ -576,7 +576,7 @@ export default function ProfilePage() {
         }
       }
     }
-  }, []);
+  }, [user?.id]);
 
   // 切换量表展开状态
   const toggleAssessmentExpand = (index: number) => {

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>清除旧数据</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .info {
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border-left: 4px solid #2196F3;
+    }
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background: #1976D2;
+    }
+    button.danger {
+      background: #f44336;
+    }
+    button.danger:hover {
+      background: #d32f2f;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      display: none;
+    }
+    .result.success {
+      background: #c8e6c9;
+      border-left: 4px solid #4CAF50;
+    }
+    .result.error {
+      background: #ffcdd2;
+      border-left: 4px solid #f44336;
+    }
+    .key-list {
+      margin-top: 20px;
+      max-height: 200px;
+      overflow-y: auto;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>清除浏览器旧数据</h1>
+    
+    <div class="info">
+      <p><strong>说明：</strong></p>
+      <p>此工具用于清除之前测试时遗留的localStorage数据，避免不同用户之间的数据污染。</p>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <p>当前localStorage中的用户相关数据：</p>
+      <div class="key-list" id="keyList">正在加载...</div>
+    </div>
+
+    <div>
+      <button onclick="clearOldData()">清除旧用户数据</button>
+      <button class="danger" onclick="clearAllData()">清除所有数据</button>
+    </div>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    // 加载并显示所有localStorage数据
+    function loadKeys() {
+      const keyList = document.getElementById('keyList');
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('userExperiences_') ||
+                    key.startsWith('userAchievements_') ||
+                    key.startsWith('userDeclarations_') ||
+                    key.startsWith('userProfile_') ||
+                    key.startsWith('currentUser') ||
+                    key.startsWith('userRole'))) {
+          keys.push(key);
+        }
+      }
+
+      if (keys.length === 0) {
+        keyList.innerHTML = '<p style="color: #4CAF50;">没有找到用户相关数据</p>';
+      } else {
+        keyList.innerHTML = keys.map(key =>
+          `<div style="margin: 5px 0;">📝 ${key}</div>`
+        ).join('');
+      }
+    }
+
+    // 清除旧用户数据（保留currentUser和userRole）
+    function clearOldData() {
+      const removedKeys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('userExperiences_') ||
+                    key.startsWith('userAchievements_') ||
+                    key.startsWith('userDeclarations_') ||
+                    key.startsWith('userProfile_'))) {
+          removedKeys.push(key);
+          localStorage.removeItem(key);
+          i--; // 调整索引，因为删除了元素
+        }
+      }
+
+      showResult(removedKeys.length > 0,
+        `成功清除 ${removedKeys.length} 条旧用户数据`,
+        `没有找到旧用户数据`);
+      loadKeys();
+    }
+
+    // 清除所有数据
+    function clearAllData() {
+      if (!confirm('确定要清除所有localStorage数据吗？此操作不可恢复！')) {
+        return;
+      }
+
+      const removedKeys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        removedKeys.push(key);
+      }
+      removedKeys.forEach(key => localStorage.removeItem(key));
+
+      showResult(true,
+        `成功清除所有 ${removedKeys.length} 条数据`,
+        `没有找到任何数据`);
+      loadKeys();
+    }
+
+    // 显示结果
+    function showResult(success, message) {
+      const result = document.getElementById('result');
+      result.className = 'result ' + (success ? 'success' : 'error');
+      result.style.display = 'block';
+      result.textContent = message;
+
+      setTimeout(() => {
+        result.style.display = 'none';
+      }, 3000);
+    }
+
+    // 页面加载时自动显示keys
+    loadKeys();
+  </script>
+</body>
+</html>

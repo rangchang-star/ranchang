@@ -214,16 +214,16 @@ export function ProfileEditContent() {
             // 更新 localStorage 中的用户数据
             localStorage.setItem('currentUser', JSON.stringify(data.data));
 
-            // 如果数据库中有工作经历数据，使用数据库的数据
+            // 如果数据库中有工作经历数据，使用数据库的数据（按用户ID保存）
             if (data.data.experience && Array.isArray(data.data.experience) && data.data.experience.length > 0) {
               setExperiences(data.data.experience);
-              localStorage.setItem('userExperiences', JSON.stringify(data.data.experience));
+              localStorage.setItem(`userExperiences_${user.id}`, JSON.stringify(data.data.experience));
             }
 
-            // 如果数据库中有主要成就数据，使用数据库的数据
+            // 如果数据库中有主要成就数据，使用数据库的数据（按用户ID保存）
             if (data.data.achievement && Array.isArray(data.data.achievement) && data.data.achievement.length > 0) {
               setAchievements(data.data.achievement);
-              localStorage.setItem('userAchievements', JSON.stringify(data.data.achievement));
+              localStorage.setItem(`userAchievements_${user.id}`, JSON.stringify(data.data.achievement));
             }
 
             // 标记已刷新过
@@ -243,32 +243,32 @@ export function ProfileEditContent() {
   const [declarationTheme, setDeclarationTheme] = useState<string>('');
   const [declarationDescription, setDeclarationDescription] = useState<string>('');
 
-  // 工作经历状态 - 从 localStorage 恢复
+  // 工作经历状态 - 从 localStorage 恢复（按用户ID隔离）
   const [experiences, setExperiences] = useState<Array<{
     company: string;
     position: string;
     duration: string;
   }>>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('userExperiences');
+    if (typeof window !== 'undefined' && user?.id) {
+      const saved = localStorage.getItem(`userExperiences_${user.id}`);
       return saved ? JSON.parse(saved) : [];
     }
     return [];
   });
 
-  // 主要成就状态 - 从 localStorage 恢复
+  // 主要成就状态 - 从 localStorage 恢复（按用户ID隔离）
   const [achievements, setAchievements] = useState<string[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('userAchievements');
+    if (typeof window !== 'undefined' && user?.id) {
+      const saved = localStorage.getItem(`userAchievements_${user.id}`);
       return saved ? JSON.parse(saved) : [];
     }
     return [];
   });
 
-  // 从 localStorage 恢复高燃宣告数据
+  // 从 localStorage 恢复高燃宣告数据（按用户ID隔离）
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('userDeclarations');
+    if (typeof window !== 'undefined' && user?.id) {
+      const saved = localStorage.getItem(`userDeclarations_${user.id}`);
       if (saved) {
         try {
           const parsedDeclarations = JSON.parse(saved);
@@ -283,7 +283,7 @@ export function ProfileEditContent() {
         }
       }
     }
-  }, []);
+  }, [user?.id]);
 
   const handlePurposeSelect = (purpose: string) => {
     setSelectedPurpose(purpose);
@@ -540,11 +540,11 @@ export function ProfileEditContent() {
         console.log('未登录，跳过数据库保存');
       }
 
-      // 同时更新 localStorage 以保持前端一致性
-      localStorage.setItem('userProfile', JSON.stringify(fullProfile));
-
-      // 更新 currentUser 中的相关字段，确保个人中心页面能读取到最新数据
+      // 同时更新 localStorage 以保持前端一致性（按用户ID隔离）
       if (isLoggedIn && user) {
+        localStorage.setItem(`userProfile_${user.id}`, JSON.stringify(fullProfile));
+
+        // 更新 currentUser 中的相关字段，确保个人中心页面能读取到最新数据
         const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         currentUser.name = profile.name;
         currentUser.avatar = profile.avatar;
@@ -559,13 +559,22 @@ export function ProfileEditContent() {
         currentUser.tagStamp = selectedPurpose === '人找事' ? 'personLookingForJob' :
                              selectedPurpose === '事找人' ? 'jobLookingForPerson' : 'pureExchange';
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+        // 保存工作经历（按用户ID隔离）
+        localStorage.setItem(`userExperiences_${user.id}`, JSON.stringify(experiences));
+
+        // 保存主要成就（按用户ID隔离）
+        localStorage.setItem(`userAchievements_${user.id}`, JSON.stringify(achievements));
+
+        // 保存高燃宣告到localStorage（按用户ID隔离）
+        if (declarationTheme || declarationDescription) {
+          localStorage.setItem(`userDeclarations_${user.id}`, JSON.stringify([{
+            theme: declarationTheme,
+            description: declarationDescription,
+            direction: 'confidence',
+          }]));
+        }
       }
-
-      // 保存工作经历
-      localStorage.setItem('userExperiences', JSON.stringify(experiences));
-
-      // 保存主要成就
-      localStorage.setItem('userAchievements', JSON.stringify(achievements));
 
       // 保存高燃宣告到数据库
       if (isLoggedIn && user) {
