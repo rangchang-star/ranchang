@@ -65,11 +65,16 @@ export default function VisitDetailPage() {
         const data = await response.json();
 
         if (data.success) {
-          setVisit(data.data);
+          const visitData = data.data;
+          // 预处理日期格式，确保只显示日期部分
+          if (visitData.date) {
+            visitData.date = String(visitData.date).split('T')[0];
+          }
+          setVisit(visitData);
 
           // 检查用户是否已收藏该项目
           if (user?.id) {
-            checkFavoriteStatus(data.data.id);
+            checkFavoriteStatus(visitData.id);
           }
         } else {
           throw new Error(data.error || '加载探访信息失败');
@@ -150,7 +155,9 @@ export default function VisitDetailPage() {
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     // 提取日期部分，去除时间部分 (例如: "2026-03-15T00:00:00.000Z" -> "2026-03-15")
-    return dateString.split('T')[0];
+    // 确保是字符串类型
+    const dateStr = String(dateString);
+    return dateStr.split('T')[0];
   };
 
   const handleShare = () => {
