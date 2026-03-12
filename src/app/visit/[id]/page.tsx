@@ -147,6 +147,12 @@ export default function VisitDetailPage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    // 提取日期部分，去除时间部分 (例如: "2026-03-15T00:00:00.000Z" -> "2026-03-15")
+    return dateString.split('T')[0];
+  };
+
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -414,7 +420,7 @@ export default function VisitDetailPage() {
                 <span>·</span>
                 <div className="flex items-center space-x-1">
                   <Calendar className="w-4 h-4" />
-                  <span>{visit.date}</span>
+                  <span>{formatDate(visit.date)}</span>
                 </div>
                 <span>·</span>
                 <span>{visit.views || 0} 浏览</span>
@@ -462,7 +468,7 @@ export default function VisitDetailPage() {
                 <Calendar className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                    {visit.date} {visit.time}
+                    {formatDate(visit.date)} {visit.time}
                   </div>
                   <div className="text-[9px] text-[rgba(0,0,0,0.4)]">拜访时间</div>
                 </div>
