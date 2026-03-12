@@ -323,7 +323,7 @@ const getAssessmentIcon = (name: string) => {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isLoggedIn, logout } = useAuth();
+  const { user, isLoggedIn, logout, refreshUser } = useAuth();
   
   // 刷新用户数据，确保显示最新数据
   useEffect(() => {
@@ -336,6 +336,8 @@ export default function ProfilePage() {
             if (data.success && data.data) {
               // 更新 localStorage 中的用户数据
               localStorage.setItem('currentUser', JSON.stringify(data.data));
+              // 更新 AuthContext 中的 user 对象，确保所有组件都能获取最新数据
+              await refreshUser();
             }
           }
         } catch (error) {
@@ -345,7 +347,7 @@ export default function ProfilePage() {
     };
     
     refreshUserData();
-  }, [user?.id]);
+  }, [user?.id, refreshUser]);
   
   const [activeTab, setActiveTab] = useState<'records' | 'assets'>('records');
   const [showNotifications, setShowNotifications] = useState(false);
