@@ -31,22 +31,92 @@ export async function GET(request: NextRequest) {
 
     const userList = await query;
 
-    const data = userList.map((user: any) => ({
-      id: user.id,
-      phone: user.phone,
-      nickname: user.nickname,
-      name: user.name,
-      avatar: user.avatar,
-      bio: user.bio,
-      industry: user.industry,
-      company: user.company,
-      position: user.position,
-      level: user.level,
-      achievement: user.achievement,
-      status: user.status,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    }));
+    const data = userList.map((user: any) => {
+      // 解析能力标签
+      let abilityTags: string[] = [];
+      try {
+        abilityTags = typeof user.abilityTags === 'string' 
+          ? JSON.parse(user.abilityTags) 
+          : (user.abilityTags || []);
+      } catch {
+        abilityTags = [];
+      }
+
+      // 解析硬核标签
+      let hardcoreTags: string[] = [];
+      try {
+        hardcoreTags = typeof user.hardcoreTags === 'string' 
+          ? JSON.parse(user.hardcoreTags) 
+          : (user.hardcoreTags || []);
+      } catch {
+        hardcoreTags = [];
+      }
+
+      // 解析资源标签
+      let resourceTags: string[] = [];
+      try {
+        resourceTags = typeof user.resourceTags === 'string' 
+          ? JSON.parse(user.resourceTags) 
+          : (user.resourceTags || []);
+      } catch {
+        resourceTags = [];
+      }
+
+      // 合并所有标签
+      const tags = [...abilityTags, ...hardcoreTags, ...resourceTags];
+
+      // 格式化加入日期
+      const joinDate = user.createdAt
+        ? new Date(user.createdAt).toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          })
+        : '';
+
+      // 格式化等级
+      const levelMap: Record<number, string> = {
+        1: '青铜',
+        2: '白银',
+        3: '黄金',
+        4: '铂金',
+        5: '钻石',
+      };
+
+      return {
+        id: user.id,
+        phone: user.phone,
+        nickname: user.nickname,
+        name: user.name,
+        age: user.age || 0,
+        avatar: user.avatar,
+        bio: user.bio,
+        gender: user.gender,
+        email: user.email,
+        industry: user.industry,
+        company: user.company,
+        companyScale: user.companyScale,
+        position: user.position,
+        level: levelMap[user.level] || `${user.level}级`,
+        need: user.need,
+        tagStamp: user.tagStamp,
+        abilityTags,
+        hardcoreTags,
+        resourceTags,
+        tags,
+        experience: user.experience,
+        achievement: user.achievement,
+        declaration: user.declaration,
+        joinDate,
+        status: user.status,
+        isFeatured: user.isFeatured || false,
+        role: user.status === 'active' ? '会员' : '非会员',
+        connectionCount: 0, // TODO: 从关联表统计
+        activityCount: 0, // TODO: 从关联表统计
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+    });
 
     return NextResponse.json({
       success: true,
