@@ -483,33 +483,6 @@ export default function VisitDetailPage() {
               )}
             </div>
 
-            {/* 高燃宣告 */}
-            {visit.target?.declaration && (
-              <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-[15px] font-semibold text-gray-900">高燃宣告</h3>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="secondary" className="text-[11px] bg-white text-orange-600 border-orange-300">
-                      {visit.target.declaration.direction === 'confidence' && '信心'}
-                      {visit.target.declaration.direction === 'mission' && '使命'}
-                      {visit.target.declaration.direction === 'self' && '自我'}
-                      {visit.target.declaration.direction === 'opponent' && '对手'}
-                      {visit.target.declaration.direction === 'environment' && '环境'}
-                      {!['confidence', 'mission', 'self', 'opponent', 'environment'].includes(visit.target.declaration.direction) && visit.target.declaration.direction}
-                    </Badge>
-                  </div>
-                </div>
-                <p className="text-[13px] text-gray-700 leading-relaxed mb-2">
-                  {visit.target.declaration.text}
-                </p>
-                {visit.target.declaration.summary && visit.target.declaration.summary !== visit.target.declaration.text && (
-                  <p className="text-[12px] text-gray-600 leading-relaxed">
-                    {visit.target.declaration.summary}
-                  </p>
-                )}
-              </div>
-            )}
-
             {/* 拜访信息 */}
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
