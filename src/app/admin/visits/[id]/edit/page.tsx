@@ -45,6 +45,7 @@ export default function AdminVisitEditPage() {
   const [feedbackAudio, setFeedbackAudio] = useState('');
   const [photos, setPhotos] = useState('');
   const [participants, setParticipants] = useState('');
+  const [visitorId, setVisitorId] = useState(''); // 探访人ID
 
   // 文件上传状态
   const [uploading, setUploading] = useState(false);
@@ -79,6 +80,11 @@ export default function AdminVisitEditPage() {
       setCompanyId(selectedUser.id);
       setCompanyName(selectedUser.company || selectedUser.name || '');
     }
+  };
+
+  // 当选择探访人时，保存探访人ID
+  const handleVisitorSelect = (visitorUserId: string) => {
+    setVisitorId(visitorUserId);
   };
 
   // 处理文件上传
@@ -187,6 +193,7 @@ export default function AdminVisitEditPage() {
           setFeedbackAudio(visit.feedbackAudio || '');
           setPhotos(visit.photos ? visit.photos.join('\n') : '');
           setParticipants(visit.participants?.toString() || '');
+          setVisitorId(visit.visitorId || '');
         } else {
           throw new Error(data.error || '加载探访数据失败');
         }
@@ -204,7 +211,7 @@ export default function AdminVisitEditPage() {
   // 表单验证
   const validateForm = (): boolean => {
     if (!companyName.trim()) {
-      alert('请输入公司名称');
+      alert('请输入探访项目主主题');
       return false;
     }
     if (!companyId.trim()) {
@@ -232,6 +239,7 @@ export default function AdminVisitEditPage() {
       const visitData = {
         companyId: companyId,
         companyName: companyName,
+        visitorId: visitorId || null,
         date: date,
         time: time || null,
         location: location || null,
@@ -338,13 +346,35 @@ export default function AdminVisitEditPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  公司名称 <span className="text-red-500">*</span>
+                  探访项目主主题 <span className="text-red-500">*</span>
                 </label>
                 <Input
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="请输入公司名称"
+                  placeholder="请输入探访项目主主题"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  探访人
+                </label>
+                {loadingUsers ? (
+                  <div className="text-sm text-gray-500">加载用户列表中...</div>
+                ) : (
+                  <select
+                    value={visitorId}
+                    onChange={(e) => handleVisitorSelect(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">请选择探访人</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name || user.nickname} - {user.company || '无公司'} ({user.position || '无职位'})
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>
