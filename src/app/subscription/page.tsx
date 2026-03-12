@@ -154,16 +154,16 @@ export default function SubscriptionPage() {
           // 将 API 数据转换为前端需要的格式
           const formattedVisits = data.data.map((visit: any) => ({
             id: visit.id.toString(),
-            title: visit.title || '',
+            title: visit.companyName || '', // 使用 companyName 作为标题
             industry: visit.industry || '',
-            duration: visit.duration || '',
+            duration: visit.time || '', // 使用 time 作为时长
             date: visit.date || '',
-            visitors: visit.visitors || [],
+            visitors: [], // 可以从 visitorId 查询访客信息
             record: visit.record || '',
-            status: visit.status || [],
-            tags: visit.tags || [],
-            audioDuration: visit.audioDuration || '',
-            image: visit.image || '',
+            status: visit.status || '',
+            tags: [], // 可以从 industry 字段转换
+            audioDuration: '', // 如果有 feedbackAudio 可以计算时长
+            image: visit.coverImage || '', // 使用 coverImage 作为图片
           }));
           setVisits(formattedVisits);
         } else {

@@ -16,20 +16,31 @@ export async function GET(request: NextRequest) {
 
     const visitList = await query;
 
-    // 转换数据格式
+    // 转换数据格式，添加兼容字段
     const data = visitList.map((visit: any) => ({
       id: visit.id,
+      title: visit.companyName, // 兼容前端使用的 title 字段
       companyId: visit.companyId,
       companyName: visit.companyName,
       industry: visit.industry,
       location: visit.location,
       description: visit.description,
       date: visit.date,
+      time: null, // 数据库中不存在此字段
       capacity: visit.capacity,
+      participants: null, // 数据库中不存在此字段
       registeredCount: visit.registeredCount,
       coverImage: visit.coverImage,
       coverImageKey: visit.coverImageKey,
       status: visit.status,
+      record: null, // 数据库中不存在此字段
+      outcome: null, // 数据库中不存在此字段
+      notes: null, // 数据库中不存在此字段
+      keyPoints: [], // 数据库中不存在此字段
+      nextSteps: [], // 数据库中不存在此字段
+      rating: null, // 数据库中不存在此字段
+      feedbackAudio: null, // 数据库中不存在此字段
+      photos: [], // 数据库中不存在此字段
       createdAt: visit.createdAt,
       updatedAt: visit.updatedAt,
     }));
@@ -55,17 +66,16 @@ export async function POST(request: NextRequest) {
     const newVisit = await db
       .insert(visits)
       .values({
-        id: crypto.randomUUID(),
         companyId: body.companyId,
         companyName: body.companyName,
-        industry: body.industry,
-        location: body.location,
-        description: body.description,
         date: new Date(body.date),
         capacity: body.capacity,
         coverImage: body.coverImage,
         coverImageKey: body.coverImageKey,
         status: body.status || 'draft',
+        location: body.location || null,
+        description: body.description || null,
+        industry: body.industry || null,
       })
       .returning();
 
