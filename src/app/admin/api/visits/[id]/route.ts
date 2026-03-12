@@ -1,6 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, visits } from '@/lib/db';
+import { db, visits, appUsers } from '@/lib/db';
 import { eq } from 'drizzle-orm';
+
+// GET - 获取单个探访详情
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: visitId } = await params;
+
+    const visit = await db
+      .select()
+      .from(visits)
+      .where(eq(visits.id, visitId))
+      .limit(1);
+
+    if (!visit || visit.length === 0) {
+      return NextResponse.json(
+        { success: false, error: '探访不存在' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: visit[0],
+    });
+  } catch (error) {
+    console.error('获取探访详情失败:', error);
+    return NextResponse.json(
+      { success: false, error: '获取探访详情失败' },
+      { status: 500 }
+    );
+  }
+}
 
 // PUT - 更新探访
 export async function PUT(
