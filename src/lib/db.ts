@@ -12,5 +12,27 @@ import * as schema from '@/storage/database/supabase/schema';
 // 导出 db 实例
 export { db };
 
-// 导出 schema
+// 导出所有 schema 表
+export {
+  appUsers,
+  activities,
+  activityRegistrations,
+  visits,
+  visitRecords,
+  declarations,
+  dailyDeclarations,
+  documents,
+  notifications,
+  consultations,
+  assessments,
+  adminUsers,
+  settings,
+  userStatus,
+  activityStatus,
+  registrationStatus,
+  visitStatus,
+  notificationType,
+} from '@/storage/database/supabase/schema';
+
+// 导出 schema 命名空间（方便批量导入）
 export * from '@/storage/database/supabase/schema';

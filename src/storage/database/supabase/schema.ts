@@ -1,280 +1,317 @@
-import { pgTable, serial, varchar, text, integer, boolean, unique, jsonb, date, timestamp, foreignKey, index } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  varchar,
+  text,
+  integer,
+  timestamp,
+  boolean,
+  date,
+  jsonb,
+  index,
+  pgEnum,
+} from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { relations } from 'drizzle-orm';
 
 // ============================================================
-// 用户表
+// 枚举类型定义
 // ============================================================
-export const users = pgTable('app_users', {
+
+export const userStatus = pgEnum('user_status', ['active', 'inactive', 'suspended']);
+export const activityStatus = pgEnum('activity_status', ['draft', 'published', 'cancelled', 'ended']);
+export const registrationStatus = pgEnum('registration_status', ['registered', 'approved', 'rejected', 'cancelled']);
+export const visitStatus = pgEnum('visit_status', ['draft', 'upcoming', 'completed', 'cancelled']);
+export const notificationType = pgEnum('notification_type', ['system', 'activity', 'registration', 'visit', 'approval']);
+
+// ============================================================
+// 1. 用户表（app_users）
+// ============================================================
+export const appUsers = pgTable('app_users', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  name: varchar('name', { length: 128 }).notNull(),
-  age: integer('age'),
-  avatar: text('avatar'),
-  phone: varchar('phone', { length: 20 }),
-  email: varchar('email', { length: 255 }),
-  connection_type: varchar('connection_type', { length: 50 }),
-  industry: varchar('industry', { length: 100 }),
-  need: text('need'),
-  ability_tags: jsonb('ability_tags'),
-  resource_tags: jsonb('resource_tags'),
-  level: varchar('level', { length: 50 }),
-  company: varchar('company', { length: 255 }),
-  position: varchar('position', { length: 255 }),
-  status: varchar('status', { length: 20 }).default('active'),
-  is_featured: boolean('is_featured').default(false),
-  join_date: timestamp('join_date', { withTimezone: true }).default(sql`now()`),
-  last_login: timestamp('last_login', { withTimezone: true }),
-  created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
-  updated_at: timestamp('updated_at', { withTimezone: true }),
-  tag_stamp: varchar('tag_stamp', { length: 50 }),
-  hardcore_tags: jsonb('hardcore_tags'),
-  gender: varchar('gender', { length: 10 }),
-  company_scale: varchar('company_scale', { length: 50 }),
-  experience: jsonb('experience').$type<Array<{company: string; position: string; duration: string}>>(),
-  achievement: jsonb('achievement').$type<string[]>(),
-}, (table) => ({
-  // 可以在这里添加索引
-}));
+  phone: varchar('phone', { length: 20 }).notNull().unique(),
+  nickname: varchar('nickname', { length: 50 }),
+  name: varchar('name', { length: 50 }),
+  avatar: text('avatar'), // 永久CDN地址
+  bio: text('bio'),
+  industry: varchar('industry', { length: 50 }),
+  company: varchar('company', { length: 100 }),
+  position: varchar('position', { length: 50 }),
+  level: integer('level').default(1), // 用户等级
+  achievement: text('achievement'), // 成就
+  status: userStatus('status').default('active'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('app_users_phone_idx').on(table.phone),
+  index('app_users_status_idx').on(table.status),
+  index('app_users_level_idx').on(table.level),
+]);
 
 // ============================================================
-// 活动表
+// 2. 活动表（activities）
 // ============================================================
 export const activities = pgTable('activities', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  title: varchar('title', { length: 255 }).notNull(),
-  description: text('description'),
+  title: varchar('title', { length: 200 }).notNull(),
+  description: text('description').notNull(),
   date: timestamp('date', { withTimezone: true }).notNull(),
-  start_time: varchar('start_time', { length: 10 }),
-  end_time: varchar('end_time', { length: 10 }),
-  location: varchar('location', { length: 255 }),
-  capacity: integer('capacity'),
-  registered_count: integer('registered_count').default(0),
-  type: varchar('type', { length: 50 }),
-  cover_image: text('cover_image'),
-  cover_image_key: text('cover_image_key'), // 新增：支持对象存储fileKey
-  status: varchar('status', { length: 20 }).default('draft'),
-  created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
-  updated_at: timestamp('updated_at', { withTimezone: true }),
-});
+  startTime: varchar('start_time', { length: 20 }), // 14:00
+  endTime: varchar('end_time', { length: 20 }), // 17:00
+  location: varchar('location', { length: 200 }),
+  capacity: integer('capacity').default(0),
+  type: varchar('type', { length: 50 }).default('salon'), // salon, workshop, meetup
+  coverImage: text('cover_image'), // 永久CDN地址
+  coverImageKey: text('cover_image_key'), // 对象存储fileKey
+  status: activityStatus('status').default('draft'),
+  registeredCount: integer('registered_count').default(0),
+  createdBy: varchar('created_by', { length: 36 }).references(() => appUsers.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('activities_status_idx').on(table.status),
+  index('activities_date_idx').on(table.date),
+  index('activities_type_idx').on(table.type),
+  index('activities_created_by_idx').on(table.createdBy),
+]);
 
 // ============================================================
-// 探访表
+// 3. 活动报名表（activity_registrations）
+// ============================================================
+export const activityRegistrations = pgTable('activity_registrations', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  activityId: varchar('activity_id', { length: 36 }).notNull().references(() => activities.id, { onDelete: 'cascade' }),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  status: registrationStatus('status').default('registered'),
+  paymentStatus: varchar('payment_status', { length: 20 }).default('unpaid'),
+  note: text('note'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('activity_registrations_activity_id_idx').on(table.activityId),
+  index('activity_registrations_user_id_idx').on(table.userId),
+  index('activity_registrations_status_idx').on(table.status),
+]);
+
+// ============================================================
+// 4. 探访表（visits）
 // ============================================================
 export const visits = pgTable('visits', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  company_id: varchar('company_id', { length: 36 }).notNull(),
-  company_name: varchar('company_name', { length: 255 }).notNull(),
+  companyId: varchar('company_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  companyName: varchar('company_name', { length: 255 }).notNull(),
   industry: varchar('industry', { length: 100 }),
   location: varchar('location', { length: 255 }),
   description: text('description'),
   date: timestamp('date', { withTimezone: true }).notNull(),
-  time: varchar('time', { length: 20 }), // 拜访时间
-  capacity: integer('capacity'),
-  participants: integer('participants'), // 参与人数
-  registered_count: integer('registered_count').default(0),
-  cover_image: text('cover_image'),
-  cover_image_key: text('cover_image_key'), // 新增：支持对象存储fileKey
-  visitor_id: varchar('visitor_id', { length: 36 }), // 被访者ID
+  capacity: integer('capacity').default(0),
+  registeredCount: integer('registered_count').default(0),
+  coverImage: text('cover_image'), // 永久CDN地址
+  coverImageKey: text('cover_image_key'), // 对象存储fileKey
+  status: visitStatus('status').default('draft'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('visits_company_id_idx').on(table.companyId),
+  index('visits_status_idx').on(table.status),
+  index('visits_date_idx').on(table.date),
+]);
+
+// ============================================================
+// 5. 探访记录表（visit_records）
+// ============================================================
+export const visitRecords = pgTable('visit_records', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  visitId: varchar('visit_id', { length: 36 }).notNull().references(() => visits.id, { onDelete: 'cascade' }),
+  visitorId: varchar('visitor_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
   record: text('record'), // 走访记录
   outcome: text('outcome'), // 拜访成果
-  notes: text('notes'), // 备注
-  key_points: jsonb('key_points'), // 关键要点（数组）
-  next_steps: jsonb('next_steps'), // 下一步计划（数组）
-  rating: integer('rating'), // 评分（1-5）
-  feedback_audio: text('feedback_audio'), // 走访反馈录音fileKey
-  photos: jsonb('photos'), // 现场照片（fileKeys数组）
-  status: varchar('status', { length: 20 }).default('draft'),
-  created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
-  updated_at: timestamp('updated_at', { withTimezone: true }),
-});
+  keyPoints: jsonb('key_points'), // 关键要点数组
+  nextSteps: jsonb('next_steps'), // 下一步计划数组
+  rating: integer('rating'), // 评分 1-5
+  feedbackAudio: text('feedback_audio'), // 反馈录音fileKey
+  photos: jsonb('photos'), // 现场照片fileKeys数组
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('visit_records_visit_id_idx').on(table.visitId),
+  index('visit_records_visitor_id_idx').on(table.visitorId),
+]);
 
 // ============================================================
-// 高燃宣告表
+// 6. 宣告表（declarations）
 // ============================================================
 export const declarations = pgTable('declarations', {
-  id: varchar('id', { length: 255 }).primaryKey().notNull(),
-  user_id: varchar('user_id', { length: 255 }).notNull(),
-  direction: varchar('direction', { length: 100 }),
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  userName: varchar('user_name', { length: 50 }),
+  userAvatar: text('user_avatar'), // 永久CDN地址
+  userLevel: integer('user_level').default(1),
+  direction: varchar('direction', { length: 100 }), // 方向
   text: text('text').notNull(),
   summary: text('summary'),
-  audio_url: varchar('audio_url', { length: 500 }),
+  audioUrl: varchar('audio_url', { length: 500 }), // 音频URL
   views: integer('views').default(0),
+  likes: integer('likes').default(0),
+  isFeatured: boolean('is_featured').default(false),
   date: date('date').notNull(),
-  is_featured: boolean('is_featured').default(false),
-  created_at: timestamp('created_at', { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`),
-  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`CURRENT_TIMESTAMP`),
-});
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('declarations_user_id_idx').on(table.userId),
+  index('declarations_date_idx').on(table.date),
+  index('declarations_featured_idx').on(table.isFeatured),
+]);
 
 // ============================================================
-// 每日宣告表
+// 7. 每日宣告表（daily_declarations）
 // ============================================================
 export const dailyDeclarations = pgTable('daily_declarations', {
   id: serial('id').primaryKey().notNull(),
   title: varchar('title', { length: 200 }).notNull(),
-  date: timestamp('date', { mode: 'string' }).notNull(),
-  image: text('image'),
-  audio: text('audio'),
+  date: date('date').notNull(),
+  image: text('image'), // 永久CDN地址
+  imageKey: text('image_key'), // 对象存储fileKey
+  audio: text('audio'), // 音频CDN地址
+  audioKey: text('audio_key'), // 音频fileKey
   summary: text('summary'),
   text: text('text'),
-  icon_type: varchar('icon_type', { length: 50 }),
-  rank: integer('rank'),
+  iconType: varchar('icon_type', { length: 50 }), // 图标类型
+  rank: integer('rank'), // 排序
   profile: text('profile'),
   duration: varchar('duration', { length: 50 }),
   views: integer('views').default(0),
-  is_featured: boolean('is_featured').default(false),
-  created_at: timestamp('created_at', { mode: 'string' }).notNull().default(sql`now()`),
-  updated_at: timestamp('updated_at', { mode: 'string' }).notNull().default(sql`now()`),
-});
-
-// ============================================================
-// 活动报名记录表
-// ============================================================
-export const activityRegistrations = pgTable('activity_registrations', {
-  id: serial('id').primaryKey().notNull(),
-  activity_id: text('activity_id').notNull(),
-  user_id: text('user_id').notNull(),
-  status: varchar('status', { length: 50 }).default('registered'),
-  registered_at: timestamp('registered_at', { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-  reviewed_at: timestamp('reviewed_at', { mode: 'string' }),
-  note: text('note'),
-  created_at: timestamp('created_at', { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-  updated_at: timestamp('updated_at', { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-});
-
-// ============================================================
-// 通用报名表（活动/探访）
-// ============================================================
-export const registrations = pgTable('registrations', {
-  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  activity_id: varchar('activity_id', { length: 36 }),
-  user_id: varchar('user_id', { length: 36 }).notNull(),
-  visit_id: varchar('visit_id', { length: 36 }),
-  status: varchar('status', { length: 50 }).default('registered'),
-  registered_at: timestamp('registered_at', { withTimezone: true }).default(sql`now()`),
-  reviewed_at: timestamp('reviewed_at', { withTimezone: true }),
-  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
-  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
-});
-
-// ============================================================
-// 通知表
-// ============================================================
-export const notifications = pgTable('notifications', {
-  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  user_id: varchar('user_id', { length: 36 }).notNull(),
-  type: varchar('type', { length: 20 }).notNull(),
-  title: varchar('title', { length: 255 }).notNull(),
-  message: text('message').notNull(),
-  action_url: text('action_url'),
-  is_read: boolean('is_read').default(false),
-  created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
-});
-
-// ============================================================
-// 文档表
-// ============================================================
-export const documents = pgTable('documents', {
-  id: serial('id').primaryKey().notNull(),
-  title: varchar('title', { length: 255 }).notNull(),
-  description: text('description'),
-  file_url: text('file_url').notNull(),
-  file_type: varchar('file_type', { length: 50 }).notNull(),
-  file_size: integer('file_size').default(0),
-  category: varchar('category', { length: 50 }).default('其他'),
-  created_by: integer('created_by').notNull(),
-  created_at: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
-  updated_at: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
-  download_count: integer('download_count').default(0),
-  cover: text('cover'),
-});
-
-// ============================================================
-// 探访记录表
-// ============================================================
-export const visitRecords = pgTable('visit_records', {
-  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  visit_id: varchar('visit_id', { length: 36 }).notNull(),
-  user_id: varchar('user_id', { length: 36 }).notNull(),
-  status: varchar('status', { length: 20 }).default('registered'),
-  registered_at: timestamp('registered_at', { withTimezone: true }).default(sql`now()`),
-  completed_at: timestamp('completed_at', { withTimezone: true }),
-});
-
-// ============================================================
-// 系统设置表
-// ============================================================
-export const settings = pgTable('settings', {
-  id: serial('id').primaryKey().notNull(),
-  settings: jsonb('settings').notNull(),
-  updated_at: timestamp('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  isFeatured: boolean('is_featured').default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
-  unique('settings_key_key').on(table.id),
+  index('daily_declarations_date_idx').on(table.date),
+  index('daily_declarations_featured_idx').on(table.isFeatured),
+  index('daily_declarations_rank_idx').on(table.rank),
 ]);
 
 // ============================================================
-// 其他表（暂时不需要使用）
+// 8. 文档表（documents）
+// ============================================================
+export const documents = pgTable('documents', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar('title', { length: 200 }).notNull(),
+  description: text('description'),
+  category: varchar('category', { length: 50 }),
+  fileUrl: text('file_url'), // 文件CDN地址
+  fileKey: text('file_key'), // 对象存储fileKey
+  coverImage: text('cover_image'), // 封面CDN地址
+  coverImageKey: text('cover_image_key'), // 封面fileKey
+  fileSize: integer('file_size'),
+  fileType: varchar('file_type', { length: 50 }),
+  downloads: integer('downloads').default(0),
+  likes: integer('likes').default(0),
+  authorId: varchar('author_id', { length: 36 }).references(() => appUsers.id, { onDelete: 'set null' }),
+  status: varchar('status', { length: 20 }).default('published'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('documents_category_idx').on(table.category),
+  index('documents_author_id_idx').on(table.authorId),
+  index('documents_status_idx').on(table.status),
+]);
+
+// ============================================================
+// 9. 通知表（notifications）
+// ============================================================
+export const notifications = pgTable('notifications', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  type: notificationType('type').notNull(),
+  title: varchar('title', { length: 200 }).notNull(),
+  content: text('content').notNull(),
+  relatedId: varchar('related_id', { length: 36 }), // 关联对象ID（活动、宣告等）
+  isRead: boolean('is_read').default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('notifications_user_id_idx').on(table.userId),
+  index('notifications_is_read_idx').on(table.isRead),
+  index('notifications_type_idx').on(table.type),
+]);
+
+// ============================================================
+// 10. 咨询表（consultations）
+// ============================================================
+export const consultations = pgTable('consultations', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  consultantId: varchar('consultant_id', { length: 36 }).references(() => appUsers.id, { onDelete: 'set null' }),
+  topic: varchar('topic', { length: 200 }).notNull(),
+  description: text('description'),
+  status: varchar('status', { length: 20 }).default('pending'),
+  scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
+  duration: integer('duration'), // 咨询时长（分钟）
+  recordingUrl: text('recording_url'), // 录音CDN地址
+  recordingKey: text('recording_key'), // 录音fileKey
+  notes: text('notes'),
+  rating: integer('rating'), // 评分
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('consultations_user_id_idx').on(table.userId),
+  index('consultations_consultant_id_idx').on(table.consultantId),
+  index('consultations_status_idx').on(table.status),
+  index('consultations_scheduled_at_idx').on(table.scheduledAt),
+]);
+
+// ============================================================
+// 11. 评估表（assessments）
+// ============================================================
+export const assessments = pgTable('assessments', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  assessorId: varchar('assessor_id', { length: 36 }).references(() => appUsers.id, { onDelete: 'set null' }),
+  type: varchar('type', { length: 50 }).notNull(), // 评估类型
+  score: integer('score'), // 分数
+  feedback: text('feedback'),
+  criteria: jsonb('criteria'), // 评估标准
+  results: jsonb('results'), // 评估结果
+  status: varchar('status', { length: 20 }).default('draft'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('assessments_user_id_idx').on(table.userId),
+  index('assessments_assessor_id_idx').on(table.assessorId),
+  index('assessments_type_idx').on(table.type),
+  index('assessments_status_idx').on(table.status),
+]);
+
+// ============================================================
+// 12. 管理员表（admin_users）
 // ============================================================
 export const adminUsers = pgTable('admin_users', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  username: varchar('username', { length: 100 }).notNull(),
-  email: varchar('email', { length: 255 }),
-  password: text('password').notNull(),
-  role: varchar('role', { length: 50 }).default('admin'),
+  username: varchar('username', { length: 50 }).notNull().unique(),
+  email: varchar('email', { length: 100 }).notNull().unique(),
+  password: varchar('password', { length: 255 }).notNull(),
+  name: varchar('name', { length: 50 }),
+  avatar: text('avatar'), // 永久CDN地址
+  role: varchar('role', { length: 20 }).default('admin'), // admin, superadmin
+  permissions: jsonb('permissions'), // 权限列表
+  lastLoginAt: timestamp('last_login_at', { withTimezone: true }),
   status: varchar('status', { length: 20 }).default('active'),
-  created_at: timestamp('created_at', { mode: 'string' }).notNull().default(sql`now()`),
-  updated_at: timestamp('updated_at', { mode: 'string' }).notNull().default(sql`now()`),
-});
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('admin_users_username_idx').on(table.username),
+  index('admin_users_email_idx').on(table.email),
+  index('admin_users_role_idx').on(table.role),
+  index('admin_users_status_idx').on(table.status),
+]);
 
-export const assessments = pgTable('assessments', {
+// ============================================================
+// 13. 设置表（settings）
+// ============================================================
+export const settings = pgTable('settings', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  user_id: varchar('user_id', { length: 36 }).notNull(),
-  name: varchar('name', { length: 128 }).notNull(),
-  score: integer('score').notNull(),
-  level: varchar('level', { length: 20 }),
-  summary: text('summary'),
-  dimensions: jsonb('dimensions'),
-  test_date: timestamp('test_date', { withTimezone: true }).default(sql`now()`),
-  created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
-});
-
-export const consultations = pgTable('consultations', {
-  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  user_id: varchar('user_id', { length: 36 }).notNull(),
-  topic_id: varchar('topic_id', { length: 50 }),
-  topic_name: varchar('topic_name', { length: 100 }),
-  question: text('question').notNull(),
-  answer: text('answer'),
-  status: varchar('status', { length: 20 }).default('pending'),
-  consultant_name: varchar('consultant_name', { length: 128 }),
-  created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
-  updated_at: timestamp('updated_at', { withTimezone: true }),
-});
-
-export const digitalAssets = pgTable('digital_assets', {
-  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  user_id: varchar('user_id', { length: 36 }).notNull(),
-  title: varchar('title', { length: 255 }).notNull(),
+  key: varchar('key', { length: 100 }).notNull().unique(),
+  value: jsonb('value').notNull(),
   description: text('description'),
-  type: varchar('type', { length: 50 }),
-  file_type: varchar('file_type', { length: 50 }),
-  file_size: varchar('file_size', { length: 50 }),
-  file_url: text('file_url'),
-  cover_image: text('cover_image'),
-  likes: integer('likes').default(0),
-  downloads: integer('downloads').default(0),
-  status: varchar('status', { length: 20 }).default('draft'),
-  created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
-  updated_at: timestamp('updated_at', { withTimezone: true }),
-});
-
-export const healthCheck = pgTable('health_check', {
-  id: serial('id').primaryKey().notNull(),
-  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
-});
-
-export const userFollows = pgTable('user_follows', {
-  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
-  follower_id: varchar('follower_id', { length: 36 }).notNull(),
-  following_id: varchar('following_id', { length: 36 }).notNull(),
-  created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
-});
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('settings_key_idx').on(table.key),
+]);

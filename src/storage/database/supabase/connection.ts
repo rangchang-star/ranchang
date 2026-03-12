@@ -1,19 +1,19 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from './schema';
 
-// 创建 postgres.js 客户端（最简单的配置，不加任何 transform）
-const queryClient = postgres(process.env.DATABASE_URL || '', {
-  max: 10,
-  idle_timeout: 20,
-  connect_timeout: 10,
+// 从环境变量获取数据库连接信息
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL or POSTGRES_URL environment variable is not set');
+}
+
+// 创建PostgreSQL连接
+const client = postgres(connectionString, {
+  max: 10, // 最大连接数
+  idle_timeout: 20, // 空闲超时
+  connect_timeout: 10, // 连接超时
 });
 
-// 创建 drizzle 实例
-export const db = drizzle(queryClient, { schema });
-
-// 导出 queryClient 供特殊场景使用
-export { queryClient as client };
-
-// 导出 schema
-export * from './schema';
+// 创建Drizzle实例
+export const db = drizzle(client);

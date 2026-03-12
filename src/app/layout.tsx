@@ -1,85 +1,73 @@
 import type { Metadata } from 'next';
 import { Inspector } from 'react-dev-inspector';
-import { Inter, Noto_Sans_SC } from 'next/font/google';
 import './globals.css';
-import { AuthProvider } from '@/contexts/auth-context';
-import { LoginModalProvider } from '@/contexts/login-modal-context-v2';
-import { GlobalLoginModal } from '@/components/global-login-modal';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const notoSansSC = Noto_Sans_SC({
-  weight: ['300', '400', '500', '700'],
-  variable: '--font-noto-sans-sc',
-  display: 'swap',
-  preload: false,
-});
 
 export const metadata: Metadata = {
   title: {
-    default: '燃场 Kindle Field - 让经验被复用，让困境有回响',
-    template: '%s | 燃场',
+    default: '新应用 | 扣子编程',
+    template: '%s | 扣子编程',
   },
   description:
-    '燃场是一个面向35岁以上人群的能力连接与困境解决平台。让经验被复用，让困境有回响，让下半场有伙伴。',
+    '扣子编程是一款一站式云端 Vibe Coding 开发平台。通过对话轻松构建智能体、工作流和网站，实现从创意到上线的无缝衔接。',
   keywords: [
-    '燃场',
-    'Kindle Field',
-    '35+职场',
-    '创业',
-    '私董会',
-    '能力连接',
-    '困境解决',
-    '跨界合作',
-    'AI培训',
+    '扣子编程',
+    'Coze Code',
+    'Vibe Coding',
+    'AI 编程',
+    '智能体搭建',
+    '工作流搭建',
+    '网站搭建',
+    '网站部署',
+    '全栈开发',
+    'AI 工程师',
   ],
-  authors: [{ name: '燃场团队' }],
-  generator: '燃场',
+  authors: [{ name: 'Coze Code Team', url: 'https://code.coze.cn' }],
+  generator: 'Coze Code',
+  // icons: {
+  //   icon: '',
+  // },
   openGraph: {
-    title: '燃场 Kindle Field - 让经验被复用，让困境有回响',
+    title: '扣子编程 | 你的 AI 工程师已就位',
     description:
-      '燃场是一个面向35岁以上人群的能力连接与困境解决平台。让经验被复用，让困境有回响，让下半场有伙伴。',
-    url: 'https://kindlefield.com',
-    siteName: '燃场',
+      '我正在使用扣子编程 Vibe Coding，让创意瞬间上线。告别拖拽，拥抱心流。',
+    url: 'https://code.coze.cn',
+    siteName: '扣子编程',
     locale: 'zh_CN',
     type: 'website',
+    // images: [
+    //   {
+    //     url: '',
+    //     width: 1200,
+    //     height: 630,
+    //     alt: '扣子编程 - 你的 AI 工程师',
+    //   },
+    // ],
   },
+  // twitter: {
+  //   card: 'summary_large_image',
+  //   title: 'Coze Code | Your AI Engineer is Here',
+  //   description:
+  //     'Build and deploy full-stack applications through AI conversation. No env setup, just flow.',
+  //   // images: [''],
+  // },
   robots: {
     index: true,
     follow: true,
   },
 };
 
-function RootLayoutContent({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <AuthProvider>
-      <LoginModalProvider>
-        <GlobalLoginModal />
-        {children}
-      </LoginModalProvider>
-    </AuthProvider>
-  );
-}
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isDev = process.env.NODE_ENV === 'development';
+
   return (
-    <html lang="zh-CN">
-      <body className={`${notoSansSC.variable} ${inter.variable} antialiased font-sans`}>
-        <RootLayoutContent>
-          {children}
-        </RootLayoutContent>
+    <html lang="en">
+      <body className={`antialiased`}>
+        {isDev && <Inspector />}
+        {children}
       </body>
     </html>
   );
