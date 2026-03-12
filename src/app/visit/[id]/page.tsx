@@ -598,7 +598,7 @@ export default function VisitDetailPage() {
             )}
 
             {/* 走访录音 */}
-            {visit.audioUrl && (
+            {visit.feedbackAudio && (
               <div>
                 <h3 className="text-[15px] font-semibold text-gray-900 mb-2">走访反馈录音</h3>
                 <div className="p-4 bg-[rgba(0,0,0,0.02)]">
@@ -655,7 +655,7 @@ export default function VisitDetailPage() {
 
         {/* 隐藏的音频元素 */}
         {visit.audioUrl && (
-          <audio ref={audioRef} src={visit.audioUrl} />
+          <audio ref={audioRef} src={visit.feedbackAudio} />
         )}
       </div>
 
