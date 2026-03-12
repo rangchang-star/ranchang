@@ -659,7 +659,7 @@ export default function VisitDetailPage() {
         </div>
 
         {/* 隐藏的音频元素 */}
-        {visit.audioUrl && (
+        {visit.feedbackAudio && (
           <audio ref={audioRef} src={visit.feedbackAudio} />
         )}
       </div>
