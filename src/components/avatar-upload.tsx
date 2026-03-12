@@ -99,14 +99,14 @@ export function AvatarUpload({
           />
 
           {uploading && (
-            <div className={`absolute inset-0 flex items-center justify-center bg-black/50 rounded-full ${sizeClasses[size]}`}>
+            <div className={`absolute inset-0 flex items-center justify-center bg-black/50 rounded-md ${sizeClasses[size]}`}>
               <Loader2 className="w-6 h-6 text-white animate-spin" />
             </div>
           )}
 
           {!uploading && (
             <div
-              className={`absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity ${sizeClasses[size]}`}
+              className={`absolute inset-0 flex items-center justify-center bg-black/40 rounded-md opacity-0 hover:opacity-100 transition-opacity ${sizeClasses[size]}`}
               onClick={handleFileSelect}
             >
               <Upload className="w-6 h-6 text-white" />
