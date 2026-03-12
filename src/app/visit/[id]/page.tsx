@@ -472,7 +472,7 @@ export default function VisitDetailPage() {
                 <Calendar className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                    {formatDate(visit.date)} {visit.time}
+                    {formatDate(visit.date)} {visit.time || ''}
                   </div>
                   <div className="text-[9px] text-[rgba(0,0,0,0.4)]">拜访时间</div>
                 </div>
