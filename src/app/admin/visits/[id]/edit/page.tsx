@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Save, User } from 'lucide-react';
+import { ArrowLeft, Save, User, Upload, X, Image, Mic, FileImage } from 'lucide-react';
 import Link from 'next/link';
 
 interface User {
@@ -46,6 +46,10 @@ export default function AdminVisitEditPage() {
   const [photos, setPhotos] = useState('');
   const [participants, setParticipants] = useState('');
 
+  // 文件上传状态
+  const [uploading, setUploading] = useState(false);
+  const [uploadType, setUploadType] = useState<'cover' | 'audio' | 'photo' | null>(null);
+
   // 加载用户列表
   useEffect(() => {
     async function loadUsers() {
@@ -75,6 +79,76 @@ export default function AdminVisitEditPage() {
       setCompanyId(selectedUser.id);
       setCompanyName(selectedUser.company || selectedUser.name || '');
     }
+  };
+
+  // 处理文件上传
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: 'cover' | 'audio' | 'photo'
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadType(type);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', type);
+
+      const response = await fetch('/admin/api/visits/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '上传失败');
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        const { url } = result.data;
+
+        if (type === 'cover') {
+          setCoverImage(url);
+        } else if (type === 'audio') {
+          setFeedbackAudio(url);
+        } else if (type === 'photo') {
+          // 将新照片URL添加到现有照片列表中
+          const currentPhotos = photos ? photos.split('\n').filter(p => p.trim()) : [];
+          setPhotos([...currentPhotos, url].join('\n'));
+        }
+      }
+    } catch (error: any) {
+      console.error('文件上传失败:', error);
+      alert(error.message || '文件上传失败，请重试');
+    } finally {
+      setUploading(false);
+      setUploadType(null);
+
+      // 清空 input
+      e.target.value = '';
+    }
+  };
+
+  // 删除照片
+  const handleRemovePhoto = (photoUrl: string) => {
+    const currentPhotos = photos ? photos.split('\n').filter(p => p.trim()) : [];
+    const newPhotos = currentPhotos.filter(p => p !== photoUrl);
+    setPhotos(newPhotos.join('\n'));
+  };
+
+  // 删除封面
+  const handleRemoveCover = () => {
+    setCoverImage('');
+  };
+
+  // 删除录音
+  const handleRemoveAudio = () => {
+    setFeedbackAudio('');
   };
 
   // 加载现有探访数据
@@ -359,13 +433,42 @@ export default function AdminVisitEditPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  封面图片URL
+                  封面图片
                 </label>
-                <Input
-                  value={coverImage}
-                  onChange={(e) => setCoverImage(e.target.value)}
-                  placeholder="请输入封面图片URL"
-                />
+                {coverImage ? (
+                  <div className="relative">
+                    <img
+                      src={coverImage}
+                      alt="封面"
+                      className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleRemoveCover}
+                      className="absolute top-2 right-2"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg">
+                    <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-gray-50">
+                      <Upload className="w-8 h-8 text-gray-400" />
+                      <span className="mt-2 text-sm text-gray-500">
+                        {uploading && uploadType === 'cover' ? '上传中...' : '点击上传封面图片'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, 'cover')}
+                        disabled={uploading && uploadType === 'cover'}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -471,28 +574,105 @@ export default function AdminVisitEditPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  反馈录音URL
+                  反馈录音
                 </label>
-                <Input
-                  value={feedbackAudio}
-                  onChange={(e) => setFeedbackAudio(e.target.value)}
-                  placeholder="请输入反馈录音URL"
-                />
+                {feedbackAudio ? (
+                  <div className="relative">
+                    <audio controls src={feedbackAudio} className="w-full" />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleRemoveAudio}
+                      className="mt-2"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      删除录音
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg">
+                    <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-gray-50">
+                      <Mic className="w-8 h-8 text-gray-400" />
+                      <span className="mt-2 text-sm text-gray-500">
+                        {uploading && uploadType === 'audio' ? '上传中...' : '点击上传反馈录音'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="audio/*"
+                        onChange={(e) => handleFileUpload(e, 'audio')}
+                        disabled={uploading && uploadType === 'audio'}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* 照片 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                照片（每行一个URL）
+                现场照片
               </label>
-              <textarea
-                value={photos}
-                onChange={(e) => setPhotos(e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="照片URL1&#10;照片URL2&#10;照片URL3"
-              />
+
+              {/* 上传按钮 */}
+              <div className="mb-4">
+                <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg">
+                  <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-gray-50">
+                    <FileImage className="w-8 h-8 text-gray-400" />
+                    <span className="mt-2 text-sm text-gray-500">
+                      {uploading && uploadType === 'photo' ? '上传中...' : '点击上传照片'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => handleFileUpload(e, 'photo')}
+                      disabled={uploading && uploadType === 'photo'}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* 照片列表 */}
+              {photos && (
+                <div className="grid grid-cols-4 gap-4">
+                  {photos.split('\n').filter(p => p.trim()).map((photo, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={photo}
+                        alt={`照片${index + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border border-gray-300"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRemovePhoto(photo)}
+                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 文本框作为备用 */}
+              <div className="mt-4">
+                <label className="block text-xs text-gray-500 mb-1">
+                  或直接输入照片URL（每行一个）
+                </label>
+                <textarea
+                  value={photos}
+                  onChange={(e) => setPhotos(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  placeholder="照片URL1&#10;照片URL2&#10;照片URL3"
+                />
+              </div>
             </div>
           </div>
         </div>
