@@ -3,9 +3,9 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AvatarDisplay } from '@/components/avatar-upload';
 import { Search, Edit, Eye, ShieldCheck, Shield, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 
 // 会员数据类型
@@ -212,14 +212,11 @@ export default function AdminMembersPage() {
               >
                 <div className="flex items-center space-x-4">
                   {/* 圆形头像 */}
-                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                    <Image
-                      src={member.avatar}
-                      alt={member.name}
-                      width={48}
-                      height={48}
-                      className="w-full h-full object-cover"
-                      unoptimized
+                  <div className="flex-shrink-0">
+                    <AvatarDisplay
+                      avatarKey={member.avatar}
+                      name={member.name}
+                      size="lg"
                     />
                   </div>
                   <div>
