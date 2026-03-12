@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import { AvatarDisplay } from '@/components/avatar-upload';
 import Link from 'next/link';
 import { ArrowLeft, MapPin, Calendar, Phone, Mail, Building, Briefcase, ShieldCheck, Shield, Loader2, RefreshCw } from 'lucide-react';
 
@@ -136,14 +136,11 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
         <div className="border border-[rgba(0,0,0,0.1)]">
           <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
             <div className="flex items-start space-x-4">
-              <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
-                <Image
-                  src={member.avatar}
-                  alt={member.name}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                  unoptimized
+              <div className="flex-shrink-0">
+                <AvatarDisplay
+                  avatarKey={member.avatar}
+                  name={member.name}
+                  size="xl"
                 />
               </div>
               <div className="flex-1">
