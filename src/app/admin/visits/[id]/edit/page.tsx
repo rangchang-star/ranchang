@@ -151,6 +151,37 @@ export default function AdminVisitEditPage() {
     setFeedbackAudio('');
   };
 
+  // 构造预览数据（模拟前台API返回格式）
+  const previewData = {
+    id: visitId,
+    title: companyName || '暂无标题',
+    image: coverImage || '/placeholder-cover.jpg',
+    duration: capacity ? `${capacity}分钟` : '暂无时长',
+    date: date,
+    time: time,
+    views: 0,
+    industry: industry,
+    target: {
+      name: companyName,
+      company: companyName,
+      title: '被访者',
+      avatar: '',
+      tags: industry ? [industry] : [],
+    },
+    location: location,
+    participants: participants || '0',
+    visitors: [],
+    record: record || '暂无记录',
+    outcome: outcome || '暂无成果',
+    keyPoints: keyPoints ? keyPoints.split('\n').filter(k => k.trim()) : [],
+    nextSteps: nextSteps ? nextSteps.split('\n').filter(n => n.trim()) : [],
+    notes: notes || '暂无备注',
+    feedbackAudio: feedbackAudio,
+    rating: rating ? parseInt(rating) : 0,
+    photos: photos ? photos.split('\n').filter(p => p.trim()) : [],
+    tags: status === 'published' ? ['已发布'] : [status],
+  };
+
   // 加载现有探访数据
   useEffect(() => {
     async function loadVisitData() {
@@ -310,8 +341,10 @@ export default function AdminVisitEditPage() {
         </div>
 
         {/* 表单内容 */}
-        <div className="border border-[rgba(0,0,0,0.1)]">
-          <div className="p-6 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 左侧：编辑表单 */}
+          <div className="border border-[rgba(0,0,0,0.1)]">
+            <div className="p-6 space-y-6">
             {/* 基本信息 */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -672,6 +705,184 @@ export default function AdminVisitEditPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   placeholder="照片URL1&#10;照片URL2&#10;照片URL3"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* 右侧：实时预览 */}
+          <div className="border border-[rgba(0,0,0,0.1)]">
+            <div className="p-6">
+              <h3 className="text-[15px] font-bold text-gray-900 mb-4">页面预览</h3>
+              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                {/* 预览内容 - 模拟前台页面 */}
+                <div className="max-w-md mx-auto">
+                  {/* 封面 */}
+                  {previewData.image && (
+                    <div className="relative w-full h-64 bg-gray-100">
+                      <img
+                        src={previewData.image}
+                        alt={previewData.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder-cover.jpg';
+                        }}
+                      />
+                      {previewData.target.tags.length > 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-5">
+                          <div className="flex flex-wrap gap-2">
+                            {previewData.target.tags.map((tag: string) => (
+                              <Badge
+                                key={tag}
+                                className="rounded-none bg-blue-400 text-white font-normal text-[12px]"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 内容区 */}
+                  <div className="p-5 space-y-4">
+                    {/* 标题 */}
+                    <h2 className="text-[22px] font-semibold text-gray-900 leading-tight">
+                      {previewData.title}
+                    </h2>
+
+                    {/* 基本信息 */}
+                    <div className="flex flex-wrap gap-2 text-[13px] text-[rgba(0,0,0,0.6)]">
+                      <span>{previewData.duration}</span>
+                      <span>·</span>
+                      <span>{previewData.date || '暂无日期'}</span>
+                    </div>
+
+                    {/* 被访者信息 */}
+                    <div className="p-4 bg-[rgba(0,0,0,0.02)]">
+                      <h3 className="text-[15px] font-semibold text-gray-900 mb-3">被访者</h3>
+                      <div>
+                        <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
+                          {previewData.target.name || '暂无姓名'}
+                        </div>
+                        <div className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1">
+                          {previewData.target.company || ''}
+                        </div>
+                        {previewData.target.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {previewData.target.tags.map((tag: string) => (
+                              <span
+                                key={tag}
+                                className="px-2 py-0.5 text-[rgba(0,0,0,0.6)] text-[9px] bg-green-100"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 走访记录 */}
+                    {previewData.record && (
+                      <div>
+                        <h3 className="text-[15px] font-semibold text-gray-900 mb-2">走访记录</h3>
+                        <p className="text-[13px] text-gray-700 leading-relaxed">{previewData.record}</p>
+                      </div>
+                    )}
+
+                    {/* 拜访成果 */}
+                    {previewData.outcome && (
+                      <div>
+                        <h3 className="text-[15px] font-semibold text-gray-900 mb-2">拜访成果</h3>
+                        <p className="text-[13px] text-gray-700 leading-relaxed">{previewData.outcome}</p>
+                      </div>
+                    )}
+
+                    {/* 关键要点 */}
+                    {previewData.keyPoints.length > 0 && (
+                      <div>
+                        <h3 className="text-[15px] font-semibold text-gray-900 mb-2">关键要点</h3>
+                        <ul className="space-y-1.5">
+                          {previewData.keyPoints.map((point: string, index: number) => (
+                            <li key={index} className="flex items-start text-[13px] text-gray-700">
+                              <span className="w-1.5 h-1.5 bg-blue-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
+                              <span>{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* 下一步计划 */}
+                    {previewData.nextSteps.length > 0 && (
+                      <div>
+                        <h3 className="text-[15px] font-semibold text-gray-900 mb-2">下一步计划</h3>
+                        <ul className="space-y-1.5">
+                          {previewData.nextSteps.map((step: string, index: number) => (
+                            <li key={index} className="flex items-start text-[13px] text-gray-700">
+                              <span className="w-1.5 h-1.5 bg-green-400 rounded-none mt-1.5 mr-2 flex-shrink-0" />
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* 备注 */}
+                    {previewData.notes && (
+                      <div>
+                        <h3 className="text-[15px] font-semibold text-gray-900 mb-2">备注</h3>
+                        <p className="text-[13px] text-gray-700 leading-relaxed">{previewData.notes}</p>
+                      </div>
+                    )}
+
+                    {/* 走访反馈录音 */}
+                    {previewData.feedbackAudio && (
+                      <div>
+                        <h3 className="text-[15px] font-semibold text-gray-900 mb-2">走访反馈录音</h3>
+                        <audio controls src={previewData.feedbackAudio} className="w-full" />
+                      </div>
+                    )}
+
+                    {/* 评分 */}
+                    {previewData.rating > 0 && (
+                      <div>
+                        <h3 className="text-[15px] font-semibold text-gray-900 mb-2">本次评分</h3>
+                        <div className="flex items-center space-x-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <span
+                              key={star}
+                              className={`text-xl ${
+                                star <= previewData.rating ? 'text-yellow-400' : 'text-gray-300'
+                              }`}
+                            >
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 照片 */}
+                    {previewData.photos.length > 0 && (
+                      <div>
+                        <h3 className="text-[15px] font-semibold text-gray-900 mb-2">现场照片</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {previewData.photos.map((photo: string, index: number) => (
+                            <div key={index} className="w-full h-32 overflow-hidden">
+                              <img
+                                src={photo}
+                                alt={`照片${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
