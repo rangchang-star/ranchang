@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Camera, Upload, Plus, X, Mic, Check } from 'lucide-react';
+import { ArrowLeft, Camera, Upload, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarUpload, AvatarDisplay } from '@/components/avatar-upload';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -131,14 +132,6 @@ const tagDescriptions: Record<string, string> = {
   '会说人话': '汇报、路演、谈判、讲明白事',
 };
 
-const directions = [
-  { id: 'confidence', name: '信心', icon: '/icon-confidence.jpg' },
-  { id: 'mission', name: '使命', icon: '/icon-mission.jpg' },
-  { id: 'self', name: '自我', icon: '/icon-self.jpg' },
-  { id: 'future', name: '未来', icon: '/icon-future.jpg' },
-  { id: 'growth', name: '成长', icon: '/icon-growth.jpg' },
-];
-
 export function ProfileEditContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get('id');
@@ -167,7 +160,7 @@ export function ProfileEditContent() {
       industryTags: user.abilityTags || mockUserProfile.industryTags, // 从 user.abilityTags 加载行业标签
       resources: user.resourceTags || mockUserProfile.resources,
       hardcoreTags: user.hardcoreTags || mockUserProfile.hardcoreTags || [], // 硬核标签从用户数据中获取，无则使用默认值
-      declaration: user.bio || mockUserProfile.declaration,
+      declaration: user.need || user.bio || mockUserProfile.declaration, // 优先从 user.need 读取，fallback 到 user.bio
       directions: mockUserProfile.directions,
     };
   };
@@ -220,6 +213,19 @@ export function ProfileEditContent() {
           if (data.success && data.data) {
             // 更新 localStorage 中的用户数据
             localStorage.setItem('currentUser', JSON.stringify(data.data));
+
+            // 如果数据库中有工作经历数据，使用数据库的数据
+            if (data.data.experience && Array.isArray(data.data.experience) && data.data.experience.length > 0) {
+              setExperiences(data.data.experience);
+              localStorage.setItem('userExperiences', JSON.stringify(data.data.experience));
+            }
+
+            // 如果数据库中有主要成就数据，使用数据库的数据
+            if (data.data.achievement && Array.isArray(data.data.achievement) && data.data.achievement.length > 0) {
+              setAchievements(data.data.achievement);
+              localStorage.setItem('userAchievements', JSON.stringify(data.data.achievement));
+            }
+
             // 标记已刷新过
             hasRefreshedData.current = true;
             // 不再调用 refreshUser，避免触发数据重置
@@ -233,29 +239,51 @@ export function ProfileEditContent() {
     refreshUserDataFromDatabase();
   }, [isLoggedIn, user?.id]);
 
-  // 高燃宣告数据结构 - 每个方向独立管理主题、简介、音频
-  const [declarations, setDeclarations] = useState<Record<string, {
-    theme: string;          // 宣告主题
-    description: string;    // 宣告内容
-    audioUrl?: string;      // 音频URL
-    isRecording: boolean;   // 是否正在录音
-    hasRecorded: boolean;   // 是否已录制
-  }>>({});
-  
-  // 重录确认对话框
-  const [showReRecordDialog, setShowReRecordDialog] = useState(false);
-  const [directionToReRecord, setDirectionToReRecord] = useState<string | null>(null);
-  const [actionType, setActionType] = useState<'reRecord' | 'delete' | null>(null);
+  // 高燃宣告 - 简化为简单的主题和内容
+  const [declarationTheme, setDeclarationTheme] = useState<string>('');
+  const [declarationDescription, setDeclarationDescription] = useState<string>('');
 
-  // 工作经历状态
+  // 工作经历状态 - 从 localStorage 恢复
   const [experiences, setExperiences] = useState<Array<{
     company: string;
     position: string;
     duration: string;
-  }>>([]);
+  }>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('userExperiences');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
 
-  // 主要成就状态
-  const [achievements, setAchievements] = useState<string[]>([]);
+  // 主要成就状态 - 从 localStorage 恢复
+  const [achievements, setAchievements] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('userAchievements');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  // 从 localStorage 恢复高燃宣告数据
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('userDeclarations');
+      if (saved) {
+        try {
+          const parsedDeclarations = JSON.parse(saved);
+          // 找到第一个有内容的宣告并恢复
+          const activeDeclaration = parsedDeclarations.find((d: any) => d.theme && d.description);
+          if (activeDeclaration) {
+            setDeclarationTheme(activeDeclaration.theme || '');
+            setDeclarationDescription(activeDeclaration.description || '');
+          }
+        } catch (error) {
+          console.error('Failed to restore declarations:', error);
+        }
+      }
+    }
+  }, []);
 
   const handlePurposeSelect = (purpose: string) => {
     setSelectedPurpose(purpose);
@@ -263,126 +291,6 @@ export function ProfileEditContent() {
 
   const handleIndustryTagSelect = (tag: string) => {
     setSelectedIndustryTag(tag);
-  };
-
-  const handleDirectionSelect = (directionId: string) => {
-    setSelectedDirection(directionId);
-    // 切换方向时不需要重置录音状态，保留之前的录音
-  };
-
-  const handleDirectionRecord = (directionId: string) => {
-    // 只有勾选了方向才能录音
-    if (selectedDirection !== directionId) {
-      return;
-    }
-
-    const currentDeclaration = declarations[directionId] || { theme: '', description: '', isRecording: false, hasRecorded: false };
-
-    if (currentDeclaration.hasRecorded) {
-      // 如果已经录制过，弹出确认对话框（重录）
-      setDirectionToReRecord(directionId);
-      setActionType('reRecord');
-      setShowReRecordDialog(true);
-    } else if (currentDeclaration.isRecording) {
-      // 停止录音
-      setDeclarations(prev => ({
-        ...prev,
-        [directionId]: { 
-          ...prev[directionId],
-          isRecording: false, 
-          hasRecorded: true 
-        }
-      }));
-    } else {
-      // 开始录音
-      setDeclarations(prev => ({
-        ...prev,
-        [directionId]: { 
-          ...prev[directionId],
-          isRecording: true, 
-          hasRecorded: false 
-        }
-      }));
-    }
-  };
-
-  // 确认重录
-  const confirmReRecord = () => {
-    if (directionToReRecord) {
-      setDeclarations(prev => ({
-        ...prev,
-        [directionToReRecord]: { 
-          ...prev[directionToReRecord],
-          isRecording: true, 
-          hasRecorded: false 
-        }
-      }));
-      setShowReRecordDialog(false);
-      setDirectionToReRecord(null);
-      setActionType(null);
-    }
-  };
-
-  // 取消操作
-  const cancelAction = () => {
-    setShowReRecordDialog(false);
-    setDirectionToReRecord(null);
-    setActionType(null);
-  };
-
-  // 确认删除
-  const confirmDelete = () => {
-    if (directionToReRecord) {
-      setDeclarations(prev => ({
-        ...prev,
-        [directionToReRecord]: { 
-          ...prev[directionToReRecord],
-          audioUrl: undefined,
-          hasRecorded: false 
-        }
-      }));
-      setShowReRecordDialog(false);
-      setDirectionToReRecord(null);
-      setActionType(null);
-    }
-  };
-
-  // 播放录音
-  const handlePlayRecording = (directionId: string) => {
-    const declaration = declarations[directionId];
-    if (declaration?.audioUrl) {
-      const audio = new Audio(declaration.audioUrl);
-      audio.play();
-    }
-  };
-
-  // 删除录音
-  const handleDeleteRecording = (directionId: string) => {
-    setDirectionToReRecord(directionId);
-    setActionType('delete');
-    setShowReRecordDialog(true);
-  };
-
-  // 更新宣告主题
-  const updateDeclarationTheme = (directionId: string, theme: string) => {
-    setDeclarations(prev => ({
-      ...prev,
-      [directionId]: { 
-        ...prev[directionId],
-        theme 
-      }
-    }));
-  };
-
-  // 更新宣告内容
-  const updateDeclarationDescription = (directionId: string, description: string) => {
-    setDeclarations(prev => ({
-      ...prev,
-      [directionId]: { 
-        ...prev[directionId],
-        description 
-      }
-    }));
   };
 
   const handleResourceToggle = (resource: string) => {
@@ -516,26 +424,23 @@ export function ProfileEditContent() {
       requiredErrors.push('硬核标签（必选）');
     }
 
-    // 验证高燃宣告（如果选中了方向）
-    // 只有当用户选择了方向且填写了宣告内容时才验证
-    if (selectedDirection && declarations[selectedDirection]?.theme) {
-      const declaration = declarations[selectedDirection];
-      
+    // 验证高燃宣告（如果填写了）
+    if (declarationTheme || declarationDescription) {
       // 验证宣告主题
-      if (!declaration?.theme || declaration.theme.trim() === '') {
+      if (!declarationTheme || declarationTheme.trim() === '') {
         requiredErrors.push('宣告主题');
-      } else if (declaration.theme.trim().length < 8) {
+      } else if (declarationTheme.trim().length < 8) {
         requiredErrors.push('宣告主题（不少于8字）');
-      } else if (declaration.theme.trim().length > 15) {
+      } else if (declarationTheme.trim().length > 15) {
         requiredErrors.push('宣告主题（不超过15字）');
       }
-      
+
       // 验证宣告内容
-      if (!declaration?.description || declaration.description.trim() === '') {
+      if (!declarationDescription || declarationDescription.trim() === '') {
         requiredErrors.push('宣告内容');
-      } else if (declaration.description.trim().length < 25) {
+      } else if (declarationDescription.trim().length < 25) {
         requiredErrors.push('宣告内容（不少于25字）');
-      } else if (declaration.description.trim().length > 60) {
+      } else if (declarationDescription.trim().length > 60) {
         requiredErrors.push('宣告内容（不超过60字）');
       }
     }
@@ -566,8 +471,8 @@ export function ProfileEditContent() {
       industryTags: selectedIndustryTag ? [selectedIndustryTag] : [],
       resources: selectedResources,
       hardcoreTags: selectedAbilityTags,
-      directions: selectedDirection ? [selectedDirection] : [],
-      declarations, // 保存高燃宣告数据（包含每个方向的主题、简介、音频）
+      declarationTheme,
+      declarationDescription,
       experiences,
       achievements,
       updatedAt: new Date().toISOString(),
@@ -604,11 +509,12 @@ export function ProfileEditContent() {
           position: profile.companyPosition,
           industry: profile.industry,
           need: profile.declaration,
-          bio: profile.declaration,
           tag_stamp: tagStamp,
           ability_tags: selectedIndustryTag ? [selectedIndustryTag] : [],
           hardcore_tags: selectedAbilityTags,
           resource_tags: selectedResources,
+          experience: experiences,
+          achievement: achievements,
         };
 
         console.log('请求体:', requestBody);
@@ -655,37 +561,25 @@ export function ProfileEditContent() {
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
       }
 
-      // 保存宣告数据（新的数据结构）
-      const declarationsArray = directions.map(dir => {
-        const decl = declarations[dir.id] || { theme: '', description: '', hasRecorded: false };
-        return {
-          id: dir.id,
-          name: dir.name,
-          icon: dir.icon,
-          theme: decl.theme,
-          description: decl.description,
-          audioUrl: decl.audioUrl,
-          hasRecorded: decl.hasRecorded,
-        };
-      });
+      // 保存工作经历
+      localStorage.setItem('userExperiences', JSON.stringify(experiences));
 
-      localStorage.setItem('userDeclarations', JSON.stringify(declarationsArray));
+      // 保存主要成就
+      localStorage.setItem('userAchievements', JSON.stringify(achievements));
 
       // 保存高燃宣告到数据库
       if (isLoggedIn && user) {
         try {
-          // 找到有内容的宣告
-          const activeDeclaration = declarationsArray.find((d: any) => d.theme && d.description);
-          
-          if (activeDeclaration) {
-            console.log('保存高燃宣告到数据库:', activeDeclaration);
-            
+          // 只保存填写了的高燃宣告（默认方向为"信心"）
+          if (declarationTheme && declarationDescription) {
+            console.log('保存高燃宣告到数据库:', { theme: declarationTheme, description: declarationDescription });
+
             const declarationRequest = {
               userId: user.id,
-              direction: activeDeclaration.id,
-              text: activeDeclaration.theme,
-              summary: activeDeclaration.description,
-              audioUrl: activeDeclaration.audioUrl || null,
+              direction: 'confidence', // 默认方向为信心
+              text: declarationTheme, // 宣告主题（简短，8-15字）
+              summary: declarationDescription, // 宣告内容（详细，25-60字）
+              audioUrl: null,
               views: 0,
               isFeatured: true,
             };
@@ -705,6 +599,8 @@ export function ProfileEditContent() {
             } else {
               console.log('高燃宣告保存成功');
             }
+          } else {
+            console.log('用户没有填写高燃宣告，跳过保存');
           }
         } catch (error) {
           console.error('保存高燃宣告到数据库失败:', error);
@@ -759,16 +655,13 @@ export function ProfileEditContent() {
         <div className="px-5 space-y-6">
           {/* 头像上传 */}
           <div className="flex flex-col items-center space-y-3">
-            <div className="relative">
-              <Avatar className="w-24 h-24">
-                <AvatarImage src={profile.avatar} alt={profile.name} />
-                <AvatarFallback>{profile.name[0]}</AvatarFallback>
-              </Avatar>
-              <Button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-400 hover:bg-blue-500 rounded-none flex items-center justify-center">
-                <Camera className="w-4 h-4 text-white" />
-              </Button>
-            </div>
-            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">点击更换头像</p>
+            <AvatarUpload
+              currentAvatarKey={profile.avatar}
+              userId={user?.id}
+              name={profile.name}
+              onUploadSuccess={(fileKey) => setProfile({ ...profile, avatar: fileKey })}
+              size="lg"
+            />
           </div>
 
           {/* 基本信息 */}
@@ -1078,137 +971,43 @@ export function ProfileEditContent() {
             <p className="text-[11px] text-[rgba(0,0,0,0.4)]">前台只显示硬核标签（最多选3个）</p>
           </div>
 
-          {/* 宣告方向 */}
+          {/* 高燃宣告 */}
           <div className="space-y-3">
             <h2 className="text-[13px] font-semibold text-gray-900">
-              高燃宣告（请勾选你要前端展示的宣告）
+              高燃宣告
             </h2>
-            {/* 宣告方向列表 */}
-            <div className="space-y-4">
-              {directions.map((direction) => (
-                <div
-                  key={direction.id}
-                  className={`space-y-3 p-3 border ${
-                    selectedDirection === direction.id
-                      ? 'border-blue-400 bg-blue-400/10'
-                      : 'border-[rgba(0,0,0,0.1)]'
-                  }`}
-                >
-                  {/* 宣告方向标题和勾选 */}
-                  <div className="flex items-center space-x-3">
-                    <button
-                      onClick={() => handleDirectionSelect(direction.id)}
-                      className="flex items-center space-x-2"
-                    >
-                      <div className="w-4 h-4 border-2 border-blue-400 flex items-center justify-center">
-                        {selectedDirection === direction.id && (
-                          <Check className="w-3 h-3 text-blue-400" />
-                        )}
-                      </div>
-                      <div className="w-8 h-8 relative">
-                        <img
-                          src={direction.icon}
-                          alt={direction.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <span className="text-[12px] font-semibold">{direction.name}</span>
-                    </button>
-                    
-                    {/* 音频控制按钮 */}
-                    {selectedDirection === direction.id && (
-                      <div className="flex items-center space-x-2 ml-auto">
-                        {/* 播放按钮 */}
-                        {declarations[direction.id]?.hasRecorded && (
-                          <button
-                            onClick={() => handlePlayRecording(direction.id)}
-                            className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center hover:bg-green-600 transition-colors"
-                            title="播放录音"
-                          >
-                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </button>
-                        )}
-                        
-                        {/* 录音按钮 */}
-                        <button
-                          onClick={() => handleDirectionRecord(direction.id)}
-                          className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
-                            declarations[direction.id]?.isRecording
-                              ? 'bg-red-500 animate-pulse'
-                              : 'bg-blue-400 hover:bg-blue-500'
-                          }`}
-                          title={declarations[direction.id]?.hasRecorded ? "重新录音" : "开始录音"}
-                        >
-                          <Mic className="w-3 h-3 text-white" />
-                        </button>
-                        
-                        {/* 删除按钮 */}
-                        {declarations[direction.id]?.hasRecorded && (
-                          <button
-                            onClick={() => handleDeleteRecording(direction.id)}
-                            className="w-6 h-6 rounded-full bg-gray-400 flex items-center justify-center hover:bg-gray-500 transition-colors"
-                            title="删除录音"
-                          >
-                            <X className="w-3 h-3 text-white" />
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* 选中状态下的输入框 */}
-                  {selectedDirection === direction.id && (
-                    <div className="space-y-2 pl-7 animate-in slide-in-from-top-2 duration-200">
-                      {/* 宣告主题 */}
-                      <div>
-                        <label className="text-[11px] text-[rgba(0,0,0,0.4)] block mb-1">
-                          宣告主题 <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={declarations[direction.id]?.theme || ''}
-                          onChange={(e) => updateDeclarationTheme(direction.id, e.target.value)}
-                          className="w-full px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
-                          placeholder="请输入宣告主题（8-15字）"
-                          maxLength={15}
-                        />
-                      </div>
-                      
-                      {/* 宣告内容 */}
-                      <div>
-                        <label className="text-[11px] text-[rgba(0,0,0,0.4)] block mb-1">
-                          宣告内容 <span className="text-red-400">*</span>
-                        </label>
-                        <textarea
-                          value={declarations[direction.id]?.description || ''}
-                          onChange={(e) => updateDeclarationDescription(direction.id, e.target.value)}
-                          className="w-full px-3 py-2 text-[11px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none placeholder-[rgba(0,0,0,0.3)]"
-                          rows={3}
-                          placeholder="请输入宣告内容（25-60字）"
-                          minLength={25}
-                          maxLength={60}
-                        />
-                        <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
-                          {(declarations[direction.id]?.description || '').length}/60
-                        </p>
-                      </div>
-                      
-                      {/* 录音状态提示 */}
-                      <div className="text-[10px] text-[rgba(0,0,0,0.4)]">
-                        {declarations[direction.id]?.isRecording ? (
-                          <span className="text-red-500">🔴 正在录音...</span>
-                        ) : declarations[direction.id]?.hasRecorded ? (
-                          <span className="text-green-600">✓ 录音完成，可点击播放键试听</span>
-                        ) : (
-                          <span>点击录音图标开始录制此宣告的音频</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+            <div>
+              <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">
+                宣告主题 <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={declarationTheme}
+                onChange={(e) => setDeclarationTheme(e.target.value)}
+                className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
+                placeholder="请输入宣告主题（8-15字）"
+                maxLength={15}
+              />
+              <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
+                {declarationTheme.length}/15字（8-15字）
+              </p>
+            </div>
+            <div>
+              <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">
+                宣告内容 <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                value={declarationDescription}
+                onChange={(e) => setDeclarationDescription(e.target.value)}
+                className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none placeholder-[rgba(0,0,0,0.3)]"
+                rows={3}
+                placeholder="请输入宣告内容（25-60字）"
+                minLength={25}
+                maxLength={60}
+              />
+              <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
+                {declarationDescription.length}/60字（25-60字）
+              </p>
             </div>
           </div>
 
@@ -1315,41 +1114,6 @@ export function ProfileEditContent() {
           </div>
         </div>
       </div>
-
-      {/* 确认操作对话框 */}
-      {showReRecordDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white w-full max-w-sm">
-            <div className="p-4">
-              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">
-                {actionType === 'delete' ? '确认删除' : '确认重录'}
-              </h3>
-              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                {actionType === 'delete' 
-                  ? '确定要删除这条录音吗？删除后将无法恢复。'
-                  : '重新录音将覆盖之前的录音，确定要继续吗？'
-                }
-              </p>
-            </div>
-            <div className="flex border-t border-gray-200">
-              <button
-                onClick={cancelAction}
-                className="flex-1 py-3 text-[13px] text-[rgba(0,0,0,0.6)] hover:bg-gray-50 border-r border-gray-200"
-              >
-                取消
-              </button>
-              <button
-                onClick={actionType === 'delete' ? confirmDelete : confirmReRecord}
-                className={`flex-1 py-3 text-[13px] text-white ${
-                  actionType === 'delete' ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-400 hover:bg-blue-500'
-                }`}
-              >
-                确定
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

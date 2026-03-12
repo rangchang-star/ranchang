@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Heart, Share2 } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, Briefcase, Award, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarDisplay } from '@/components/avatar-upload';
 import { Badge } from '@/components/ui/badge';
 import { Flame } from 'lucide-react';
 import postgres from 'postgres';
@@ -11,6 +12,15 @@ const tagStampMap = {
   personLookingForJob: { label: '人找事', description: '我有能力，寻找项目机会' },
   jobLookingForPerson: { label: '事找人', description: '我有项目，寻找合作伙伴' },
   pureExchange: { label: '纯交流', description: '只想交流学习，暂无合作需求' },
+};
+
+// 高燃宣告方向映射
+const directionMap: Record<string, string> = {
+  confidence: '信心',
+  mission: '使命',
+  self: '自我',
+  opponent: '对手',
+  environment: '环境',
 };
 
 // 从数据库获取用户数据
@@ -26,14 +36,35 @@ async function getUserData(id: string) {
 
   try {
     const users = await sql`
-      SELECT * FROM public.users WHERE id = ${id}
+      SELECT * FROM public.app_users WHERE id = ${id}
     `;
 
     if (users.length === 0) {
+      console.log('用户不存在:', id);
       return null;
     }
 
-    return users[0];
+    console.log('获取到用户数据:', users[0]);
+    console.log('experience字段:', users[0].experience);
+    console.log('achievement字段:', users[0].achievement);
+
+    // 获取该用户的最新高燃宣告
+    const declarations = await sql`
+      SELECT * FROM public.declarations
+      WHERE user_id = ${id}
+      ORDER BY created_at DESC
+      LIMIT 1
+    `;
+
+    console.log('获取到高燃宣告数据:', declarations);
+
+    // 将高燃宣告数据附加到用户数据中
+    const userData = users[0];
+    if (declarations.length > 0) {
+      (userData as any).declaration = declarations[0];
+    }
+
+    return userData;
   } catch (error) {
     console.error('Error fetching user:', error);
     return null;
@@ -73,6 +104,9 @@ export default async function ConnectionDetailPage({
     company: user.company || '',
     position: user.position || '',
     createdAt: user.created_at,
+    experiences: user.experience || [],
+    achievements: user.achievement || [],
+    declaration: (user as any).declaration || null,
   };
 
   const tagStamp = tagStampMap[formattedUser.tagStamp as keyof typeof tagStampMap];
@@ -104,13 +138,7 @@ export default async function ConnectionDetailPage({
             </div>
 
             <div className="flex items-start space-x-4">
-              <div className="w-24 h-24 flex-shrink-0 overflow-hidden">
-                <img
-                  src={formattedUser.avatar}
-                  alt={formattedUser.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <AvatarDisplay avatarKey={formattedUser.avatar} name={formattedUser.name} size="xl" />
 
               <div className="flex-1 min-w-0">
                 <div className="mb-3">
@@ -190,23 +218,93 @@ export default async function ConnectionDetailPage({
           </div>
 
           {/* 高燃宣告 */}
-          <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-[15px] font-semibold text-gray-900">高燃宣告</h3>
-              <Flame className="w-4 h-4 text-orange-500" />
-            </div>
-            <p className="text-[13px] text-gray-700 leading-relaxed mb-2">
-              {formattedUser.need}
-            </p>
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-[11px] text-gray-500">
-                {new Date(formattedUser.createdAt).toLocaleDateString('zh-CN')}
-              </span>
-              <div className="flex items-center space-x-1">
-                <span className="text-[11px] text-gray-500">0次播放</span>
+          {formattedUser.declaration ? (
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[15px] font-semibold text-gray-900">高燃宣告</h3>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary" className="text-[11px] bg-white text-orange-600 border-orange-300">
+                    {directionMap[formattedUser.declaration.direction] || formattedUser.declaration.direction}
+                  </Badge>
+                  <Flame className="w-4 h-4 text-orange-500" />
+                </div>
+              </div>
+              <p className="text-[13px] text-gray-700 leading-relaxed mb-2">
+                {formattedUser.declaration.text}
+              </p>
+              {formattedUser.declaration.summary && (
+                <p className="text-[12px] text-gray-600 leading-relaxed mb-2">
+                  {formattedUser.declaration.summary}
+                </p>
+              )}
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-[11px] text-gray-500">
+                  {new Date(formattedUser.declaration.created_at).toLocaleDateString('zh-CN')}
+                </span>
+                <div className="flex items-center space-x-1">
+                  <span className="text-[11px] text-gray-500">{formattedUser.declaration.views || 0}次播放</span>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[15px] font-semibold text-gray-900">高燃宣告</h3>
+                <Flame className="w-4 h-4 text-orange-500" />
+              </div>
+              <p className="text-[13px] text-gray-700 leading-relaxed">
+                该用户暂未发布高燃宣告
+              </p>
+            </div>
+          )}
+
+          {/* 工作经历 */}
+          {formattedUser.experiences && formattedUser.experiences.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[15px] font-semibold text-gray-900">工作经历</h3>
+                <Briefcase className="w-4 h-4 text-blue-500" />
+              </div>
+              <div className="space-y-3">
+                {formattedUser.experiences.map((exp: any, index: number) => (
+                  <div key={index} className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="text-[14px] font-semibold text-gray-900 mb-1">
+                          {exp.company}
+                        </h4>
+                        <p className="text-[12px] text-gray-600 mb-1">{exp.position}</p>
+                      </div>
+                      <div className="flex items-center text-[11px] text-gray-500">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        {exp.duration}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 主要成就 */}
+          {formattedUser.achievements && formattedUser.achievements.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[15px] font-semibold text-gray-900">主要成就</h3>
+                <Award className="w-4 h-4 text-yellow-500" />
+              </div>
+              <div className="space-y-2">
+                {formattedUser.achievements.map((achievement: string, index: number) => (
+                  <div key={index} className="flex items-start space-x-3 bg-yellow-50 rounded-lg p-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
+                    </div>
+                    <p className="text-[13px] text-gray-700 leading-relaxed">{achievement}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

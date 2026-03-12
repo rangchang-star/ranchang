@@ -7,6 +7,8 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, Calendar, MapPin, Users, Clock, Check, Plus, X } from 'lucide-react';
+import { ImageUpload, ImageDisplay } from '@/components/image-upload';
+import { useImageUrl } from '@/hooks/use-image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -46,7 +48,7 @@ export default function AdminActivityCreatePage() {
   const [customGuestName, setCustomGuestName] = useState('');
   const [customGuestBio, setCustomGuestBio] = useState('');
   const [customGuestAvatar, setCustomGuestAvatar] = useState('');
-  
+
   // 加载会员数据
   useEffect(() => {
     async function loadMembers() {
@@ -69,7 +71,8 @@ export default function AdminActivityCreatePage() {
   }, []);
 
   const [description, setDescription] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [coverImageKey, setCoverImageKey] = useState<string | null>(null);
+  const { url: coverImageUrl } = useImageUrl(coverImageKey);
 
   const handleTagToggle = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -97,29 +100,43 @@ export default function AdminActivityCreatePage() {
     setAvailableMembers(availableMembers.filter((m) => m.id !== memberId));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title || !date || !startTime || !endTime || !location || !maxParticipants) {
       alert('请填写所有必填字段');
       return;
     }
 
-    console.log('保存活动:', {
-      title,
-      date,
-      startTime,
-      endTime,
-      location,
-      type,
-      maxParticipants: parseInt(maxParticipants),
-      teaFee,
-      participants: selectedParticipants,
-      tags: selectedTags,
-      description,
-      imageUrl,
-    });
+    try {
+      const response = await fetch('/admin/api/activities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          location,
+          type,
+          coverImageKey,  // ✅ 使用 coverImageKey 而不是 imageUrl
+          date,
+          startTime,
+          endTime,
+          capacity: parseInt(maxParticipants),
+          status: 'active',
+        }),
+      });
 
-    alert('活动已创建');
-    router.push('/admin/activities');
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '创建活动失败');
+      }
+
+      alert('活动已创建');
+      router.push('/admin/activities');
+    } catch (error: any) {
+      console.error('创建活动失败:', error);
+      alert(`创建失败：${error.message}`);
+    }
   };
 
   // 计算当前已报名人数（默认为0）
@@ -221,44 +238,16 @@ export default function AdminActivityCreatePage() {
                   <label className="block text-[13px] font-medium text-gray-700 mb-2">
                     封面图片
                   </label>
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt="封面预览"
-                          className="w-32 h-20 rounded-lg object-cover border-2 border-[rgba(0,0,0,0.1)]"
-                        />
-                      ) : (
-                        <div className="w-32 h-20 rounded-lg bg-[rgba(0,0,0,0.05)] border-2 border-dashed border-[rgba(0,0,0,0.2)] flex items-center justify-center">
-                          <span className="text-[11px] text-[rgba(0,0,0,0.4)]">暂无封面</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const url = URL.createObjectURL(file);
-                            setImageUrl(url);
-                          }
-                        }}
-                        className="text-[13px]"
-                      />
-                      <Input
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="或输入封面图片URL"
-                        className="text-[13px]"
-                      />
-                      <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                        支持上传图片或输入图片链接，留空将使用默认图片
-                      </p>
-                    </div>
-                  </div>
+                  <ImageUpload
+                    currentImageKey={coverImageKey}
+                    userId=""
+                    onUploadSuccess={setCoverImageKey}
+                    aspectRatio="16:9"
+                    className="max-w-md"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">
+                    推荐尺寸：16:9，支持 JPEG、PNG、GIF、WebP，最大5MB
+                  </p>
                 </div>
               </div>
             </div>
@@ -560,14 +549,12 @@ export default function AdminActivityCreatePage() {
               <div className="border border-[rgba(0,0,0,0.1)] overflow-hidden bg-white">
                 {/* 封面图 */}
                 <div className="h-44 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-                  {imageUrl ? (
-                    <img src={imageUrl} alt={title || '活动封面'} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="text-center">
-                      <div className="text-4xl mb-2">🎯</div>
-                      <div className="text-[13px] text-[rgba(0,0,0,0.5)]">活动封面</div>
-                    </div>
-                  )}
+                  <ImageDisplay
+                    imageKey={coverImageKey}
+                    alt={title || '活动封面'}
+                    aspectRatio="16:9"
+                    className="w-full h-44"
+                  />
                 </div>
 
                 {/* 卡片内容 */}

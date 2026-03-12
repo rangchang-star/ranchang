@@ -5,7 +5,7 @@ import { relations } from 'drizzle-orm';
 // ============================================================
 // 用户表
 // ============================================================
-export const users = pgTable('public.app_users', {
+export const users = pgTable('app_users', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   name: varchar('name', { length: 128 }).notNull(),
   age: integer('age'),
@@ -30,6 +30,8 @@ export const users = pgTable('public.app_users', {
   hardcore_tags: jsonb('hardcore_tags'),
   gender: varchar('gender', { length: 10 }),
   company_scale: varchar('company_scale', { length: 50 }),
+  experience: jsonb('experience').$type<Array<{company: string; position: string; duration: string}>>(),
+  achievement: jsonb('achievement').$type<string[]>(),
 }, (table) => ({
   // 可以在这里添加索引
 }));
@@ -49,6 +51,7 @@ export const activities = pgTable('activities', {
   registered_count: integer('registered_count').default(0),
   type: varchar('type', { length: 50 }),
   cover_image: text('cover_image'),
+  cover_image_key: text('cover_image_key'), // 新增：支持对象存储fileKey
   status: varchar('status', { length: 20 }).default('draft'),
   created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }),
@@ -65,9 +68,21 @@ export const visits = pgTable('visits', {
   location: varchar('location', { length: 255 }),
   description: text('description'),
   date: timestamp('date', { withTimezone: true }).notNull(),
+  time: varchar('time', { length: 20 }), // 拜访时间
   capacity: integer('capacity'),
+  participants: integer('participants'), // 参与人数
   registered_count: integer('registered_count').default(0),
   cover_image: text('cover_image'),
+  cover_image_key: text('cover_image_key'), // 新增：支持对象存储fileKey
+  visitor_id: varchar('visitor_id', { length: 36 }), // 被访者ID
+  record: text('record'), // 走访记录
+  outcome: text('outcome'), // 拜访成果
+  notes: text('notes'), // 备注
+  key_points: jsonb('key_points'), // 关键要点（数组）
+  next_steps: jsonb('next_steps'), // 下一步计划（数组）
+  rating: integer('rating'), // 评分（1-5）
+  feedback_audio: text('feedback_audio'), // 走访反馈录音fileKey
+  photos: jsonb('photos'), // 现场照片（fileKeys数组）
   status: varchar('status', { length: 20 }).default('draft'),
   created_at: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
   updated_at: timestamp('updated_at', { withTimezone: true }),
@@ -127,6 +142,21 @@ export const activityRegistrations = pgTable('activity_registrations', {
 });
 
 // ============================================================
+// 通用报名表（活动/探访）
+// ============================================================
+export const registrations = pgTable('registrations', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  activity_id: varchar('activity_id', { length: 36 }),
+  user_id: varchar('user_id', { length: 36 }).notNull(),
+  visit_id: varchar('visit_id', { length: 36 }),
+  status: varchar('status', { length: 50 }).default('registered'),
+  registered_at: timestamp('registered_at', { withTimezone: true }).default(sql`now()`),
+  reviewed_at: timestamp('reviewed_at', { withTimezone: true }),
+  created_at: timestamp('created_at', { withTimezone: true }).default(sql`now()`),
+  updated_at: timestamp('updated_at', { withTimezone: true }).default(sql`now()`),
+});
+
+// ============================================================
 // 通知表
 // ============================================================
 export const notifications = pgTable('notifications', {
@@ -175,11 +205,10 @@ export const visitRecords = pgTable('visit_records', {
 // ============================================================
 export const settings = pgTable('settings', {
   id: serial('id').primaryKey().notNull(),
-  key: varchar('key', { length: 100 }).notNull(),
-  value: jsonb('value').notNull(),
-  updated_at: timestamp('updated_at', { mode: 'string' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  settings: jsonb('settings').notNull(),
+  updated_at: timestamp('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [
-  unique('settings_key_key').on(table.key),
+  unique('settings_key_key').on(table.id),
 ]);
 
 // ============================================================

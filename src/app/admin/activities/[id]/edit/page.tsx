@@ -40,18 +40,18 @@ const fetchActivity = async (id: string) => {
       return {
         id: activity.id.toString(),
         title: activity.title,
-        date: activity.startDate ? activity.startDate.split('T')[0] : '',
-        startTime: activity.startDate ? activity.startDate.split('T')[1]?.substring(0, 5) || '14:00' : '14:00',
-        endTime: activity.endDate ? activity.endDate.split('T')[1]?.substring(0, 5) || '17:00' : '17:00',
-        location: activity.address || '',
-        address: activity.address || '',
-        type: activity.category || 'private',
+        date: activity.date || '',
+        startTime: activity.startTime || '14:00',
+        endTime: activity.endTime || '17:00',
+        location: activity.location || '',
+        address: activity.location || '',
+        type: activity.type || 'private',
         maxParticipants: activity.capacity || 12,
-        tags: [activity.category, activity.status === 'active' ? '报名中' : '已结束'],
+        tags: [activity.type, activity.status === 'active' ? '报名中' : '已结束'],
         status: activity.status,
         teaFee: activity.teaFee ? `茶水费${activity.teaFee}元` : '',
         description: activity.description || '',
-        imageUrl: activity.image || '',
+        imageUrl: activity.coverImage || '',
         participants: activity.participants?.map((p: any) => p.id.toString()) || [],
         guests: activity.guests?.map((g: any) => g.id.toString()) || [],
       };
@@ -172,22 +172,23 @@ export default function AdminActivityEditPage() {
 
     try {
       // 调用API保存活动
-      const response = await fetch(`/api/activities/${activityId}`, {
+      const response = await fetch(`/admin/api/activities/${activityId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           title,
-          subtitle: description?.substring(0, 50) || '',
-          category: type,
-          imageUrl,
+          // 移除 subtitle 字段，数据库中不存在
           description,
-          address: location,
-          startDate: `${date}T${startTime}`,
-          endDate: `${date}T${endTime}`,
-          maxParticipants: parseInt(maxParticipants),
-          teaFee: parseFloat(teaFee) || 0,
+          location, // 前端 location 对应数据库 location
+          type: type, // 前端 type 对应数据库 type
+          cover_image: imageUrl, // 前端 imageUrl 对应数据库 cover_image
+          date: date, // 日期部分
+          start_time: startTime, // 前端 startTime 对应数据库 start_time
+          end_time: endTime, // 前端 endTime 对应数据库 end_time
+          capacity: parseInt(maxParticipants), // 前端 maxParticipants 对应数据库 capacity
+          // 移除 teaFee 字段，数据库中不存在
           status: 'active',
         }),
       });

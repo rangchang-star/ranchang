@@ -22,6 +22,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarDisplay } from "@/components/avatar-upload";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -338,7 +339,7 @@ export default function DiscoveryPage() {
         const response = await fetch("/api/settings");
         if (response.ok) {
           const data = await response.json();
-          if (data.success) {
+          if (data.success && data.data) {
             setPageSettings(data.data);
             if (data.data.discovery?.music) {
               setAudioUrl(data.data.discovery.music);
@@ -363,11 +364,11 @@ export default function DiscoveryPage() {
         // 并行加载用户、活动、高燃宣告、文档和每日宣告数据
         const [usersRes, activitiesRes, declarationsRes, documentsRes, dailyRes] =
           await Promise.all([
-            fetch("/api/users"),
-            fetch("/api/activities?status=active"),
-            fetch("/api/declarations"),
-            fetch("/api/documents"),
-            fetch("/api/daily-declarations"),
+            fetch("/api/users", { cache: 'no-store' }),
+            fetch("/api/activities?status=active", { cache: 'no-store' }),
+            fetch("/api/declarations", { cache: 'no-store' }),
+            fetch("/api/documents", { cache: 'no-store' }),
+            fetch("/api/daily-declarations", { cache: 'no-store' }),
           ]);
 
         // 详细的错误诊断日志
@@ -486,7 +487,7 @@ export default function DiscoveryPage() {
               icon: declaration.user?.avatar || "/avatar-default.jpg",
               iconType: declaration.iconType || "",
               title:
-                declaration.summary || declaration.text?.substring(0, 20) || "",
+                declaration.text || declaration.summary?.substring(0, 20) || "",
               profile: declaration.user?.position || "",
               duration: declaration.duration || "0:00",
               userId: declaration.userId,
@@ -678,6 +679,10 @@ export default function DiscoveryPage() {
                   src={pageSettings.discovery?.logo || "/logo-ranchang.png"}
                   alt="燃场Logo"
                   className="w-[90px] h-[90px] object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/logo-ranchang.png";
+                  }}
                 />
                 {/* 音乐符号在logo内部 */}
                 <Music2
@@ -772,13 +777,9 @@ export default function DiscoveryPage() {
                             e.stopPropagation();
                             router.push(`/connection/${item.id}`);
                           }}
-                          className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden cursor-pointer"
+                          className="w-14 h-14 flex-shrink-0 mr-4"
                         >
-                          <img
-                            src={item.avatar}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
+                          <AvatarDisplay avatarKey={item.avatar} name={item.name} size="md" />
                         </button>
 
                         {/* 中间文字 */}
@@ -1195,12 +1196,8 @@ export default function DiscoveryPage() {
                         )}
 
                         {/* 头像 */}
-                        <div className="flex-shrink-0 w-[60px] h-[60px] overflow-hidden">
-                          <img
-                            src={item.avatar}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="flex-shrink-0 w-[60px] h-[60px]">
+                          <AvatarDisplay avatarKey={item.avatar} name={item.name} size="lg" />
                         </div>
 
                         {/* 内容 */}

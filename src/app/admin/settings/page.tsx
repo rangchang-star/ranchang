@@ -13,7 +13,7 @@ import {
   BarChart, PieChart, Radar, LineChart, X, 
   AlertTriangle, Navigation, Type, Flame, User
 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
@@ -168,6 +168,42 @@ export default function AdminSettingsPage() {
   const visitVideoRef = useRef<HTMLVideoElement>(null);
   const aiCircleVideoRef = useRef<HTMLVideoElement>(null);
 
+  // 加载设置
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const response = await fetch('/api/settings');
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          setSettings(data.data);
+          // 设置预览
+          if (data.data.discovery?.logo) {
+            setPreviewLogo(data.data.discovery.logo);
+          }
+          if (data.data.discovery?.backgroundImage) {
+            setPreviewBackground(data.data.discovery.backgroundImage);
+          }
+          if (data.data.ignition?.visitMedia?.url) {
+            setPreviewVisitMedia(data.data.ignition.visitMedia.url);
+          }
+          if (data.data.ignition?.aiCircleMedia?.url) {
+            setPreviewAiCircleMedia(data.data.ignition.aiCircleMedia.url);
+          }
+        }
+      } catch (error) {
+        console.error('加载设置失败:', error);
+      }
+    }
+
+    loadSettings();
+  }, []);
+
   // 保存设置 - 第一次确认
   const handleSave = () => {
     if (!hasChanged) {
@@ -189,7 +225,7 @@ export default function AdminSettingsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({ config: settings }),
       });
 
       if (!response.ok) {

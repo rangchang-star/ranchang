@@ -8,8 +8,9 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarDisplay } from '@/components/avatar-upload';
 import { useAuth } from '@/contexts/auth-context';
-import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut, ChevronDown, ChevronUp, Zap, Building2 } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut, ChevronDown, ChevronUp, Zap, Building2, Trophy } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -496,8 +497,11 @@ export default function ProfilePage() {
       connectionType: userData.tagStamp || 'pureExchange',
       industry: userData.industry || '未设置',
       need: userData.need || '',
+      abilityTags: userData.abilityTags || [],
       hardcoreTags: userData.hardcoreTags || [],
       resourceTags: userData.resourceTags || [],
+      experiences: [],
+      achievements: [],
       currentDeclaration: initialDeclaration,
       assessments: [entrepreneurialPsychologyAssessment, businessCognitionAssessment, aiCognitionAssessment, careerMissionAssessment] as Assessment[],
     };
@@ -546,6 +550,33 @@ export default function ProfilePage() {
 
     fetchUserDeclarations();
   }, [user?.id]);
+
+  // 从 localStorage 读取工作经历和主要成就
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // 读取工作经历
+      const savedExperiences = localStorage.getItem('userExperiences');
+      if (savedExperiences) {
+        try {
+          const experiences = JSON.parse(savedExperiences);
+          setUserInfo(prev => ({ ...prev, experiences }));
+        } catch (error) {
+          console.error('Failed to parse userExperiences:', error);
+        }
+      }
+
+      // 读取主要成就
+      const savedAchievements = localStorage.getItem('userAchievements');
+      if (savedAchievements) {
+        try {
+          const achievements = JSON.parse(savedAchievements);
+          setUserInfo(prev => ({ ...prev, achievements }));
+        } catch (error) {
+          console.error('Failed to parse userAchievements:', error);
+        }
+      }
+    }
+  }, []);
 
   // 切换量表展开状态
   const toggleAssessmentExpand = (index: number) => {
@@ -914,19 +945,8 @@ export default function ProfilePage() {
             {/* 第一行：头像 + 姓名 + 年龄 */}
             <div className="flex items-center space-x-4 mb-3">
               {/* 方形头像 */}
-              <div className="w-20 h-20 flex-shrink-0 overflow-hidden relative rounded-lg">
-                <Image
-                  src={userInfo.avatar}
-                  alt={userInfo.name}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                  unoptimized
-                />
-                <button className="absolute bottom-0 right-0 w-6 h-6 bg-blue-400 flex items-center justify-center rounded-tl-lg rounded-br-lg shadow-md">
-                  <Upload className="w-3 h-3 text-white" />
-                </button>
-              </div>
+              <AvatarDisplay avatarKey={userInfo.avatar} name={userInfo.name} size="lg" />
+
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline space-x-3">
@@ -936,15 +956,26 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* 第二行：行业标签 */}
+            {/* 第二行：行业标签（绿色标签） */}
             <div className="mb-3">
-              <div className="text-[14px] text-gray-400 mb-1 flex items-center space-x-2">
+              <div className="text-[14px] text-gray-400 mb-2 flex items-center space-x-2">
                 <Building2 className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
                 行业标签（必填）
               </div>
-              <span className="block w-full px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal">
-                {userInfo.industry}
-              </span>
+              <div className="flex flex-wrap gap-2">
+                {userInfo.abilityTags && userInfo.abilityTags.length > 0 ? (
+                  userInfo.abilityTags.map((tag: string) => (
+                    <span
+                      key={tag}
+                      className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[14px] font-normal"
+                    >
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[13px] text-gray-400">暂未设置行业标签</span>
+                )}
+              </div>
             </div>
 
             {/* 硬核标签 */}
@@ -1026,6 +1057,45 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            {/* 工作经历 */}
+            {(userInfo.experiences && userInfo.experiences.length > 0) && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Briefcase className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                  <div className="text-[14px] text-gray-400">工作经历</div>
+                </div>
+                <div className="space-y-2">
+                  {userInfo.experiences.map((exp: any, index: number) => (
+                    <div key={index} className="p-2 bg-white rounded border border-gray-200">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[15px] font-medium text-gray-900">{exp.company}</span>
+                        <span className="text-[13px] text-gray-500">{exp.duration}</span>
+                      </div>
+                      <span className="text-[13px] text-gray-600">{exp.position}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 主要成就 */}
+            {(userInfo.achievements && userInfo.achievements.length > 0) && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Trophy className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                  <div className="text-[14px] text-gray-400">主要成就</div>
+                </div>
+                <div className="space-y-2">
+                  {userInfo.achievements.map((achievement: string, index: number) => (
+                    <div key={index} className="flex items-start space-x-2">
+                      <span className="text-[13px] text-green-500 mt-1">•</span>
+                      <span className="text-[15px] text-gray-700 leading-relaxed">{achievement}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* 完善资料按钮 */}
             <div className="mt-4">

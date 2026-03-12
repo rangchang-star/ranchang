@@ -17,6 +17,7 @@ export const activities = pgTable("activities", {
 	registeredCount: integer("registered_count").default(0),
 	type: varchar({ length: 50 }),
 	coverImage: text("cover_image"),
+	coverImageKey: text("cover_image_key"), // 永久存储的文件key
 	status: varchar({ length: 20 }).default('draft'),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
@@ -24,6 +25,7 @@ export const activities = pgTable("activities", {
 	index("activities_date_idx").using("btree", table.date.asc().nullsLast().op("timestamptz_ops")),
 	index("activities_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
 	index("activities_type_idx").using("btree", table.type.asc().nullsLast().op("text_ops")),
+	index("activities_cover_image_key_idx").using("btree", table.coverImageKey.asc().nullsLast().op("text_ops")),
 ]);
 
 export const healthCheck = pgTable("health_check", {
@@ -85,6 +87,7 @@ export const declarations = pgTable("declarations", {
 	text: text().notNull(),
 	summary: text(),
 	audioUrl: text("audio_url"),
+	audioKey: text("audio_key"), // 永久存储的文件key
 	views: integer().default(0),
 	date: timestamp({ withTimezone: true, mode: 'string' }).defaultNow(),
 	isFeatured: boolean("is_featured").default(false),
@@ -94,6 +97,7 @@ export const declarations = pgTable("declarations", {
 	index("declarations_date_idx").using("btree", table.date.asc().nullsLast().op("timestamptz_ops")),
 	index("declarations_direction_idx").using("btree", table.direction.asc().nullsLast().op("text_ops")),
 	index("declarations_user_id_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	index("declarations_audio_key_idx").using("btree", table.audioKey.asc().nullsLast().op("text_ops")),
 ]);
 
 export const digitalAssets = pgTable("digital_assets", {
@@ -105,7 +109,9 @@ export const digitalAssets = pgTable("digital_assets", {
 	fileType: varchar("file_type", { length: 50 }),
 	fileSize: varchar("file_size", { length: 50 }),
 	fileUrl: text("file_url"),
+	fileKey: text("file_key"), // 永久存储的文件key
 	coverImage: text("cover_image"),
+	coverImageKey: text("cover_image_key"), // 永久存储的文件key
 	likes: integer().default(0),
 	downloads: integer().default(0),
 	status: varchar({ length: 20 }).default('draft'),
@@ -115,6 +121,8 @@ export const digitalAssets = pgTable("digital_assets", {
 	index("digital_assets_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
 	index("digital_assets_type_idx").using("btree", table.type.asc().nullsLast().op("text_ops")),
 	index("digital_assets_user_id_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
+	index("digital_assets_file_key_idx").using("btree", table.fileKey.asc().nullsLast().op("text_ops")),
+	index("digital_assets_cover_image_key_idx").using("btree", table.coverImageKey.asc().nullsLast().op("text_ops")),
 ]);
 
 export const notifications = pgTable("notifications", {
@@ -148,6 +156,7 @@ export const users = pgTable("users", {
 	name: varchar({ length: 128 }).notNull(),
 	age: integer(),
 	avatar: text(),
+	avatarKey: text("avatar_key"), // 永久存储的文件key，用于动态生成访问URL
 	phone: varchar({ length: 20 }),
 	email: varchar({ length: 255 }),
 	connectionType: varchar("connection_type", { length: 50 }),
@@ -170,6 +179,7 @@ export const users = pgTable("users", {
 	index("users_industry_idx").using("btree", table.industry.asc().nullsLast().op("text_ops")),
 	index("users_phone_idx").using("btree", table.phone.asc().nullsLast().op("text_ops")),
 	unique("users_email_unique").on(table.email),
+	index("users_avatar_key_idx").using("btree", table.avatarKey.asc().nullsLast().op("text_ops")),
 ]);
 
 export const visitRecords = pgTable("visit_records", {
@@ -196,6 +206,7 @@ export const visits = pgTable("visits", {
 	capacity: integer(),
 	registeredCount: integer("registered_count").default(0),
 	coverImage: text("cover_image"),
+	coverImageKey: text("cover_image_key"), // 永久存储的文件key
 	status: varchar({ length: 20 }).default('draft'),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
@@ -203,4 +214,5 @@ export const visits = pgTable("visits", {
 	index("visits_company_id_idx").using("btree", table.companyId.asc().nullsLast().op("text_ops")),
 	index("visits_date_idx").using("btree", table.date.asc().nullsLast().op("timestamptz_ops")),
 	index("visits_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	index("visits_cover_image_key_idx").using("btree", table.coverImageKey.asc().nullsLast().op("text_ops")),
 ]);

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Play, Pause, Heart, Share2, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarDisplay } from '@/components/avatar-upload';
 import { Badge } from '@/components/ui/badge';
 import { useParams } from 'next/navigation';
 
@@ -289,10 +290,11 @@ export default function DeclarationDetailPage() {
 
             {/* 创作者信息 */}
             <div className="flex items-center space-x-3 p-4 bg-[rgba(0,0,0,0.02)]">
-              <Avatar className="w-12 h-12">
-                <AvatarImage src={declaration.creator?.avatar || '/default-avatar.png'} alt={declaration.creator?.name || '用户'} />
-                <AvatarFallback>{declaration.creator?.name?.[0] || 'U'}</AvatarFallback>
-              </Avatar>
+              <AvatarDisplay
+                avatarKey={declaration.creator?.avatar || '/default-avatar.png'}
+                name={declaration.creator?.name || '未知用户'}
+                size="md"
+              />
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-gray-900">
                   {declaration.creator?.name || '未知用户'}

@@ -14,7 +14,8 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Textarea } from '@/components/ui/textarea';
-import { MockDatabase } from '@/lib/mock-database';
+import { db } from '@/lib/db';
+import { notifications } from '@/lib/db';
 
 // 申请类型定义
 type ApplicationType = 'activity' | 'visit' | 'boardMember' | 'visitTarget';
@@ -29,7 +30,7 @@ interface Application {
   targetName?: string;
   targetId?: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'registered' | 'approved' | 'rejected';
   applyTime: string;
 }
 
@@ -71,7 +72,7 @@ export default function AdminMessagesPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<'all' | ApplicationType>('all');
-  const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'registered' | 'approved' | 'rejected'>('registered');
   const [timeSort, setTimeSort] = useState<'asc' | 'desc' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -86,32 +87,33 @@ export default function AdminMessagesPage() {
       try {
         setIsLoading(true);
 
-        // 加载活动申请
-        const activityApplications = MockDatabase.getActivityApplications();
-        const activities = MockDatabase.getActivities();
-        const users = MockDatabase.getUsers() as any[];
+        // 调用API获取待审批记录
+        const response = await fetch('/admin/api/approvals?status=registered');
 
-        // 转换为统一的申请格式
-        const formattedApplications: Application[] = activityApplications.map(app => {
-          const activity = activities.find(a => String(a.id) === app.activityId);
-          const user = users.find(u => String(u.id) === app.userId);
+        if (!response.ok) {
+          throw new Error('加载数据失败');
+        }
 
-          return {
-            id: app.id,
-            type: 'activity',
-            applicantName: user?.name || '未知',
-            applicantPhone: user?.phone || '未知',
-            applicantCompany: user?.company || '',
-            applicantPosition: user?.position || '',
-            targetName: activity?.title || '',
-            targetId: app.activityId,
-            reason: app.reason || '',
-            status: app.status as 'pending' | 'approved' | 'rejected',
-            applyTime: app.applyTime,
-          };
-        });
+        const result = await response.json();
 
-        setApplications(formattedApplications);
+        if (result.success) {
+          // 转换为统一的申请格式
+          const formattedApplications: Application[] = result.data.map((item: any) => ({
+            id: String(item.id),
+            type: item.registrationType as ApplicationType,
+            applicantName: item.userName || '未知',
+            applicantPhone: item.userPhone || '未知',
+            applicantCompany: item.userCompany || '',
+            applicantPosition: item.userPosition || '',
+            targetName: item.activityTitle || item.visitCompanyName || '',
+            targetId: item.activityId || item.visitId,
+            reason: item.note || '',
+            status: item.status as 'pending' | 'approved' | 'rejected',
+            applyTime: item.registeredAt,
+          }));
+
+          setApplications(formattedApplications);
+        }
       } catch (error) {
         console.error('加载申请数据失败:', error);
       } finally {
@@ -125,7 +127,7 @@ export default function AdminMessagesPage() {
   // 获取待审核数量
   const getPendingCount = (type?: ApplicationType) => {
     return applications.filter(app => 
-      app.status === 'pending' && 
+      app.status === 'registered' && 
       (type ? app.type === type : true)
     ).length;
   };
@@ -146,81 +148,71 @@ export default function AdminMessagesPage() {
   });
 
   // 审批处理
-  const handleApprove = (applicationId: string) => {
-    // 调用 MockDatabase 审核方法
-    const result = MockDatabase.reviewActivityApplication(applicationId, 'approved');
-    
-    if (!result) {
-      alert('审核失败');
-      return;
-    }
-
-    // 更新前端状态
-    const updatedApplications = applications.map((app) =>
-      app.id === applicationId ? { ...app, status: 'approved' as const } : app
-    );
-    setApplications(updatedApplications);
-    
-    // 发送通知
-    const application = applications.find(app => app.id === applicationId);
-    if (application) {
-      addNotification({
-        type: 'success',
-        title: `申请已通过`,
-        content: `您报名的「${application.targetName}」活动申请已通过审核`,
-        time: new Date().toLocaleString('zh-CN'),
-        read: false,
-        actionUrl: `/activity/${application.targetId}`,
-      });
-    }
-  };
-
-  const handleReject = (applicationId: string) => {
-    // 调用 MockDatabase 审核方法
-    const result = MockDatabase.reviewActivityApplication(applicationId, 'rejected');
-    
-    if (!result) {
-      alert('审核失败');
-      return;
-    }
-
-    // 更新前端状态
-    const updatedApplications = applications.map((app) =>
-      app.id === applicationId ? { ...app, status: 'rejected' as const } : app
-    );
-    setApplications(updatedApplications);
-    
-    // 发送通知
-    const application = applications.find(app => app.id === applicationId);
-    if (application) {
-      addNotification({
-        type: 'error',
-        title: `申请未通过`,
-        content: `您报名的「${application.targetName}」活动申请未通过审核`,
-        time: new Date().toLocaleString('zh-CN'),
-        read: false,
-        actionUrl: `/activity/${application.targetId}`,
-      });
-    }
-  };
-
-  // 添加通知
-  const addNotification = (notification: any) => {
+  const handleApprove = async (applicationId: string, type: ApplicationType) => {
     try {
-      const stored = localStorage.getItem('notifications');
-      const existing = stored ? JSON.parse(stored) : [];
-      
-      // 为通知添加ID和时间
-      const newNotification = {
-        id: `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        ...notification,
-        time: notification.time || new Date().toLocaleString('zh-CN'),
-        read: notification.read !== undefined ? notification.read : false,
-      };
-      
-      localStorage.setItem('notifications', JSON.stringify([newNotification, ...existing]));
-    } catch (error) {
-      console.error('保存通知失败:', error);
+      const response = await fetch(`/admin/api/approvals/${applicationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'approved',
+          type,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('审核失败');
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '审核失败');
+      }
+
+      // 更新前端状态
+      const updatedApplications = applications.map((app) =>
+        app.id === applicationId ? { ...app, status: 'approved' as const } : app
+      );
+      setApplications(updatedApplications);
+    } catch (error: any) {
+      console.error('审核失败:', error);
+      alert(error.message || '审核失败');
+    }
+  };
+
+  const handleReject = async (applicationId: string, type: ApplicationType) => {
+    try {
+      const response = await fetch(`/admin/api/approvals/${applicationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'rejected',
+          type,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('审核失败');
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '审核失败');
+      }
+
+      // 更新前端状态
+      const updatedApplications = applications.map((app) =>
+        app.id === applicationId ? { ...app, status: 'rejected' as const } : app
+      );
+      setApplications(updatedApplications);
+    } catch (error: any) {
+      console.error('审核失败:', error);
+      alert(error.message || '审核失败');
     }
   };
 
@@ -268,9 +260,9 @@ export default function AdminMessagesPage() {
           </Button>
         </div>
 
-        <Tabs defaultValue="pending" className="space-y-4">
+        <Tabs defaultValue="registered" className="space-y-4">
           <TabsList className="bg-[rgba(0,0,0,0.05)] p-1">
-            <TabsTrigger value="pending" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
+            <TabsTrigger value="registered" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
               待审批 ({getPendingCount()})
             </TabsTrigger>
             <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
@@ -278,7 +270,7 @@ export default function AdminMessagesPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending" className="space-y-4">
+          <TabsContent value="registered" className="space-y-4">
             <div className="flex items-center space-x-4 mb-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
@@ -432,9 +424,9 @@ export default function AdminMessagesPage() {
                     全部状态
                   </button>
                   <button
-                    onClick={() => setSelectedStatus('pending')}
+                    onClick={() => setSelectedStatus('registered')}
                     className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedStatus === 'pending'
+                      selectedStatus === 'registered'
                         ? 'bg-blue-400 border-blue-400 text-white'
                         : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
                     }`}
@@ -560,13 +552,13 @@ export default function AdminMessagesPage() {
     </AdminLayout>
   );
 
-  function renderApplicationList(statusFilter: 'all' | 'pending' | 'approved' | 'rejected') {
+  function renderApplicationList(statusFilter: 'all' | 'registered' | 'approved' | 'rejected') {
     let listToRender: Application[];
 
-    if (statusFilter === 'pending') {
-      // 待审批列表：筛选状态为pending，然后应用搜索和排序
+    if (statusFilter === 'registered') {
+      // 待审批列表：筛选状态为registered，然后应用搜索和排序
       listToRender = applications
-        .filter(app => app.status === 'pending')
+        .filter(app => app.status === 'registered')
         .filter(app => {
           const matchesSearch = app.applicantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                (app.applicantCompany || '').toLowerCase().includes(searchTerm.toLowerCase());
@@ -669,14 +661,14 @@ export default function AdminMessagesPage() {
                   </div>
                   <Badge
                     className={`text-[11px] font-normal ${
-                      application.status === 'pending'
+                      application.status === 'registered'
                         ? 'bg-yellow-50 text-yellow-600'
                         : application.status === 'approved'
                         ? 'bg-green-50 text-green-600'
                         : 'bg-red-50 text-red-600'
                     }`}
                   >
-                    {application.status === 'pending' && '待审批'}
+                    {application.status === 'registered' && '待审批'}
                     {application.status === 'approved' && '已通过'}
                     {application.status === 'rejected' && '已拒绝'}
                   </Badge>
@@ -684,12 +676,12 @@ export default function AdminMessagesPage() {
               </div>
 
               {/* 操作按钮 */}
-              {application.status === 'pending' && (
+              {application.status === 'registered' && (
                 <div className="flex items-center justify-end space-x-3 pt-3 border-t border-[rgba(0,0,0,0.05)]">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleReject(application.id)}
+                    onClick={() => handleReject(application.id, application.type)}
                     className="border-red-400 text-red-600 hover:bg-red-50 text-[12px]"
                   >
                     <XCircle className="w-3 h-3 mr-1" />
@@ -697,7 +689,7 @@ export default function AdminMessagesPage() {
                   </Button>
                   <Button
                     className="bg-blue-400 hover:bg-blue-500 text-white text-[12px]"
-                    onClick={() => handleApprove(application.id)}
+                    onClick={() => handleApprove(application.id, application.type)}
                   >
                     <CheckCircle className="w-3 h-3 mr-1" />
                     通过

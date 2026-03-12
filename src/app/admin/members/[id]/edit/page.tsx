@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Save, Trash2, Upload } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { AvatarUpload } from '@/components/avatar-upload';
 import Link from 'next/link';
 
 // 可用标签
@@ -73,7 +73,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
   const [faith, setFaith] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatarKey, setAvatarKey] = useState<string | null>(null);
   const [level, setLevel] = useState('');
   const [joinDate, setJoinDate] = useState('');
   const [status, setStatus] = useState('');
@@ -125,7 +125,8 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
         setPosition(member.position || '');
         setFaith(member.faith || '');
         setIsFeatured(member.isFeatured || false);
-        setAvatarUrl(member.avatar || '');
+        // 优先使用 avatarKey，如果没有则降级使用 avatar（向后兼容）
+        setAvatarKey(member.avatarKey || member.avatar || null);
         setLevel(member.level || '');
         setJoinDate(member.joinDate || '');
         setStatus(member.status || '');
@@ -160,15 +161,6 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // 创建本地预览URL
-      const url = URL.createObjectURL(file);
-      setAvatarUrl(url);
-    }
-  };
-
   const handleSave = async () => {
     // 验证必选项
     const requiredErrors: string[] = [];
@@ -194,20 +186,18 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
         body: JSON.stringify({
           name,
           age,
-          avatar: avatarUrl,
-          connectionType,
+          avatarKey, // ✅ 使用 avatarKey 而不是 avatar
+          connection_type: connectionType, // 使用 snake_case
           industry,
           need,
-          hardcoreTags: abilityTags, // 发送时使用 hardcoreTags 字段名
-          resourceTags,
-          adminTags,
+          hardcore_tags: abilityTags, // 使用 snake_case
+          resource_tags: resourceTags, // 使用 snake_case
           phone,
           email,
           company,
           position,
-          faith,
-          isFeatured,
-          bio,
+          is_featured: isFeatured, // 使用 snake_case
+          // 注意：adminTags 和 bio 不在数据库中，暂不保存
         }),
       });
 
@@ -224,11 +214,30 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm(`确定要删除会员「${name}」吗？此操作不可恢复！`)) {
-      console.log('删除会员:', memberId);
-      alert('会员已删除');
-      router.push('/admin/members');
+      try {
+        const response = await fetch(`/admin/api/members/${memberId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || '删除失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('会员已删除');
+          router.push('/admin/members');
+        } else {
+          throw new Error(data.error || '删除失败');
+        }
+      } catch (error: any) {
+        console.error('删除会员失败:', error);
+        alert(`删除失败：${error.message}`);
+      }
     }
   };
 
@@ -297,38 +306,23 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
             {/* 头像部分 */}
             <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
               <div className="flex items-center space-x-4">
-                <div className="w-20 h-20 rounded-full overflow-hidden">
-                  <Image
-                    src={avatarUrl}
-                    alt={name}
-                    width={80}
-                    height={80}
-                    className="w-full h-full object-cover"
-                    unoptimized
-                  />
-                </div>
+                {/* 使用新的 AvatarUpload 组件 */}
+                <AvatarUpload
+                  currentAvatarKey={avatarKey}
+                  userId={memberId}
+                  name={name}
+                  onUploadSuccess={setAvatarKey}
+                  size="xl"
+                />
                 <div>
                   <h3 className="text-[15px] font-semibold text-gray-900 mb-1">{name}</h3>
                   <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
                     {level} · {joinDate} 加入
                   </p>
                   <div className="mt-2">
-                    <input
-                      type="file"
-                      id="avatar-upload"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleAvatarUpload}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => document.getElementById('avatar-upload')?.click()}
-                      className="border-[rgba(0,0,0,0.1)]"
-                    >
-                      <Upload className="w-3.5 h-3.5 mr-1" />
-                      更换头像
-                    </Button>
+                    <p className="text-[11px] text-[rgba(0,0,0,0.5)]">
+                      点击头像可上传或更换
+                    </p>
                   </div>
                 </div>
               </div>

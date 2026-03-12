@@ -7,6 +7,7 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarDisplay } from '@/components/avatar-upload';
 import { Plus, Shield, Edit2, Trash2, Lock, ArrowLeft, Search, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -195,10 +196,7 @@ export default function AdminManagementPage() {
                   className="flex items-center justify-between p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
                 >
                   <div className="flex items-center space-x-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={admin.avatar} alt={admin.name} />
-                      <AvatarFallback>{admin.name[0]}</AvatarFallback>
-                    </Avatar>
+                    <AvatarDisplay avatarKey={admin.avatar} name={admin.name} size="md" />
                     <div>
                       <div className="flex items-center space-x-2">
                         <h3 className="text-[15px] font-semibold text-gray-900">

@@ -114,6 +114,35 @@ export default function AdminVisitsPage() {
     setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
   };
 
+  // 删除探访记录
+  const handleDelete = async (id: string) => {
+    if (!confirm('确定要删除这条探访记录吗？删除后无法恢复！')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/admin/api/visits/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('删除失败');
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setVisits(visits.filter((v) => v.id !== id));
+        alert('删除成功');
+      } else {
+        throw new Error(data.error || '删除失败');
+      }
+    } catch (err: any) {
+      console.error('删除失败:', err);
+      alert(err.message || '删除失败');
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-5">
@@ -287,12 +316,7 @@ export default function AdminVisitsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        if (confirm('确定要删除这条探访记录吗？')) {
-                          // 实际项目中需要调用删除API
-                          console.log('删除探访:', visit.id);
-                        }
-                      }}
+                      onClick={() => handleDelete(visit.id)}
                     >
                       删除
                     </Button>

@@ -3,6 +3,7 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ImageUpload, ImageDisplay } from '@/components/image-upload';
 import { ArrowLeft, Save, Upload, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -32,9 +33,8 @@ export default function AdminDocumentEditPage() {
 
   const [title, setTitle] = useState('');
   const [icon, setIcon] = useState('');
-  const [cover, setCover] = useState<string>('');
+  const [coverKey, setCoverKey] = useState<string>('');
   const [content, setContent] = useState('');
-  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   // 模拟加载数据
@@ -43,26 +43,9 @@ export default function AdminDocumentEditPage() {
     // 模拟数据
     setTitle('【新时代来了】用5条AI指令挽救一位创业者');
     setIcon('robot');
-    setCover('https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop');
+    setCoverKey('images/document-cover.jpg');
     setContent('<p>在AI时代，传统创业者面临巨大挑战。本文将介绍5条实用的AI指令，帮助你重新定义业务模式，提高效率，实现转型升级。</p>');
   }, [documentId]);
-
-  // 处理封面上传
-  const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCoverFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCover(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  useEffect(() => {
-    // 加载页面
-  }, []);
 
   // 保存
   const handleSave = () => {
@@ -74,7 +57,7 @@ export default function AdminDocumentEditPage() {
       alert('请选择图标');
       return;
     }
-    if (!cover) {
+    if (!coverKey) {
       alert('请上传封面图片');
       return;
     }
@@ -183,32 +166,15 @@ export default function AdminDocumentEditPage() {
               </label>
               <div className="space-y-3">
                 <div className="flex items-start space-x-4">
-                  {/* 图片预览 */}
-                  <div className="w-40 h-40 bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {cover ? (
-                      <img src={cover} alt="预览" className="w-full h-full object-cover" />
-                    ) : (
-                      <ImageIcon className="w-12 h-12 text-gray-400" />
-                    )}
-                  </div>
+                  {/* 图片上传 */}
+                  <ImageUpload
+                    currentImageKey={coverKey}
+                    userId=""
+                    onUploadSuccess={(fileKey) => setCoverKey(fileKey)}
+                  />
                   <div className="flex-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleCoverUpload}
-                      className="hidden"
-                      id="cover-upload"
-                    />
-                    <label htmlFor="cover-upload">
-                      <Button type="button" variant="outline" size="sm" asChild>
-                        <span>
-                          <Upload className="w-4 h-4 mr-2" />
-                          更换封面
-                        </span>
-                      </Button>
-                    </label>
                     <p className="mt-2 text-xs text-gray-500">
-                      建议上传 800x400 像素的横向图片，支持 JPG、PNG 格式
+                      建议上传 800x400 像素的横向图片，支持 JPG、PNG、GIF、WebP 格式
                     </p>
                   </div>
                 </div>

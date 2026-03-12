@@ -46,7 +46,18 @@ const FIELD_MAPPINGS: Record<string, Record<string, string>> = {
 // 资源名称映射：前端请求的资源名 -> 实际数据库表名（包含 schema）
 // 注意：在 app schema 中的表需要显式指定 schema，public schema 中的表也显式指定以避免 search_path 问题
 const RESOURCE_NAME_MAPPING: Record<string, string> = {
-  'users': 'public.users',  // 前端使用 /api/users，后端操作 public.users 表
+  'users': 'public.app_users',  // 前端使用 /api/users，后端操作 public.app_users 表
+};
+
+// 数据库表的有效字段白名单（防止SQL注入和无效字段错误）
+const TABLE_VALID_FIELDS: Record<string, string[]> = {
+  'public.app_users': [
+    'id', 'name', 'age', 'avatar', 'phone', 'email', 'connection_type',
+    'industry', 'need', 'ability_tags', 'resource_tags', 'level',
+    'company', 'position', 'status', 'is_featured', 'join_date',
+    'last_login', 'created_at', 'updated_at', 'tag_stamp',
+    'hardcore_tags', 'gender', 'company_scale', 'experience', 'achievement'
+  ]
 };
 
 // 应用资源名称映射
@@ -172,11 +183,18 @@ export async function PUT(
     const mappedData = applyFieldMapping(resource, snakeData);
     console.log('映射后的数据:', mappedData);
 
+    // 获取该表的有效字段白名单
+    const validFields = TABLE_VALID_FIELDS[actualTableName];
+
     // 手动构建 UPDATE SQL 语句（使用 client.unsafe）
-    const fields = Object.keys(mappedData).filter(key => mappedData[key] !== undefined);
+    const fields = Object.keys(mappedData).filter(key => {
+      // 过滤掉 undefined 和无效字段
+      return mappedData[key] !== undefined && (!validFields || validFields.includes(key));
+    });
+
     if (fields.length === 0) {
       return Response.json(
-        { success: false, error: 'No fields to update' },
+        { success: false, error: 'No valid fields to update' },
         { status: 400 }
       );
     }
@@ -184,11 +202,16 @@ export async function PUT(
     const setClause = fields.map(field => {
       const value = (mappedData as any)[field];
       if (value === null) {
-        return `"${field}" = NULL`;
+        return `${field} = NULL`;
       } else if (typeof value === 'string') {
-        return `"${field}" = '${value.replace(/'/g, "''")}'`;
+        return `${field} = '${value.replace(/'/g, "''")}'`;
+      } else if (typeof value === 'object') {
+        // JSONB 字段处理
+        return `${field} = '${JSON.stringify(value).replace(/'/g, "''")}'::jsonb`;
+      } else if (typeof value === 'boolean') {
+        return `${field} = ${value}`;
       } else {
-        return `"${field}" = ${value}`;
+        return `${field} = ${value}`;
       }
     }).join(', ');
 

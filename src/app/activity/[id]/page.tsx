@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, MapPin, Clock, Users, Calendar, Share2, Heart, Check, XCircle, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarDisplay } from '@/components/avatar-upload';
 import { Badge } from '@/components/ui/badge';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
@@ -342,12 +343,7 @@ export default function ActivityDetailPage() {
                 </h3>
                 <div className="flex items-center space-x-2">
                   {(activity as any).guests?.map((guest: any) => (
-                    <Avatar key={guest.id} className="w-10 h-10 border-2 border-white">
-                      <AvatarImage src={guest.avatar} alt={guest.name} />
-                      <AvatarFallback className="text-[10px]">
-                        {guest.name?.slice(0, 2) || guest.id?.slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <AvatarDisplay key={guest.id} avatarKey={guest.avatar} name={guest.name} size="md" />
                   ))}
                 </div>
               </div>
@@ -360,12 +356,7 @@ export default function ActivityDetailPage() {
               </h3>
               <div className="flex items-center space-x-2">
                 {(activity as any).participants?.slice(0, 8).map((member: any) => (
-                  <Avatar key={member.id} className="w-8 h-8 border-2 border-white">
-                    <AvatarImage src={member.avatar} alt={member.name} />
-                    <AvatarFallback className="text-[10px]">
-                      {member.name?.slice(0, 2) || member.id?.slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <AvatarDisplay key={member.id} avatarKey={member.avatar} name={member.name} size="sm" />
                 ))}
                 {(activity as any).participants?.length > 8 && (
                   <div className="w-8 h-8 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center text-[10px] text-[rgba(0,0,0,0.5)]">

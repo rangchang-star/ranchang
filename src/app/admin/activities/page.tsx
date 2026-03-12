@@ -130,6 +130,40 @@ export default function AdminActivitiesPage() {
     document.body.removeChild(link);
   };
 
+  const handleDelete = async (activityId: string) => {
+    if (!confirm('确定要删除这个活动吗？此操作不可恢复。')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/admin/api/activities/${activityId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('删除失败');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        alert('活动已删除');
+        // 重新加载活动列表
+        const reloadResponse = await fetch('/admin/api/activities');
+        if (reloadResponse.ok) {
+          const reloadData = await reloadResponse.json();
+          if (reloadData.success) {
+            setActivities(reloadData.data);
+          }
+        }
+      } else {
+        throw new Error(data.error || '删除失败');
+      }
+    } catch (error) {
+      console.error('删除活动失败:', error);
+      alert(error instanceof Error ? error.message : '删除失败');
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-5">
@@ -292,7 +326,12 @@ export default function AdminActivitiesPage() {
                         )}
                       </Button>
                     </Link>
-                    <Button variant="outline" size="sm" className="text-blue-600 border-blue-400 hover:bg-blue-50 hover:border-blue-500">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-blue-600 border-blue-400 hover:bg-blue-50 hover:border-blue-500"
+                      onClick={() => handleDelete(activity.id)}
+                    >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>

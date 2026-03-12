@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -109,64 +109,18 @@ const mockUserDetails = {
   },
 };
 
-// 模拟咨询数据（不需要回复字段）
-const mockConsultations = [
-  {
-    id: '1',
-    userId: '1',
-    userName: '王芳',
-    userAvatar: '/avatar-3.jpg',
-    topicId: 'ai-frontier',
-    topicName: 'AI前沿',
-    question: '我是做传统制造业的，想引入AI来优化生产线，但不知道从哪里开始，也不知道应该选择什么样的AI工具？',
-    submitDate: '2024-03-15 14:30',
-    status: 'pending' as ConsultationStatus,
-  },
-  {
-    id: '2',
-    userId: '2',
-    userName: '李明',
-    userAvatar: '/avatar-2.jpg',
-    topicId: 'entrepreneur-psychology',
-    topicName: '创业心理',
-    question: '第一次创业失败后，心里一直很焦虑，不知道该不该继续创业，家人也不支持我继续尝试。',
-    submitDate: '2024-03-14 10:15',
-    status: 'processing' as ConsultationStatus,
-  },
-  {
-    id: '3',
-    userId: '3',
-    userName: '张总',
-    userAvatar: '/avatar-1.jpg',
-    topicId: 'business-logic',
-    topicName: '商业逻辑',
-    question: '我们的产品很好，但就是找不到盈利模式，用户愿意用但不愿意付费，应该如何设计合理的商业模式？',
-    submitDate: '2024-03-13 16:45',
-    status: 'completed' as ConsultationStatus,
-  },
-  {
-    id: '4',
-    userId: '1',
-    userName: '王芳',
-    userAvatar: '/avatar-3.jpg',
-    topicId: 'mission-navigation',
-    topicName: '使命导航',
-    question: '我现在在转型期，不太清楚自己的使命是什么，感觉自己没有方向，如何找到自己的使命感？',
-    submitDate: '2024-03-12 09:20',
-    status: 'processing' as ConsultationStatus,
-  },
-  {
-    id: '5',
-    userId: '2',
-    userName: '李明',
-    userAvatar: '/avatar-2.jpg',
-    topicId: 'business-logic',
-    topicName: '商业逻辑',
-    question: '我想了解如何进行产品定价，以及如何建立可持续的盈利模式？',
-    submitDate: '2024-03-11 15:30',
-    status: 'pending' as ConsultationStatus,
-  },
-];
+// 咨询数据类型
+interface Consultation {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  topicId: string;
+  topicName: string;
+  question: string;
+  submitDate: string;
+  status: ConsultationStatus;
+}
 
 export default function AdminConsultationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -174,7 +128,8 @@ export default function AdminConsultationsPage() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('');
   const [editingTopic, setEditingTopic] = useState<string | null>(null);
   const [editingPlaceholder, setEditingPlaceholder] = useState('');
-  const [consultations, setConsultations] = useState(mockConsultations);
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showUserDetailDialog, setShowUserDetailDialog] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -190,6 +145,45 @@ export default function AdminConsultationsPage() {
   const [consultantAvatar, setConsultantAvatar] = useState(consultantInfo.avatar);
   const [consultantTags, setConsultantTags] = useState(consultantInfo.tags);
   const [newTag, setNewTag] = useState('');
+
+  // 加载咨询数据
+  useEffect(() => {
+    async function loadConsultations() {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/admin/api/consultations');
+
+        if (!response.ok) {
+          throw new Error('加载咨询数据失败');
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          // 转换数据格式
+          const formattedConsultations: Consultation[] = result.data.map((item: any) => ({
+            id: item.id,
+            userId: item.userId,
+            userName: item.userName || '未知',
+            userAvatar: item.userAvatar || '/avatar-default.jpg',
+            topicId: item.topicId,
+            topicName: item.topicName || '未知话题',
+            question: item.question,
+            submitDate: item.createdAt,
+            status: item.status as ConsultationStatus,
+          }));
+
+          setConsultations(formattedConsultations);
+        }
+      } catch (error) {
+        console.error('加载咨询数据失败:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadConsultations();
+  }, []);
 
   // 过滤咨询
   const filteredConsultations = consultations.filter((consult) => {
@@ -247,7 +241,7 @@ export default function AdminConsultationsPage() {
   };
 
   // 切换咨询状态
-  const handleStatusChange = (consultId: string, newStatus: ConsultationStatus) => {
+  const handleStatusChange = async (consultId: string, newStatus: ConsultationStatus) => {
     const consult = consultations.find(c => c.id === consultId);
     if (!consult) return;
 
@@ -265,19 +259,46 @@ export default function AdminConsultationsPage() {
   };
 
   // 确认状态切换
-  const confirmStatusChange = () => {
+  const confirmStatusChange = async () => {
     if (!statusConfirmInfo) return;
 
-    setConsultations(prev =>
-      prev.map(consult =>
-        consult.id === statusConfirmInfo.consultId
-          ? { ...consult, status: statusConfirmInfo.toStatus }
-          : consult
-      )
-    );
+    try {
+      const response = await fetch(`/admin/api/consultations/${statusConfirmInfo.consultId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: statusConfirmInfo.toStatus,
+          consultantName: consultantName,
+        }),
+      });
 
-    setShowStatusConfirmDialog(false);
-    setStatusConfirmInfo(null);
+      if (!response.ok) {
+        throw new Error('更新状态失败');
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '更新状态失败');
+      }
+
+      // 更新前端状态
+      setConsultations(prev =>
+        prev.map(consult =>
+          consult.id === statusConfirmInfo.consultId
+            ? { ...consult, status: statusConfirmInfo.toStatus }
+            : consult
+        )
+      );
+
+      setShowStatusConfirmDialog(false);
+      setStatusConfirmInfo(null);
+    } catch (error: any) {
+      console.error('更新状态失败:', error);
+      alert(error.message || '更新状态失败');
+    }
   };
 
   // 取消状态切换
