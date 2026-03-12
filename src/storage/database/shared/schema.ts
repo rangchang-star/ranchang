@@ -1,6 +1,9 @@
 import { pgTable, serial, timestamp, index, varchar, text, integer, jsonb, boolean, unique, foreignKey, date } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
+// 使用 sql 函数包装 gen_random_uuid
+const gen_random_uuid = () => sql`gen_random_uuid()`
+
 
 
 export const healthCheck = pgTable("health_check", {

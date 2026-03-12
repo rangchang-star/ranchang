@@ -40,15 +40,24 @@ export const appUsers = pgTable('app_users', {
   company: varchar('company', { length: 100 }),
   position: varchar('position', { length: 50 }),
   city: varchar('city', { length: 50 }),
+  email: varchar('email', { length: 255 }),
   level: integer('level').default(1), // 用户等级
-  achievement: text('achievement'), // 成就
+  achievement: jsonb('achievement').$type<string[]>(), // 成就
   hardcoreTags: jsonb('hardcore_tags').$type<string[]>(), // 硬核技能标签
+  abilityTags: jsonb('ability_tags').$type<string[]>(), // 行业标签
+  resourceTags: jsonb('resource_tags').$type<string[]>(), // 资源标签
   tags: jsonb('tags').$type<string[]>(), // 普通标签
   tagStamp: varchar('tag_stamp', { length: 50 }), // 标签类型
+  companyScale: varchar('company_scale', { length: 50 }), // 公司规模
+  experience: jsonb('experience'), // 工作经历
   need: text('need'), // 用户需求
+  declaration: text('declaration'), // 高燃宣告
+  connectionType: varchar('connection_type', { length: 50 }), // 连接类型
   isTrusted: boolean('is_trusted').default(false), // 是否信任
   isFeatured: boolean('is_featured').default(false), // 是否精选
   status: userStatus('status').default('active'),
+  joinDate: timestamp('join_date', { withTimezone: true }), // 加入日期
+  lastLogin: timestamp('last_login', { withTimezone: true }), // 最后登录
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
@@ -176,21 +185,12 @@ export const visitRegistrations = pgTable('visit_registrations', {
 export const declarations = pgTable('declarations', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
-  userName: varchar('user_name', { length: 50 }),
-  userAvatar: text('user_avatar'), // 永久CDN地址
-  userLevel: integer('user_level').default(1),
-  userPosition: varchar('user_position', { length: 100 }), // 用户职位
   direction: varchar('direction', { length: 100 }), // 方向
   text: text('text').notNull(),
   summary: text('summary'),
   audioUrl: varchar('audio_url', { length: 500 }), // 音频URL
   audioKey: text('audio_key'), // 音频fileKey
-  icon: varchar('icon', { length: 100 }), // 图标URL
-  iconType: varchar('icon_type', { length: 50 }), // 图标类型
-  duration: varchar('duration', { length: 20 }), // 时长，如 "3:45"
   views: integer('views').default(0),
-  likes: integer('likes').default(0),
-  rank: integer('rank').default(0), // 排序
   isFeatured: boolean('is_featured').default(false),
   date: date('date').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
