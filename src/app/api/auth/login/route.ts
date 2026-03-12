@@ -17,9 +17,24 @@ export async function POST(request: NextRequest) {
 
     // 查找用户
     const users = await db
-      .select()
+      .select({
+        id: appUsers.id,
+        phone: appUsers.phone,
+        password: appUsers.password,
+        name: appUsers.name,
+        avatar: appUsers.avatar,
+        industry: appUsers.industry,
+        company: appUsers.company,
+        position: appUsers.position,
+        level: appUsers.level,
+        status: appUsers.status,
+        createdAt: appUsers.createdAt,
+        updatedAt: appUsers.updatedAt,
+      })
       .from(appUsers)
       .where(eq(appUsers.phone, phone));
+
+    console.log(`Login attempt for phone: ${phone}, found ${users.length} users`);
 
     if (users.length === 0) {
       return NextResponse.json(
@@ -43,15 +58,12 @@ export async function POST(request: NextRequest) {
     const userData = {
       id: user.id,
       phone: user.phone,
-      nickname: user.nickname,
       name: user.name,
       avatar: user.avatar,
-      bio: user.bio,
       industry: user.industry,
       company: user.company,
       position: user.position,
       level: user.level,
-      achievement: user.achievement,
       status: user.status,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

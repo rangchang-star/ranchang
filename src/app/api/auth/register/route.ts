@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, appUsers } from '@/lib/db';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'crypto';
 
 // POST - 用户注册
 export async function POST(request: NextRequest) {
@@ -26,7 +27,10 @@ export async function POST(request: NextRequest) {
 
     // 检查手机号是否已注册
     const existingUser = await db
-      .select()
+      .select({
+        id: appUsers.id,
+        phone: appUsers.phone,
+      })
       .from(appUsers)
       .where(eq(appUsers.phone, phone))
       .limit(1);
@@ -42,25 +46,39 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 创建新用户
+    const now = new Date();
     const newUser = await db
       .insert(appUsers)
       .values({
+        id: randomUUID(),
         phone,
         password: hashedPassword,
-        name: name || '',
-        nickname: name || '',
-        bio: '',
-        level: 1,
+        name: name || phone, // 临时用手机号作为name
+        nickname: name || phone,
+        level: 1, // 改为数字类型
         hardcoreTags: [],
-        tags: [],
         status: 'active',
-        isTrusted: false,
         isFeatured: false,
+        isTrusted: false,
+        createdAt: now,
+        updatedAt: now,
       })
-      .returning();
+      .returning({
+        id: appUsers.id,
+        phone: appUsers.phone,
+        name: appUsers.name,
+        avatar: appUsers.avatar,
+        industry: appUsers.industry,
+        company: appUsers.company,
+        position: appUsers.position,
+        level: appUsers.level,
+        status: appUsers.status,
+        createdAt: appUsers.createdAt,
+        updatedAt: appUsers.updatedAt,
+      });
 
-    // 返回用户信息（不返回密码）
-    const { password: _, ...userWithoutPassword } = newUser[0];
+    // 返回用户信息
+    const userWithoutPassword = newUser[0];
 
     return NextResponse.json({
       success: true,
