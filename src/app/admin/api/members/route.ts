@@ -74,15 +74,6 @@ export async function GET(request: NextRequest) {
           })
         : '';
 
-      // 格式化等级
-      const levelMap: Record<number, string> = {
-        1: '青铜',
-        2: '白银',
-        3: '黄金',
-        4: '铂金',
-        5: '钻石',
-      };
-
       return {
         id: user.id,
         phone: user.phone,
@@ -97,7 +88,7 @@ export async function GET(request: NextRequest) {
         company: user.company,
         companyScale: user.companyScale,
         position: user.position,
-        level: levelMap[user.level] || `${user.level}级`,
+        level: user.level,
         need: user.need,
         tagStamp: user.tagStamp,
         abilityTags,

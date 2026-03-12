@@ -14,7 +14,7 @@ interface Member {
   name: string;
   age: number;
   avatar: string;
-  level: string;
+  level: number;
   tags: string[];
   industry: string;
   joinDate: string;
@@ -74,7 +74,7 @@ export default function AdminMembersPage() {
   const filteredMembers = members.filter((member) => {
     const matchesSearch =
       member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.level.toLowerCase().includes(searchTerm.toLowerCase());
+      String(member.level).includes(searchTerm.toLowerCase());
 
     const matchesTag = selectedTag === '' || member.tags.includes(selectedTag);
 
