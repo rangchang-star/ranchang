@@ -51,3 +51,47 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+// POST - 创建探访
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const newVisit = await db
+      .insert(visits)
+      .values({
+        id: crypto.randomUUID(),
+        company_name: body.company_name,
+        date: body.date ? new Date(body.date) : null,
+        time: body.time || null,
+        location: body.location || null,
+        description: body.description || null,
+        industry: body.industry || null,
+        capacity: body.capacity || null,
+        participants: body.participants || null,
+        status: body.status || 'active',
+        visitor_id: body.visitor_id || null,
+        outcome: body.outcome || null,
+        notes: body.notes || null,
+        rating: body.rating || null,
+        cover_image: body.cover_image || null,
+        key_points: body.key_points || [],
+        next_steps: body.next_steps || [],
+        photos: body.photos || [],
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returning();
+
+    return NextResponse.json({
+      success: true,
+      data: newVisit[0],
+    });
+  } catch (error) {
+    console.error('创建探访失败:', error);
+    return NextResponse.json(
+      { success: false, error: '创建探访失败' },
+      { status: 500 }
+    );
+  }
+}

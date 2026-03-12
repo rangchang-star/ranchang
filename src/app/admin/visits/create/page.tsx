@@ -74,11 +74,25 @@ export default function AdminVisitCreatePage() {
 
       console.log('保存探访数据:', visitData);
 
+      // 调用 API 保存数据
+      const response = await fetch('/admin/api/visits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(visitData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '保存失败');
+      }
+
       alert('探访添加成功！');
       router.push('/admin/visits');
-    } catch (error) {
+    } catch (error: any) {
       console.error('添加探访失败:', error);
-      alert('添加探访失败，请重试');
+      alert(error.message || '添加探访失败，请重试');
     } finally {
       setLoading(false);
     }
