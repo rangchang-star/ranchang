@@ -3,7 +3,7 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Edit, Eye, ShieldCheck, Shield } from 'lucide-react';
+import { Search, Edit, Eye, ShieldCheck, Shield, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -85,6 +85,29 @@ export default function AdminMembersPage() {
   const availableTags = Array.from(
     new Set(members.flatMap((member) => member.tags))
   );
+
+  // 删除会员
+  const handleDeleteMember = async (memberId: string, memberName: string) => {
+    if (!confirm(`确定要删除会员 "${memberName}" 吗？此操作不可恢复。`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/users/${memberId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '删除失败');
+      }
+
+      // 从列表中移除已删除的会员
+      setMembers(members.filter((m) => m.id !== memberId));
+    } catch (error: any) {
+      alert(error.message || '删除失败，请重试');
+    }
+  };
 
   return (
     <AdminLayout>
@@ -249,12 +272,14 @@ export default function AdminMembersPage() {
                       查看
                     </Button>
                   </Link>
-                  <Link href={`/admin/members/${member.id}/edit`}>
-                    <Button variant="outline" size="sm">
-                      <Edit className="w-4 h-4 mr-1" />
-                      编辑
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteMember(member.id, member.name)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    删除
+                  </Button>
                 </div>
               </div>
             ))}

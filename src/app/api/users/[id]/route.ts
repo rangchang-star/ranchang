@@ -124,3 +124,40 @@ export async function PUT(
     );
   }
 }
+
+// DELETE - 删除用户
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    // 先检查用户是否存在
+    const users = await db
+      .select()
+      .from(appUsers)
+      .where(eq(appUsers.id, id));
+
+    if (users.length === 0) {
+      return NextResponse.json(
+        { success: false, error: '用户不存在' },
+        { status: 404 }
+      );
+    }
+
+    // 删除用户
+    await db.delete(appUsers).where(eq(appUsers.id, id));
+
+    return NextResponse.json({
+      success: true,
+      message: '删除成功',
+    });
+  } catch (error) {
+    console.error('删除用户失败:', error);
+    return NextResponse.json(
+      { success: false, error: '删除用户失败' },
+      { status: 500 }
+    );
+  }
+}
