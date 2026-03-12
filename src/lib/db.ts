@@ -18,6 +18,7 @@ export {
   activities,
   activityRegistrations,
   visits,
+  visitRegistrations,
   visitRecords,
   declarations,
   dailyDeclarations,
@@ -32,6 +33,8 @@ export {
   registrationStatus,
   visitStatus,
   notificationType,
+  approvals,
+  userFavorites,
 } from '@/storage/database/supabase/schema';
 
 // 导出 schema 命名空间（方便批量导入）

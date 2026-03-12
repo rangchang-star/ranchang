@@ -130,7 +130,7 @@ export default function CodeBrowserPage() {
   };
 
   // 渲染文件树节点
-  const renderTreeNode = (node: FileNode, level: number = 0): JSX.Element | null => {
+  const renderTreeNode = (node: FileNode, level: number = 0): React.ReactNode | null => {
     const isExpanded = expandedDirs.has(node.path);
     const isSelected = selectedFile === node.path;
     const paddingLeft = level * 16 + 12;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, declarations } from '@/lib/db';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, and } from 'drizzle-orm';
 
 // GET - 获取宣告列表
 export async function GET(request: NextRequest) {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (conditions.length > 0) {
-      query = (query as any).where(eq(declarations.isFeatured, true));
+      query = (query as any).where(and(...conditions));
     }
 
     const declarationList = await query;

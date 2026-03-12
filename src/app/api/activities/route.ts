@@ -66,10 +66,11 @@ export async function POST(request: NextRequest) {
     const newActivity = await db
       .insert(activities)
       .values({
-        id: crypto.randomUUID(),
         title: body.title,
         description: body.description,
         date: new Date(body.date),
+        startDate: new Date(body.startDate || body.date),
+        endDate: new Date(body.endDate || body.date),
         startTime: body.startTime,
         endTime: body.endTime,
         location: body.location,

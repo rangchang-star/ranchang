@@ -552,7 +552,7 @@ export default function AdminMessagesPage() {
     </AdminLayout>
   );
 
-  function renderApplicationList(statusFilter: 'all' | 'registered' | 'approved' | 'rejected') {
+  function renderApplicationList(statusFilter: 'all' | 'registered' | 'approved' | 'rejected' | 'pending') {
     let listToRender: Application[];
 
     if (statusFilter === 'registered') {

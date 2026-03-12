@@ -8,6 +8,23 @@ interface User {
   nickname?: string;
   phone: string;
   avatar?: string;
+  email?: string;
+  age?: number | null;
+  gender?: string | null;
+  bio?: string;
+  company?: string | null;
+  position?: string | null;
+  companyScale?: string | null;
+  industry?: string | null;
+  need?: string | null;
+  tagStamp?: string | null;
+  tags?: string[];
+  hardcoreTags?: string[];
+  abilityTags?: string[];
+  resourceTags?: string[];
+  status?: string;
+  isFeatured?: boolean;
+  city?: string | null;
 }
 
 interface AuthContextType {

@@ -153,6 +153,23 @@ export const visitRecords = pgTable('visit_records', {
 ]);
 
 // ============================================================
+// 5.5 探访报名表（visit_registrations）
+// ============================================================
+export const visitRegistrations = pgTable('visit_registrations', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  visitId: varchar('visit_id', { length: 36 }).notNull().references(() => visits.id, { onDelete: 'cascade' }),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  status: varchar('status', { length: 50 }).default('registered'),
+  note: text('note'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('visit_registrations_visit_id_idx').on(table.visitId),
+  index('visit_registrations_user_id_idx').on(table.userId),
+  index('visit_registrations_status_idx').on(table.status),
+]);
+
+// ============================================================
 // 6. 宣告表（declarations）
 // ============================================================
 export const declarations = pgTable('declarations', {
@@ -341,4 +358,41 @@ export const settings = pgTable('settings', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   index('settings_key_idx').on(table.key),
+]);
+
+// ============================================================
+// 14. 审批表（approvals）
+// ============================================================
+export const approvals = pgTable('approvals', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  type: varchar('type', { length: 50 }).notNull(), // 审批类型：活动、探访、宣告等
+  title: varchar('title', { length: 200 }).notNull(),
+  description: text('description'),
+  status: varchar('status', { length: 20 }).default('pending'), // pending, approved, rejected
+  reviewNote: text('review_note'),
+  reviewedBy: varchar('reviewed_by', { length: 36 }).references(() => adminUsers.id, { onDelete: 'set null' }),
+  reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('approvals_user_id_idx').on(table.userId),
+  index('approvals_type_idx').on(table.type),
+  index('approvals_status_idx').on(table.status),
+]);
+
+// ============================================================
+// 15. 用户收藏表（user_favorites）
+// ============================================================
+export const userFavorites = pgTable('user_favorites', {
+  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  targetType: varchar('target_type', { length: 50 }).notNull(), // visit, declaration, activity, document
+  targetId: varchar('target_id', { length: 36 }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  index('user_favorites_user_id_idx').on(table.userId),
+  index('user_favorites_target_type_idx').on(table.targetType),
+  index('user_favorites_target_id_idx').on(table.targetId),
+  index('user_favorites_user_target_idx').on(table.userId, table.targetType, table.targetId),
 ]);
