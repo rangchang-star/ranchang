@@ -3,7 +3,7 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Edit, Eye, ShieldCheck, Shield, Trash2 } from 'lucide-react';
+import { Search, Edit, Eye, ShieldCheck, Shield, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -39,6 +39,7 @@ export default function AdminMembersPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string>('');
+  const [timeSort, setTimeSort] = useState<'asc' | 'desc' | null>(null);
 
   // 从 API 加载会员数据
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function AdminMembersPage() {
     loadMembers();
   }, []);
 
-  const filteredMembers = members.filter((member) => {
+  let filteredMembers = members.filter((member) => {
     const matchesSearch =
       member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       String(member.level).includes(searchTerm.toLowerCase());
@@ -81,10 +82,14 @@ export default function AdminMembersPage() {
     return matchesSearch && matchesTag;
   });
 
-  // 收集所有可用的标签
-  const availableTags = Array.from(
-    new Set(members.flatMap((member) => member.tags))
-  );
+  // 按时间排序
+  if (timeSort) {
+    filteredMembers = [...filteredMembers].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return timeSort === 'asc' ? dateA - dateB : dateB - dateA;
+    });
+  }
 
   // 删除会员
   const handleDeleteMember = async (memberId: string, memberName: string) => {
@@ -149,20 +154,31 @@ export default function AdminMembersPage() {
             >
               全部
             </button>
-            {availableTags.map((tag) => (
+            <div className="flex items-center space-x-1 ml-4">
+              <span className="text-[13px] text-[rgba(0,0,0,0.6)]">时间排序：</span>
               <button
-                key={tag}
-                onClick={() => setSelectedTag(tag)}
-                disabled={isLoading}
-                className={`px-3 py-1.5 text-[13px] font-normal transition-colors ${
-                  selectedTag === tag
+                onClick={() => setTimeSort(timeSort === 'asc' ? null : 'asc')}
+                className={`p-1.5 rounded transition-colors ${
+                  timeSort === 'asc'
                     ? 'bg-[rgba(59,130,246,0.4)] text-white'
                     : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
                 }`}
+                title="按时间升序"
               >
-                {tag}
+                <ArrowUp className="w-4 h-4" />
               </button>
-            ))}
+              <button
+                onClick={() => setTimeSort(timeSort === 'desc' ? null : 'desc')}
+                className={`p-1.5 rounded transition-colors ${
+                  timeSort === 'desc'
+                    ? 'bg-[rgba(59,130,246,0.4)] text-white'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+                title="按时间降序"
+              >
+                <ArrowDown className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
