@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, User, Upload, X, Image, Mic, FileImage } from 'lucide-react';
 import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface User {
   id: string;
@@ -322,9 +323,12 @@ export default function AdminVisitEditPage() {
           </Button>
         </div>
 
-        {/* 表单内容 */}
-        <div className="border border-[rgba(0,0,0,0.1)]">
-          <div className="p-6 space-y-6">
+        {/* 两栏布局：左侧编辑表单，右侧预览 */}
+        <div className="flex gap-6">
+          {/* 左侧：编辑表单 */}
+          <div className="flex-1 max-w-[600px]">
+            <div className="border border-[rgba(0,0,0,0.1)]">
+              <div className="p-6 space-y-6">
             {/* 基本信息 */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -727,6 +731,97 @@ export default function AdminVisitEditPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   placeholder="照片URL1&#10;照片URL2&#10;照片URL3"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* 右侧：预览卡片 */}
+          <div className="w-[380px] flex-shrink-0">
+            <div className="sticky top-20">
+              <div className="text-[13px] font-semibold text-gray-900 mb-3">探访卡片预览</div>
+
+              {/* 预览卡片 */}
+              <div className="border border-[rgba(0,0,0,0.1)] overflow-hidden bg-white rounded-lg">
+                {/* 封面图 */}
+                <div className="h-48 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+                  {coverImage ? (
+                    <img
+                      src={coverImage}
+                      alt={companyName || '探访封面'}
+                      className="w-full h-48 object-cover"
+                    />
+                  ) : (
+                    <div className="text-[rgba(0,0,0,0.3)] text-sm">无封面图片</div>
+                  )}
+                </div>
+
+                {/* 卡片内容 */}
+                <div className="p-4">
+                  {/* 标题 */}
+                  <h3 className="text-[15px] font-bold text-gray-900 mb-2 line-clamp-2">
+                    {companyName || '探访项目主主题'}
+                  </h3>
+
+                  {/* 行业标签 */}
+                  {industry && (
+                    <div className="mb-3">
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-medium">
+                        {industry}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* 信息行 */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-[13px] text-[rgba(0,0,0,0.6)]">
+                      <span className="mr-2">📅</span>
+                      <span>{date || '待定日期'} {time || ''}</span>
+                    </div>
+                    <div className="flex items-center text-[13px] text-[rgba(0,0,0,0.6)]">
+                      <span className="mr-2">📍</span>
+                      <span>{location || '待定地点'}</span>
+                    </div>
+                    <div className="flex items-center text-[13px] text-[rgba(0,0,0,0.6)]">
+                      <span className="mr-2">👥</span>
+                      <span>{participants || '0'} 人参与</span>
+                    </div>
+                  </div>
+
+                  {/* 探访人 */}
+                  <div className="mb-3">
+                    <div className="text-[12px] font-medium text-gray-700 mb-2">探访人</div>
+                    {visitorIds.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {visitorIds.map((visitorId, index) => {
+                          const visitor = users.find(u => u.id === visitorId);
+                          if (!visitor) return null;
+                          return (
+                            <div key={visitorId} className="flex items-center space-x-2 bg-[rgba(0,0,0,0.05)] rounded-full px-3 py-1.5">
+                              <Avatar className="w-6 h-6 rounded-full">
+                                <AvatarImage src={visitor.company || ''} alt={visitor.name || visitor.nickname} />
+                                <AvatarFallback className="rounded-full text-[10px] w-6 h-6">
+                                  {(visitor.name || visitor.nickname || '访')[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-[11px] text-[rgba(0,0,0,0.7)]">
+                                {visitor.name || visitor.nickname || '访客'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-[rgba(0,0,0,0.4)]">暂无探访人</div>
+                    )}
+                  </div>
+
+                  {/* 描述预览 */}
+                  {description && (
+                    <div className="text-[13px] text-[rgba(0,0,0,0.6)] line-clamp-3 whitespace-pre-wrap">
+                      {description}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
