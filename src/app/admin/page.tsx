@@ -1,169 +1,264 @@
-import Link from 'next/link';
+'use client';
+
+import { AdminLayout } from '@/components/admin-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users, Calendar, MessageSquare, TrendingUp, MapPin } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function AdminDashboardPage() {
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    totalActivities: 0,
+    totalConsultations: 0,
+    totalVisits: 0,
+    weeklyActive: 0,
+  });
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [recentConsultations, setRecentConsultations] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        setIsLoading(true);
+
+        // 并行加载所有数据
+        const [membersRes, activitiesRes, visitsRes] = await Promise.all([
+          fetch('/admin/api/members'),
+          fetch('/admin/api/activities'),
+          fetch('/admin/api/visits'),
+        ]);
+
+        const membersData = await membersRes.json();
+        const activitiesData = await activitiesRes.json();
+        const visitsData = await visitsRes.json();
+
+        if (membersData.success && activitiesData.success && visitsData.success) {
+          const members = membersData.data || [];
+          const activities = activitiesData.data || [];
+          const visits = visitsData.data || [];
+
+          setStats({
+            totalMembers: members.length,
+            totalActivities: activities.length,
+            totalConsultations: 89, // 暂时硬编码，等待咨询数据API
+            totalVisits: visits.length,
+            weeklyActive: Math.floor(members.length * 0.2), // 假设20%活跃
+          });
+
+          // 取最近的3个活动
+          setRecentActivities(
+            activities
+              .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .slice(0, 3)
+              .map((activity: any) => ({
+                id: activity.id,
+                title: activity.title,
+                date: activity.date,
+                enrolled: activity.enrolled,
+                status: activity.status === 'active' ? '报名中' : '已结束',
+              }))
+          );
+
+          // 暂时硬编码最近咨询，等待咨询数据API
+          setRecentConsultations([
+            { id: 1, title: '45岁转型困惑', type: '心理', date: '2024-03-15', status: '待处理' },
+            { id: 2, title: '传统制造业转型', type: '商业', date: '2024-03-14', status: '已回复' },
+            { id: 3, title: '股权分家问题', type: '商业', date: '2024-03-13', status: '待处理' },
+          ]);
+        }
+      } catch (error) {
+        console.error('加载看板数据失败:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadDashboardData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">数据看板</h2>
+            <p className="text-muted-foreground">实时监控平台运营数据</p>
+          </div>
+          <div className="py-12 text-center">
+            <p className="text-sm text-muted-foreground">加载中...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 侧边栏 */}
-      <div className="flex">
-        <aside className="w-64 bg-white shadow-sm min-h-screen">
-          <div className="p-6">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              燃场后台
-            </h1>
-          </div>
-          <nav className="mt-6">
-            <Link href="/admin" className="flex items-center px-6 py-3 text-purple-600 bg-purple-50 border-r-4 border-purple-600">
-              <span>📊</span>
-              <span className="ml-3">仪表盘</span>
-            </Link>
-            <Link href="/admin/members" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>👥</span>
-              <span className="ml-3">会员管理</span>
-            </Link>
-            <Link href="/admin/activities" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>🎯</span>
-              <span className="ml-3">活动管理</span>
-            </Link>
-            <Link href="/admin/visits" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>🏢</span>
-              <span className="ml-3">探访管理</span>
-            </Link>
-            <Link href="/admin/declarations" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>📢</span>
-              <span className="ml-3">宣告管理</span>
-            </Link>
-            <Link href="/admin/documents" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>📄</span>
-              <span className="ml-3">文档管理</span>
-            </Link>
-            <Link href="/admin/notifications" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>🔔</span>
-              <span className="ml-3">通知管理</span>
-            </Link>
-            <Link href="/admin/settings" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>⚙️</span>
-              <span className="ml-3">系统设置</span>
-            </Link>
-          </nav>
-        </aside>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">数据看板</h2>
+          <p className="text-muted-foreground">实时监控平台运营数据</p>
+        </div>
 
-        {/* 主内容区 */}
-        <main className="flex-1 p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">仪表盘</h1>
-            <p className="text-gray-600">欢迎回来，管理员</p>
-          </div>
+        {/* 统计卡片 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                总会员数
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalMembers}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                <span className="text-primary">+12%</span> 较上周
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                活动总数
+              </CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalActivities}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                <span className="text-primary">+8%</span> 较上周
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                探访总数
+              </CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalVisits}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                <span className="text-primary">+5%</span> 较上周
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                咨询留言
+              </CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalConsultations}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                <span className="text-primary">+23%</span> 较上周
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                本周活跃
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.weeklyActive}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                <span className="text-primary">+15%</span> 较上周
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* 统计卡片 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-500">总会员数</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-purple-600">1,234</div>
-                <p className="text-sm text-gray-500 mt-2">+12% 较上月</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-500">活动总数</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-blue-600">56</div>
-                <p className="text-sm text-gray-500 mt-2">+3 本月新增</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-500">宣告总数</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-green-600">892</div>
-                <p className="text-sm text-gray-500 mt-2">+28 本月新增</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-500">报名总数</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-orange-600">345</div>
-                <p className="text-sm text-gray-500 mt-2">+45 本月新增</p>
-              </CardContent>
-            </Card>
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 最近活动 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>最近活动</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-semibold">创业心理学</p>
-                      <p className="text-sm text-gray-500">2024-03-27 · 5/10 人</p>
+          <Card>
+            <CardHeader>
+              <CardTitle>最近活动</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentActivities.length > 0 ? (
+                  recentActivities.map((activity) => (
+                    <div key={activity.id} className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{activity.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.date} · 已报名 {activity.enrolled} 人
+                        </p>
+                      </div>
+                      <span
+                        className={`px-2 py-1 text-xs rounded ${
+                          activity.status === '名额紧张'
+                            ? 'bg-orange-100 text-orange-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {activity.status}
+                      </span>
                     </div>
-                    <span className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded-full">进行中</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-semibold">拥抱AI，改变基因</p>
-                      <p className="text-sm text-gray-500">2024-03-28 · 3/20 人</p>
-                    </div>
-                    <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full">报名中</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-semibold">阿里云创新中心探访</p>
-                      <p className="text-sm text-gray-500">2024-03-29 · 8/30 人</p>
-                    </div>
-                    <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full">报名中</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">暂无活动</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>最新会员</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full"></div>
-                    <div>
-                      <p className="font-semibold">张三</p>
-                      <p className="text-sm text-gray-500">技术总监 · 2024-03-12</p>
+          {/* 最近咨询 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>最近咨询</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentConsultations.length > 0 ? (
+                  recentConsultations.map((consult) => (
+                    <div key={consult.id} className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{consult.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {consult.type} · {consult.date}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-2 py-1 text-xs rounded ${
+                          consult.status === '待处理'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {consult.status}
+                      </span>
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-full"></div>
-                    <div>
-                      <p className="font-semibold">李四</p>
-                      <p className="text-sm text-gray-500">CEO · 2024-03-11</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-teal-400 rounded-full"></div>
-                    <div>
-                      <p className="font-semibold">王五</p>
-                      <p className="text-sm text-gray-500">产品经理 · 2024-03-10</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">暂无咨询</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 会员增长趋势 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>会员增长趋势</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 flex items-center justify-center bg-secondary/20 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                图表区域（可集成 ECharts 实现数据可视化）
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

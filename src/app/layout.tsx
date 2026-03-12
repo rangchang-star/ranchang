@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Inspector } from 'react-dev-inspector';
 import './globals.css';
+import { AuthProvider } from '@/contexts/auth-context';
+import { LoginModalProvider } from '@/contexts/login-modal-context-v2';
 
 export const metadata: Metadata = {
   title: {
@@ -67,7 +69,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`antialiased`}>
         {isDev && <Inspector />}
-        {children}
+        <AuthProvider>
+          <LoginModalProvider>
+            {children}
+          </LoginModalProvider>
+        </AuthProvider>
       </body>
     </html>
   );

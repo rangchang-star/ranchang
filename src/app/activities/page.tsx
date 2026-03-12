@@ -1,127 +1,606 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { ArrowLeft, Calendar, MapPin, Users, Clock, X, Bell, Info, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+
+// 通知类型定义
+interface Notification {
+  id: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
+// 活动类型定义
+interface Activity {
+  id: string;
+  type: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  address: string;
+  enrolled: number;
+  max: number;
+  tags: string[];
+  status: string;
+  applicationStatus: 'approved' | 'pending' | 'none';
+  description: string;
+  image: string;
+}
+
+const filters = [
+  { id: 'all', label: '全部活动' },
+  { id: 'upcoming', label: '待参加' },
+  { id: 'ended', label: '已结束' },
+  { id: 'pending', label: '待审核' },
+];
+
+// 模拟数据 - 从localStorage读取或使用默认值
+const defaultActivities = [
+  {
+    id: '1',
+    type: 'private',
+    title: '转型期私董会：如何找到第二曲线',
+    date: '2024-04-10',
+    time: '14:00-17:00',
+    location: '上海·静安',
+    address: '上海市静安区南京西路1788号',
+    enrolled: 8,
+    max: 12,
+    tags: ['私董会', '名额紧张'],
+    status: 'ongoing',
+    applicationStatus: 'approved', // approved | pending | none
+    description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。我们将围绕"如何利用过往经验"、"如何降低试错成本"等话题展开讨论。',
+    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=200&fit=crop',
+  },
+  {
+    id: '2',
+    type: 'salon',
+    title: '跨界沙龙：AI时代的商业创新',
+    date: '2024-04-15',
+    time: '19:00-21:00',
+    location: '北京·朝阳',
+    address: '北京市朝阳区CBD国贸大厦',
+    enrolled: 20,
+    max: 30,
+    tags: ['跨界', 'AI'],
+    status: 'ongoing',
+    applicationStatus: 'pending', // 待审核
+    description: '邀请不同领域的专家分享AI在各行业的应用实践，促进跨界交流与合作。适合对AI商业化感兴趣的朋友参与。',
+    image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=200&fit=crop',
+  },
+  {
+    id: '3',
+    type: 'ai',
+    title: 'AI实战赋能营（第一期）',
+    date: '2024-04-20',
+    time: '09:00-17:00',
+    location: '深圳·南山',
+    address: '深圳市南山区科技园',
+    enrolled: 25,
+    max: 30,
+    tags: ['AI实战', '工作坊'],
+    status: 'ended',
+    applicationStatus: 'approved',
+    description: '全天候AI工具实战培训，从工具选型到场景落地，帮你快速掌握AI辅助工作的核心技能。',
+    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=200&fit=crop',
+  },
+  {
+    id: '4',
+    type: 'private',
+    title: '35+职场转型工作坊',
+    date: '2024-04-25',
+    time: '13:00-17:00',
+    location: '广州·天河',
+    address: '广州市天河区珠江新城',
+    enrolled: 5,
+    max: 15,
+    tags: ['工作坊', '即将开始'],
+    status: 'ongoing',
+    applicationStatus: 'none', // 未报名
+    description: '为35+职场人提供转型指导，涵盖简历优化、面试技巧、行业分析等内容，帮助你顺利实现职业转型。',
+    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=200&fit=crop',
+  },
+];
+
+// 从localStorage读取活动数据或使用默认值
+const loadActivitiesFromStorage = () => {
+  if (typeof window === 'undefined') return defaultActivities;
+  try {
+    const stored = localStorage.getItem('activities');
+    return stored ? JSON.parse(stored) : defaultActivities;
+  } catch {
+    return defaultActivities;
+  }
+};
+
+// 保存活动数据到localStorage
+const saveActivitiesToStorage = (activities: typeof defaultActivities) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('activities', JSON.stringify(activities));
+  } catch (error) {
+    console.error('保存活动数据失败:', error);
+  }
+};
+
+// 初始化活动数据
+const getActivities = () => loadActivitiesFromStorage();
 
 export default function ActivitiesPage() {
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [selectedActivity, setSelectedActivity] = useState<typeof defaultActivities[0] | null>(null);
+  const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+  const [activityToApply, setActivityToApply] = useState<typeof defaultActivities[0] | null>(null);
+  const [activities, setActivities] = useState(() => getActivities());
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // 添加通知
+  const addNotification = (notification: Notification) => {
+    setNotifications((prev) => [notification, ...prev]);
+    // 同时保存到localStorage
+    try {
+      const stored = localStorage.getItem('notifications');
+      const existing = stored ? JSON.parse(stored) : [];
+      localStorage.setItem('notifications', JSON.stringify([notification, ...existing]));
+    } catch (error) {
+      console.error('保存通知失败:', error);
+    }
+  };
+
+  // 标记通知为已读
+  const markAsRead = (id: string) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    try {
+      const stored = localStorage.getItem('notifications');
+      if (stored) {
+        const existing = JSON.parse(stored);
+        const updated = existing.map((n: Notification) => (n.id === id ? { ...n, read: true } : n));
+        localStorage.setItem('notifications', JSON.stringify(updated));
+      }
+    } catch (error) {
+      console.error('更新通知状态失败:', error);
+    }
+  };
+
+  // 获取通知图标
+  const getNotificationIcon = (type: Notification['type']) => {
+    switch (type) {
+      case 'success':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'warning':
+        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+      case 'error':
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
+      default:
+        return <Info className="w-5 h-5 text-blue-500" />;
+    }
+  };
+
+  const filteredActivities = (() => {
+    switch (selectedFilter) {
+      case 'upcoming':
+        // 待参加：只显示报名并通过审核的项目（进行中 + 已通过）
+        return activities.filter((a: Activity) => a.status === 'ongoing' && a.applicationStatus === 'approved');
+      case 'ended':
+        // 已结束：只显示已结束的活动
+        return activities.filter((a: Activity) => a.status === 'ended');
+      case 'pending':
+        // 待审核：只显示待审核的报名
+        return activities.filter((a: Activity) => a.applicationStatus === 'pending');
+      default:
+        // 全部活动：显示所有活动
+        return activities;
+    }
+  })();
+
+  const handleApply = (activity: Activity) => {
+    setActivityToApply(activity);
+    setShowApplyConfirm(true);
+  };
+
+  const confirmApply = () => {
+    if (!activityToApply) return;
+
+    // 防重复提交检查
+    if (sessionStorage.getItem('activity-applying') === 'true') {
+      alert('正在报名中，请勿重复提交');
+      return;
+    }
+    sessionStorage.setItem('activity-applying', 'true');
+
+    // 更新活动状态为待审核
+    const updatedActivities = activities.map((a: Activity) =>
+      a.id === activityToApply.id
+        ? { ...a, applicationStatus: 'pending' as const, enrolled: a.enrolled + 1 }
+        : a
+    );
+
+    setActivities(updatedActivities);
+    saveActivitiesToStorage(updatedActivities);
+    setShowApplyConfirm(false);
+    setActivityToApply(null);
+
+    // 清除提交状态
+    setTimeout(() => {
+      sessionStorage.removeItem('activity-applying');
+    }, 1000);
+  };
+
+  const handleCancel = (activity: Activity) => {
+    if (!confirm(`确定要取消报名「${activity.title}」吗？`)) {
+      return;
+    }
+
+    // 防重复操作检查
+    if (sessionStorage.getItem('activity-canceling') === 'true') {
+      alert('正在取消中，请勿重复操作');
+      return;
+    }
+    sessionStorage.setItem('activity-canceling', 'true');
+
+    // 更新活动状态为未报名
+    const updatedActivities = activities.map((a: Activity) =>
+      a.id === activity.id
+        ? { ...a, applicationStatus: undefined, enrolled: Math.max(0, a.enrolled - 1) }
+        : a
+    );
+
+    setActivities(updatedActivities);
+    saveActivitiesToStorage(updatedActivities);
+
+    // 添加取消通知
+    addNotification({
+      id: `cancel-${Date.now()}`,
+      type: 'info',
+      title: '报名已取消',
+      message: `您已取消「${activity.title}」的报名`,
+      time: new Date().toLocaleString('zh-CN'),
+      read: false,
+    });
+
+    // 清除操作状态
+    setTimeout(() => {
+      sessionStorage.removeItem('activity-canceling');
+    }, 1000);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50">
-      {/* 顶部导航 */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center space-x-8">
-              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                燃场
-              </Link>
-              <div className="hidden md:flex space-x-6">
-                <Link href="/" className="text-gray-700 hover:text-purple-600">首页</Link>
-                <Link href="/discovery" className="text-gray-700 hover:text-purple-600">发现</Link>
-                <Link href="/activities" className="text-purple-600 font-semibold">活动</Link>
-                <Link href="/declarations" className="text-gray-700 hover:text-purple-600">宣告</Link>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/profile" className="text-gray-700 hover:text-purple-600">
-                个人中心
-              </Link>
-            </div>
+    <div className="min-h-screen bg-white pb-20">
+      <div className="w-full max-w-md mx-auto">
+        {/* 顶部导航 */}
+        <div className="sticky top-0 bg-white z-50 px-5 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/profile">
+              <Button variant="ghost" className="p-2">
+                <ArrowLeft className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+              </Button>
+            </Link>
+            <h1 className="text-[15px] font-semibold text-gray-900">参与活动</h1>
+            <Link href="/notifications" className="relative">
+              <Button variant="ghost" className="p-2">
+                <Bell className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+              </Button>
+              {notifications.filter((n) => !n.read).length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
+              )}
+            </Link>
           </div>
         </div>
-      </nav>
 
-      {/* 页面内容 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">活动</h1>
-            <p className="text-gray-600">参与活动，拓展人脉，提升能力</p>
+        <div className="px-5 space-y-6">
+          {/* Slogan */}
+          <div className="py-2">
+            <p className="text-[13px] font-bold text-blue-400 leading-relaxed">
+              让不同的人，碰撞出可能的火花
+            </p>
           </div>
-          <Link href="/admin/activities">
-            <Button variant="outline">管理活动</Button>
-          </Link>
-        </div>
 
-        {/* 筛选 */}
-        <div className="flex space-x-4 mb-8">
-          <button className="px-4 py-2 bg-purple-600 text-white rounded-full">全部</button>
-          <button className="px-4 py-2 bg-white text-gray-700 rounded-full hover:bg-gray-50">沙龙</button>
-          <button className="px-4 py-2 bg-white text-gray-700 rounded-full hover:bg-gray-50">工作坊</button>
-          <button className="px-4 py-2 bg-white text-gray-700 rounded-full hover:bg-gray-50">探访</button>
-          <button className="px-4 py-2 bg-white text-gray-700 rounded-full hover:bg-gray-50">线上</button>
-        </div>
+          {/* 筛选标签 */}
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-5 px-5">
+            {filters.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedFilter(tab.id)}
+                className={`px-4 py-2 text-[13px] font-normal whitespace-nowrap transition-colors ${
+                  selectedFilter === tab.id
+                    ? 'bg-[rgba(59,130,246,0.4)] text-blue-600'
+                    : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-        {/* 活动列表 */}
-        <div className="space-y-6">
-          <Card>
-            <div className="flex flex-col md:flex-row">
-              <div className="md:w-64 h-48 md:h-auto bg-gradient-to-br from-purple-400 to-blue-400 rounded-t-lg md:rounded-l-lg"></div>
-              <div className="flex-1 p-6">
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full">沙龙</span>
-                  <span className="text-gray-500 text-sm">2024-03-27 14:00-17:00</span>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">创业心理学</h2>
-                <p className="text-gray-600 mb-4">
-                  专为35+创业者打造的深度对话，探索创业者的心理状态，助力创业成长
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>📍 杭州西湖区</span>
-                    <span>👥 5/10 人</span>
+          {/* 活动列表 */}
+          <div className="divide-y divide-[rgba(0,0,0,0.05)]">
+            {filteredActivities.map((activity: Activity) => (
+              <div key={activity.id} className="py-5 space-y-4">
+                {/* 活动图片 */}
+                {activity.image && (
+                  <div className="w-full h-40 overflow-hidden">
+                    <img
+                      src={activity.image}
+                      alt={activity.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <Button>立即报名</Button>
+                )}
+
+                {/* 活动标题 */}
+                <div>
+                  <h3 className="text-[15px] font-semibold text-gray-900 mb-2">
+                    {activity.title}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {activity.tags.map((tag: string) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 活动信息 */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.date}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.time}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activity.location}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                      {activity.enrolled}/{activity.max}人
+                    </span>
+                  </div>
+                </div>
+
+                {/* 活动状态 */}
+                <div>
+                  {activity.status === 'ended' ? (
+                    <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.4)] text-[11px] font-normal">
+                      已结束
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal">
+                      进行中
+                    </span>
+                  )}
+                </div>
+
+                {/* 操作按钮 */}
+                <div className="flex gap-3 pt-2">
+                  {activity.status === 'ended' ? (
+                    // 已结束：只显示"查看详情"按钮
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.4)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                      onClick={() => setSelectedActivity(activity)}
+                    >
+                      查看详情
+                    </Button>
+                  ) : activity.applicationStatus === 'none' ? (
+                    // 未报名：显示"查看详情"和"立即报名"
+                    <>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                        onClick={() => setSelectedActivity(activity)}
+                      >
+                        查看详情
+                      </Button>
+                      <Button
+                        className="flex-1 bg-blue-400 hover:bg-blue-500 h-10 text-[13px] font-normal"
+                        onClick={() => handleApply(activity)}
+                      >
+                        立即报名
+                      </Button>
+                    </>
+                  ) : activity.applicationStatus === 'pending' ? (
+                    // 待审核：显示"查看详情"和"待审核"状态
+                    <>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                        onClick={() => setSelectedActivity(activity)}
+                      >
+                        查看详情
+                      </Button>
+                      <div className="flex-1 flex items-center justify-center bg-[rgba(251,191,36,0.15)] text-yellow-600 text-[13px] h-10">
+                        待审核
+                      </div>
+                    </>
+                  ) : (
+                    // 已通过：显示"查看详情"和"取消报名"按钮
+                    <>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                        onClick={() => setSelectedActivity(activity)}
+                      >
+                        查看详情
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400 h-10 text-[13px] font-normal"
+                        onClick={() => handleCancel(activity)}
+                      >
+                        取消报名
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
-            </div>
-          </Card>
+            ))}
+          </div>
 
-          <Card>
-            <div className="flex flex-col md:flex-row">
-              <div className="md:w-64 h-48 md:h-auto bg-gradient-to-br from-blue-400 to-cyan-400 rounded-t-lg md:rounded-l-lg"></div>
-              <div className="flex-1 p-6">
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">工作坊</span>
-                  <span className="text-gray-500 text-sm">2024-03-28 14:00-17:00</span>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">拥抱AI，改变基因</h2>
-                <p className="text-gray-600 mb-4">
-                  用AI技术重塑传统行业，学习如何将AI应用到实际业务中
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>📍 杭州滨江区</span>
-                    <span>👥 3/20 人</span>
-                  </div>
-                  <Button>立即报名</Button>
-                </div>
-              </div>
+          {/* 空状态 */}
+          {filteredActivities.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
+                {selectedFilter === 'pending' ? '暂无待审核的活动' : selectedFilter === 'upcoming' ? '暂无待参加的活动' : '暂无相关活动'}
+              </p>
             </div>
-          </Card>
-
-          <Card>
-            <div className="flex flex-col md:flex-row">
-              <div className="md:w-64 h-48 md:h-auto bg-gradient-to-br from-cyan-400 to-green-400 rounded-t-lg md:rounded-l-lg"></div>
-              <div className="flex-1 p-6">
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded-full">探访</span>
-                  <span className="text-gray-500 text-sm">2024-03-29 14:00-17:00</span>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">阿里云创新中心探访</h2>
-                <p className="text-gray-600 mb-4">
-                  深入了解云原生技术发展和创业孵化模式，与行业专家面对面交流
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>📍 北京市海淀区</span>
-                    <span>👥 8/30 人</span>
-                  </div>
-                  <Button>立即报名</Button>
-                </div>
-              </div>
-            </div>
-          </Card>
+          )}
         </div>
       </div>
+
+      {/* 活动详情悬浮窗口 */}
+      <Dialog open={!!selectedActivity} onOpenChange={(open) => !open && setSelectedActivity(null)}>
+        <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-0">
+          <VisuallyHidden>
+            <DialogTitle>活动详情</DialogTitle>
+          </VisuallyHidden>
+          {selectedActivity && (
+            <>
+              {/* 活动图片 */}
+              <div className="w-full h-48 overflow-hidden">
+                <img
+                  src={selectedActivity.image}
+                  alt={selectedActivity.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* 活动内容 */}
+              <div className="p-5 space-y-4">
+                {/* 标题和标签 */}
+                <div>
+                  <h2 className="text-[15px] font-semibold text-gray-900 mb-2">
+                    {selectedActivity.title}
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedActivity.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-blue-600 text-[11px] font-normal"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 活动描述 */}
+                <div>
+                  <p className="text-[13px] text-[rgba(0,0,0,0.6)] leading-relaxed">
+                    {selectedActivity.description}
+                  </p>
+                </div>
+
+                {/* 活动信息 */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{selectedActivity.date}</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Clock className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{selectedActivity.time}</span>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <MapPin className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{selectedActivity.location}</span>
+                      {selectedActivity.address && (
+                        <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-1">{selectedActivity.address}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Users className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
+                    <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
+                      {selectedActivity.enrolled}/{selectedActivity.max}人
+                    </span>
+                  </div>
+                </div>
+
+                {/* 活动状态 */}
+                <div>
+                  {selectedActivity.status === 'ended' ? (
+                    <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.4)] text-[11px] font-normal">
+                      已结束
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal">
+                      进行中
+                    </span>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 报名确认弹窗 */}
+      <Dialog open={showApplyConfirm} onOpenChange={setShowApplyConfirm}>
+        <DialogContent className="w-[95%] max-w-[480px] p-6">
+          <DialogHeader>
+            <DialogTitle className="text-[15px] font-semibold text-gray-900">
+              确认报名
+            </DialogTitle>
+          </DialogHeader>
+          {activityToApply && (
+            <div className="space-y-4">
+              <p className="text-[13px] text-[rgba(0,0,0,0.3)]">
+                确定要报名参加以下活动吗？
+              </p>
+              <div className="p-4 bg-[rgba(0,0,0,0.03)] space-y-2">
+                <h3 className="text-[15px] font-semibold text-gray-900">
+                  {activityToApply.title}
+                </h3>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+                  <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activityToApply.date}</span>
+                  <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activityToApply.time}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <MapPin className="w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+                  <span className="text-[13px] text-[rgba(0,0,0,0.6)]">{activityToApply.location}</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                报名后需要等待管理员审核，审核通过后会显示在"待参加"列表中。
+              </p>
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.02)] h-10 text-[13px] font-normal"
+                  onClick={() => setShowApplyConfirm(false)}
+                >
+                  取消
+                </Button>
+                <Button
+                  className="flex-1 bg-blue-400 hover:bg-blue-500 h-10 text-[13px] font-normal"
+                  onClick={confirmApply}
+                >
+                  确认报名
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
