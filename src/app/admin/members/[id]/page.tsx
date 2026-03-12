@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Edit, MapPin, Calendar, Phone, Mail, Building, Briefcase, ShieldCheck, Shield, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Phone, Mail, Building, Briefcase, ShieldCheck, Shield, Loader2, RefreshCw } from 'lucide-react';
 
 // 会员数据类型
 interface Member {
@@ -113,12 +113,6 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
               <RefreshCw className="w-4 h-4 mr-1" />
               刷新
             </Button>
-            <Link href={`/admin/members/${memberId}/edit`}>
-              <Button>
-                <Edit className="w-4 h-4 mr-2" />
-                编辑
-              </Button>
-            </Link>
           </div>
         </div>
 
@@ -172,22 +166,6 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
                       <Shield className="w-5 h-5 text-gray-400" />
                     )}
                   </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="text-[11px] text-[rgba(0,0,0,0.6)] mr-1">后台标签：</span>
-                  {member.adminTags && member.adminTags.length > 0 ? (
-                    member.adminTags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2.5 py-1 bg-[rgba(59,130,246,0.4)] text-white text-[11px] font-normal"
-                      >
-                        {tag}
-                      </span>
-                    ))
-                  ) : null}
-                  <span className="px-2.5 py-1 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[11px] font-normal">
-                    {member.level}
-                  </span>
                 </div>
               </div>
             </div>
