@@ -68,6 +68,7 @@ export async function PUT(
         feedbackAudio: body.feedbackAudio || null,
         photos: body.photos || null,
         participants: body.participants || null,
+        visitorIds: body.visitorIds || null,
         updatedAt: new Date(),
       })
       .where(eq(visits.id, visitId))

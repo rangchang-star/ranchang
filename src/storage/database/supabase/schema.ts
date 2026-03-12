@@ -143,6 +143,7 @@ export const visits = pgTable('visits', {
   feedbackAudio: text('feedback_audio'),
   photos: jsonb('photos'),
   participants: integer('participants'),
+  visitorIds: jsonb('visitor_ids').$type<string[]>(), // 探访人ID列表
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [

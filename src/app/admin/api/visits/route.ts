@@ -97,6 +97,7 @@ export async function POST(request: NextRequest) {
         feedbackAudio: body.feedbackAudio || null,
         photos: body.photos || null,
         participants: body.participants || null,
+        visitorIds: body.visitorIds || null,
       })
       .returning();
 

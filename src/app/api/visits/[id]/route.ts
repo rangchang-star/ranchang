@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, visits, appUsers } from '@/lib/db';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 // GET - 获取探访详情
 export async function GET(
@@ -34,6 +34,7 @@ export async function GET(
         rating: visits.rating,
         feedbackAudio: visits.feedbackAudio,
         photos: visits.photos,
+        visitorIds: visits.visitorIds,
         createdAt: visits.createdAt,
         updatedAt: visits.updatedAt,
         // 被探访对象信息
@@ -56,6 +57,35 @@ export async function GET(
     }
 
     const visit = visitList[0];
+
+    // 查询探访人信息
+    const visitors: Array<{
+      id: string;
+      name: string;
+      avatar: string | null;
+      skill: string;
+    }> = [];
+    if (visit.visitorIds && Array.isArray(visit.visitorIds) && visit.visitorIds.length > 0) {
+      const visitorUsers = await db
+        .select({
+          id: appUsers.id,
+          name: appUsers.name,
+          nickname: appUsers.nickname,
+          avatar: appUsers.avatar,
+          company: appUsers.company,
+          position: appUsers.position,
+          abilityTags: appUsers.abilityTags,
+        })
+        .from(appUsers)
+        .where(inArray(appUsers.id, visit.visitorIds as string[]));
+
+      visitors.push(...visitorUsers.map(u => ({
+        id: u.id,
+        name: u.name || u.nickname || '访客',
+        avatar: u.avatar,
+        skill: u.abilityTags?.[0] || '能力', // 使用第一个能力标签
+      })));
+    }
 
     const data = {
       id: visit.id,
@@ -96,8 +126,8 @@ export async function GET(
         company: visit.targetCompany,
         tags: visit.targetTags,
       } : null,
-      // 探访人信息（默认为空，需要从 visit_records 或其他表获取）
-      visitors: [],
+      // 探访人信息
+      visitors,
     };
 
     return NextResponse.json({
