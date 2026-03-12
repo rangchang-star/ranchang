@@ -26,42 +26,13 @@ export async function getImageUrl(
     return null;
   }
 
-  // 检查缓存
-  const cached = urlCache[fileKey];
-  const now = Date.now();
+  // 直接返回本地文件路径
+  // fileKey 格式类似: images/1773310379484-的门.webp
+  // 转换为: /uploads/1773310379484-的门.webp
+  const filename = fileKey.replace('images/', '');
+  const localUrl = `/uploads/${filename}`;
 
-  // 如果缓存有效且未过期，直接返回
-  if (!forceRefresh && cached && cached.expiresAt > now) {
-    return cached.url;
-  }
-
-  try {
-    // 调用API获取新的签名URL
-    const response = await fetch(`/api/storage/get-url?fileKey=${encodeURIComponent(fileKey)}`);
-
-    if (!response.ok) {
-      console.error(`获取图片URL失败: ${response.statusText}`);
-      return null;
-    }
-
-    const result = await response.json();
-
-    if (result.success && result.data?.url) {
-      // 缓存新的URL
-      urlCache[fileKey] = {
-        url: result.data.url,
-        expiresAt: new Date(result.data.expiresAt).getTime(),
-      };
-
-      return result.data.url;
-    } else {
-      console.error('获取图片URL失败: 响应数据无效');
-      return null;
-    }
-  } catch (error) {
-    console.error('获取图片URL失败:', error);
-    return null;
-  }
+  return localUrl;
 }
 
 /**
