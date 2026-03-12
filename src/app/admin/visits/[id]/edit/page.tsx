@@ -45,7 +45,8 @@ export default function AdminVisitEditPage() {
   const [feedbackAudio, setFeedbackAudio] = useState('');
   const [photos, setPhotos] = useState('');
   const [participants, setParticipants] = useState('');
-  const [visitorId, setVisitorId] = useState(''); // 探访人ID
+  const [visitorIds, setVisitorIds] = useState<string[]>([]); // 探访人ID列表
+  const [visitorSearch, setVisitorSearch] = useState(''); // 探访人搜索关键词
 
   // 文件上传状态
   const [uploading, setUploading] = useState(false);
@@ -82,9 +83,13 @@ export default function AdminVisitEditPage() {
     }
   };
 
-  // 当选择探访人时，保存探访人ID
+  // 当选择探访人时，保存探访人ID（支持多选）
   const handleVisitorSelect = (visitorUserId: string) => {
-    setVisitorId(visitorUserId);
+    if (visitorIds.includes(visitorUserId)) {
+      setVisitorIds(visitorIds.filter(id => id !== visitorUserId));
+    } else {
+      setVisitorIds([...visitorIds, visitorUserId]);
+    }
   };
 
   // 处理文件上传
@@ -193,7 +198,7 @@ export default function AdminVisitEditPage() {
           setFeedbackAudio(visit.feedbackAudio || '');
           setPhotos(visit.photos ? visit.photos.join('\n') : '');
           setParticipants(visit.participants?.toString() || '');
-          setVisitorId(visit.visitorId || '');
+          setVisitorIds(visit.visitorIds || []);
         } else {
           throw new Error(data.error || '加载探访数据失败');
         }
@@ -239,7 +244,7 @@ export default function AdminVisitEditPage() {
       const visitData = {
         companyId: companyId,
         companyName: companyName,
-        visitorId: visitorId || null,
+        visitorIds: visitorIds.length > 0 ? visitorIds : null,
         date: date,
         time: time || null,
         location: location || null,
@@ -357,23 +362,43 @@ export default function AdminVisitEditPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  探访人
+                  探访人（可多选）
                 </label>
                 {loadingUsers ? (
                   <div className="text-sm text-gray-500">加载用户列表中...</div>
                 ) : (
-                  <select
-                    value={visitorId}
-                    onChange={(e) => handleVisitorSelect(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="">请选择探访人</option>
-                    {users.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.name || user.nickname} - {user.company || '无公司'} ({user.position || '无职位'})
-                      </option>
-                    ))}
-                  </select>
+                  <>
+                    <Input
+                      type="text"
+                      placeholder="搜索用户姓名、公司或职位..."
+                      value={visitorSearch}
+                      onChange={(e) => setVisitorSearch(e.target.value)}
+                      className="mb-2"
+                    />
+                    <div className="border border-gray-300 rounded-md p-2 max-h-60 overflow-y-auto">
+                      {users
+                        .filter(user =>
+                          !visitorSearch ||
+                          (user.name || user.nickname).toLowerCase().includes(visitorSearch.toLowerCase()) ||
+                          (user.company || '').toLowerCase().includes(visitorSearch.toLowerCase()) ||
+                          (user.position || '').toLowerCase().includes(visitorSearch.toLowerCase())
+                        )
+                        .map((user) => (
+                          <label key={user.id} className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                            <input
+                              type="checkbox"
+                              value={user.id}
+                              checked={visitorIds.includes(user.id)}
+                              onChange={() => handleVisitorSelect(user.id)}
+                              className="mr-2"
+                            />
+                            <span className="text-sm">
+                              {user.name || user.nickname} - {user.company || '无公司'} ({user.position || '无职位'})
+                            </span>
+                          </label>
+                        ))}
+                    </div>
+                  </>
                 )}
               </div>
 
