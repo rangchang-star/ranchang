@@ -19,11 +19,21 @@ export async function GET(
         location: visits.location,
         description: visits.description,
         date: visits.date,
+        time: visits.time,
         capacity: visits.capacity,
         registeredCount: visits.registeredCount,
+        participants: visits.participants,
         coverImage: visits.coverImage,
         coverImageKey: visits.coverImageKey,
         status: visits.status,
+        record: visits.record,
+        outcome: visits.outcome,
+        notes: visits.notes,
+        keyPoints: visits.keyPoints,
+        nextSteps: visits.nextSteps,
+        rating: visits.rating,
+        feedbackAudio: visits.feedbackAudio,
+        photos: visits.photos,
         createdAt: visits.createdAt,
         updatedAt: visits.updatedAt,
         // 被探访对象信息
@@ -50,27 +60,31 @@ export async function GET(
     const data = {
       id: visit.id,
       title: visit.companyName, // 兼容前端使用的 title 字段
+      image: visit.coverImage, // 兼容前端使用的 image 字段
+      tags: visit.industry ? [visit.industry] : [], // 使用 industry 作为标签
       companyId: visit.companyId,
       companyName: visit.companyName,
       industry: visit.industry,
       location: visit.location,
       description: visit.description,
       date: visit.date,
-      time: null, // 数据库中不存在此字段
+      time: visit.time,
+      duration: '约2小时', // 默认时长
       capacity: visit.capacity,
-      participants: null, // 数据库中不存在此字段
+      participants: visit.participants,
       registeredCount: visit.registeredCount,
+      views: 0, // 默认浏览量
       coverImage: visit.coverImage,
       coverImageKey: visit.coverImageKey,
       status: visit.status,
-      record: null, // 数据库中不存在此字段
-      outcome: null, // 数据库中不存在此字段
-      notes: null, // 数据库中不存在此字段
-      keyPoints: [], // 数据库中不存在此字段
-      nextSteps: [], // 数据库中不存在此字段
-      rating: null, // 数据库中不存在此字段
-      feedbackAudio: null, // 数据库中不存在此字段
-      photos: [], // 数据库中不存在此字段
+      record: visit.record,
+      outcome: visit.outcome,
+      notes: visit.notes,
+      keyPoints: visit.keyPoints || [],
+      nextSteps: visit.nextSteps || [],
+      rating: visit.rating,
+      feedbackAudio: visit.feedbackAudio,
+      photos: visit.photos || [],
       createdAt: visit.createdAt,
       updatedAt: visit.updatedAt,
       // 被探访对象信息
@@ -82,6 +96,8 @@ export async function GET(
         company: visit.targetCompany,
         tags: visit.targetTags,
       } : null,
+      // 探访人信息（默认为空，需要从 visit_records 或其他表获取）
+      visitors: [],
     };
 
     return NextResponse.json({
