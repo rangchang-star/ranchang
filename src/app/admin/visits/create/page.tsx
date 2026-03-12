@@ -26,12 +26,22 @@ export default function AdminVisitCreatePage() {
   const [companyName, setCompanyName] = useState('');
   const [companyId, setCompanyId] = useState(''); // 必填字段，关联用户ID
   const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [industry, setIndustry] = useState('');
   const [capacity, setCapacity] = useState('');
   const [status, setStatus] = useState('draft');
   const [coverImage, setCoverImage] = useState('');
+  const [record, setRecord] = useState('');
+  const [outcome, setOutcome] = useState('');
+  const [notes, setNotes] = useState('');
+  const [keyPoints, setKeyPoints] = useState('');
+  const [nextSteps, setNextSteps] = useState('');
+  const [rating, setRating] = useState('');
+  const [feedbackAudio, setFeedbackAudio] = useState('');
+  const [photos, setPhotos] = useState('');
+  const [participants, setParticipants] = useState('');
 
   // 加载用户列表
   useEffect(() => {
@@ -96,6 +106,7 @@ export default function AdminVisitCreatePage() {
         companyId: companyId, // 必填，关联 app_users.id
         companyName: companyName, // 必填
         date: date, // 必填
+        time: time || null,
         location: location || null,
         description: description || null,
         industry: industry || null,
@@ -103,6 +114,15 @@ export default function AdminVisitCreatePage() {
         status: status, // draft, upcoming, completed, cancelled
         coverImage: coverImage || null,
         coverImageKey: null, // 如果有对象存储，这里需要设置
+        record: record || null,
+        outcome: outcome || null,
+        notes: notes || null,
+        keyPoints: keyPoints ? JSON.parse(keyPoints) : null,
+        nextSteps: nextSteps ? JSON.parse(nextSteps) : null,
+        rating: rating ? parseInt(rating) : null,
+        feedbackAudio: feedbackAudio || null,
+        photos: photos ? JSON.parse(photos) : null,
+        participants: participants ? parseInt(participants) : null,
       };
 
       console.log('保存探访数据:', visitData);
@@ -205,12 +225,35 @@ export default function AdminVisitCreatePage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  探访时间
+                </label>
+                <Input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   探访地点
                 </label>
                 <Input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="请输入探访地点"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  参与人数
+                </label>
+                <Input
+                  type="number"
+                  value={participants}
+                  onChange={(e) => setParticipants(e.target.value)}
+                  placeholder="请输入参与人数"
                 />
               </div>
 
@@ -276,6 +319,118 @@ export default function AdminVisitCreatePage() {
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="请输入探访描述..."
+              />
+            </div>
+
+            {/* 拜访记录 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                拜访记录
+              </label>
+              <textarea
+                value={record}
+                onChange={(e) => setRecord(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="请输入拜访记录..."
+              />
+            </div>
+
+            {/* 成果 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                成果
+              </label>
+              <textarea
+                value={outcome}
+                onChange={(e) => setOutcome(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="请输入成果..."
+              />
+            </div>
+
+            {/* 备注 */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                备注
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="请输入备注..."
+              />
+            </div>
+
+            {/* 关键点（JSON格式） */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                关键点（JSON数组格式）
+              </label>
+              <textarea
+                value={keyPoints}
+                onChange={(e) => setKeyPoints(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder='["关键点1", "关键点2"]'
+              />
+            </div>
+
+            {/* 下一步计划（JSON格式） */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                下一步计划（JSON数组格式）
+              </label>
+              <textarea
+                value={nextSteps}
+                onChange={(e) => setNextSteps(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder='["计划1", "计划2"]'
+              />
+            </div>
+
+            {/* 评分 */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  评分（1-5）
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={rating}
+                  onChange={(e) => setRating(e.target.value)}
+                  placeholder="请输入评分"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  反馈录音URL
+                </label>
+                <Input
+                  value={feedbackAudio}
+                  onChange={(e) => setFeedbackAudio(e.target.value)}
+                  placeholder="请输入反馈录音URL"
+                />
+              </div>
+            </div>
+
+            {/* 照片（JSON格式） */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                照片（JSON数组格式）
+              </label>
+              <textarea
+                value={photos}
+                onChange={(e) => setPhotos(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder='["照片URL1", "照片URL2"]'
               />
             </div>
           </div>
