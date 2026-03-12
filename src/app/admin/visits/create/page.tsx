@@ -564,7 +564,7 @@ export default function AdminVisitCreatePage() {
                               {member.name}
                             </div>
                             <div className="text-[11px] text-[rgba(0,0,0,0.6)] truncate">
-                              {member.abilityTags.join(' · ')}
+                              {(member.abilityTags || []).join(' · ')}
                             </div>
                           </div>
                           <Plus className="w-4 h-4 text-[rgba(0,0,0,0.4)] flex-shrink-0" />
