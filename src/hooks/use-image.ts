@@ -109,7 +109,7 @@ export function useImageUrls(fileKeys: (string | null | undefined)[]) {
  * @param uploadEndpoint - 上传API端点
  * @returns { upload, uploading, error, progress }
  */
-export function useFileUpload(uploadEndpoint: string = '/api/upload/avatar') {
+export function useFileUpload(uploadEndpoint: string = '/api/upload') {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);

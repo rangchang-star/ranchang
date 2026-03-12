@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
+        fileKey: fileKey,
         url: cdnUrl,
-        key: fileKey,
         name: file.name,
         size: file.size,
         type: file.type,
