@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, Calendar, MapPin, Users, Check, Plus, X, Trash2 } from 'lucide-react';
 import { ImageUpload } from '@/components/image-upload';
-import { useImageUrl } from '@/hooks/use-image';
+import { useImageUrl, useFileUpload } from '@/hooks/use-image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -100,6 +100,8 @@ export default function AdminActivityEditPage() {
   const [customGuestName, setCustomGuestName] = useState('');
   const [customGuestBio, setCustomGuestBio] = useState('');
   const [customGuestAvatar, setCustomGuestAvatar] = useState('');
+  const [isUploadingGuestAvatar, setIsUploadingGuestAvatar] = useState(false);
+  const { upload: uploadFile } = useFileUpload();
   
   const [description, setDescription] = useState('');
   const [coverImageKey, setCoverImageKey] = useState<string | null>(null);
@@ -637,7 +639,7 @@ export default function AdminActivityEditPage() {
                         <div className="flex items-center space-x-4">
                           {customGuestAvatar ? (
                             <img
-                              src={customGuestAvatar}
+                              src={`/api/image-url?key=${customGuestAvatar}`}
                               alt="头像预览"
                               className="w-16 h-16 rounded-full object-cover"
                             />
@@ -649,15 +651,31 @@ export default function AdminActivityEditPage() {
                           <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => {
+                            disabled={isUploadingGuestAvatar}
+                            onChange={async (e) => {
                               const file = e.target.files?.[0];
                               if (file) {
-                                const url = URL.createObjectURL(file);
-                                setCustomGuestAvatar(url);
+                                setIsUploadingGuestAvatar(true);
+                                try {
+                                  // 上传到对象存储
+                                  const result = await uploadFile(file, {
+                                    category: 'guest_avatar',
+                                  });
+                                  if (result.fileKey) {
+                                    setCustomGuestAvatar(result.fileKey);
+                                  }
+                                } catch (error: any) {
+                                  alert(`上传头像失败：${error.message}`);
+                                } finally {
+                                  setIsUploadingGuestAvatar(false);
+                                }
                               }
                             }}
                             className="flex-1 text-sm"
                           />
+                          {isUploadingGuestAvatar && (
+                            <div className="text-[11px] text-[rgba(0,0,0,0.5)]">上传中...</div>
+                          )}
                         </div>
                       </div>
 
