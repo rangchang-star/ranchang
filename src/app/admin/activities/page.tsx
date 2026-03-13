@@ -83,7 +83,9 @@ export default function AdminActivitiesPage() {
 
   // 类型映射
   const typeMap: Record<string, { label: string; color: string }> = {
+    private: { label: '私董会', color: 'bg-blue-100 text-blue-600' },
     salon: { label: '沙龙', color: 'bg-purple-100 text-purple-600' },
+    ai: { label: 'AI实战', color: 'bg-green-100 text-green-600' },
     workshop: { label: '工作坊', color: 'bg-blue-100 text-blue-600' },
     visit: { label: '探访', color: 'bg-green-100 text-green-600' },
   };
@@ -181,7 +183,9 @@ export default function AdminActivitiesPage() {
               className="px-3 py-2 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)] focus:outline-none focus:bg-[rgba(0,0,0,0.04)] transition-colors"
             >
               <option value="">全部类型</option>
+              <option value="private">私董会</option>
               <option value="salon">沙龙</option>
+              <option value="ai">AI实战</option>
               <option value="workshop">工作坊</option>
               <option value="visit">探访</option>
             </select>
