@@ -109,22 +109,68 @@ export default function ActivityRegistrationsPage({
     return matchesSearch && matchesStatus;
   });
 
-  const handleApprove = (registrationId: string) => {
-    const updatedRegistrations = registrations.map((reg) =>
-      reg.userId === registrationId ? { ...reg, status: 'approved' as const } : reg
-    );
-    setRegistrations(updatedRegistrations);
-    alert('已通过该报名申请');
+  const handleApprove = async (registrationId: string) => {
+    if (!confirm('确定要通过该报名申请吗？')) return;
+
+    try {
+      const response = await fetch(`/admin/api/activities/${activityId}/registrations/${registrationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: registrationId,
+          status: 'approved',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '审核失败');
+      }
+
+      const updatedRegistrations = registrations.map((reg) =>
+        reg.userId === registrationId ? { ...reg, status: 'approved' as const } : reg
+      );
+      setRegistrations(updatedRegistrations);
+      alert('已通过该报名申请');
+    } catch (error: any) {
+      console.error('审核失败:', error);
+      alert(error.message || '审核失败');
+    }
   };
 
-  const handleReject = (registrationId: string) => {
+  const handleReject = async (registrationId: string) => {
     if (!confirm('确定要拒绝该报名申请吗？')) return;
 
-    const updatedRegistrations = registrations.map((reg) =>
-      reg.userId === registrationId ? { ...reg, status: 'rejected' as const } : reg
-    );
-    setRegistrations(updatedRegistrations);
-    alert('已拒绝该报名申请');
+    try {
+      const response = await fetch(`/admin/api/activities/${activityId}/registrations/${registrationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: registrationId,
+          status: 'rejected',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '审核失败');
+      }
+
+      const updatedRegistrations = registrations.map((reg) =>
+        reg.userId === registrationId ? { ...reg, status: 'rejected' as const } : reg
+      );
+      setRegistrations(updatedRegistrations);
+      alert('已拒绝该报名申请');
+    } catch (error: any) {
+      console.error('审核失败:', error);
+      alert(error.message || '审核失败');
+    }
   };
 
   const handleExport = () => {
