@@ -79,6 +79,7 @@ export async function PUT(
         location: body.location,
         capacity: body.capacity,
         type: body.type,
+        teaFee: body.teaFee, // 茶水费
         coverImage: body.coverImage,
         coverImageKey: body.coverImageKey,
         status: body.status,

@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
       location: activity.location,
       capacity: activity.capacity,
       type: activity.type,
+      teaFee: activity.teaFee, // 茶水费
       coverImage: activity.coverImage,
       coverImageKey: activity.coverImageKey,
       status: activity.status,

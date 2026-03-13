@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
       location: activity.location,
       capacity: activity.capacity,
       type: activity.type,
+      teaFee: activity.teaFee, // 茶水费
       coverImage: activity.coverImage,
       coverImageKey: activity.coverImageKey,
       status: activity.status,
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
         location: body.location,
         capacity: body.capacity,
         type: body.type || 'salon',
+        teaFee: body.teaFee, // 茶水费
         coverImage: body.coverImage,
         coverImageKey: body.coverImageKey,
         status: body.status || 'draft',
