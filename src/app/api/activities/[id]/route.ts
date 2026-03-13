@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, activities } from '@/lib/db';
-import { eq } from 'drizzle-orm';
+import { db, activities, activityRegistrations } from '@/lib/db';
+import { eq, sql, and } from 'drizzle-orm';
 
 // GET - 获取活动详情
 export async function GET(
@@ -24,6 +24,19 @@ export async function GET(
 
     const activity = activityList[0];
 
+    // 实时计算已通过的报名人数
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(activityRegistrations)
+      .where(
+        and(
+          eq(activityRegistrations.activityId, id),
+          eq(activityRegistrations.status, 'approved')
+        )
+      );
+
+    const approvedCount = countResult[0]?.count || 0;
+
     const data = {
       id: activity.id,
       title: activity.title,
@@ -37,7 +50,7 @@ export async function GET(
       coverImage: activity.coverImage,
       coverImageKey: activity.coverImageKey,
       status: activity.status,
-      registeredCount: activity.registeredCount || 0,
+      registeredCount: approvedCount, // 使用实时计算的已通过人数
       createdBy: activity.createdBy,
       createdAt: activity.createdAt,
       updatedAt: activity.updatedAt,
