@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, activities } from '@/lib/db';
-import { eq } from 'drizzle-orm';
+import { db, activities, appUsers } from '@/lib/db';
+import { eq, or } from 'drizzle-orm';
 
-// POST - 修复活动嘉宾头像数据（清理 blob URL）
+// POST - 修复活动嘉宾头像数据（将 blob URL 替换为正确的对象存储 key）
 export async function POST(request: NextRequest) {
   try {
     const activityList = await db.select().from(activities);
 
     let fixedCount = 0;
+    let fixedGuests = 0;
 
     for (const activity of activityList) {
       if (!activity.guests || !Array.isArray(activity.guests)) {
@@ -15,22 +16,63 @@ export async function POST(request: NextRequest) {
       }
 
       let needsUpdate = false;
-      const fixedGuests = activity.guests.map((guest: any) => {
-        // 检查 avatar 是否是 blob URL
-        if (guest.avatar && guest.avatar.startsWith('blob:')) {
-          needsUpdate = true;
-          return {
-            ...guest,
-            avatar: '', // 清空 blob URL
-          };
+      const fixedGuestsList = [];
+
+      for (const guest of activity.guests) {
+        let fixedGuest = { ...guest };
+
+        // 检查 avatar 是否是 blob URL 或为空
+        if (!guest.avatar || guest.avatar.startsWith('blob:')) {
+          // 查询该用户在 appUsers 表中的 avatar 字段
+          let userAvatar = '';
+          
+          try {
+            // 优先通过 id 查询
+            const users = await db
+              .select({ avatar: appUsers.avatar })
+              .from(appUsers)
+              .where(eq(appUsers.id, guest.id));
+            
+            if (users.length > 0 && users[0].avatar && !users[0].avatar.startsWith('blob:')) {
+              userAvatar = users[0].avatar;
+            }
+          } catch (err) {
+            console.error('查询用户头像失败:', err);
+          }
+
+          // 如果通过 id 查询失败，尝试通过 name 查询
+          if (!userAvatar && guest.name) {
+            try {
+              const users = await db
+                .select({ avatar: appUsers.avatar })
+                .from(appUsers)
+                .where(eq(appUsers.name, guest.name));
+              
+              if (users.length > 0 && users[0].avatar && !users[0].avatar.startsWith('blob:')) {
+                userAvatar = users[0].avatar;
+              }
+            } catch (err) {
+              console.error('通过姓名查询用户头像失败:', err);
+            }
+          }
+
+          if (userAvatar !== guest.avatar) {
+            needsUpdate = true;
+            fixedGuest = {
+              ...guest,
+              avatar: userAvatar,
+            };
+            fixedGuests++;
+          }
         }
-        return guest;
-      });
+
+        fixedGuestsList.push(fixedGuest);
+      }
 
       if (needsUpdate) {
         await db
           .update(activities)
-          .set({ guests: fixedGuests })
+          .set({ guests: fixedGuestsList })
           .where(eq(activities.id, activity.id));
         fixedCount++;
       }
@@ -38,8 +80,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `已修复 ${fixedCount} 个活动的嘉宾头像数据`,
+      message: `已修复 ${fixedCount} 个活动的 ${fixedGuests} 个嘉宾头像数据`,
       fixedCount,
+      fixedGuests,
     });
   } catch (error) {
     console.error('修复嘉宾头像数据失败:', error);
