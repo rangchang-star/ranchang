@@ -72,6 +72,7 @@ export default function AdminActivityCreatePage() {
 
   const [description, setDescription] = useState('');
   const [coverImageKey, setCoverImageKey] = useState<string | null>(null);
+  const [status, setStatus] = useState<'draft' | 'published'>('draft');
   const { url: coverImageUrl } = useImageUrl(coverImageKey);
 
   const handleTagToggle = (tag: string) => {
@@ -122,7 +123,7 @@ export default function AdminActivityCreatePage() {
           startTime,
           endTime,
           capacity: parseInt(maxParticipants),
-          status: 'published',
+          status: status,
           startDate: date,
           endDate: date,
         }),
@@ -281,6 +282,53 @@ export default function AdminActivityCreatePage() {
                       </div>
                     </button>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 发布状态 */}
+            <div className="border border-[rgba(0,0,0,0.1)]">
+              <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
+                <h3 className="text-[13px] font-semibold text-gray-900">发布状态</h3>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setStatus('draft')}
+                    className={cn(
+                      'p-3 text-left border transition-colors',
+                      status === 'draft'
+                        ? 'bg-[rgba(107,114,128,0.1)] border-gray-400'
+                        : 'border-[rgba(0,0,0,0.1)] hover:bg-[rgba(0,0,0,0.02)]'
+                    )}
+                  >
+                    <div className="text-lg mb-1">📝</div>
+                    <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
+                      草稿
+                    </div>
+                    <div className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                      暂存不发布，后续可以编辑
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStatus('published')}
+                    className={cn(
+                      'p-3 text-left border transition-colors',
+                      status === 'published'
+                        ? 'bg-[rgba(59,130,246,0.1)] border-blue-400'
+                        : 'border-[rgba(0,0,0,0.1)] hover:bg-[rgba(0,0,0,0.02)]'
+                    )}
+                  >
+                    <div className="text-lg mb-1">🚀</div>
+                    <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
+                      立即发布
+                    </div>
+                    <div className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                      发布后用户可报名
+                    </div>
+                  </button>
                 </div>
               </div>
             </div>

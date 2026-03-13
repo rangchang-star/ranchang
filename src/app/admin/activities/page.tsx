@@ -2,7 +2,7 @@
 
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
-import { Search, Edit, Eye, Plus } from 'lucide-react';
+import { Search, Edit, Eye, Plus, X, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
@@ -30,34 +30,35 @@ export default function AdminActivitiesPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
+  // 加载活动数据的函数
+  const loadActivities = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/activities');
+
+      if (!response.ok) {
+        throw new Error('加载活动数据失败');
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setActivities(data.data);
+      } else {
+        throw new Error(data.error || '加载活动数据失败');
+      }
+    } catch (err: any) {
+      console.error('加载活动数据失败:', err);
+      setError(err.message || '加载活动数据失败');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 从 API 加载活动数据
   useEffect(() => {
-    async function loadActivities() {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const response = await fetch('/api/activities');
-
-        if (!response.ok) {
-          throw new Error('加载活动数据失败');
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          setActivities(data.data);
-        } else {
-          throw new Error(data.error || '加载活动数据失败');
-        }
-      } catch (err: any) {
-        console.error('加载活动数据失败:', err);
-        setError(err.message || '加载活动数据失败');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     loadActivities();
   }, []);
 
@@ -85,6 +86,50 @@ export default function AdminActivitiesPage() {
     salon: { label: '沙龙', color: 'bg-purple-100 text-purple-600' },
     workshop: { label: '工作坊', color: 'bg-blue-100 text-blue-600' },
     visit: { label: '探访', color: 'bg-green-100 text-green-600' },
+  };
+
+  // 快捷操作：取消活动
+  const handleCancelActivity = async (activityId: string) => {
+    if (!confirm('确定要取消这个活动吗？')) return;
+
+    try {
+      const response = await fetch(`/admin/api/activities/${activityId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'cancelled' }),
+      });
+
+      if (response.ok) {
+        alert('活动已取消');
+        loadActivities();
+      } else {
+        alert('操作失败');
+      }
+    } catch (error) {
+      alert('操作失败');
+    }
+  };
+
+  // 快捷操作：标记已结束
+  const handleEndActivity = async (activityId: string) => {
+    if (!confirm('确定要标记这个活动为已结束吗？')) return;
+
+    try {
+      const response = await fetch(`/admin/api/activities/${activityId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ended' }),
+      });
+
+      if (response.ok) {
+        alert('活动已标记为已结束');
+        loadActivities();
+      } else {
+        alert('操作失败');
+      }
+    } catch (error) {
+      alert('操作失败');
+    }
   };
 
   return (
@@ -210,6 +255,28 @@ export default function AdminActivitiesPage() {
                           编辑
                         </Button>
                       </Link>
+                      {activity.status === 'published' && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCancelActivity(activity.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            取消
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEndActivity(activity.id)}
+                            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            结束
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

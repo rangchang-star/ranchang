@@ -76,6 +76,7 @@ export default function AdminActivityEditPage() {
   const [type, setType] = useState('private');
   const [maxParticipants, setMaxParticipants] = useState('');
   const [teaFee, setTeaFee] = useState('');
+  const [status, setStatus] = useState<'draft' | 'published' | 'ended' | 'cancelled'>('draft');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [availableMembers, setAvailableMembers] = useState<any[]>([]);
@@ -126,6 +127,7 @@ export default function AdminActivityEditPage() {
         setMaxParticipants(activity.maxParticipants.toString());
         setTeaFee((activity as any).teaFee || '');
         setSelectedTags(activity.tags);
+        setStatus((activity as any).status || 'draft');
         // 去重：使用 Set 确保不会重复添加嘉宾
         const participantsData = (activity as any).participants || [];
         const uniqueParticipants = Array.from(new Set(participantsData as string[]));
@@ -187,7 +189,7 @@ export default function AdminActivityEditPage() {
           startTime,
           endTime,
           capacity: parseInt(maxParticipants),
-          status: 'published',
+          status: status,
           startDate: date,
           endDate: date,
         }),
@@ -418,6 +420,89 @@ export default function AdminActivityEditPage() {
                       </div>
                     </button>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 活动状态 */}
+            <div className="border border-[rgba(0,0,0,0.1)]">
+              <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
+                <h3 className="text-[13px] font-semibold text-gray-900">活动状态</h3>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setStatus('draft')}
+                    className={cn(
+                      'p-3 text-left border transition-colors',
+                      status === 'draft'
+                        ? 'bg-[rgba(107,114,128,0.1)] border-gray-400'
+                        : 'border-[rgba(0,0,0,0.1)] hover:bg-[rgba(0,0,0,0.02)]'
+                    )}
+                  >
+                    <div className="text-lg mb-1">📝</div>
+                    <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
+                      草稿
+                    </div>
+                    <div className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                      暂存不发布
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStatus('published')}
+                    className={cn(
+                      'p-3 text-left border transition-colors',
+                      status === 'published'
+                        ? 'bg-[rgba(59,130,246,0.1)] border-blue-400'
+                        : 'border-[rgba(0,0,0,0.1)] hover:bg-[rgba(0,0,0,0.02)]'
+                    )}
+                  >
+                    <div className="text-lg mb-1">🚀</div>
+                    <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
+                      报名中
+                    </div>
+                    <div className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                      用户可报名
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStatus('ended')}
+                    className={cn(
+                      'p-3 text-left border transition-colors',
+                      status === 'ended'
+                        ? 'bg-[rgba(107,114,128,0.1)] border-gray-400'
+                        : 'border-[rgba(0,0,0,0.1)] hover:bg-[rgba(0,0,0,0.02)]'
+                    )}
+                  >
+                    <div className="text-lg mb-1">✅</div>
+                    <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
+                      已结束
+                    </div>
+                    <div className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                      活动已结束
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStatus('cancelled')}
+                    className={cn(
+                      'p-3 text-left border transition-colors',
+                      status === 'cancelled'
+                        ? 'bg-[rgba(239,68,68,0.1)] border-red-400'
+                        : 'border-[rgba(0,0,0,0.1)] hover:bg-[rgba(0,0,0,0.02)]'
+                    )}
+                  >
+                    <div className="text-lg mb-1">❌</div>
+                    <div className="text-[13px] font-semibold text-gray-900 mb-0.5">
+                      已取消
+                    </div>
+                    <div className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                      活动已取消
+                    </div>
+                  </button>
                 </div>
               </div>
             </div>
