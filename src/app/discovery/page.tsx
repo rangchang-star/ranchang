@@ -362,11 +362,11 @@ export default function DiscoveryPage() {
         setError(null);
 
         // 并行加载用户、活动、资源现货、文档和每日宣告数据
-        const [usersRes, activitiesRes, declarationsRes, documentsRes, dailyRes] =
+        const [usersRes, activitiesRes, declarationsFeaturedRes, documentsRes, dailyRes] =
           await Promise.all([
             fetch("/api/users", { cache: 'no-store' }),
             fetch("/api/activities?status=active", { cache: 'no-store' }),
-            fetch("/api/declarations", { cache: 'no-store' }),
+            fetch("/api/declarations-featured", { cache: 'no-store' }),
             fetch("/api/documents", { cache: 'no-store' }),
             fetch("/api/daily-declarations", { cache: 'no-store' }),
           ]);
@@ -386,10 +386,10 @@ export default function DiscoveryPage() {
             error: errorText
           });
         }
-        if (!declarationsRes.ok) {
-          const errorText = await declarationsRes.text();
-          console.error('❌ 宣告数据加载失败:', {
-            status: declarationsRes.status,
+        if (!declarationsFeaturedRes.ok) {
+          const errorText = await declarationsFeaturedRes.text();
+          console.error('❌ 资源现货数据加载失败:', {
+            status: declarationsFeaturedRes.status,
             error: errorText
           });
         }
@@ -405,7 +405,7 @@ export default function DiscoveryPage() {
         const allFailed =
           !usersRes.ok &&
           !activitiesRes.ok &&
-          !declarationsRes.ok &&
+          !declarationsFeaturedRes.ok &&
           !documentsRes.ok;
 
         if (allFailed) {
@@ -415,7 +415,7 @@ export default function DiscoveryPage() {
         // 安全解析JSON，避免解析失败导致页面崩溃
         const usersData = usersRes.ok ? await usersRes.json() : { data: [] };
         const activitiesData = activitiesRes.ok ? await activitiesRes.json() : { data: [] };
-        const declarationsData = declarationsRes.ok ? await declarationsRes.json() : { data: [] };
+        const declarationsFeaturedData = declarationsFeaturedRes.ok ? await declarationsFeaturedRes.json() : { data: [] };
         const documentsData = documentsRes.ok ? await documentsRes.json() : { data: [] };
 
         if (usersData.success) {
@@ -478,21 +478,19 @@ export default function DiscoveryPage() {
           setActivityItems(formattedActivities);
         }
 
-        if (declarationsData.success) {
+        if (declarationsFeaturedData.success) {
           // 将资源现货数据转换为前端需要的格式
-          const formattedDeclarations = declarationsData.data.map(
+          const formattedDeclarations = declarationsFeaturedData.data.map(
             (declaration: any) => ({
               id: declaration.id.toString(),
-              rank: declaration.rank || 0,
+              rank: 1, // 统一显示为排序1
               icon: declaration.user?.avatar || "/avatar-default.jpg",
-              iconType: declaration.iconType || "",
-              title:
-                declaration.text || declaration.summary?.substring(0, 20) || "",
-              profile: declaration.user?.position || "",
-              duration: declaration.duration || "0:00",
+              iconType: declaration.type || "resource",
+              title: declaration.text || declaration.summary?.substring(0, 30) || "",
+              profile: declaration.type || "资源现货",
+              duration: "0:00", // 暂时显示为0:00，后续如果添加音频时长可以修改
               userId: declaration.userId,
-              userName:
-                declaration.user?.name || declaration.user?.nickname || "",
+              userName: declaration.user?.name || declaration.user?.nickname || "",
               userAvatar: declaration.user?.avatar || "/avatar-default.jpg",
               views: declaration.views || 0,
               isFeatured: declaration.isFeatured || false,
@@ -975,10 +973,9 @@ export default function DiscoveryPage() {
                       <h3 className="text-[17px] font-semibold text-gray-900 mb-1 line-clamp-2">
                         {item.title}
                       </h3>
-                      {/* 达人画像与时长（灰色字） */}
+                      {/* 达人画像与资源标签（灰色字） */}
                       <p className="text-[12px] text-[rgba(0,0,0,0.25)] flex items-center">
-                        {item.profile} · <Timer className="w-3 h-3 mx-1" />
-                        {item.duration}
+                        {item.profile}
                       </p>
                     </div>
 
