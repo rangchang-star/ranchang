@@ -101,40 +101,30 @@ export default function ActivityDetailPage() {
           // 将 API 数据转换为前端需要的格式
           const formattedActivity = {
             id: data.data.id.toString(),
-            category: data.data.category || '',
+            category: data.data.type || '', // type→category
             title: data.data.title || '',
-            subtitle: data.data.subtitle || '',
+            subtitle: '', // API不返回subtitle
             description: data.data.description || '',
-            image: data.data.image || '',
-            tags: [data.data.category || '', '名额紧张'],
-            enrollments: data.data.participants?.map((p: any) => p.id.toString()) || [],
-            enrolledCount: data.data.enrolledCount || 0,
-            maxEnrollments: data.data.capacity || 0,
-            participants: data.data.participants?.map((p: any) => ({
-              id: p.id.toString(),
-              name: p.name || p.nickname || '',
-              avatar: p.avatar || '',
-              position: p.position || '',
-              company: p.company || '',
-            })) || [],
-            guests: data.data.guests?.map((g: any) => ({
-              id: g.id.toString(),
-              name: g.name || g.nickname || '',
-              avatar: g.avatar || '',
-              position: g.position || '',
-              company: g.company || '',
-            })) || [],
-            address: data.data.address || '',
-            teaFee: `茶水费${data.data.teaFee || 0}元`,
-            status: data.data.status === 'active' ? 'ongoing' : 'ended',
-            endTime: data.data.endDate || '',
-            startDate: data.data.startDate ? new Date(data.data.startDate).toLocaleString('zh-CN', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            }) : '',
+            image: data.data.coverImage || '', // coverImage→image
+            tags: [data.data.type || '', '名额紧张'], // 使用type作为标签
+            enrollments: [], // API不返回participants
+            enrolledCount: data.data.registeredCount || 0, // registeredCount→enrolledCount
+            maxEnrollments: data.data.capacity || 0, // capacity→maxEnrollments
+            participants: [], // API不返回participants
+            guests: [], // API不返回guests
+            address: data.data.location || '', // location→address
+            teaFee: '免费', // API不返回teaFee，默认为免费
+            status: data.data.status === 'published' ? 'ongoing' : 'ended', // published→ongoing
+            endTime: data.data.endTime || '',
+            startDate: data.data.date && data.data.startTime
+              ? new Date(`${data.data.date}T${data.data.startTime}`).toLocaleString('zh-CN', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })
+              : '',
             organizer: '燃场',
             organizerAvatar: '/logo-ranchang.png',
           };
