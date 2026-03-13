@@ -59,13 +59,19 @@ export default function AdminDashboardPage() {
             activities
               .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
               .slice(0, 3)
-              .map((activity: any) => ({
-                id: activity.id,
-                title: activity.title,
-                date: activity.date,
-                enrolled: activity.registeredCount || 0,
-                status: statusMap[activity.status] || '未知',
-              }))
+              .map((activity: any) => {
+                // 动态判断：如果活动日期已过，显示"已结束"
+                const isEnded = new Date(activity.date) < new Date();
+                const displayStatus = isEnded ? '已结束' : statusMap[activity.status] || '未知';
+                
+                return {
+                  id: activity.id,
+                  title: activity.title,
+                  date: activity.date,
+                  enrolled: activity.registeredCount || 0,
+                  status: displayStatus,
+                };
+              })
           );
 
           // 暂时硬编码最近咨询，等待咨询数据API
