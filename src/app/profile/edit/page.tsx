@@ -1061,7 +1061,7 @@ export function ProfileEditContent() {
           {/* 工作经历 */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-[13px] font-semibold text-gray-900">工作经历</h2>
+              <h2 className="text-[13px] font-semibold text-gray-900">硬核经历</h2>
               <Button
                 onClick={handleAddExperience}
                 className="text-[11px] bg-blue-400 hover:bg-blue-500 text-white px-3 py-1"
@@ -1083,17 +1083,17 @@ export function ProfileEditContent() {
                     </button>
                   </div>
                   <div>
-                    <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">公司名称</label>
+                    <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">战绩一</label>
                     <input
                       type="text"
                       value={exp.company}
                       onChange={(e) => handleUpdateExperience(index, 'company', e.target.value)}
-                      className="w-full px-3 py-2 text-[13px] bg-white border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
-                      placeholder="请输入公司名称"
+                      className="w-full px-3 py-2 text-[13px] bg-white border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.2)]"
+                      placeholder="说说那些年你干成的事，让我们知道你的厉害。"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">职位</label>
+                    <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">当时职位</label>
                     <input
                       type="text"
                       value={exp.position}
