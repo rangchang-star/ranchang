@@ -2,7 +2,7 @@
 
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Users, Calendar, Clock, MapPin, CheckCircle, XCircle, Clock as ClockIcon, Search, Download } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, Clock, MapPin, CheckCircle, XCircle, Clock as ClockIcon, Search, Download, MoreHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -57,6 +57,8 @@ export default function ActivityRegistrationsPage({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'completed'>('all');
   const [activityId, setActivityId] = useState<string>('');
+  const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
+  const [editingStatusId, setEditingStatusId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadActivityId() {
@@ -86,6 +88,23 @@ export default function ActivityRegistrationsPage({
           setActivityInfo(data.data.activity);
           setRegistrations(data.data.registrations);
           setStatistics(data.data.statistics);
+
+          // 加载头像URL
+          const urls: Record<string, string> = {};
+          for (const reg of data.data.registrations) {
+            if (reg.userAvatar) {
+              try {
+                const imgUrlResponse = await fetch(`/api/image-url?key=${reg.userAvatar}`);
+                const imgUrlData = await imgUrlResponse.json();
+                if (imgUrlData.success) {
+                  urls[reg.userId] = imgUrlData.url;
+                }
+              } catch (e) {
+                console.error('加载头像失败:', e);
+              }
+            }
+          }
+          setAvatarUrls(urls);
         } else {
           throw new Error(data.error || '加载报名信息失败');
         }
@@ -135,6 +154,7 @@ export default function ActivityRegistrationsPage({
       );
       setRegistrations(updatedRegistrations);
       alert('已通过该报名申请');
+      setEditingStatusId(null);
     } catch (error: any) {
       console.error('审核失败:', error);
       alert(error.message || '审核失败');
@@ -167,9 +187,43 @@ export default function ActivityRegistrationsPage({
       );
       setRegistrations(updatedRegistrations);
       alert('已拒绝该报名申请');
+      setEditingStatusId(null);
     } catch (error: any) {
       console.error('审核失败:', error);
       alert(error.message || '审核失败');
+    }
+  };
+
+  const handleResetToPending = async (registrationId: string) => {
+    if (!confirm('确定要将该报名重置为待审核状态吗？')) return;
+
+    try {
+      const response = await fetch(`/admin/api/activities/${activityId}/registrations/${registrationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: registrationId,
+          status: 'pending',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '操作失败');
+      }
+
+      const updatedRegistrations = registrations.map((reg) =>
+        reg.userId === registrationId ? { ...reg, status: 'pending' as const } : reg
+      );
+      setRegistrations(updatedRegistrations);
+      alert('已重置为待审核状态');
+      setEditingStatusId(null);
+    } catch (error: any) {
+      console.error('操作失败:', error);
+      alert(error.message || '操作失败');
     }
   };
 
@@ -423,60 +477,92 @@ export default function ActivityRegistrationsPage({
                 </div>
               ) : (
                 <div className="divide-y divide-[rgba(0,0,0,0.05)]">
-                  {filteredRegistrations.map((registration) => (
-                    <div
-                      key={registration.userId}
-                      className="p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-3">
-                          <img
-                            src={registration.userAvatar}
-                            alt={registration.userName}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h4 className="text-[15px] font-semibold text-gray-900">
-                                {registration.userName}
-                              </h4>
-                              {getStatusBadge(registration.status)}
+                  {filteredRegistrations.map((registration) => {
+                    const avatarUrl = avatarUrls[registration.userId] || '/default-avatar.png';
+
+                    return (
+                      <div
+                        key={registration.userId}
+                        className="p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3">
+                            <img
+                              src={avatarUrl}
+                              alt={registration.userName}
+                              className="w-10 h-10 rounded-full object-cover bg-gray-200"
+                              onError={(e) => {
+                                e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239CA3AF"%3E%3Cpath d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/%3E%3C/svg%3E';
+                              }}
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <h4 className="text-[15px] font-semibold text-gray-900">
+                                  {registration.userName || '未知用户'}
+                                </h4>
+                                {getStatusBadge(registration.status)}
+                              </div>
+                              <div className="space-y-1 text-[13px] text-[rgba(0,0,0,0.6)]">
+                                <p>{registration.userCompany || '-'} · {registration.userPosition || '-'}</p>
+                                <p>{registration.userPhone || '-'}</p>
+                                <p className="flex items-center space-x-1">
+                                  <Clock className="w-3 h-3" />
+                                  <span>报名时间：{formatDate(registration.registeredAt)}</span>
+                                </p>
+                              </div>
                             </div>
-                            <div className="space-y-1 text-[13px] text-[rgba(0,0,0,0.6)]">
-                              <p>{registration.userCompany} · {registration.userPosition}</p>
-                              <p>{registration.userPhone}</p>
-                              <p className="flex items-center space-x-1">
-                                <Clock className="w-3 h-3" />
-                                <span>报名时间：{formatDate(registration.registeredAt)}</span>
-                              </p>
-                            </div>
+                          </div>
+                          {/* 操作按钮 - 所有状态都可以编辑 */}
+                          <div className="flex items-center space-x-2">
+                            {registration.status === 'pending' && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-green-600 border-green-400 hover:bg-green-50 hover:border-green-500"
+                                  onClick={() => handleApprove(registration.userId)}
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                  通过
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 border-red-400 hover:bg-red-50 hover:border-red-500"
+                                  onClick={() => handleReject(registration.userId)}
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                  拒绝
+                                </Button>
+                              </>
+                            )}
+                            {registration.status === 'approved' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-gray-600 border-gray-300 hover:bg-gray-50"
+                                onClick={() => handleResetToPending(registration.userId)}
+                              >
+                                <ClockIcon className="w-4 h-4 mr-1" />
+                                重置
+                              </Button>
+                            )}
+                            {registration.status === 'rejected' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-gray-600 border-gray-300 hover:bg-gray-50"
+                                onClick={() => handleResetToPending(registration.userId)}
+                              >
+                                <ClockIcon className="w-4 h-4 mr-1" />
+                                重置
+                              </Button>
+                            )}
                           </div>
                         </div>
-                        {registration.status === 'pending' && (
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-green-600 border-green-400 hover:bg-green-50 hover:border-green-500"
-                              onClick={() => handleApprove(registration.userId)}
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                              通过
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-600 border-red-400 hover:bg-red-50 hover:border-red-500"
-                              onClick={() => handleReject(registration.userId)}
-                            >
-                              <XCircle className="w-4 h-4" />
-                              拒绝
-                            </Button>
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
