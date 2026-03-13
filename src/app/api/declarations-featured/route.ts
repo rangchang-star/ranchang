@@ -26,10 +26,7 @@ export async function GET(request: NextRequest) {
       })
       .from(declarations)
       .innerJoin(appUsers, eq(declarations.userId, appUsers.id))
-      .where(and(
-        eq(declarations.type, 'resource'), // 只获取资源现货
-        eq(appUsers.status, 'active'), // 只获取有效用户
-      ))
+      .where(eq(appUsers.status, 'active')) // 只获取有效用户
       .orderBy(desc(declarations.createdAt));
 
     // 过滤出每个用户的第一条（最新的一条）
