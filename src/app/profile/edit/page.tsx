@@ -1056,7 +1056,13 @@ export function ProfileEditContent() {
                 value={declarationTheme}
                 onChange={(e) => setDeclarationTheme(e.target.value)}
                 className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
-                placeholder="能力主题：30分钟安装openclaw，30分钟教会你养龙虾。"
+                placeholder={
+                  declarationType === 'ability'
+                    ? '能力主题：30分钟安装openclaw，30分钟教会你养龙虾。'
+                    : declarationType === 'connection'
+                    ? '人脉主题：20分钟对话阿里P8人力专家，直通大厂人脉'
+                    : '资源主题：母婴类供应商资源现货，直接对接不绕路'
+                }
                 maxLength={15}
               />
               <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
@@ -1072,7 +1078,13 @@ export function ProfileEditContent() {
                 onChange={(e) => setDeclarationDescription(e.target.value)}
                 className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none placeholder-[rgba(0,0,0,0.3)]"
                 rows={3}
-                placeholder="请输入内容"
+                placeholder={
+                  declarationType === 'ability'
+                    ? '请输入能力现货内容'
+                    : declarationType === 'connection'
+                    ? '请输入人脉现货内容'
+                    : '请输入资源现货内容'
+                }
                 minLength={25}
                 maxLength={60}
               />
