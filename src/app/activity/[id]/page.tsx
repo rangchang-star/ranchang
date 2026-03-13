@@ -294,13 +294,19 @@ export default function ActivityDetailPage() {
           {!isLoading && !error && activity && (
             <div>
             {/* 活动图片 */}
-            <div className="w-full h-48 overflow-hidden">
-              <img
-                src={activity.image}
-                alt={activity.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
+            {activity.image && (
+              <div className="w-full h-48 overflow-hidden">
+                <img
+                  src={activity.image}
+                  alt={activity.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error('图片加载失败:', activity.image);
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
 
             {/* 活动基本信息 */}
             <div className="px-5 space-y-4">
