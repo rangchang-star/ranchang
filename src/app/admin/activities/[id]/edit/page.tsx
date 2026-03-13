@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Save, Calendar, MapPin, Users, Check, Plus, X } from 'lucide-react';
+import { ArrowLeft, Save, Calendar, MapPin, Users, Check, Plus, X, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -206,6 +206,30 @@ export default function AdminActivityEditPage() {
     }
   };
 
+  const handleDelete = async () => {
+    // 确认删除
+    if (!confirm('确定要删除这个活动吗？此操作不可撤销！')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/admin/api/activities/${activityId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || '删除活动失败');
+      }
+
+      alert('活动已删除');
+      router.push('/admin/activities');
+    } catch (error: any) {
+      console.error('删除活动失败:', error);
+      alert(`删除失败：${error.message}`);
+    }
+  };
+
   // 计算当前已报名人数（默认为0）
   const enrolled = 0;
 
@@ -236,10 +260,20 @@ export default function AdminActivityEditPage() {
               <p className="text-[13px] text-[rgba(0,0,0,0.6)]">修改活动信息并实时预览效果</p>
             </div>
           </div>
-          <Button onClick={handleSave}>
-            <Save className="w-4 h-4 mr-2" />
-            保存更改
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button onClick={handleSave}>
+              <Save className="w-4 h-4 mr-2" />
+              保存更改
+            </Button>
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              删除活动
+            </Button>
+          </div>
         </div>
 
         {/* 两栏布局：左侧编辑表单，右侧预览 */}

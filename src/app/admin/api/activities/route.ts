@@ -102,3 +102,97 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// PUT - 更新活动（后台）
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: '缺少活动ID' },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+
+    const updatedActivity = await db
+      .update(activities)
+      .set({
+        title: body.title,
+        description: body.description,
+        date: new Date(body.date),
+        startDate: new Date(body.startDate || body.date),
+        endDate: new Date(body.endDate || body.date),
+        startTime: body.startTime,
+        endTime: body.endTime,
+        location: body.location,
+        capacity: body.capacity ? parseInt(body.capacity) : 30,
+        type: body.type,
+        coverImage: body.coverImage,
+        coverImageKey: body.coverImageKey,
+        status: body.status,
+        updatedAt: new Date(),
+      })
+      .where(eq(activities.id, id))
+      .returning();
+
+    if (updatedActivity.length === 0) {
+      return NextResponse.json(
+        { success: false, error: '活动不存在' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: updatedActivity[0],
+    });
+  } catch (error) {
+    console.error('更新活动失败:', error);
+    return NextResponse.json(
+      { success: false, error: '更新活动失败' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - 删除活动（后台）
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: '缺少活动ID' },
+        { status: 400 }
+      );
+    }
+
+    const deletedActivity = await db
+      .delete(activities)
+      .where(eq(activities.id, id))
+      .returning();
+
+    if (deletedActivity.length === 0) {
+      return NextResponse.json(
+        { success: false, error: '活动不存在' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: '活动已删除',
+    });
+  } catch (error) {
+    console.error('删除活动失败:', error);
+    return NextResponse.json(
+      { success: false, error: '删除活动失败' },
+      { status: 500 }
+    );
+  }
+}
