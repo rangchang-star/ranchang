@@ -379,9 +379,12 @@ export default function ActivityDetailPage() {
                 <h3 className="text-[15px] font-semibold text-gray-900 mb-3">
                   参与嘉宾 <span className="text-[11px] text-[rgba(0,0,0,0.5)] font-normal">{(activity as any).guests?.length || 0} 位嘉宾</span>
                 </h3>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-start space-x-4">
                   {(activity as any).guests?.map((guest: any) => (
-                    <AvatarDisplay key={guest.id} avatarKey={guest.avatar} name={guest.name} size="md" />
+                    <div key={guest.id} className="flex flex-col items-center space-y-2">
+                      <AvatarDisplay avatarKey={guest.avatar} name={guest.name} size="md" />
+                      <span className="text-[11px] text-[rgba(0,0,0,0.6)]">{guest.name}</span>
+                    </div>
                   ))}
                 </div>
               </div>
