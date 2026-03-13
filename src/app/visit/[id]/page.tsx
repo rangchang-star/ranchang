@@ -53,6 +53,9 @@ export default function VisitDetailPage() {
   // 被访者头像 URL
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
+  // 音频 URL
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
   // 从 API 加载探访数据
   useEffect(() => {
     async function loadVisit() {
@@ -81,6 +84,12 @@ export default function VisitDetailPage() {
           if (visitData.target?.avatar) {
             const url = await getImageUrl(visitData.target.avatar);
             setAvatarUrl(url);
+          }
+
+          // 获取音频 URL
+          if (visitData.feedbackAudio) {
+            const url = await getImageUrl(visitData.feedbackAudio);
+            setAudioUrl(url);
           }
 
           // 检查用户是否已收藏该项目
@@ -628,7 +637,7 @@ export default function VisitDetailPage() {
                 </div>
                 <audio
                   ref={audioRef}
-                  src={visit.feedbackAudio}
+                  src={audioUrl || visit.feedbackAudio}
                   onEnded={handleEnded}
                   preload="metadata"
                   className="hidden"
@@ -683,7 +692,7 @@ export default function VisitDetailPage() {
 
         {/* 隐藏的音频元素 */}
         {visit.feedbackAudio && (
-          <audio ref={audioRef} src={visit.feedbackAudio} />
+          <audio ref={audioRef} src={audioUrl || visit.feedbackAudio} />
         )}
       </div>
 

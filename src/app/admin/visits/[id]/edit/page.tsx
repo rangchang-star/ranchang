@@ -122,16 +122,16 @@ export default function AdminVisitEditPage() {
       const result = await response.json();
 
       if (result.success) {
-        const { url } = result.data;
+        const { key, url } = result.data;
 
         if (type === 'cover') {
-          setCoverImage(url);
+          setCoverImage(key);
         } else if (type === 'audio') {
-          setFeedbackAudio(url);
+          setFeedbackAudio(key);
         } else if (type === 'photo') {
-          // 将新照片URL添加到现有照片列表中
+          // 将新照片 fileKey 添加到现有照片列表中
           const currentPhotos = photos ? photos.split('\n').filter(p => p.trim()) : [];
-          setPhotos([...currentPhotos, url].join('\n'));
+          setPhotos([...currentPhotos, key].join('\n'));
         }
       }
     } catch (error: any) {
