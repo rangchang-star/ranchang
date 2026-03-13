@@ -120,7 +120,7 @@ export default function RegistrationSuccessPage() {
               <Users className="w-5 h-5 text-[rgba(0,0,0,0.3)] flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                  ¥{mockRegistration.fee} 茶水费
+                  ¥{mockRegistration.fee}元
                 </div>
                 <div className="text-[10px] text-[rgba(0,0,0,0.4)]">活动费用</div>
               </div>

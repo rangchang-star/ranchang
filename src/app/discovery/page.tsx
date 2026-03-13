@@ -476,7 +476,7 @@ export default function DiscoveryPage() {
               enrolledCount: activity.registeredCount || 0,
               maxEnrollments: activity.capacity || 0,
               address: activity.location || "",
-              teaFee: `茶水费${activity.teaFee || 0}元`,
+              teaFee: `${activity.teaFee || 0}元`,
               status:
                 activity.status === "published"
                   ? "ongoing"
