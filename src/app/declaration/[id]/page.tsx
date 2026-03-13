@@ -548,12 +548,11 @@ export default function DeclarationDetailPage() {
                 {/* 资源现货 */}
                 <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-[15px] font-semibold text-gray-900">资源现货</h3>
                     <div className="px-2 py-1 bg-blue-400/40 border border-blue-400 text-blue-400 text-[11px]">
                       {declaration.typeLabel}
                     </div>
                   </div>
-                  <p className="text-[13px] text-gray-700 leading-relaxed mb-2">
+                  <p className="text-[16px] font-bold text-gray-900 leading-relaxed mb-2">
                     {declaration.title}
                   </p>
                   {declaration.content && (
