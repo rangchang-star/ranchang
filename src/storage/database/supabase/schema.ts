@@ -84,13 +84,15 @@ export const activities = pgTable('activities', {
   location: varchar('location', { length: 200 }),
   address: varchar('address', { length: 200 }),
   capacity: integer('capacity').default(0),
-  teaFee: integer('tea_fee').default(0), // 茶水费（元）
+  teaFee: text('tea_fee'), // 茶水费（文本格式）
   type: varchar('type', { length: 50 }).default('salon'), // salon, workshop, meetup
   coverImage: text('cover_image'), // 永久CDN地址
   coverImageKey: text('cover_image_key'), // 对象存储fileKey
   status: activityStatus('status').default('draft'),
   registeredCount: integer('registered_count').default(0),
   createdBy: varchar('created_by', { length: 36 }).references(() => appUsers.id, { onDelete: 'set null' }),
+  tags: jsonb('tags'), // 活动标签
+  guests: jsonb('guests'), // 参与嘉宾
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [

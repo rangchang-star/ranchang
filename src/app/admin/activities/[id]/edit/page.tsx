@@ -173,6 +173,17 @@ export default function AdminActivityEditPage() {
     }
 
     try {
+      // 构建嘉宾数据
+      const guestsData = selectedParticipants.map(memberId => {
+        const member = availableMembers.find(m => m.id === memberId);
+        return {
+          id: memberId,
+          name: member?.name || '',
+          avatar: member?.avatar || '',
+          bio: member?.bio || '',
+        };
+      });
+
       // 调用API保存活动
       const response = await fetch(`/admin/api/activities/${activityId}`, {
         method: 'PUT',
@@ -192,6 +203,9 @@ export default function AdminActivityEditPage() {
           status: status,
           startDate: date,
           endDate: date,
+          teaFee,
+          tags: selectedTags,
+          guests: guestsData,
         }),
       });
 

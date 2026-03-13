@@ -108,6 +108,17 @@ export default function AdminActivityCreatePage() {
     }
 
     try {
+      // 构建嘉宾数据
+      const guestsData = selectedParticipants.map(memberId => {
+        const member = availableMembers.find(m => m.id === memberId);
+        return {
+          id: memberId,
+          name: member?.name || '',
+          avatar: member?.avatar || '',
+          bio: member?.bio || '',
+        };
+      });
+
       const response = await fetch('/admin/api/activities', {
         method: 'POST',
         headers: {
@@ -126,6 +137,9 @@ export default function AdminActivityCreatePage() {
           status: status,
           startDate: date,
           endDate: date,
+          teaFee,
+          tags: selectedTags,
+          guests: guestsData,
         }),
       });
 

@@ -41,6 +41,9 @@ export async function GET(
       createdBy: activity.createdBy,
       createdAt: activity.createdAt,
       updatedAt: activity.updatedAt,
+      teaFee: activity.teaFee,
+      tags: activity.tags,
+      guests: activity.guests,
     };
 
     return NextResponse.json({

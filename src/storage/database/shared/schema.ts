@@ -27,6 +27,9 @@ export const activities = pgTable("activities", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 	coverImageKey: text("cover_image_key"),
+	teaFee: text("tea_fee"),
+	tags: jsonb("tags"),
+	guests: jsonb("guests"),
 }, (table) => [
 	index("activities_cover_image_key_idx").using("btree", table.coverImageKey.asc().nullsLast().op("text_ops")),
 	index("activities_date_idx").using("btree", table.date.asc().nullsLast().op("timestamptz_ops")),

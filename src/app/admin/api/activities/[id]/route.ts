@@ -61,6 +61,9 @@ export async function PUT(
         coverImage: body.coverImage,
         coverImageKey: body.coverImageKey,
         status: body.status,
+        teaFee: body.teaFee,
+        tags: body.tags,
+        guests: body.guests,
         updatedAt: new Date(),
       })
       .where(eq(activities.id, id))

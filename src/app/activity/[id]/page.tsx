@@ -106,14 +106,14 @@ export default function ActivityDetailPage() {
             subtitle: '', // API不返回subtitle
             description: data.data.description || '',
             image: data.data.coverImage || '', // coverImage→image
-            tags: [data.data.type || '', '名额紧张'], // 使用type作为标签
+            tags: data.data.tags || [data.data.type || ''], // tags字段
             enrollments: [], // API不返回participants
             enrolledCount: data.data.registeredCount || 0, // registeredCount→enrolledCount
             maxEnrollments: data.data.capacity || 0, // capacity→maxEnrollments
             participants: [], // API不返回participants
-            guests: [], // API不返回guests
+            guests: data.data.guests || [], // guests字段
             address: data.data.location || '', // location→address
-            teaFee: '免费', // API不返回teaFee，默认为免费
+            teaFee: data.data.teaFee || '免费', // teaFee字段
             status: data.data.status === 'published' ? 'ongoing' : 'ended', // published→ongoing
             endTime: data.data.endTime || '',
             startDate: data.data.date && data.data.startTime

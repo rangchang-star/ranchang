@@ -87,6 +87,9 @@ export async function POST(request: NextRequest) {
         coverImageKey: body.coverImageKey,
         status: body.status || 'draft',
         createdBy: body.createdBy,
+        teaFee: body.teaFee,
+        tags: body.tags,
+        guests: body.guests,
       })
       .returning();
 
@@ -134,6 +137,9 @@ export async function PUT(request: NextRequest) {
         coverImage: body.coverImage,
         coverImageKey: body.coverImageKey,
         status: body.status,
+        teaFee: body.teaFee,
+        tags: body.tags,
+        guests: body.guests,
         updatedAt: new Date(),
       })
       .where(eq(activities.id, id))
