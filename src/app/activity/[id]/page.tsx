@@ -121,17 +121,36 @@ export default function ActivityDetailPage() {
           // 处理结束时间（用于倒计时）- 构建完整的ISO时间
           let endDateTime = '';
           if (data.data.date && data.data.endTime) {
-            const dateStr = data.data.date.split(' ')[0]; // 提取日期部分 "2026-07-15"
+            // 处理不同格式的日期字符串
+            let dateStr = data.data.date;
+            if (dateStr.includes('T')) {
+              // ISO格式: "2026-12-30T16:00:00.000Z" -> 提取 "2026-12-30"
+              dateStr = dateStr.split('T')[0];
+            } else if (dateStr.includes(' ')) {
+              // 空格分隔: "2026-07-15 16:00:00" -> 提取 "2026-07-15"
+              dateStr = dateStr.split(' ')[0];
+            }
+            // 组合日期和时间，保持本地时区
             const dateTime = new Date(`${dateStr}T${data.data.endTime}:00`);
             if (!isNaN(dateTime.getTime())) {
-              endDateTime = dateTime.toISOString();
+              // 直接使用本地时间字符串，避免时区转换
+              endDateTime = dateTime.toISOString().slice(0, -1);
             }
           }
 
           // 处理开始时间（用于显示）
           let startDateTime = '';
           if (data.data.date && data.data.startTime) {
-            const dateStr = data.data.date.split(' ')[0];
+            // 处理不同格式的日期字符串
+            let dateStr = data.data.date;
+            if (dateStr.includes('T')) {
+              // ISO格式: "2026-12-30T16:00:00.000Z" -> 提取 "2026-12-30"
+              dateStr = dateStr.split('T')[0];
+            } else if (dateStr.includes(' ')) {
+              // 空格分隔: "2026-07-15 16:00:00" -> 提取 "2026-07-15"
+              dateStr = dateStr.split(' ')[0];
+            }
+            // 组合日期和时间
             const dateTime = new Date(`${dateStr}T${data.data.startTime}:00`);
             if (!isNaN(dateTime.getTime())) {
               startDateTime = dateTime.toLocaleString('zh-CN', {
@@ -155,8 +174,8 @@ export default function ActivityDetailPage() {
             subtitle: '',
             description: data.data.description || '',
             image: imageUrl, // 使用正确的图片URL
-            tags: data.data.tags && data.data.tags.length > 0 
-              ? data.data.tags 
+            tags: data.data.tags && data.data.tags.length > 0
+              ? data.data.tags
               : [categoryLabel], // tags字段，如果为空则使用类型标签
             enrollments: [],
             enrolledCount: data.data.registeredCount || 0,
