@@ -158,7 +158,6 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [previewMusic, setPreviewMusic] = useState(false);
   const [previewLogo, setPreviewLogo] = useState<string | null>(null);
-  const [previewBackground, setPreviewBackground] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [hasChanged, setHasChanged] = useState(false);
   const [previewVisitMedia, setPreviewVisitMedia] = useState<string | null>(null);
@@ -185,9 +184,6 @@ export default function AdminSettingsPage() {
           // 设置预览
           if (data.data.discovery?.logo) {
             setPreviewLogo(data.data.discovery.logo);
-          }
-          if (data.data.discovery?.backgroundImage) {
-            setPreviewBackground(data.data.discovery.backgroundImage);
           }
           if (data.data.ignition?.visitMedia?.url) {
             setPreviewVisitMedia(data.data.ignition.visitMedia.url);
@@ -281,28 +277,6 @@ export default function AdminSettingsPage() {
           discovery: {
             ...prev.discovery,
             music: result,
-          },
-        }));
-        setHasChanged(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // 背景图上传处理
-  const handleBackgroundUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // 模拟上传，实际项目中需要上传到服务器
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setPreviewBackground(result);
-        setSettings(prev => ({
-          ...prev,
-          discovery: {
-            ...prev.discovery,
-            backgroundImage: result,
           },
         }));
         setHasChanged(true);
@@ -927,79 +901,7 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                {/* 视觉元素 */}
-                <div>
-                  <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-[rgba(0,0,0,0.08)]">
-                    <ImageIcon className="w-4 h-4 text-blue-600" />
-                    <h3 className="text-[13px] font-semibold text-gray-900">视觉元素</h3>
-                  </div>
-                  <div className="space-y-4">
-                    {/* 背景图上传 */}
-                    <div>
-                      <label className="block text-[13px] font-medium text-gray-900 mb-2">
-                        背景图片
-                      </label>
-                      <div className="space-y-3">
-                        <div className="w-full h-48 bg-[rgba(0,0,0,0.02)] border-2 border-dashed border-[rgba(0,0,0,0.1)] rounded-lg overflow-hidden relative">
-                          {previewBackground || settings.discovery.backgroundImage ? (
-                            <img
-                              src={previewBackground || settings.discovery.backgroundImage}
-                              alt="背景图预览"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <ImageIcon className="w-12 h-12 text-[rgba(0,0,0,0.3)]" />
-                              <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">未上传背景图</p>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1">
-                            <p className="text-[11px] text-[rgba(0,0,0,0.6)]">
-                              建议尺寸：1920x1080px，支持 JPG、PNG 格式
-                            </p>
-                            <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                              背景图将显示在发现页的背景区域
-                            </p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            {(previewBackground || settings.discovery.backgroundImage) && (
-                              <a
-                                href="/discovery"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[12px] text-blue-600 hover:text-blue-700 font-medium"
-                              >
-                                预览效果
-                              </a>
-                            )}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleBackgroundUpload}
-                              className="hidden"
-                              id="background-upload"
-                            />
-                            <label htmlFor="background-upload">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-[12px]"
-                                asChild
-                              >
-                                <span>
-                                  <Upload className="w-3 h-3 mr-1" />
-                                  更换背景
-                                </span>
-                              </Button>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+
 
                 {/* 交互元素 */}
                 <div>
