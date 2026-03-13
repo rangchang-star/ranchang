@@ -27,7 +27,6 @@ export {
   consultations,
   assessments,
   adminUsers,
-  settings,
   userStatus,
   activityStatus,
   registrationStatus,
@@ -37,5 +36,10 @@ export {
   userFavorites,
 } from '@/storage/database/supabase/schema';
 
+// 从 shared schema 导入 settings 表
+import { settings as sharedSettings } from '@/storage/database/shared/schema';
+export { settings as settings } from '@/storage/database/shared/schema';
+
 // 导出 schema 命名空间（方便批量导入）
 export * from '@/storage/database/supabase/schema';
+export * from '@/storage/database/shared/schema';
