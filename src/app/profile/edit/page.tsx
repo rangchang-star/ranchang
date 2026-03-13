@@ -249,6 +249,9 @@ export function ProfileEditContent() {
 
   // 语音朗读主题
   const handleSpeakTheme = () => {
+    console.log('点击了播放按钮');
+    console.log('当前主题内容:', declarationTheme);
+
     if (!declarationTheme.trim()) {
       alert('请先输入主题内容');
       return;
@@ -259,32 +262,71 @@ export function ProfileEditContent() {
       return;
     }
 
-    // 如果正在播放，先停止
-    if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.cancel();
-      setIsPlaying(false);
-      return;
-    }
+    console.log('浏览器支持语音合成');
 
-    const utterance = new SpeechSynthesisUtterance(declarationTheme);
-    utterance.lang = 'zh-CN'; // 设置为中文
-    utterance.rate = 1; // 语速
-    utterance.pitch = 1; // 音调
+    // 取消当前的播放
+    window.speechSynthesis.cancel();
 
-    utterance.onstart = () => {
-      setIsPlaying(true);
-    };
+    // 尝试获取语音列表（某些浏览器需要先获取才能播放）
+    const voices = window.speechSynthesis.getVoices();
+    console.log('可用语音数量:', voices.length);
 
-    utterance.onend = () => {
-      setIsPlaying(false);
-    };
+    // 等待一下确保语音合成准备好
+    setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(declarationTheme);
+      utterance.lang = 'zh-CN'; // 设置为中文
+      utterance.rate = 1; // 语速
+      utterance.pitch = 1; // 音调
+      utterance.volume = 1; // 音量
 
-    utterance.onerror = () => {
-      setIsPlaying(false);
-    };
+      // 尝试设置中文语音
+      const chineseVoice = voices.find(voice => voice.lang.includes('zh'));
+      if (chineseVoice) {
+        utterance.voice = chineseVoice;
+        console.log('使用中文语音:', chineseVoice.name);
+      }
 
-    window.speechSynthesis.speak(utterance);
+      console.log('准备播放:', utterance);
+
+      utterance.onstart = () => {
+        console.log('开始播放');
+        setIsPlaying(true);
+      };
+
+      utterance.onend = () => {
+        console.log('播放结束');
+        setIsPlaying(false);
+      };
+
+      utterance.onerror = (event) => {
+        console.error('播放错误:', event);
+        setIsPlaying(false);
+        alert('播放失败，请重试');
+      };
+
+      // 尝试播放
+      try {
+        window.speechSynthesis.speak(utterance);
+        console.log('已调用 speak 方法');
+      } catch (error) {
+        console.error('调用 speak 方法失败:', error);
+        alert('播放失败，请重试');
+      }
+    }, 100);
   };
+
+  // 预加载语音列表（某些浏览器需要）
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      const loadVoices = () => {
+        const voices = window.speechSynthesis.getVoices();
+        console.log('语音列表已加载:', voices.length);
+      };
+
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
 
   // 硬核经历状态 - 从 localStorage 恢复（按用户ID隔离）
   const [experiences, setExperiences] = useState<Array<{
