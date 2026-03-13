@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AvatarDisplay } from '@/components/avatar-upload';
 import { Badge } from '@/components/ui/badge';
-import { Flame } from 'lucide-react';
+import { BoxIconClosed } from 'lucide-react';
 import postgres from 'postgres';
 
 const tagStampMap = {
@@ -226,7 +226,7 @@ export default async function ConnectionDetailPage({
                   <Badge variant="secondary" className="text-[11px] bg-white text-orange-600 border-orange-300">
                     {directionMap[formattedUser.declaration.direction] || formattedUser.declaration.direction}
                   </Badge>
-                  <Flame className="w-4 h-4 text-orange-500" />
+                  <BoxIconClosed className="w-6 h-6 text-orange-500" />
                 </div>
               </div>
               <p className="text-[13px] text-gray-700 leading-relaxed mb-2">
@@ -250,7 +250,7 @@ export default async function ConnectionDetailPage({
             <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-[15px] font-semibold text-gray-900">资源现货</h3>
-                <Flame className="w-4 h-4 text-orange-500" />
+                <BoxIconClosed className="w-6 h-6 text-orange-500" />
               </div>
               <p className="text-[13px] text-gray-700 leading-relaxed">
                 该用户暂未发布资源现货
