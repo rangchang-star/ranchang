@@ -2,13 +2,22 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Play, Pause, Heart, Share2, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Heart, Share2, Volume2, VolumeX, RotateCcw, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AvatarDisplay } from '@/components/avatar-upload';
 import { useParams } from 'next/navigation';
+import { useAuth } from '@/contexts/auth-context';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function DeclarationDetailPage() {
   const params = useParams();
+  const { user, isLoggedIn } = useAuth();
   const [declaration, setDeclaration] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +29,10 @@ export default function DeclarationDetailPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // 弹窗状态
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showFeatureDialog, setShowFeatureDialog] = useState(false);
 
   // 静态封面图
   const coverImage = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop';
@@ -199,6 +212,18 @@ export default function DeclarationDetailPage() {
     }
   };
 
+  // 联系功能
+  const handleContact = () => {
+    // 检查登录状态
+    if (!isLoggedIn) {
+      // 未登录，显示登录提示
+      setShowLoginDialog(true);
+    } else {
+      // 已登录，显示功能提示
+      setShowFeatureDialog(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white pb-14">
       <div className="w-full max-w-md mx-auto pb-8">
@@ -360,6 +385,17 @@ export default function DeclarationDetailPage() {
               </div>
             </div>
 
+            {/* 我要联系按钮 */}
+            <div className="mt-6">
+              <Button
+                onClick={handleContact}
+                className="w-full bg-blue-400 hover:bg-blue-500 text-white font-medium py-3"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                我要联系
+              </Button>
+            </div>
+
             {/* 发布时间 */}
             <div className="text-[11px] text-[rgba(0,0,0,0.4)] text-center mt-6">
               发布于 {declaration.createdAt ? formatDate(declaration.createdAt) : ''}
@@ -371,6 +407,56 @@ export default function DeclarationDetailPage() {
         {declaration.audioUrl && (
           <audio ref={audioRef} src={declaration.audioUrl} />
         )}
+
+        {/* 登录提示弹窗 */}
+        <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>登录提示</DialogTitle>
+              <DialogDescription>
+                请先登录后再使用此功能
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowLoginDialog(false)}
+              >
+                取消
+              </Button>
+              <Button
+                className="bg-blue-400 hover:bg-blue-500"
+                onClick={() => {
+                  setShowLoginDialog(false);
+                  // TODO: 跳转到登录页面
+                  window.location.href = '/login';
+                }}
+              >
+                去登录
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* 功能提示弹窗 */}
+        <Dialog open={showFeatureDialog} onOpenChange={setShowFeatureDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>功能提示</DialogTitle>
+              <DialogDescription>
+                您暂未开通及时沟通功能，可参加平台活动认识这位会员
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end">
+              <Button
+                className="bg-blue-400 hover:bg-blue-500"
+                onClick={() => setShowFeatureDialog(false)}
+              >
+                我知道了
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
