@@ -519,6 +519,20 @@ export default function DeclarationDetailPage() {
                   </div>
                 )}
 
+                {/* 资源标签 */}
+                {declaration.user.resourceTags && declaration.user.resourceTags.length > 0 && (
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-gray-900 mb-3">资源标签</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {declaration.user.resourceTags.map((tag: string, index: number) => (
+                        <span key={index} className="px-2 py-0.5 border border-[rgba(0,0,0,0.2)] text-[rgba(0,0,0,0.6)] text-[9px]">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* 公司和职位 */}
                 {(declaration.user.company || declaration.user.position) && (
                   <div>
