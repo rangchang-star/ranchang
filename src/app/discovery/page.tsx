@@ -481,9 +481,9 @@ export default function DiscoveryPage() {
         if (declarationsFeaturedData.success) {
           // 将资源现货数据转换为前端需要的格式
           const formattedDeclarations = declarationsFeaturedData.data.map(
-            (declaration: any, index: number) => ({
+            (declaration: any) => ({
               id: declaration.id.toString(),
-              rank: index + 1, // 根据列表索引显示排序：1, 2, 3
+              rank: 1, // 统一显示为排序1
               icon: declaration.user?.avatar || "/avatar-default.jpg",
               iconType: declaration.type || "resource",
               title: declaration.text || declaration.summary?.substring(0, 30) || "",
