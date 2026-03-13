@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, activities, activityRegistrations } from '@/lib/db';
-import { eq, and } from 'drizzle-orm';
+import { db, activities } from '@/lib/db';
+import { eq } from 'drizzle-orm';
 
 // GET - 获取活动详情
 export async function GET(
@@ -24,12 +24,6 @@ export async function GET(
 
     const activity = activityList[0];
 
-    // 获取报名人数
-    const registrations = await db
-      .select()
-      .from(activityRegistrations)
-      .where(eq(activityRegistrations.activityId, id));
-
     const data = {
       id: activity.id,
       title: activity.title,
@@ -43,7 +37,7 @@ export async function GET(
       coverImage: activity.coverImage,
       coverImageKey: activity.coverImageKey,
       status: activity.status,
-      registeredCount: registrations.length,
+      registeredCount: activity.registeredCount || 0,
       createdBy: activity.createdBy,
       createdAt: activity.createdAt,
       updatedAt: activity.updatedAt,
