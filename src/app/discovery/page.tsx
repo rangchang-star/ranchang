@@ -906,7 +906,7 @@ export default function DiscoveryPage() {
                             <h3 className="text-[15px] font-semibold text-gray-900 mb-1 leading-tight line-clamp-1">
                               {item.title}
                             </h3>
-                            <p className="text-[16px] text-gray-900 mb-2 leading-relaxed line-clamp-2">
+                            <p className="text-[16px] text-gray-900 mb-2 leading-relaxed truncate">
                               {item.subtitle}
                             </p>
                             {/* 活动简介 - 纯方形灰色框 */}
@@ -982,7 +982,7 @@ export default function DiscoveryPage() {
                     {/* 中间文字 */}
                     <div className="flex-1 min-w-0">
                       {/* 内容片花（黑色字） */}
-                      <h3 className="text-[17px] font-semibold text-gray-900 mb-1 line-clamp-2">
+                      <h3 className="text-[17px] font-semibold text-gray-900 mb-1 truncate">
                         {item.title}
                       </h3>
                       {/* 标签（灰色字）+ 蓝色色块 */}
