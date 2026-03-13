@@ -1,43 +1,98 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Play, Pause, Heart, Share2, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { AvatarDisplay } from '@/components/avatar-upload';
+import { useParams } from 'next/navigation';
 
 export default function DeclarationDetailPage() {
-  // 静态数据 - 后期会从API获取
-  const declaration = {
-    id: '1',
-    title: '30分钟安装openclaw',
-    content: '30分钟快速安装openclaw，帮助你快速搭建AI开发环境，包含环境配置、依赖安装、基础测试等完整流程。',
-    profile: '能力现货',
-    duration: '5:23',
-    rank: 1,
-    iconType: 'ability',
-    views: 128,
-    likes: 56,
-    shares: 23,
-    createdAt: '2026-03-13T10:30:00',
-    audioUrl: null, // 暂无音频
-    image: '/default-cover.jpg',
-    creator: {
-      name: '威哥',
-      avatar: '/avatar-default.jpg',
-      industry: '互联网/IT/软件',
-      tags: ['AI技术', '定方向', '从0到1'],
-    },
-  };
-
+  const params = useParams();
+  const [declaration, setDeclaration] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(323); // 5:23 = 323秒
+  const [duration, setDuration] = useState(0); // 从音频文件获取
   const [isLiked, setIsLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // 静态封面图
+  const coverImage = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop';
+
+  // 类型颜色映射（与个人中心一致）
+  const getTypeColorClass = (type: string) => {
+    return 'border-blue-400 bg-blue-400/40 text-blue-400';
+  };
+
+  // 从 API 加载宣告数据
+  useEffect(() => {
+    async function loadDeclaration() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const id = params.id as string;
+        const response = await fetch(`/api/declarations/${id}`);
+
+        if (!response.ok) {
+          throw new Error('加载资源现货信息失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setDeclaration(data.data);
+          setLikesCount(data.data.likes || 0);
+        } else {
+          throw new Error(data.error || '加载资源现货信息失败');
+        }
+      } catch (err: any) {
+        console.error('加载资源现货信息失败:', err);
+        setError(err.message || '加载资源现货信息失败');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadDeclaration();
+  }, [params.id]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+      audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+      audioRef.current.addEventListener('ended', handleEnded);
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+        audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        audioRef.current.removeEventListener('ended', handleEnded);
+      }
+    };
+  }, [declaration]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
+        <div className="text-gray-400">加载中...</div>
+      </div>
+    );
+  }
+
+  if (error || !declaration) {
+    return (
+      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
+        <div className="text-red-400">{error || '资源现货信息不存在'}</div>
+      </div>
+    );
+  }
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
@@ -114,17 +169,33 @@ export default function DeclarationDetailPage() {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
+  // 点赞功能
+  const handleLike = async () => {
+    try {
+      // TODO: 调用点赞API
+      setIsLiked(!isLiked);
+      setLikesCount(isLiked ? likesCount - 1 : likesCount + 1);
+    } catch (error) {
+      console.error('点赞失败:', error);
+    }
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: declaration.title,
-        text: declaration.content.substring(0, 100),
-        url: window.location.href,
-      });
+  // 分享功能
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: declaration.title,
+          text: declaration.content.substring(0, 100),
+          url: window.location.href,
+        });
+      } else {
+        // 复制链接到剪贴板
+        await navigator.clipboard.writeText(window.location.href);
+        alert('链接已复制到剪贴板');
+      }
+    } catch (error) {
+      console.error('分享失败:', error);
     }
   };
 
@@ -145,11 +216,11 @@ export default function DeclarationDetailPage() {
         </div>
 
         <div className="space-y-6">
-          {/* 封面图 */}
+          {/* 封面图 - 静态图片 */}
           <div className="w-full h-12 overflow-hidden">
             <img
-              src={declaration.image}
-              alt={declaration.title}
+              src={coverImage}
+              alt="资源现货"
               className="w-full h-full object-cover object-bottom"
             />
           </div>
@@ -158,23 +229,25 @@ export default function DeclarationDetailPage() {
           <div className="px-5">
             <div className="p-4 bg-[rgba(0,0,0,0.02)]">
               {/* 进度条 */}
-              <div className="mb-4">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={progress}
-                  onChange={handleSeek}
-                  className="w-full h-1 bg-[rgba(0,0,0,0.1)] rounded-lg appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #60a5fa ${progress}%, rgba(0,0,0,0.1) ${progress}%)`,
-                  }}
-                />
-                <div className="flex justify-between text-[10px] text-[rgba(0,0,0,0.4)] mt-1">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
+              {declaration.audioUrl && (
+                <div className="mb-4">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={progress}
+                    onChange={handleSeek}
+                    className="w-full h-1 bg-[rgba(0,0,0,0.1)] rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #60a5fa ${progress}%, rgba(0,0,0,0.1) ${progress}%)`,
+                    }}
+                  />
+                  <div className="flex justify-between text-[10px] text-[rgba(0,0,0,0.4)] mt-1">
+                    <span>{formatTime(currentTime)}</span>
+                    <span>{formatTime(duration)}</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* 播放控制 */}
               <div className="flex items-center justify-center space-x-6">
@@ -203,16 +276,12 @@ export default function DeclarationDetailPage() {
           <div className="px-5 space-y-4">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <Badge className="rounded-none bg-blue-400 text-white font-normal text-[10px]">
-                    排名{declaration.rank}
-                  </Badge>
-                  <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] font-normal text-[10px]">
-                    {declaration.iconType}
-                  </Badge>
+                {/* 类型标签 - 蓝色边框、蓝色背景、蓝色文字（与个人中心一致） */}
+                <div className="px-3 py-1.5 text-[11px] border border-blue-400 bg-blue-400/40 text-blue-400">
+                  {declaration.typeLabel}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="ghost" onClick={toggleMute} className="p-2">
+                  <Button variant="ghost" onClick={toggleMute} className="p-2" disabled={!declaration.audioUrl}>
                     {isMuted ? (
                       <VolumeX className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
                     ) : (
@@ -231,7 +300,7 @@ export default function DeclarationDetailPage() {
               </div>
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">{declaration.title}</h2>
               <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
-                {declaration.profile} · {declaration.duration}
+                {declaration.typeLabel}
               </p>
             </div>
 
@@ -242,22 +311,28 @@ export default function DeclarationDetailPage() {
               </p>
             </div>
 
-            {/* 创作者信息 */}
+            {/* 创作者信息 - 大灰色底色 */}
             <div className="flex items-center space-x-3 p-4 bg-[rgba(0,0,0,0.02)]">
+              {/* 头像 - 使用AvatarDisplay组件 */}
               <AvatarDisplay
-                avatarKey={declaration.creator?.avatar || '/default-avatar.png'}
-                name={declaration.creator?.name || '未知用户'}
+                avatarKey={declaration.user?.avatar || '/default-avatar.png'}
+                name={declaration.user?.name || '未知用户'}
                 size="md"
               />
               <div className="flex-1">
                 <div className="text-[13px] font-semibold text-gray-900">
-                  {declaration.creator?.name || '未知用户'}
+                  {declaration.user?.name || '未知用户'}
+                  <span className="ml-2 text-[rgba(0,0,0,0.4)]">
+                    {declaration.user?.age ? `${declaration.user.age}岁` : ''}
+                  </span>
                 </div>
                 <div className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                  {declaration.creator?.industry || ''}
+                  {declaration.user?.industry || ''}
+                  {declaration.user?.company && ` · ${declaration.user.company}`}
+                  {declaration.user?.position && ` · ${declaration.user.position}`}
                 </div>
                 <div className="flex items-center space-x-1 mt-1">
-                  {declaration.creator?.tags?.map((tag: string) => (
+                  {declaration.user?.hardcoreTags?.map((tag: string) => (
                     <span
                       key={tag}
                       className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]"
@@ -272,15 +347,15 @@ export default function DeclarationDetailPage() {
             {/* 数据统计 */}
             <div className="flex items-center justify-around py-4 border-t border-b border-[rgba(0,0,0,0.05)]">
               <div className="text-center">
-                <div className="text-xl font-semibold text-gray-900">{declaration.views}</div>
+                <div className="text-xl font-semibold text-gray-900">{declaration.views || 0}</div>
                 <div className="text-[10px] text-[rgba(0,0,0,0.4)]">浏览</div>
               </div>
               <div className="text-center">
-                <div className="text-xl font-semibold text-gray-900">{declaration.likes}</div>
+                <div className="text-xl font-semibold text-gray-900">{likesCount}</div>
                 <div className="text-[10px] text-[rgba(0,0,0,0.4)]">喜欢</div>
               </div>
               <div className="text-center">
-                <div className="text-xl font-semibold text-gray-900">{declaration.shares}</div>
+                <div className="text-xl font-semibold text-gray-900">{declaration.shares || 0}</div>
                 <div className="text-[10px] text-[rgba(0,0,0,0.4)]">分享</div>
               </div>
             </div>
