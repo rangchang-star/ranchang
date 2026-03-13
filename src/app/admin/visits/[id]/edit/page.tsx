@@ -734,6 +734,8 @@ export default function AdminVisitEditPage() {
               </div>
             </div>
           </div>
+          </div>
+          </div>
 
           {/* 右侧：预览卡片 */}
           <div className="w-[380px] flex-shrink-0">
