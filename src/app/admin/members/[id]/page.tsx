@@ -67,7 +67,7 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
 
       if (data.success && data.data) {
         console.log('会员详情数据:', data.data);
-        console.log('工作经历:', data.data.experiences);
+        console.log('硬核经历:', data.data.experiences);
         console.log('主要成就:', data.data.achievements);
         setMember(data.data);
       } else {
@@ -283,9 +283,9 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
-          {/* 工作经历 */}
+          {/* 硬核经历 */}
           <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-            <h3 className="text-[13px] font-semibold text-gray-900 mb-3">工作经历</h3>
+            <h3 className="text-[13px] font-semibold text-gray-900 mb-3">硬核经历</h3>
             {member.experiences && member.experiences.length > 0 ? (
               <div className="space-y-2">
                 {member.experiences.map((exp, index) => (
@@ -300,7 +300,7 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
               </div>
             ) : (
               <div className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                {member.experiences ? '暂无工作经历' : '工作经历保存在用户本地，需在个人中心查看'}
+                {member.experiences ? '暂无硬核经历' : '硬核经历保存在用户本地，需在个人中心查看'}
               </div>
             )}
           </div>

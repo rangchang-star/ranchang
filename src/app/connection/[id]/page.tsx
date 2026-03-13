@@ -258,11 +258,11 @@ export default async function ConnectionDetailPage({
             </div>
           )}
 
-          {/* 工作经历 */}
+          {/* 硬核经历 */}
           {formattedUser.experiences && formattedUser.experiences.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[15px] font-semibold text-gray-900">工作经历</h3>
+                <h3 className="text-[15px] font-semibold text-gray-900">硬核经历</h3>
                 <Briefcase className="w-4 h-4 text-blue-500" />
               </div>
               <div className="space-y-3">

@@ -214,7 +214,7 @@ export function ProfileEditContent() {
             // 更新 localStorage 中的用户数据
             localStorage.setItem('currentUser', JSON.stringify(data.data));
 
-            // 如果数据库中有工作经历数据，使用数据库的数据（按用户ID保存）
+            // 如果数据库中有硬核经历数据，使用数据库的数据（按用户ID保存）
             if (data.data.experience && Array.isArray(data.data.experience) && data.data.experience.length > 0) {
               setExperiences(data.data.experience);
               localStorage.setItem(`userExperiences_${user.id}`, JSON.stringify(data.data.experience));
@@ -245,7 +245,7 @@ export function ProfileEditContent() {
   const [declarationTheme, setDeclarationTheme] = useState<string>('');
   const [declarationDescription, setDeclarationDescription] = useState<string>('');
 
-  // 工作经历状态 - 从 localStorage 恢复（按用户ID隔离）
+  // 硬核经历状态 - 从 localStorage 恢复（按用户ID隔离）
   const [experiences, setExperiences] = useState<Array<{
     company: string;
     position: string;
@@ -375,19 +375,19 @@ export function ProfileEditContent() {
     }
   };
 
-  // 添加工作经历
+  // 添加硬核经历
   const handleAddExperience = () => {
     setExperiences([...experiences, { company: '', position: '', duration: '' }]);
   };
 
-  // 更新工作经历
+  // 更新硬核经历
   const handleUpdateExperience = (index: number, field: 'company' | 'position' | 'duration', value: string) => {
     const updated = [...experiences];
     updated[index][field] = value;
     setExperiences(updated);
   };
 
-  // 删除工作经历
+  // 删除硬核经历
   const handleRemoveExperience = (index: number) => {
     setExperiences(experiences.filter((_, i) => i !== index));
   };
@@ -598,7 +598,7 @@ export function ProfileEditContent() {
                              selectedPurpose === '事找人' ? 'jobLookingForPerson' : 'pureExchange';
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
-        // 保存工作经历（按用户ID隔离）
+        // 保存硬核经历（按用户ID隔离）
         localStorage.setItem(`userExperiences_${user.id}`, JSON.stringify(experiences));
 
         // 保存主要成就（按用户ID隔离）
@@ -1116,7 +1116,7 @@ export function ProfileEditContent() {
               ))}
               {experiences.length === 0 && (
                 <p className="text-[11px] text-[rgba(0,0,0,0.4)] text-center py-4">
-                  暂无工作经历，点击"添加"按钮添加
+                  暂无硬核经历，点击"添加"按钮添加
                 </p>
               )}
             </div>

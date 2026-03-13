@@ -564,10 +564,10 @@ export default function ProfilePage() {
     fetchUserDeclarations();
   }, [user?.id]);
 
-  // 从 localStorage 读取工作经历和主要成就（按用户ID隔离）
+  // 从 localStorage 读取硬核经历和主要成就（按用户ID隔离）
   useEffect(() => {
     if (typeof window !== 'undefined' && user?.id) {
-      // 读取工作经历
+      // 读取硬核经历
       const savedExperiences = localStorage.getItem(`userExperiences_${user.id}`);
       if (savedExperiences) {
         try {
@@ -1071,12 +1071,12 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* 工作经历 */}
+            {/* 硬核经历 */}
             {(userInfo.experiences && userInfo.experiences.length > 0) && (
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-2 mb-2">
                   <Briefcase className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                  <div className="text-[14px] text-gray-400">工作经历</div>
+                  <div className="text-[14px] text-gray-400">硬核经历</div>
                 </div>
                 <div className="space-y-2">
                   {userInfo.experiences.map((exp: any, index: number) => (

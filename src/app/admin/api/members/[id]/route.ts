@@ -56,7 +56,7 @@ export async function GET(
     // 合并所有标签
     const tags = [...abilityTags, ...hardcoreTags, ...resourceTags];
 
-    // 解析工作经历
+    // 解析硬核经历
     let experiences: Array<{ company: string; position: string; duration: string }> = [];
     try {
       experiences = typeof user.experience === 'string' 

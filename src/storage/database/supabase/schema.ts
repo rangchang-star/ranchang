@@ -49,7 +49,7 @@ export const appUsers = pgTable('app_users', {
   tags: jsonb('tags').$type<string[]>(), // 普通标签
   tagStamp: varchar('tag_stamp', { length: 50 }), // 标签类型
   companyScale: varchar('company_scale', { length: 50 }), // 公司规模
-  experience: jsonb('experience'), // 工作经历
+  experience: jsonb('experience'), // 硬核经历
   need: text('need'), // 用户需求
   declaration: text('declaration'), // 高燃宣告
   connectionType: varchar('connection_type', { length: 50 }), // 连接类型

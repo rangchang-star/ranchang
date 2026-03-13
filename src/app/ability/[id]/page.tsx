@@ -257,9 +257,9 @@ export default function AbilityDetailPage() {
             </p>
           </div>
 
-          {/* 工作经历 */}
+          {/* 硬核经历 */}
           <div>
-            <h2 className="text-base font-semibold text-gray-900 mb-3">工作经历</h2>
+            <h2 className="text-base font-semibold text-gray-900 mb-3">硬核经历</h2>
             <div className="space-y-3">
               {person.experience.map((exp, index) => (
                 <div key={index} className="px-4 py-3 bg-[rgba(0,0,0,0.02)] rounded-lg">
