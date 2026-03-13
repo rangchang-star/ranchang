@@ -1,162 +1,225 @@
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
+
+import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
+import { Search, Edit, Eye, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+// 活动数据类型
+interface Activity {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  capacity: number;
+  type: string;
+  status: string;
+  registeredCount: number;
+  createdAt: string;
+}
 
 export default function AdminActivitiesPage() {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+
+  // 从 API 加载活动数据
+  useEffect(() => {
+    async function loadActivities() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch('/api/activities');
+
+        if (!response.ok) {
+          throw new Error('加载活动数据失败');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setActivities(data.data);
+        } else {
+          throw new Error(data.error || '加载活动数据失败');
+        }
+      } catch (err: any) {
+        console.error('加载活动数据失败:', err);
+        setError(err.message || '加载活动数据失败');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadActivities();
+  }, []);
+
+  let filteredActivities = activities.filter((activity) => {
+    const matchesSearch =
+      activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activity.location.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === '' || activity.status === statusFilter;
+    const matchesType = typeFilter === '' || activity.type === typeFilter;
+
+    return matchesSearch && matchesStatus && matchesType;
+  });
+
+  // 状态映射
+  const statusMap: Record<string, { label: string; color: string }> = {
+    draft: { label: '草稿', color: 'bg-gray-100 text-gray-600' },
+    active: { label: '进行中', color: 'bg-green-100 text-green-600' },
+    upcoming: { label: '报名中', color: 'bg-blue-100 text-blue-600' },
+    ended: { label: '已结束', color: 'bg-gray-100 text-gray-600' },
+    cancelled: { label: '已取消', color: 'bg-red-100 text-red-600' },
+  };
+
+  // 类型映射
+  const typeMap: Record<string, { label: string; color: string }> = {
+    salon: { label: '沙龙', color: 'bg-purple-100 text-purple-600' },
+    workshop: { label: '工作坊', color: 'bg-blue-100 text-blue-600' },
+    visit: { label: '探访', color: 'bg-green-100 text-green-600' },
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 侧边栏 */}
-      <div className="flex">
-        <aside className="w-64 bg-white shadow-sm min-h-screen">
-          <div className="p-6">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              燃场后台
-            </h1>
+    <AdminLayout>
+      <div className="space-y-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-[15px] font-bold text-gray-900 mb-1">活动管理</h2>
+            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">管理平台活动和报名</p>
           </div>
-          <nav className="mt-6">
-            <Link href="/admin" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>📊</span>
-              <span className="ml-3">仪表盘</span>
-            </Link>
-            <Link href="/admin/members" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>👥</span>
-              <span className="ml-3">会员管理</span>
-            </Link>
-            <Link href="/admin/activities" className="flex items-center px-6 py-3 text-purple-600 bg-purple-50 border-r-4 border-purple-600">
-              <span>🎯</span>
-              <span className="ml-3">活动管理</span>
-            </Link>
-            <Link href="/admin/visits" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>🏢</span>
-              <span className="ml-3">探访管理</span>
-            </Link>
-            <Link href="/admin/declarations" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>📢</span>
-              <span className="ml-3">宣告管理</span>
-            </Link>
-            <Link href="/admin/documents" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>📄</span>
-              <span className="ml-3">文档管理</span>
-            </Link>
-            <Link href="/admin/notifications" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>🔔</span>
-              <span className="ml-3">通知管理</span>
-            </Link>
-            <Link href="/admin/settings" className="flex items-center px-6 py-3 text-gray-700 hover:text-purple-600 hover:bg-gray-50">
-              <span>⚙️</span>
-              <span className="ml-3">系统设置</span>
-            </Link>
-          </nav>
-        </aside>
+          <Link href="/admin/activities/create">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              创建活动
+            </Button>
+          </Link>
+        </div>
 
-        {/* 主内容区 */}
-        <main className="flex-1 p-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">活动管理</h1>
-              <p className="text-gray-600">管理所有活动和报名</p>
+        {/* 搜索和筛选 */}
+        <div className="space-y-3">
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
+              <input
+                type="text"
+                placeholder="搜索活动名称、地点..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={isLoading}
+                className="w-full pl-10 pr-4 py-2 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)] focus:outline-none focus:bg-[rgba(0,0,0,0.04)] transition-colors"
+              />
             </div>
-            <Button>创建活动</Button>
-          </div>
-
-          {/* 筛选 */}
-          <div className="flex space-x-4 mb-6">
-            <select className="px-4 py-2 border rounded-lg bg-white">
-              <option>全部状态</option>
-              <option>草稿</option>
-              <option>已发布</option>
-              <option>已结束</option>
-              <option>已取消</option>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              disabled={isLoading}
+              className="px-3 py-2 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)] focus:outline-none focus:bg-[rgba(0,0,0,0.04)] transition-colors"
+            >
+              <option value="">全部状态</option>
+              <option value="draft">草稿</option>
+              <option value="active">进行中</option>
+              <option value="upcoming">报名中</option>
+              <option value="ended">已结束</option>
+              <option value="cancelled">已取消</option>
             </select>
-            <select className="px-4 py-2 border rounded-lg bg-white">
-              <option>全部类型</option>
-              <option>沙龙</option>
-              <option>工作坊</option>
-              <option>探访</option>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              disabled={isLoading}
+              className="px-3 py-2 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)] focus:outline-none focus:bg-[rgba(0,0,0,0.04)] transition-colors"
+            >
+              <option value="">全部类型</option>
+              <option value="salon">沙龙</option>
+              <option value="workshop">工作坊</option>
+              <option value="visit">探访</option>
             </select>
           </div>
+        </div>
 
-          {/* 活动列表 */}
-          <Card>
-            <CardContent className="p-0">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">活动名称</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">类型</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">日期</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">报名人数</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">状态</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-500">操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-t">
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-semibold">创业心理学</p>
-                        <p className="text-sm text-gray-500">杭州西湖区</p>
+        {/* 加载状态 */}
+        {isLoading && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">加载中...</p>
+          </div>
+        )}
+
+        {/* 错误状态 */}
+        {error && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-red-500">{error}</p>
+          </div>
+        )}
+
+        {/* 活动列表 */}
+        {!isLoading && !error && filteredActivities.length === 0 && (
+          <div className="py-12 text-center">
+            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无活动数据</p>
+          </div>
+        )}
+
+        {!isLoading && !error && filteredActivities.length > 0 && (
+          <div className="space-y-3">
+            {filteredActivities.map((activity) => {
+              const statusInfo = statusMap[activity.status] || statusMap.draft;
+              const typeInfo = typeMap[activity.type] || typeMap.salon;
+
+              return (
+                <div
+                  key={activity.id}
+                  className="p-4 bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] hover:bg-[rgba(0,0,0,0.04)] transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <h3 className="text-[15px] font-semibold text-gray-900 truncate">
+                          {activity.title}
+                        </h3>
+                        <span className={`px-2 py-1 text-[11px] rounded-full ${typeInfo.color}`}>
+                          {typeInfo.label}
+                        </span>
+                        <span className={`px-2 py-1 text-[11px] rounded-full ${statusInfo.color}`}>
+                          {statusInfo.label}
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full">沙龙</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm">2024-03-27</td>
-                    <td className="px-6 py-4 text-sm">5/10</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded-full">进行中</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <Button variant="ghost" size="sm">编辑</Button>
-                      <Button variant="ghost" size="sm">报名</Button>
-                    </td>
-                  </tr>
-                  <tr className="border-t">
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-semibold">拥抱AI，改变基因</p>
-                        <p className="text-sm text-gray-500">杭州滨江区</p>
+                      <p className="text-[13px] text-[rgba(0,0,0,0.6)] mb-2 line-clamp-2">
+                        {activity.description}
+                      </p>
+                      <div className="flex items-center space-x-4 text-[12px] text-[rgba(0,0,0,0.4)]">
+                        <span>📍 {activity.location}</span>
+                        <span>📅 {activity.date}</span>
+                        <span>👥 {activity.registeredCount}/{activity.capacity}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">工作坊</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm">2024-03-28</td>
-                    <td className="px-6 py-4 text-sm">3/20</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full">报名中</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <Button variant="ghost" size="sm">编辑</Button>
-                      <Button variant="ghost" size="sm">报名</Button>
-                    </td>
-                  </tr>
-                  <tr className="border-t">
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-semibold">阿里云创新中心探访</p>
-                        <p className="text-sm text-gray-500">北京市海淀区</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded-full">探访</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm">2024-03-29</td>
-                    <td className="px-6 py-4 text-sm">8/30</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full">报名中</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <Button variant="ghost" size="sm">编辑</Button>
-                      <Button variant="ghost" size="sm">报名</Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </main>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <Link href={`/admin/activities/${activity.id}/registrations`}>
+                        <Button variant="ghost" size="sm">
+                          <Eye className="w-4 h-4 mr-1" />
+                          报名
+                        </Button>
+                      </Link>
+                      <Link href={`/admin/activities/${activity.id}/edit`}>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="w-4 h-4 mr-1" />
+                          编辑
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }
