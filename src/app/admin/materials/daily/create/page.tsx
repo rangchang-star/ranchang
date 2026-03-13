@@ -109,7 +109,7 @@ export default function AdminDailyDeclarationCreatePage() {
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">添加每日宣告</h1>
-              <p className="text-gray-500 text-sm">创建新的每日宣告内容</p>
+              <p className="text-gray-500 text-sm">创建新的每日宣告</p>
             </div>
           </div>
           <Button

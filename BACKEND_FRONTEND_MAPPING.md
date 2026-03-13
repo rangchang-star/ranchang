@@ -178,8 +178,8 @@
 | user_level | INTEGER | 用户等级 |
 | user_position | VARCHAR(100) | 用户职位 |
 | direction | VARCHAR(100) | 方向 |
-| text | TEXT | 宣告内容 |
-| summary | TEXT | 摘要 |
+| text | TEXT | 主题 |
+| summary | TEXT | 内容 |
 | audio_url | VARCHAR(500) | 音频URL |
 | audio_key | TEXT | 音频fileKey |
 | icon | VARCHAR(100) | 图标URL |

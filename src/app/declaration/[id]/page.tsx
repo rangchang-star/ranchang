@@ -245,7 +245,7 @@ export default function DeclarationDetailPage() {
             </div>
           </div>
 
-          {/* 宣告内容 */}
+          {/* 内容 */}
           <div className="px-5 space-y-4">
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -282,7 +282,7 @@ export default function DeclarationDetailPage() {
             </div>
 
             <div>
-              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">宣告内容</h3>
+              <h3 className="text-[15px] font-semibold text-gray-900 mb-2">内容</h3>
               <p className="text-[13px] text-gray-700 leading-relaxed">
                 {declaration.content}
               </p>
