@@ -23,9 +23,16 @@ export async function GET(request: NextRequest) {
 
     const members = await query;
 
+    // 过滤掉 blob URL，只保留有效的对象存储 key
+    const filteredMembers = members.map(member => ({
+      ...member,
+      // 如果 avatar 是 blob URL，返回空字符串
+      avatar: member.avatar && !member.avatar.startsWith('blob:') ? member.avatar : '',
+    }));
+
     return NextResponse.json({
       success: true,
-      data: members,
+      data: filteredMembers,
     });
   } catch (error) {
     console.error('获取可选择成员列表失败:', error);
