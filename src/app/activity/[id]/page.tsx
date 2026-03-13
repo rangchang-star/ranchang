@@ -46,6 +46,13 @@ const useCountdown = (endTime: string | undefined) => {
   return timeLeft;
 };
 
+// 活动类型映射
+const typeToLabel: Record<string, string> = {
+  'private': '私董会',
+  'salon': '沙龙',
+  'ai': 'AI实战',
+};
+
 // 状态图标组件
 const ActivityStatusBadge = ({ status, endTime }: { status: string; endTime?: string }) => {
   const timeLeft = useCountdown(endTime);
@@ -98,33 +105,59 @@ export default function ActivityDetailPage() {
         const data = await response.json();
 
         if (data.success) {
+          // 处理图片URL - 直接使用coverImage
+          const imageUrl = data.data.coverImage || '';
+
+          // 处理结束时间（用于倒计时）- 构建完整的ISO时间
+          let endDateTime = '';
+          if (data.data.date && data.data.endTime) {
+            const dateStr = data.data.date.split(' ')[0]; // 提取日期部分 "2026-07-15"
+            const dateTime = new Date(`${dateStr}T${data.data.endTime}:00`);
+            if (!isNaN(dateTime.getTime())) {
+              endDateTime = dateTime.toISOString();
+            }
+          }
+
+          // 处理开始时间（用于显示）
+          let startDateTime = '';
+          if (data.data.date && data.data.startTime) {
+            const dateStr = data.data.date.split(' ')[0];
+            const dateTime = new Date(`${dateStr}T${data.data.startTime}:00`);
+            if (!isNaN(dateTime.getTime())) {
+              startDateTime = dateTime.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+            }
+          }
+
+          // 获取类型标签的中文
+          const categoryLabel = typeToLabel[data.data.type] || data.data.type || '';
+
           // 将 API 数据转换为前端需要的格式
           const formattedActivity = {
             id: data.data.id.toString(),
-            category: data.data.type || '', // type→category
+            category: categoryLabel, // 映射为中文
             title: data.data.title || '',
-            subtitle: '', // API不返回subtitle
+            subtitle: '',
             description: data.data.description || '',
-            image: data.data.coverImage || '', // coverImage→image
-            tags: data.data.tags || [data.data.type || ''], // tags字段
-            enrollments: [], // API不返回participants
-            enrolledCount: data.data.registeredCount || 0, // registeredCount→enrolledCount
-            maxEnrollments: data.data.capacity || 0, // capacity→maxEnrollments
-            participants: [], // API不返回participants
-            guests: data.data.guests || [], // guests字段
-            address: data.data.location || '', // location→address
-            teaFee: data.data.teaFee || '免费', // teaFee字段
-            status: data.data.status === 'published' ? 'ongoing' : 'ended', // published→ongoing
-            endTime: data.data.endTime || '',
-            startDate: data.data.date && data.data.startTime
-              ? new Date(`${data.data.date}T${data.data.startTime}`).toLocaleString('zh-CN', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })
-              : '',
+            image: imageUrl, // 使用正确的图片URL
+            tags: data.data.tags && data.data.tags.length > 0 
+              ? data.data.tags 
+              : [categoryLabel], // tags字段，如果为空则使用类型标签
+            enrollments: [],
+            enrolledCount: data.data.registeredCount || 0,
+            maxEnrollments: data.data.capacity || 0,
+            participants: [],
+            guests: data.data.guests || [],
+            address: data.data.location || '',
+            teaFee: data.data.teaFee || '免费',
+            status: data.data.status === 'published' ? 'ongoing' : 'ended',
+            endTime: endDateTime, // 完整的日期时间
+            startDate: startDateTime, // 格式化的显示文本
             organizer: '燃场',
             organizerAvatar: '/logo-ranchang.png',
           };
