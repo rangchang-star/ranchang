@@ -1278,7 +1278,7 @@ export default function DiscoveryPage() {
 
                         {/* 内容 */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-[18px] text-gray-900 leading-relaxed line-clamp-2">
+                          <h3 className="text-[16px] text-gray-900 leading-relaxed line-clamp-2">
                             {item.title}
                           </h3>
                           <div className="flex items-center space-x-2 mt-1">
@@ -1314,7 +1314,7 @@ export default function DiscoveryPage() {
 
                         {/* 内容 */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-[18px] text-gray-900 leading-relaxed line-clamp-2">
+                          <h3 className="text-[16px] text-gray-900 leading-relaxed line-clamp-2">
                             {item.title}
                           </h3>
                           <div className="flex items-center space-x-2 mt-1">
