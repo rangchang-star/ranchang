@@ -6,6 +6,7 @@ import { ArrowLeft, Play, Pause, Calendar, MapPin, Users, Clock, Star, Share2, H
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AvatarDisplay } from '@/components/avatar-upload';
 import {
   Dialog,
   DialogContent,
@@ -520,10 +521,11 @@ export default function VisitDetailPage() {
                   visit.visitors.map((visitor: any, i: number) => (
                     visitor && (
                       <div key={i} className="flex flex-col items-center">
-                        <Avatar className="w-10 h-10 mb-1 rounded-full">
-                          <AvatarImage src={visitor.avatar || ''} alt={visitor.name || ''} />
-                          <AvatarFallback className="rounded-full">{visitor.name ? visitor.name[0] : '访'}</AvatarFallback>
-                        </Avatar>
+                        <AvatarDisplay
+                          avatarKey={visitor.avatar}
+                          name={visitor.name}
+                          size="sm"
+                        />
                         <div className="text-[10px] text-[rgba(0,0,0,0.6)] text-center w-12 truncate">
                           {visitor.name || '访客'}
                         </div>
