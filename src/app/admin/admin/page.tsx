@@ -12,14 +12,12 @@ import { Plus, Shield, Edit2, Trash2, Lock, ArrowLeft, Search, RefreshCw } from 
 import { cn } from '@/lib/utils';
 
 interface Admin {
-  id: number;
-  phone: string;
-  nickname: string;
-  name: string;
-  avatar: string;
-  company: string;
-  position: string;
+  id: string;
+  username: string;
+  email: string;
   role: string;
+  status: string;
+  avatar?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -76,9 +74,9 @@ export default function AdminManagementPage() {
   useEffect(() => {
     if (searchQuery.trim()) {
       const filtered = admins.filter(admin =>
-        admin.name.includes(searchQuery) ||
-        admin.nickname.includes(searchQuery) ||
-        admin.phone.includes(searchQuery)
+        admin.username.includes(searchQuery) ||
+        admin.email.includes(searchQuery) ||
+        admin.role.includes(searchQuery)
       );
       setFilteredAdmins(filtered);
     } else {
@@ -166,7 +164,7 @@ export default function AdminManagementPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               type="text"
-              placeholder="搜索管理员姓名、昵称或手机号"
+              placeholder="搜索管理员手机号或邮箱"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-10 text-[13px]"
@@ -196,11 +194,11 @@ export default function AdminManagementPage() {
                   className="flex items-center justify-between p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
                 >
                   <div className="flex items-center space-x-4">
-                    <AvatarDisplay avatarKey={admin.avatar} name={admin.name} size="md" />
+                    <AvatarDisplay avatarKey={admin.avatar} name={admin.username} size="md" />
                     <div>
                       <div className="flex items-center space-x-2">
                         <h3 className="text-[15px] font-semibold text-gray-900">
-                          {admin.name}
+                          {admin.username}
                         </h3>
                         {admin.role === 'admin' && (
                           <span className="px-2 py-0.5 bg-blue-100 text-blue-600 text-[11px] rounded">
@@ -209,10 +207,10 @@ export default function AdminManagementPage() {
                         )}
                       </div>
                       <p className="text-[13px] text-gray-500">
-                        {admin.nickname} · {admin.phone}
+                        手机号: {admin.username}
                       </p>
                       <p className="text-[12px] text-gray-400 mt-1">
-                        {admin.company} · {admin.position}
+                        邮箱: {admin.email}
                       </p>
                     </div>
                   </div>
