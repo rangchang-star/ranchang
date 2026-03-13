@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Search, Edit, Eye, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ImageDisplay } from '@/components/image-upload';
 
 // 活动数据类型
 interface Activity {
@@ -20,8 +19,6 @@ interface Activity {
   type: string;
   status: string;
   registeredCount: number;
-  coverImage?: string;
-  coverImageKey?: string;
   createdAt: string;
 }
 
@@ -40,7 +37,7 @@ export default function AdminActivitiesPage() {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch('/admin/api/activities?search=' + encodeURIComponent(searchTerm) + '&status=' + statusFilter + '&type=' + typeFilter);
+        const response = await fetch('/api/activities');
 
         if (!response.ok) {
           throw new Error('加载活动数据失败');
