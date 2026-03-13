@@ -942,8 +942,8 @@ export default function DiscoveryPage() {
             <section>
               <div className="flex items-center justify-between mb-1">
                 <h2 className="text-xl font-bold">
-                  <span className="text-[rgba(96,165,250,0.6)]">高燃</span>
-                  <span className="text-blue-400">宣告</span>
+                  <span className="text-[rgba(96,165,250,0.6)]">资源</span>
+                  <span className="text-blue-400">现货</span>
                 </h2>
               </div>
               {/* 灰色横线 */}

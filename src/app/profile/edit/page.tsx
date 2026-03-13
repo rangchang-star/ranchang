@@ -1191,7 +1191,7 @@ export function ProfileEditContent() {
             </div>
           </div>
 
-          {/* 工作经历 */}
+          {/* 硬核经历 */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-[13px] font-semibold text-gray-900">硬核经历</h2>
