@@ -33,6 +33,7 @@ export default function DeclarationDetailPage() {
   // 弹窗状态
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showFeatureDialog, setShowFeatureDialog] = useState(false);
+  const [showUserDetailDialog, setShowUserDetailDialog] = useState(false);
 
   // 静态封面图
   const coverImage = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop';
@@ -336,8 +337,11 @@ export default function DeclarationDetailPage() {
               </p>
             </div>
 
-            {/* 创作者信息 - 大灰色底色 */}
-            <div className="flex items-center space-x-3 p-4 bg-[rgba(0,0,0,0.02)]">
+            {/* 创作者信息 - 大灰色底色 - 点击弹出用户详情 */}
+            <div
+              className="flex items-center space-x-3 p-4 bg-[rgba(0,0,0,0.02)] cursor-pointer hover:bg-[rgba(0,0,0,0.04)] transition-colors"
+              onClick={() => setShowUserDetailDialog(true)}
+            >
               {/* 头像 - 使用AvatarDisplay组件 */}
               <AvatarDisplay
                 avatarKey={declaration.user?.avatar || '/default-avatar.png'}
@@ -385,14 +389,14 @@ export default function DeclarationDetailPage() {
               </div>
             </div>
 
-            {/* 我要联系按钮 */}
+            {/* 我要连接按钮 */}
             <div className="mt-6">
               <Button
                 onClick={handleContact}
                 className="w-full bg-blue-400 hover:bg-blue-500 text-white font-medium py-3"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
-                我要联系
+                我要连接
               </Button>
             </div>
 
@@ -455,6 +459,105 @@ export default function DeclarationDetailPage() {
                 我知道了
               </Button>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* 用户详情弹窗 - 80%宽度 */}
+        <Dialog open={showUserDetailDialog} onOpenChange={setShowUserDetailDialog}>
+          <DialogContent className="w-[80%] max-w-[80%] max-h-[90vh] overflow-y-auto">
+            {declaration && declaration.user && (
+              <div className="space-y-6">
+                {/* 用户基本信息 */}
+                <div className="flex items-start space-x-4">
+                  <AvatarDisplay
+                    avatarKey={declaration.user.avatar || '/default-avatar.png'}
+                    name={declaration.user.name || '未知用户'}
+                    size="xl"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="mb-3">
+                      <h2 className="text-2xl font-semibold text-gray-900 mb-1">{declaration.user.name}</h2>
+                      <p className="text-[13px] text-[rgba(0,0,0,0.4)]">
+                        {declaration.user.age ? `${declaration.user.age}岁` : ''}
+                      </p>
+                    </div>
+
+                    {/* 行业标签 */}
+                    {declaration.user.industry && (
+                      <div className="mb-3">
+                        <span className="px-3 py-1 bg-[rgba(34,197,94,0.15)] text-green-600 text-[11px] font-normal">
+                          {declaration.user.industry}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 关注数据 */}
+                    <div className="flex items-center space-x-6 text-[13px]">
+                      <div>
+                        <span className="font-semibold text-gray-900">0</span>
+                        <span className="text-[rgba(0,0,0,0.4)] ml-1">关注者</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-900">0</span>
+                        <span className="text-[rgba(0,0,0,0.4)] ml-1">关注</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 硬核标签 */}
+                {declaration.user.hardcoreTags && declaration.user.hardcoreTags.length > 0 && (
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-gray-900 mb-3">硬核标签</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {declaration.user.hardcoreTags.map((tag: string, index: number) => (
+                        <span key={index} className="px-2 py-0.5 bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] text-[9px]">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 公司和职位 */}
+                {(declaration.user.company || declaration.user.position) && (
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-gray-900 mb-2">职业信息</h3>
+                    <p className="text-[13px] text-gray-700">
+                      {declaration.user.company && declaration.user.position
+                        ? `${declaration.user.company} · ${declaration.user.position}`
+                        : declaration.user.company || declaration.user.position || '暂无'}
+                    </p>
+                  </div>
+                )}
+
+                {/* 资源现货 */}
+                <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-[15px] font-semibold text-gray-900">资源现货</h3>
+                    <div className="px-2 py-1 bg-blue-400/40 border border-blue-400 text-blue-400 text-[11px]">
+                      {declaration.typeLabel}
+                    </div>
+                  </div>
+                  <p className="text-[13px] text-gray-700 leading-relaxed mb-2">
+                    {declaration.title}
+                  </p>
+                  {declaration.content && (
+                    <p className="text-[12px] text-gray-600 leading-relaxed mb-2">
+                      {declaration.content}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between mt-3">
+                    <span className="text-[11px] text-gray-500">
+                      {declaration.createdAt ? formatDate(declaration.createdAt) : ''}
+                    </span>
+                    <div className="flex items-center space-x-1">
+                      <span className="text-[11px] text-gray-500">{declaration.views || 0}次浏览</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
