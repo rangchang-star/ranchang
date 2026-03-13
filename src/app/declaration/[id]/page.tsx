@@ -1,19 +1,36 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Play, Pause, Heart, Share2, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AvatarDisplay } from '@/components/avatar-upload';
 import { Badge } from '@/components/ui/badge';
-import { useParams } from 'next/navigation';
+import { AvatarDisplay } from '@/components/avatar-upload';
 
 export default function DeclarationDetailPage() {
-  const params = useParams();
-  const [declaration, setDeclaration] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // 静态数据 - 后期会从API获取
+  const declaration = {
+    id: '1',
+    title: '30分钟安装openclaw',
+    content: '30分钟快速安装openclaw，帮助你快速搭建AI开发环境，包含环境配置、依赖安装、基础测试等完整流程。',
+    profile: '能力现货',
+    duration: '5:23',
+    rank: 1,
+    iconType: 'ability',
+    views: 128,
+    likes: 56,
+    shares: 23,
+    createdAt: '2026-03-13T10:30:00',
+    audioUrl: null, // 暂无音频
+    image: '/default-cover.jpg',
+    creator: {
+      name: '威哥',
+      avatar: '/avatar-default.jpg',
+      industry: '互联网/IT/软件',
+      tags: ['AI技术', '定方向', '从0到1'],
+    },
+  };
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -21,70 +38,6 @@ export default function DeclarationDetailPage() {
   const [duration, setDuration] = useState(323); // 5:23 = 323秒
   const [isLiked, setIsLiked] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-
-  // 从 API 加载宣告数据
-  useEffect(() => {
-    async function loadDeclaration() {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const id = params.id as string;
-        const response = await fetch(`/api/declarations/${id}`);
-
-        if (!response.ok) {
-          throw new Error('加载宣告信息失败');
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          setDeclaration(data.data);
-        } else {
-          throw new Error(data.error || '加载宣告信息失败');
-        }
-      } catch (err: any) {
-        console.error('加载宣告信息失败:', err);
-        setError(err.message || '加载宣告信息失败');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadDeclaration();
-  }, [params.id]);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
-      audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
-      audioRef.current.addEventListener('ended', handleEnded);
-    }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
-        audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        audioRef.current.removeEventListener('ended', handleEnded);
-      }
-    };
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
-        <div className="text-gray-400">加载中...</div>
-      </div>
-    );
-  }
-
-  if (error || !declaration) {
-    return (
-      <div className="min-h-screen bg-white pb-14 flex items-center justify-center">
-        <div className="text-red-400">{error || '宣告信息不存在'}</div>
-      </div>
-    );
-  }
 
   const handleTimeUpdate = () => {
     if (audioRef.current) {
@@ -106,7 +59,7 @@ export default function DeclarationDetailPage() {
   };
 
   const togglePlay = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !declaration.audioUrl) return;
 
     if (isPlaying) {
       audioRef.current.pause();
@@ -117,7 +70,7 @@ export default function DeclarationDetailPage() {
   };
 
   const toggleMute = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !declaration.audioUrl) return;
 
     audioRef.current.muted = !audioRef.current.muted;
     setIsMuted(!isMuted);
@@ -231,6 +184,7 @@ export default function DeclarationDetailPage() {
                 <Button
                   onClick={togglePlay}
                   className="w-14 h-14 bg-blue-400 hover:bg-blue-500 rounded-full flex items-center justify-center"
+                  disabled={!declaration.audioUrl}
                 >
                   {isPlaying ? (
                     <Pause className="w-6 h-6 text-white" />
@@ -339,7 +293,9 @@ export default function DeclarationDetailPage() {
         </div>
 
         {/* 隐藏的音频元素 */}
-        <audio ref={audioRef} src={declaration.audioUrl} />
+        {declaration.audioUrl && (
+          <audio ref={audioRef} src={declaration.audioUrl} />
+        )}
       </div>
     </div>
   );
