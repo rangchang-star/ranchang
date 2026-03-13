@@ -279,15 +279,49 @@ export default function SubscriptionPage() {
   };
 
   // 处理加入提交
-  const handleJoinSubmit = () => {
-    if (validateForm()) {
-      // 这里可以调用API提交数据
-      console.log('提交加入申请:', formData);
-      setJoinDialogOpen(false);
-      // 重置表单
-      setFormData({ name: '', phone: '', wechat: '' });
-      setErrors({ name: '', phone: '', wechat: '' });
-      // 可以在这里显示成功提示
+  const handleJoinSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      // 从 localStorage 获取当前用户信息
+      const storedUser = localStorage.getItem('currentUser');
+      const currentUser = storedUser ? JSON.parse(storedUser) : null;
+
+      if (!currentUser || !currentUser.id) {
+        alert('请先登录');
+        return;
+      }
+
+      // 调用 API 提交申请
+      const response = await fetch('/api/ai-circle/apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          userName: formData.name,
+          userPhone: formData.phone,
+          userWechat: formData.wechat,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(data.message || '申请提交成功，请等待管理员审核');
+        setJoinDialogOpen(false);
+        // 重置表单
+        setFormData({ name: '', phone: '', wechat: '' });
+        setErrors({ name: '', phone: '', wechat: '' });
+      } else {
+        alert(data.error || '申请提交失败，请稍后重试');
+      }
+    } catch (error) {
+      console.error('提交加入申请失败:', error);
+      alert('申请提交失败，请稍后重试');
     }
   };
 
