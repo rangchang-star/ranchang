@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, activityRegistrations, activities, appUsers } from '@/lib/db';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql, and } from 'drizzle-orm';
 
 // GET - 获取用户报名的活动列表
 export async function GET(request: NextRequest) {
@@ -36,6 +36,30 @@ export async function GET(request: NextRequest) {
       .innerJoin(activities, eq(activityRegistrations.activityId, activities.id))
       .where(eq(activityRegistrations.userId, userId))
       .orderBy(desc(activityRegistrations.createdAt));
+
+    // 获取所有活动ID
+    const activityIds = [...new Set(registrations.map(reg => reg.activityId))];
+
+    // 查询每个活动的已通过报名人数
+    const enrollmentCounts = await Promise.all(
+      activityIds.map(async (activityId) => {
+        const result = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(activityRegistrations)
+          .where(
+            and(
+              eq(activityRegistrations.activityId, activityId as any),
+              eq(activityRegistrations.status, 'approved')
+            )
+          );
+        return { activityId, count: result[0]?.count || 0 };
+      })
+    );
+
+    // 创建活动ID到报名人数的映射
+    const enrollmentMap = new Map(
+      enrollmentCounts.map(item => [item.activityId, item.count])
+    );
 
     // 格式化数据
     const formattedActivities = registrations.map(reg => {
@@ -78,7 +102,7 @@ export async function GET(request: NextRequest) {
         category: reg.activityCategory ? (categoryMap[reg.activityCategory] || reg.activityCategory) : '活动',
         description: reg.activityDescription,
         participants: reg.activityCapacity,
-        enrolled: 0, // 可以从统计查询
+        enrolled: enrollmentMap.get(reg.activityId) || 0, // 使用实时计算的已通过报名人数
       };
     });
 
