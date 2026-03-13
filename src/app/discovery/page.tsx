@@ -461,7 +461,8 @@ export default function DiscoveryPage() {
               title: activity.title || "",
               subtitle: "",
               description: activity.description || "",
-              image: activity.coverImage || "",
+              // 使用新的图片 API 获取封面图
+              image: activity.coverImageKey ? `/api/activities/${activity.id}/image` : (activity.coverImage || ""),
               enrollments: [],
               enrolledCount: activity.registeredCount || 0,
               maxEnrollments: activity.capacity || 0,
