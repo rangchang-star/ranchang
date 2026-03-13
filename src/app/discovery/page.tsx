@@ -262,6 +262,15 @@ const ActivityStatusBadge = ({
 }) => {
   const timeLeft = useCountdown(endTime);
 
+  if (status === "upcoming") {
+    return (
+      <div className="flex items-center space-x-1 px-2 py-1 bg-green-50">
+        <div className="w-1.5 h-1.5 bg-green-400" />
+        <span className="text-[10px] text-green-400 font-medium">即将开始</span>
+      </div>
+    );
+  }
+
   if (status === "ended") {
     return (
       <div className="flex items-center space-x-1 px-2 py-1 bg-[rgba(0,0,0,0.08)]">
@@ -464,25 +473,50 @@ export default function DiscoveryPage() {
 
           // 将活动数据转换为前端需要的格式
           const formattedActivities = activitiesData.data.map(
-            (activity: any) => ({
-              id: activity.id.toString(),
-              category: typeMap[activity.type] || activity.type || "沙龙",
-              title: activity.title || "",
-              subtitle: "",
-              description: activity.description || "",
-              // 使用新的图片 API 获取封面图
-              image: activity.coverImageKey ? `/api/activities/${activity.id}/image` : (activity.coverImage || ""),
-              enrollments: [],
-              enrolledCount: activity.registeredCount || 0,
-              maxEnrollments: activity.capacity || 0,
-              address: activity.location || "",
-              teaFee: `${activity.teaFee || 0}元`,
-              status:
-                activity.status === "published"
-                  ? "ongoing"
-                  : "ended",
-              endTime: activity.endDate || "",
-            }),
+            (activity: any) => {
+              // 计算活动的实际开始和结束时间
+              const now = new Date();
+              const activityDate = new Date(activity.date);
+              
+              // 解析开始时间和结束时间
+              const [startHour, startMinute] = (activity.startTime || "00:00").split(":").map(Number);
+              const [endHour, endMinute] = (activity.endTime || "23:59").split(":").map(Number);
+              
+              const activityStartTime = new Date(activityDate);
+              activityStartTime.setHours(startHour, startMinute, 0, 0);
+              
+              const activityEndTime = new Date(activityDate);
+              activityEndTime.setHours(endHour, endMinute, 0, 0);
+              
+              // 根据时间判断活动状态
+              let activityStatus = "ended";
+              if (activity.status === "published") {
+                if (now < activityStartTime) {
+                  activityStatus = "upcoming"; // 即将开始
+                } else if (now >= activityStartTime && now <= activityEndTime) {
+                  activityStatus = "ongoing"; // 进行中
+                } else {
+                  activityStatus = "ended"; // 已结束
+                }
+              }
+              
+              return {
+                id: activity.id.toString(),
+                category: typeMap[activity.type] || activity.type || "沙龙",
+                title: activity.title || "",
+                subtitle: "",
+                description: activity.description || "",
+                // 使用新的图片 API 获取封面图
+                image: activity.coverImageKey ? `/api/activities/${activity.id}/image` : (activity.coverImage || ""),
+                enrollments: [],
+                enrolledCount: activity.registeredCount || 0,
+                maxEnrollments: activity.capacity || 0,
+                address: activity.location || "",
+                teaFee: `${activity.teaFee || 0}元`,
+                status: activityStatus,
+                endTime: activityEndTime.toISOString(), // 使用实际的结束时间
+              };
+            }
           );
           setActivityItems(formattedActivities);
         }
