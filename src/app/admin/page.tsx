@@ -47,6 +47,14 @@ export default function AdminDashboardPage() {
           });
 
           // 取最近的3个活动
+          // 状态映射
+          const statusMap: Record<string, string> = {
+            draft: '草稿',
+            published: '报名中',
+            ended: '已结束',
+            cancelled: '已取消',
+          };
+
           setRecentActivities(
             activities
               .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -55,8 +63,8 @@ export default function AdminDashboardPage() {
                 id: activity.id,
                 title: activity.title,
                 date: activity.date,
-                enrolled: activity.enrolled,
-                status: activity.status === 'active' ? '报名中' : '已结束',
+                enrolled: activity.registeredCount || 0,
+                status: statusMap[activity.status] || '未知',
               }))
           );
 
