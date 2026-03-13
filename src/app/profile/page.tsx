@@ -512,8 +512,19 @@ export default function ProfilePage() {
   const [userInfo, setUserInfo] = useState(() => getUserInfoFromUser(user));
 
   // 当 user 变化时，自动更新 userInfo（包括刷新后的最新数据）
+  // 保留已从数据库获取的 currentDeclaration，避免被覆盖
   useEffect(() => {
-    setUserInfo(getUserInfoFromUser(user));
+    setUserInfo(prev => {
+      const newUserInfo = getUserInfoFromUser(user);
+      // 如果 prev 中已经有从数据库获取的 currentDeclaration 且有数据，则保留
+      if (prev.currentDeclaration.text || prev.currentDeclaration.summary) {
+        return {
+          ...newUserInfo,
+          currentDeclaration: prev.currentDeclaration,
+        };
+      }
+      return newUserInfo;
+    });
   }, [user]);
 
   // 从数据库获取用户的高燃宣告数据
