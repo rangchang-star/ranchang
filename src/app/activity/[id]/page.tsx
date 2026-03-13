@@ -381,8 +381,14 @@ export default function ActivityDetailPage() {
                 </h3>
                 <div className="flex items-start space-x-4">
                   {(activity as any).guests?.map((guest: any) => (
-                    <div key={guest.id} className="flex flex-col items-center space-y-2">
-                      <AvatarDisplay avatarKey={guest.avatar} name={guest.name} size="md" />
+                    <div key={guest.id} className="relative flex flex-col items-center space-y-2">
+                      <div className="relative">
+                        <AvatarDisplay avatarKey={guest.avatar} name={guest.name} size="md" />
+                        {/* 活动类型标签 - 左下角 */}
+                        <div className="absolute bottom-0 left-0 bg-[rgba(0,0,0,0.06)] text-[rgba(0,0,0,0.6)] text-[9px] px-1.5 py-0.5 rounded-md">
+                          {typeToLabel[activity.type] || activity.type}
+                        </div>
+                      </div>
                       <span className="text-[11px] text-[rgba(0,0,0,0.6)]">{guest.name}</span>
                     </div>
                   ))}
