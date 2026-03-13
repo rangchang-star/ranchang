@@ -28,13 +28,33 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    // 检查必填字段
+    if (!body.phone || !body.password) {
+      return NextResponse.json(
+        { success: false, error: '缺少必填字段' },
+        { status: 400 }
+      );
+    }
+
+    // 检查手机号是否已存在
+    const existingAdmin = await db
+      .select()
+      .from(adminUsers)
+      .where(require('drizzle-orm').eq(adminUsers.username, body.phone));
+
+    if (existingAdmin && existingAdmin.length > 0) {
+      return NextResponse.json(
+        { success: false, error: '该手机号已被使用' },
+        { status: 400 }
+      );
+    }
+
     const newAdmin = await db
       .insert(adminUsers)
       .values({
-        username: body.username,
-        email: body.email,
-        password: body.password,
-        name: body.nickname,
+        username: body.phone, // 使用手机号作为用户名
+        email: body.phone + '@ranchang.com', // 生成一个临时邮箱
+        password: body.password, // 注意：实际项目应该加密密码
         role: 'admin',
         status: 'active',
       })

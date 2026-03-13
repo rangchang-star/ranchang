@@ -47,9 +47,8 @@ export async function PUT(
     const updated = await db
       .update(adminUsers)
       .set({
-        name: body.nickname,
         status: body.isActive ? 'active' : 'inactive',
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(adminUsers.id, id))
       .returning();
