@@ -92,7 +92,7 @@ const defaultNotifications: Notification[] = [
   },
 ];
 
-// 高燃宣告方向选项
+// 资源现货方向选项
 const declarationDirections = [
   { id: 'confidence', name: '信心', icon: 'icon-confidence.jpg' },
   { id: 'mission', name: '使命', icon: 'icon-mission.jpg' },
@@ -440,6 +440,7 @@ export default function ProfilePage() {
         hardcoreTags: [] as string[],
         resourceTags: [] as string[],
         currentDeclaration: {
+          type: 'resource', // 默认为"资源现货"
           direction: 'confidence',
           text: '',
           summary: '',
@@ -450,8 +451,9 @@ export default function ProfilePage() {
       };
     }
 
-    // 高燃宣告数据初始值（将从数据库获取）
+    // 资源现货数据初始值（将从数据库获取）
     const initialDeclaration = {
+      type: 'resource', // 默认为"资源现货"
       direction: 'confidence',
       text: userData.bio || '',
       summary: userData.bio || '',
@@ -495,7 +497,7 @@ export default function ProfilePage() {
     });
   }, [user]);
 
-  // 从数据库获取用户的高燃宣告数据
+  // 从数据库获取用户的资源现货数据
   useEffect(() => {
     const fetchUserDeclarations = async () => {
       if (!user?.id) return;
@@ -505,13 +507,14 @@ export default function ProfilePage() {
         const result = await response.json();
 
         if (result.success && result.data && result.data.length > 0) {
-          // 获取最新的高燃宣告
+          // 获取最新的资源现货
           const latestDeclaration = result.data[0];
 
           // 更新 userInfo 中的 currentDeclaration
           setUserInfo(prev => ({
             ...prev,
             currentDeclaration: {
+              type: latestDeclaration.type || 'resource', // 资源现货类型：ability(能力现货), connection(人脉现货), resource(资源现货)
               direction: latestDeclaration.direction || 'confidence',
               text: latestDeclaration.text || '',
               summary: latestDeclaration.summary || '',
@@ -520,12 +523,12 @@ export default function ProfilePage() {
             }
           }));
 
-          console.log('从数据库获取到高燃宣告:', latestDeclaration);
+          console.log('从数据库获取到资源现货:', latestDeclaration);
         } else {
-          console.log('数据库中没有该用户的高燃宣告数据');
+          console.log('数据库中没有该用户的资源现货数据');
         }
       } catch (error) {
-        console.error('获取高燃宣告数据失败:', error);
+        console.error('获取资源现货数据失败:', error);
       }
     };
 
@@ -1004,16 +1007,30 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            {/* 当前宣告 */}
+            {/* 当前资源现货 */}
             <div className="mt-4 p-3 bg-gray-50 rounded-lg">
               <div className="flex items-start space-x-2">
                 <Flame className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
+                  {/* 根据类型显示对应的标签 */}
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className={`px-2 py-0.5 text-[10px] rounded ${
+                      userInfo.currentDeclaration.type === 'ability' 
+                        ? 'bg-blue-100 text-blue-600' 
+                        : userInfo.currentDeclaration.type === 'connection'
+                        ? 'bg-green-100 text-green-600'
+                        : 'bg-orange-100 text-orange-600'
+                    }`}>
+                      {userInfo.currentDeclaration.type === 'ability' 
+                        ? '能力现货' 
+                        : userInfo.currentDeclaration.type === 'connection'
+                        ? '人脉现货'
+                        : '资源现货'}
+                    </span>
                     <span className="text-[14px] text-gray-500">
                       {declarationDirections.find(d => d.id === userInfo.currentDeclaration.direction)?.name}
                     </span>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 ml-auto">
                       <button className="p-1 hover:bg-gray-200 transition-colors rounded">
                         <PlayCircle className="w-6 h-6 text-gray-400" />
                       </button>

@@ -195,7 +195,7 @@ export default function AdminDailyDeclarationsPage() {
             </Link>
             <div>
               <h2 className="text-[15px] font-bold text-gray-900 mb-1">每日宣告管理</h2>
-              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">管理每日高燃宣告内容</p>
+              <p className="text-[13px] text-[rgba(0,0,0,0.6)]">管理每日资源现货内容</p>
             </div>
           </div>
           <Link href="/admin/materials/daily/create">

@@ -35,7 +35,7 @@ import { BottomNav } from "@/components/bottom-nav";
 
 // 活动推荐（已改为从 API 加载）
 
-// 高燃宣告（已改为从 API 加载）
+// 资源现货（已改为从 API 加载）
 
 // 硬核图谱 - 技能树（半透明圆形不规则排列）
 const skillBubbles = [
@@ -361,7 +361,7 @@ export default function DiscoveryPage() {
         setIsLoading(true);
         setError(null);
 
-        // 并行加载用户、活动、高燃宣告、文档和每日宣告数据
+        // 并行加载用户、活动、资源现货、文档和每日宣告数据
         const [usersRes, activitiesRes, declarationsRes, documentsRes, dailyRes] =
           await Promise.all([
             fetch("/api/users", { cache: 'no-store' }),
@@ -479,7 +479,7 @@ export default function DiscoveryPage() {
         }
 
         if (declarationsData.success) {
-          // 将高燃宣告数据转换为前端需要的格式
+          // 将资源现货数据转换为前端需要的格式
           const formattedDeclarations = declarationsData.data.map(
             (declaration: any) => ({
               id: declaration.id.toString(),
@@ -938,7 +938,7 @@ export default function DiscoveryPage() {
               </div>
             </section>
 
-            {/* 高燃宣告 */}
+            {/* 资源现货 */}
             <section>
               <div className="flex items-center justify-between mb-1">
                 <h2 className="text-xl font-bold">
@@ -1153,7 +1153,7 @@ export default function DiscoveryPage() {
                 <h3 className="text-sm font-semibold text-gray-900">
                   {modalType === "abilities" && "更多能力连接"}
                   {modalType === "activities" && "更多活动"}
-                  {modalType === "declarations" && "更多高燃宣告"}
+                  {modalType === "declarations" && "更多资源现货"}
                 </h3>
                 <button
                   onClick={() => setShowModal(false)}

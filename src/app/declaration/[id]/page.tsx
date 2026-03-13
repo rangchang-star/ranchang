@@ -186,7 +186,7 @@ export default function DeclarationDetailPage() {
                 <ArrowLeft className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
               </Button>
             </Link>
-            <h1 className="text-[15px] font-semibold text-gray-900">高燃宣告</h1>
+            <h1 className="text-[15px] font-semibold text-gray-900">资源现货</h1>
             <div className="w-10" />
           </div>
         </div>

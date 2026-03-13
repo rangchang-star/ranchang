@@ -14,7 +14,7 @@ const tagStampMap = {
   pureExchange: { label: '纯交流', description: '只想交流学习，暂无合作需求' },
 };
 
-// 高燃宣告方向映射
+// 资源现货方向映射
 const directionMap: Record<string, string> = {
   confidence: '信心',
   mission: '使命',
@@ -48,7 +48,7 @@ async function getUserData(id: string) {
     console.log('experience字段:', users[0].experience);
     console.log('achievement字段:', users[0].achievement);
 
-    // 获取该用户的最新高燃宣告
+    // 获取该用户的最新资源现货
     const declarations = await sql`
       SELECT * FROM public.declarations
       WHERE user_id = ${id}
@@ -56,9 +56,9 @@ async function getUserData(id: string) {
       LIMIT 1
     `;
 
-    console.log('获取到高燃宣告数据:', declarations);
+    console.log('获取到资源现货数据:', declarations);
 
-    // 将高燃宣告数据附加到用户数据中
+    // 将资源现货数据附加到用户数据中
     const userData = users[0];
     if (declarations.length > 0) {
       (userData as any).declaration = declarations[0];
@@ -217,11 +217,11 @@ export default async function ConnectionDetailPage({
             </p>
           </div>
 
-          {/* 高燃宣告 */}
+          {/* 资源现货 */}
           {formattedUser.declaration ? (
             <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[15px] font-semibold text-gray-900">高燃宣告</h3>
+                <h3 className="text-[15px] font-semibold text-gray-900">资源现货</h3>
                 <div className="flex items-center space-x-2">
                   <Badge variant="secondary" className="text-[11px] bg-white text-orange-600 border-orange-300">
                     {directionMap[formattedUser.declaration.direction] || formattedUser.declaration.direction}
@@ -249,11 +249,11 @@ export default async function ConnectionDetailPage({
           ) : (
             <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[15px] font-semibold text-gray-900">高燃宣告</h3>
+                <h3 className="text-[15px] font-semibold text-gray-900">资源现货</h3>
                 <Flame className="w-4 h-4 text-orange-500" />
               </div>
               <p className="text-[13px] text-gray-700 leading-relaxed">
-                该用户暂未发布高燃宣告
+                该用户暂未发布资源现货
               </p>
             </div>
           )}

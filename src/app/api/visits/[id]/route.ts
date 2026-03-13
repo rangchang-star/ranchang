@@ -88,7 +88,7 @@ export async function GET(
       })));
     }
 
-    // 查询被探访对象的高燃宣告（最新一条）
+    // 查询被探访对象的资源现货（最新一条）
     let targetDeclaration = null;
     if (visit.companyId) {
       const declarationList = await db

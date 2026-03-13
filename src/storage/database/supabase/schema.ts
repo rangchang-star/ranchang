@@ -22,6 +22,7 @@ export const activityStatus = pgEnum('activity_status', ['draft', 'published', '
 export const registrationStatus = pgEnum('registration_status', ['registered', 'approved', 'rejected', 'cancelled']);
 export const visitStatus = pgEnum('visit_status', ['draft', 'upcoming', 'completed', 'cancelled']);
 export const notificationType = pgEnum('notification_type', ['system', 'activity', 'registration', 'visit', 'approval']);
+export const declarationType = pgEnum('declaration_type', ['ability', 'connection', 'resource']);
 
 // ============================================================
 // 1. 用户表（app_users）
@@ -51,7 +52,7 @@ export const appUsers = pgTable('app_users', {
   companyScale: varchar('company_scale', { length: 50 }), // 公司规模
   experience: jsonb('experience'), // 硬核经历
   need: text('need'), // 用户需求
-  declaration: text('declaration'), // 高燃宣告
+  declaration: text('declaration'), // 资源现货
   connectionType: varchar('connection_type', { length: 50 }), // 连接类型
   isTrusted: boolean('is_trusted').default(false), // 是否信任
   isFeatured: boolean('is_featured').default(false), // 是否精选
@@ -197,6 +198,7 @@ export const visitRegistrations = pgTable('visit_registrations', {
 export const declarations = pgTable('declarations', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
+  type: declarationType('type').default('resource'), // 资源现货类型：ability(能力现货), connection(人脉现货), resource(资源现货)
   direction: varchar('direction', { length: 100 }), // 方向
   text: text('text').notNull(),
   summary: text('summary'),
@@ -211,6 +213,7 @@ export const declarations = pgTable('declarations', {
   index('declarations_user_id_idx').on(table.userId),
   index('declarations_date_idx').on(table.date),
   index('declarations_featured_idx').on(table.isFeatured),
+  index('declarations_type_idx').on(table.type),
 ]);
 
 // ============================================================

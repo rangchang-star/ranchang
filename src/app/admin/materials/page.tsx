@@ -156,7 +156,7 @@ export default function AdminMaterialsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-2">管理每日高燃宣告内容</p>
+                <p className="text-sm text-gray-600 mb-2">管理每日资源现货内容</p>
                 <p className="text-xs text-gray-500">包括添加、编辑、删除和发布每日宣告</p>
               </div>
               <Link href="/admin/materials/daily/create">

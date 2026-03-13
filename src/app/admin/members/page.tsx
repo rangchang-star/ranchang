@@ -31,6 +31,8 @@ interface Member {
   role: string;
   connectionCount: number;
   activityCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function AdminMembersPage() {

@@ -570,10 +570,10 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
             </div>
           </div>
 
-          {/* 高燃宣告展示（只读） */}
+          {/* 资源现货展示（只读） */}
           <div className="border border-[rgba(0,0,0,0.1)]">
             <div className="px-4 py-3 border-b border-[rgba(0,0,0,0.1)]">
-              <h3 className="text-[13px] font-semibold text-gray-900">高燃宣告</h3>
+              <h3 className="text-[13px] font-semibold text-gray-900">资源现货</h3>
             </div>
             <div className="px-4 py-3">
               <div className="flex items-start space-x-4">
@@ -597,7 +597,7 @@ export default function AdminMemberEditPage({ params }: { params: Promise<{ id: 
                         </div>
                       </>
                     ) : (
-                      <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无高燃宣告</p>
+                      <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无资源现货</p>
                     )}
                   </div>
                 </div>

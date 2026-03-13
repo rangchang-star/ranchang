@@ -241,7 +241,8 @@ export function ProfileEditContent() {
     refreshUserDataFromDatabase();
   }, [isLoggedIn, user?.id, refreshUser]);
 
-  // 高燃宣告 - 简化为简单的主题和内容
+  // 资源现货 - 简化为简单的主题和内容
+  const [declarationType, setDeclarationType] = useState<string>('resource'); // 默认为"资源现货"
   const [declarationTheme, setDeclarationTheme] = useState<string>('');
   const [declarationDescription, setDeclarationDescription] = useState<string>('');
 
@@ -267,7 +268,7 @@ export function ProfileEditContent() {
     return [];
   });
 
-  // 从 localStorage 恢复高燃宣告数据（按用户ID隔离）
+  // 从 localStorage 恢复资源现货数据（按用户ID隔离）
   useEffect(() => {
     if (typeof window !== 'undefined' && user?.id) {
       const saved = localStorage.getItem(`userDeclarations_${user.id}`);
@@ -287,7 +288,7 @@ export function ProfileEditContent() {
     }
   }, [user?.id]);
 
-  // 从数据库获取用户的高燃宣告数据
+  // 从数据库获取用户的资源现货数据
   useEffect(() => {
     const fetchUserDeclarations = async () => {
       if (!user?.id) return;
@@ -297,26 +298,28 @@ export function ProfileEditContent() {
         const result = await response.json();
 
         if (result.success && result.data && result.data.length > 0) {
-          // 获取最新的高燃宣告
+          // 获取最新的资源现货
           const latestDeclaration = result.data[0];
           
-          // 更新高燃宣告状态
+          // 更新资源现货状态
+          setDeclarationType(latestDeclaration.type || 'resource');
           setDeclarationTheme(latestDeclaration.text || '');
           setDeclarationDescription(latestDeclaration.summary || '');
           
           // 同时保存到 localStorage
           localStorage.setItem(`userDeclarations_${user.id}`, JSON.stringify([{
+            type: latestDeclaration.type || 'resource',
             theme: latestDeclaration.text || '',
             description: latestDeclaration.summary || '',
             direction: latestDeclaration.direction || 'confidence',
           }]));
 
-          console.log('从数据库获取到高燃宣告:', latestDeclaration);
+          console.log('从数据库获取到资源现货:', latestDeclaration);
         } else {
-          console.log('数据库中没有该用户的高燃宣告数据');
+          console.log('数据库中没有该用户的资源现货数据');
         }
       } catch (error) {
-        console.error('获取高燃宣告数据失败:', error);
+        console.error('获取资源现货数据失败:', error);
       }
     };
 
@@ -462,7 +465,7 @@ export function ProfileEditContent() {
       requiredErrors.push('硬核标签（必选）');
     }
 
-    // 验证高燃宣告（如果填写了）
+    // 验证资源现货（如果填写了）
     if (declarationTheme || declarationDescription) {
       // 验证宣告主题
       if (!declarationTheme || declarationTheme.trim() === '') {
@@ -604,7 +607,7 @@ export function ProfileEditContent() {
         // 保存主要成就（按用户ID隔离）
         localStorage.setItem(`userAchievements_${user.id}`, JSON.stringify(achievements));
 
-        // 保存高燃宣告到localStorage（按用户ID隔离）
+        // 保存资源现货到localStorage（按用户ID隔离）
         if (declarationTheme || declarationDescription) {
           localStorage.setItem(`userDeclarations_${user.id}`, JSON.stringify([{
             theme: declarationTheme,
@@ -614,15 +617,16 @@ export function ProfileEditContent() {
         }
       }
 
-      // 保存高燃宣告到数据库
+      // 保存资源现货到数据库
       if (isLoggedIn && user) {
         try {
-          // 只保存填写了的高燃宣告（默认方向为"信心"）
+          // 只保存填写了的资源现货（默认方向为"信心"）
           if (declarationTheme && declarationDescription) {
-            console.log('保存高燃宣告到数据库:', { theme: declarationTheme, description: declarationDescription });
+            console.log('保存资源现货到数据库:', { type: declarationType, theme: declarationTheme, description: declarationDescription });
 
             const declarationRequest = {
               userId: user.id,
+              type: declarationType, // 资源现货类型：ability(能力现货), connection(人脉现货), resource(资源现货)
               direction: 'confidence', // 默认方向为信心
               text: declarationTheme, // 宣告主题（简短，8-15字）
               summary: declarationDescription, // 宣告内容（详细，25-60字）
@@ -641,16 +645,16 @@ export function ProfileEditContent() {
 
             if (!declarationResponse.ok) {
               const errorData = await declarationResponse.json();
-              console.error('保存高燃宣告失败:', errorData);
+              console.error('保存资源现货失败:', errorData);
               // 不影响主流程，只记录错误
             } else {
-              console.log('高燃宣告保存成功');
+              console.log('资源现货保存成功');
             }
           } else {
-            console.log('用户没有填写高燃宣告，跳过保存');
+            console.log('用户没有填写资源现货，跳过保存');
           }
         } catch (error) {
-          console.error('保存高燃宣告到数据库失败:', error);
+          console.error('保存资源现货到数据库失败:', error);
           // 不影响主流程，只记录错误
         }
       }
@@ -1018,11 +1022,31 @@ export function ProfileEditContent() {
             <p className="text-[11px] text-[rgba(0,0,0,0.4)]">前台只显示硬核标签（最多选3个）</p>
           </div>
 
-          {/* 高燃宣告 */}
+          {/* 资源现货 */}
           <div className="space-y-3">
             <h2 className="text-[13px] font-semibold text-gray-900">
-              高燃宣告
+              资源现货
             </h2>
+            {/* 标签选择器 */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: 'ability', label: '能力现货' },
+                { value: 'connection', label: '人脉现货' },
+                { value: 'resource', label: '资源现货' },
+              ].map((tag) => (
+                <button
+                  key={tag.value}
+                  onClick={() => setDeclarationType(tag.value)}
+                  className={`px-3 py-1.5 text-[11px] border ${
+                    declarationType === tag.value
+                      ? 'border-blue-400 bg-blue-400/40 text-blue-400'
+                      : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)]'
+                  }`}
+                >
+                  {tag.label}
+                </button>
+              ))}
+            </div>
             <div>
               <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">
                 宣告主题 <span className="text-red-400">*</span>
