@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
     const newRegistration = await db
       .insert(activityRegistrations)
       .values({
-        id: crypto.randomUUID(),
         activityId,
         userId,
         note,
