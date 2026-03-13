@@ -122,7 +122,9 @@ export default function AdminActivityCreatePage() {
           startTime,
           endTime,
           capacity: parseInt(maxParticipants),
-          status: 'active',
+          status: 'published',
+          startDate: date,
+          endDate: date,
         }),
       });
 

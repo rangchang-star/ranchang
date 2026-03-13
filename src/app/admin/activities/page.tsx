@@ -72,11 +72,10 @@ export default function AdminActivitiesPage() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  // 状态映射
+  // 状态映射（与数据库枚举一致）
   const statusMap: Record<string, { label: string; color: string }> = {
     draft: { label: '草稿', color: 'bg-gray-100 text-gray-600' },
-    active: { label: '进行中', color: 'bg-green-100 text-green-600' },
-    upcoming: { label: '报名中', color: 'bg-blue-100 text-blue-600' },
+    published: { label: '报名中', color: 'bg-blue-100 text-blue-600' },
     ended: { label: '已结束', color: 'bg-gray-100 text-gray-600' },
     cancelled: { label: '已取消', color: 'bg-red-100 text-red-600' },
   };
@@ -126,8 +125,7 @@ export default function AdminActivitiesPage() {
             >
               <option value="">全部状态</option>
               <option value="draft">草稿</option>
-              <option value="active">进行中</option>
-              <option value="upcoming">报名中</option>
+              <option value="published">报名中</option>
               <option value="ended">已结束</option>
               <option value="cancelled">已取消</option>
             </select>

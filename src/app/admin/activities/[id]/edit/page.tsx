@@ -47,7 +47,7 @@ const fetchActivity = async (id: string) => {
         address: activity.location || '',
         type: activity.type || 'private',
         maxParticipants: activity.capacity || 12,
-        tags: [activity.type, activity.status === 'active' ? '报名中' : '已结束'],
+        tags: [activity.type, activity.status === 'published' ? '报名中' : '已结束'],
         status: activity.status,
         teaFee: activity.teaFee ? `茶水费${activity.teaFee}元` : '',
         description: activity.description || '',
@@ -179,17 +179,17 @@ export default function AdminActivityEditPage() {
         },
         body: JSON.stringify({
           title,
-          // 移除 subtitle 字段，数据库中不存在
           description,
-          location, // 前端 location 对应数据库 location
-          type: type, // 前端 type 对应数据库 type
-          cover_image: imageUrl, // 前端 imageUrl 对应数据库 cover_image
-          date: date, // 日期部分
-          start_time: startTime, // 前端 startTime 对应数据库 start_time
-          end_time: endTime, // 前端 endTime 对应数据库 end_time
-          capacity: parseInt(maxParticipants), // 前端 maxParticipants 对应数据库 capacity
-          // 移除 teaFee 字段，数据库中不存在
-          status: 'active',
+          location,
+          type,
+          coverImage: imageUrl,
+          date,
+          startTime,
+          endTime,
+          capacity: parseInt(maxParticipants),
+          status: 'published',
+          startDate: date,
+          endDate: date,
         }),
       });
 
