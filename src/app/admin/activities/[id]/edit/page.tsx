@@ -577,11 +577,20 @@ export default function AdminActivityEditPage() {
                         }`}
                       >
                         <div className="relative">
-                          <img
-                            src={member.avatar}
-                            alt={member.name}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
+                          {member.avatar ? (
+                            <img
+                              src={`/api/image-url?key=${member.avatar}`}
+                              alt={member.name}
+                              className="w-12 h-12 rounded-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
+                              <span className="text-[13px] text-[rgba(0,0,0,0.4)]">{member.name?.charAt(0) || '?'}</span>
+                            </div>
+                          )}
                           {selectedParticipants.includes(member.id) && (
                             <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center">
                               <Check className="w-3 h-3 text-white" />
@@ -728,7 +737,7 @@ export default function AdminActivityEditPage() {
                               return;
                             }
 
-                            const newGuestId = Date.now().toString();
+                            const newGuestId = `${Date.now().toString()}_${Math.random().toString(36).substr(2, 9)}`;
                             const newGuest = {
                               id: newGuestId,
                               name: customGuestName,
