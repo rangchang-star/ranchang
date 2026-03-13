@@ -404,7 +404,7 @@ export default function VisitDetailPage() {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24">
           {/* 封面主图 */}
           <div className="relative w-full h-64 overflow-hidden">
             <img
@@ -602,48 +602,7 @@ export default function VisitDetailPage() {
               <p className="text-[13px] text-gray-700 leading-relaxed">{visit.notes || '暂无备注'}</p>
             </div>
 
-            {/* 走访反馈录音 */}
-            {visit.feedbackAudio && (
-              <div>
-                <h3 className="text-[15px] font-semibold text-gray-900 mb-2">走访反馈录音</h3>
-                <div className="flex items-center space-x-3 bg-[rgba(0,0,0,0.02)] rounded-lg p-3">
-                  <button
-                    onClick={togglePlay}
-                    className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
-                  >
-                    {isPlaying ? (
-                      <Pause className="w-5 h-5 text-white" />
-                    ) : (
-                      <Play className="w-5 h-5 text-white ml-0.5" />
-                    )}
-                  </button>
-                  <div className="flex-1">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={progress}
-                      onChange={handleSeek}
-                      className="w-full h-1.5 bg-[rgba(0,0,0,0.1)] rounded-lg appearance-none cursor-pointer"
-                      style={{
-                        background: `linear-gradient(to right, #000 ${progress}%, rgba(0,0,0,0.1) ${progress}%)`,
-                      }}
-                    />
-                    <div className="flex justify-between mt-1 text-[11px] text-[rgba(0,0,0,0.4)]">
-                      <span>{formatTime(currentTime)}</span>
-                      <span>{formatTime(duration)}</span>
-                    </div>
-                  </div>
-                </div>
-                <audio
-                  ref={audioRef}
-                  src={audioUrl || visit.feedbackAudio}
-                  onEnded={handleEnded}
-                  preload="metadata"
-                  className="hidden"
-                />
-              </div>
-            )}
+
 
             {/* 评分 */}
             <div>
@@ -690,9 +649,48 @@ export default function VisitDetailPage() {
           </div>
         </div>
 
-        {/* 隐藏的音频元素 */}
+        {/* 固定在底部的音频播放器 */}
         {visit.feedbackAudio && (
-          <audio ref={audioRef} src={audioUrl || visit.feedbackAudio} />
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[rgba(0,0,0,0.05)] shadow-lg z-50">
+            <div className="w-full max-w-md mx-auto px-5 py-3">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={togglePlay}
+                  className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors flex-shrink-0"
+                >
+                  {isPlaying ? (
+                    <Pause className="w-5 h-5 text-white" />
+                  ) : (
+                    <Play className="w-5 h-5 text-white ml-0.5" />
+                  )}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-gray-600 font-medium mb-1 truncate">走访反馈录音</div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={progress}
+                    onChange={handleSeek}
+                    className="w-full h-1.5 bg-[rgba(0,0,0,0.1)] rounded-lg appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #000 ${progress}%, rgba(0,0,0,0.1) ${progress}%)`,
+                    }}
+                  />
+                </div>
+                <div className="text-[11px] text-[rgba(0,0,0,0.4)] flex-shrink-0">
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </div>
+              </div>
+              <audio
+                ref={audioRef}
+                src={audioUrl || visit.feedbackAudio}
+                onEnded={handleEnded}
+                preload="metadata"
+                className="hidden"
+              />
+            </div>
+          </div>
         )}
       </div>
 
