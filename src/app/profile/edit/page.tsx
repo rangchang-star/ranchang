@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Camera, Upload, Plus, X } from 'lucide-react';
+import { ArrowLeft, Camera, Upload, Plus, X, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AvatarUpload, AvatarDisplay } from '@/components/avatar-upload';
@@ -245,6 +245,46 @@ export function ProfileEditContent() {
   const [declarationType, setDeclarationType] = useState<string>('resource'); // 默认为"资源现货"
   const [declarationTheme, setDeclarationTheme] = useState<string>('');
   const [declarationDescription, setDeclarationDescription] = useState<string>('');
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // 语音朗读主题
+  const handleSpeakTheme = () => {
+    if (!declarationTheme.trim()) {
+      alert('请先输入主题内容');
+      return;
+    }
+
+    if (!('speechSynthesis' in window)) {
+      alert('您的浏览器不支持语音朗读功能');
+      return;
+    }
+
+    // 如果正在播放，先停止
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(declarationTheme);
+    utterance.lang = 'zh-CN'; // 设置为中文
+    utterance.rate = 1; // 语速
+    utterance.pitch = 1; // 音调
+
+    utterance.onstart = () => {
+      setIsPlaying(true);
+    };
+
+    utterance.onend = () => {
+      setIsPlaying(false);
+    };
+
+    utterance.onerror = () => {
+      setIsPlaying(false);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
 
   // 硬核经历状态 - 从 localStorage 恢复（按用户ID隔离）
   const [experiences, setExperiences] = useState<Array<{
@@ -1065,9 +1105,24 @@ export function ProfileEditContent() {
                 }
                 maxLength={15}
               />
-              <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
-                {declarationTheme.length}/15字（8-15字）
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
+                  {declarationTheme.length}/15字（8-15字）
+                </p>
+                <button
+                  onClick={handleSpeakTheme}
+                  className={`p-2 hover:bg-gray-100 rounded-full transition-colors ${
+                    isPlaying ? 'text-blue-500' : 'text-gray-400'
+                  }`}
+                  title={isPlaying ? '停止播放' : '朗读主题'}
+                >
+                  {isPlaying ? (
+                    <X className="w-5 h-5" />
+                  ) : (
+                    <Volume2 className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
             <div>
               <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">
