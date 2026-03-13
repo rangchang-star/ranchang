@@ -9,9 +9,11 @@ import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Image as ImageIcon } from 'lucide-react';
+import { useFileUpload, useImageUrl } from '@/hooks/use-image';
 
 // 默认设置数据
 const defaultSettings = {
+  logo: null as string | null,
   ignition: {
     visitSlogan: '每次探访都是商业思维的激烈碰撞，更是一场关于财务收入与使命践行的重新审视....',
     visitMedia: {
@@ -38,6 +40,10 @@ export default function AdminSettingsPage() {
   const visitVideoRef = useRef<HTMLVideoElement>(null);
   const aiCircleVideoRef = useRef<HTMLVideoElement>(null);
 
+  // Logo相关
+  const { url: logoUrl } = useImageUrl(settings.logo);
+  const { upload: uploadLogo, uploading: uploadingLogo } = useFileUpload();
+
   // 加载设置
   useEffect(() => {
     async function loadSettings() {
@@ -53,6 +59,9 @@ export default function AdminSettingsPage() {
         if (data.success && data.data) {
           setSettings(data.data);
           // 设置预览
+          if (data.data.logo) {
+            // Logo会通过useImageUrl自动加载
+          }
           if (data.data.ignition?.visitMedia?.url) {
             setPreviewVisitMedia(data.data.ignition.visitMedia.url);
           }
@@ -194,6 +203,43 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // Logo上传
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // 验证文件类型
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('只支持 JPEG、PNG、GIF、WebP 格式的图片');
+      return;
+    }
+
+    // 验证文件大小（5MB）
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('图片大小不能超过 5MB');
+      return;
+    }
+
+    try {
+      const result = await uploadLogo(file);
+      if (result.fileKey) {
+        setSettings(prev => ({
+          ...prev,
+          logo: result.fileKey,
+        }));
+        setHasChanged(true);
+        // 清除file input，允许重复选择同一文件
+        if (event.target) {
+          event.target.value = '';
+        }
+      }
+    } catch (error: any) {
+      alert(`上传失败：${error.message}`);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -212,6 +258,60 @@ export default function AdminSettingsPage() {
             {saving ? '保存中...' : '保存设置'}
           </Button>
         </div>
+
+        {/* Logo设置 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-[15px] font-semibold">Logo设置</CardTitle>
+            <CardDescription className="text-[12px]">
+              上传网站Logo，显示在前台页面
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="w-full h-32 bg-[rgba(0,0,0,0.02)] border-2 border-dashed border-[rgba(0,0,0,0.1)] rounded-lg overflow-hidden relative">
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <ImageIcon className="w-10 h-10 text-[rgba(0,0,0,0.3)]" />
+                    <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">未上传Logo</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] text-[rgba(0,0,0,0.6)]">
+                  支持 JPG、PNG、GIF、WebP 格式，最大 5MB
+                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                  id="logo-upload"
+                  disabled={uploadingLogo}
+                />
+                <label htmlFor="logo-upload">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-[12px]"
+                    asChild
+                    disabled={uploadingLogo}
+                  >
+                    <span>
+                      {uploadingLogo ? '上传中...' : '上传Logo'}
+                    </span>
+                  </Button>
+                </label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
