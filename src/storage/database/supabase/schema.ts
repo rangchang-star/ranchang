@@ -22,7 +22,7 @@ export const activityStatus = pgEnum('activity_status', ['draft', 'published', '
 export const registrationStatus = pgEnum('registration_status', ['registered', 'approved', 'rejected', 'cancelled']);
 export const visitStatus = pgEnum('visit_status', ['draft', 'upcoming', 'completed', 'cancelled']);
 export const notificationType = pgEnum('notification_type', ['system', 'activity', 'registration', 'visit', 'approval']);
-export const declarationSubtype = pgEnum('declaration_subtype', ['ability', 'connection', 'resource']);
+export const declarationType = pgEnum('declaration_type', ['ability', 'connection', 'resource']);
 
 // ============================================================
 // 1. 用户表（app_users）
@@ -198,8 +198,7 @@ export const visitRegistrations = pgTable('visit_registrations', {
 export const declarations = pgTable('declarations', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
-  type: varchar('type', { length: 20 }).notNull().default('resource'), // 统一为资源现货
-  subtype: declarationSubtype('subtype').default('resource'), // 子类型：ability(能力现货), connection(人脉现货), resource(资源现货)
+  type: declarationType('type').default('resource'), // 资源现货类型：ability(能力现货), connection(人脉现货), resource(资源现货)
   direction: varchar('direction', { length: 100 }), // 方向
   text: text('text').notNull(),
   summary: text('summary'),
@@ -215,7 +214,6 @@ export const declarations = pgTable('declarations', {
   index('declarations_date_idx').on(table.date),
   index('declarations_featured_idx').on(table.isFeatured),
   index('declarations_type_idx').on(table.type),
-  index('declarations_subtype_idx').on(table.subtype),
 ]);
 
 // ============================================================

@@ -32,8 +32,7 @@ export async function GET(request: NextRequest) {
     const data = declarationList.map((declaration: any) => ({
       id: declaration.id,
       userId: declaration.userId,
-      type: declaration.type,
-      subtype: declaration.subtype,
+      type: declaration.type, // 资源现货类型：ability(能力现货), connection(人脉现货), resource(资源现货)
       direction: declaration.direction,
       text: declaration.text,
       summary: declaration.summary,
@@ -68,8 +67,7 @@ export async function POST(request: NextRequest) {
       .values({
         id: crypto.randomUUID(),
         userId: body.userId,
-        type: 'resource', // 统一为资源现货
-        subtype: body.subtype || 'resource', // 子类型：ability(能力现货), connection(人脉现货), resource(资源现货)
+        type: body.type || 'resource', // 资源现货类型：ability(能力现货), connection(人脉现货), resource(资源现货)
         direction: body.direction,
         text: body.text,
         summary: body.summary,
