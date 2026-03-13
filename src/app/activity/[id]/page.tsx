@@ -105,35 +105,17 @@ export default function ActivityDetailPage() {
         const data = await response.json();
 
         if (data.success) {
-          // 处理图片URL - 优先使用coverImageKey
-          let imageUrl = '';
-          if (data.data.coverImageKey) {
-            // 使用storage API获取图片（通过查询参数，避免中文字符路径问题）
-            imageUrl = `/api/file?key=${encodeURIComponent(data.data.coverImageKey)}`;
-          } else if (data.data.coverImage) {
-            imageUrl = data.data.coverImage;
-          }
-
-          if (!imageUrl) {
-            imageUrl = ''; // 空字符串，让img标签不显示
-          }
-
-          // 处理结束时间（用于倒计时）- 构建完整的ISO时间
+          // 处理结束时间（用于倒计时）
           let endDateTime = '';
           if (data.data.date && data.data.endTime) {
-            // 处理不同格式的日期字符串
             let dateStr = data.data.date;
             if (dateStr.includes('T')) {
-              // ISO格式: "2026-12-30T16:00:00.000Z" -> 提取 "2026-12-30"
               dateStr = dateStr.split('T')[0];
             } else if (dateStr.includes(' ')) {
-              // 空格分隔: "2026-07-15 16:00:00" -> 提取 "2026-07-15"
               dateStr = dateStr.split(' ')[0];
             }
-            // 组合日期和时间，保持本地时区
             const dateTime = new Date(`${dateStr}T${data.data.endTime}:00`);
             if (!isNaN(dateTime.getTime())) {
-              // 直接使用本地时间字符串，避免时区转换
               endDateTime = dateTime.toISOString().slice(0, -1);
             }
           }
@@ -141,16 +123,12 @@ export default function ActivityDetailPage() {
           // 处理开始时间（用于显示）
           let startDateTime = '';
           if (data.data.date && data.data.startTime) {
-            // 处理不同格式的日期字符串
             let dateStr = data.data.date;
             if (dateStr.includes('T')) {
-              // ISO格式: "2026-12-30T16:00:00.000Z" -> 提取 "2026-12-30"
               dateStr = dateStr.split('T')[0];
             } else if (dateStr.includes(' ')) {
-              // 空格分隔: "2026-07-15 16:00:00" -> 提取 "2026-07-15"
               dateStr = dateStr.split(' ')[0];
             }
-            // 组合日期和时间
             const dateTime = new Date(`${dateStr}T${data.data.startTime}:00`);
             if (!isNaN(dateTime.getTime())) {
               startDateTime = dateTime.toLocaleString('zh-CN', {
@@ -163,20 +141,25 @@ export default function ActivityDetailPage() {
             }
           }
 
-          // 获取类型标签的中文
-          const categoryLabel = typeToLabel[data.data.type] || data.data.type || '';
+          // 构建图片 URL - 使用新的图片 API
+          let imageUrl = '';
+          if (data.data.coverImageKey) {
+            imageUrl = `/api/activities/${data.data.id}/image`;
+          } else if (data.data.coverImage) {
+            imageUrl = data.data.coverImage;
+          }
 
           // 将 API 数据转换为前端需要的格式
           const formattedActivity = {
             id: data.data.id.toString(),
-            category: categoryLabel, // 映射为中文
+            category: typeToLabel[data.data.type] || data.data.type || '',
             title: data.data.title || '',
             subtitle: '',
             description: data.data.description || '',
-            image: imageUrl, // 使用正确的图片URL
+            image: imageUrl,
             tags: data.data.tags && data.data.tags.length > 0
               ? data.data.tags
-              : [categoryLabel], // tags字段，如果为空则使用类型标签
+              : [typeToLabel[data.data.type] || data.data.type || ''],
             enrollments: [],
             enrolledCount: data.data.registeredCount || 0,
             maxEnrollments: data.data.capacity || 0,
@@ -185,8 +168,8 @@ export default function ActivityDetailPage() {
             address: data.data.location || '',
             teaFee: data.data.teaFee || '免费',
             status: data.data.status === 'published' ? 'ongoing' : 'ended',
-            endTime: endDateTime, // 完整的日期时间
-            startDate: startDateTime, // 格式化的显示文本
+            endTime: endDateTime,
+            startDate: startDateTime,
             organizer: '燃场',
             organizerAvatar: '/logo-ranchang.png',
           };
