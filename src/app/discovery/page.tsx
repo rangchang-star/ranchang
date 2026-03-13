@@ -365,7 +365,7 @@ export default function DiscoveryPage() {
         const [usersRes, activitiesRes, declarationsFeaturedRes, documentsRes, dailyRes] =
           await Promise.all([
             fetch("/api/users", { cache: 'no-store' }),
-            fetch("/api/activities?status=active", { cache: 'no-store' }),
+            fetch("/api/activities?status=published", { cache: 'no-store' }),
             fetch("/api/declarations-featured", { cache: 'no-store' }),
             fetch("/api/documents", { cache: 'no-store' }),
             fetch("/api/daily-declarations", { cache: 'no-store' }),
@@ -457,19 +457,18 @@ export default function DiscoveryPage() {
           const formattedActivities = activitiesData.data.map(
             (activity: any) => ({
               id: activity.id.toString(),
-              category: activity.category || "",
+              category: activity.type || "沙龙",
               title: activity.title || "",
-              subtitle: activity.subtitle || "",
+              subtitle: "",
               description: activity.description || "",
-              image: activity.image || "",
-              enrollments:
-                activity.participants?.map((p: any) => p.id.toString()) || [],
-              enrolledCount: activity.enrolledCount || 0,
+              image: activity.coverImage || "",
+              enrollments: [],
+              enrolledCount: activity.registeredCount || 0,
               maxEnrollments: activity.capacity || 0,
-              address: activity.address || "",
+              address: activity.location || "",
               teaFee: `茶水费${activity.teaFee || 0}元`,
               status:
-                activity.status === "active" || activity.status === "upcoming"
+                activity.status === "published"
                   ? "ongoing"
                   : "ended",
               endTime: activity.endDate || "",
