@@ -1015,20 +1015,17 @@ export default function ProfilePage() {
                   {/* 根据类型显示对应的标签 */}
                   <div className="flex items-center space-x-2 mb-1">
                     <span className={`px-2 py-0.5 text-[10px] rounded ${
-                      userInfo.currentDeclaration.type === 'ability' 
-                        ? 'bg-blue-100 text-blue-600' 
+                      userInfo.currentDeclaration.type === 'ability'
+                        ? 'bg-blue-100 text-blue-600'
                         : userInfo.currentDeclaration.type === 'connection'
                         ? 'bg-green-100 text-green-600'
                         : 'bg-orange-100 text-orange-600'
                     }`}>
-                      {userInfo.currentDeclaration.type === 'ability' 
-                        ? '能力现货' 
+                      {userInfo.currentDeclaration.type === 'ability'
+                        ? '能力现货'
                         : userInfo.currentDeclaration.type === 'connection'
                         ? '人脉现货'
                         : '资源现货'}
-                    </span>
-                    <span className="text-[14px] text-gray-500">
-                      {declarationDirections.find(d => d.id === userInfo.currentDeclaration.direction)?.name}
                     </span>
                     <div className="flex items-center space-x-2 ml-auto">
                       <button className="p-1 hover:bg-gray-200 transition-colors rounded">
