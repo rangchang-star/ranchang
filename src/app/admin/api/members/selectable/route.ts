@@ -13,6 +13,8 @@ export async function GET(request: NextRequest) {
         id: appUsers.id,
         nickname: appUsers.nickname,
         name: appUsers.name,
+        email: appUsers.email,
+        phone: appUsers.phone,
         avatar: appUsers.avatar,
         city: appUsers.city,
       })

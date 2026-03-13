@@ -1,705 +1,575 @@
 'use client';
 
+import { useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  CheckCircle, XCircle, Search, Send, Mail, 
-  User, Calendar, Target, UserCheck, Filter, ChevronRight,
-  MessageSquare, Clock, Bell, ArrowUp, ArrowDown, ChevronUp
-} from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { db } from '@/lib/db';
-import { notifications } from '@/lib/db';
+import { Label } from '@/components/ui/label';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { 
+  Check, 
+  X, 
+  Send, 
+  UserCheck, 
+  MapPin,
+  Clock,
+  User
+} from 'lucide-react';
 
-// 申请类型定义
-type ApplicationType = 'activity' | 'visit' | 'boardMember' | 'visitTarget';
-
-interface Application {
-  id: string;
-  type: ApplicationType;
-  applicantName: string;
-  applicantPhone: string;
-  applicantCompany?: string;
-  applicantPosition?: string;
-  targetName?: string;
-  targetId?: string;
-  reason: string;
-  status: 'registered' | 'approved' | 'rejected';
-  applyTime: string;
-}
-
-// 会员标签
-const memberTags = [
-  'AI应用', '数字化转型', '供应链', '智能制造', '新能源',
-  '医疗健康', '教育培训', '金融投资', '互联网', '制造业',
-  '企业家', '创业者', '高管', '自由职业'
-];
-
-const typeConfig = {
-  activity: { 
-    label: '活动申请', 
-    icon: Calendar, 
-    color: 'bg-blue-50 text-blue-600',
-    targetLabel: '活动名称'
-  },
-  visit: { 
-    label: '探访申请', 
-    icon: Target, 
-    color: 'bg-green-50 text-green-600',
-    targetLabel: '探访对象'
-  },
-  boardMember: { 
-    label: '私董会案主', 
-    icon: UserCheck, 
-    color: 'bg-purple-50 text-purple-600',
-    targetLabel: ''
-  },
-  visitTarget: { 
-    label: '被探访案主', 
-    icon: User, 
-    color: 'bg-orange-50 text-orange-600',
-    targetLabel: ''
-  },
-};
-
-export default function AdminMessagesPage() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<'all' | ApplicationType>('all');
-  const [selectedStatus, setSelectedStatus] = useState<'all' | 'registered' | 'approved' | 'rejected'>('registered');
-  const [timeSort, setTimeSort] = useState<'asc' | 'desc' | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // 消息发送相关状态
-  const [showMessageDialog, setShowMessageDialog] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [messageContent, setMessageContent] = useState('');
-
-  // 加载申请数据
-  useEffect(() => {
-    async function loadApplications() {
-      try {
-        setIsLoading(true);
-
-        // 调用API获取待审批记录
-        const response = await fetch('/admin/api/approvals?status=registered');
-
-        if (!response.ok) {
-          throw new Error('加载数据失败');
-        }
-
-        const result = await response.json();
-
-        if (result.success) {
-          // 转换为统一的申请格式
-          const formattedApplications: Application[] = result.data.map((item: any) => ({
-            id: String(item.id),
-            type: item.registrationType as ApplicationType,
-            applicantName: item.userName || '未知',
-            applicantPhone: item.userPhone || '未知',
-            applicantCompany: item.userCompany || '',
-            applicantPosition: item.userPosition || '',
-            targetName: item.activityTitle || item.visitCompanyName || '',
-            targetId: item.activityId || item.visitId,
-            reason: item.note || '',
-            status: item.status as 'pending' | 'approved' | 'rejected',
-            applyTime: item.registeredAt,
-          }));
-
-          setApplications(formattedApplications);
-        }
-      } catch (error) {
-        console.error('加载申请数据失败:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadApplications();
-  }, []);
-
-  // 获取待审核数量
-  const getPendingCount = (type?: ApplicationType) => {
-    return applications.filter(app => 
-      app.status === 'registered' && 
-      (type ? app.type === type : true)
-    ).length;
-  };
-
-  // 筛选申请
-  const filteredApplications = applications.filter((app) => {
-    const matchesSearch = app.applicantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (app.applicantCompany || '').toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === 'all' || app.type === selectedType;
-    const matchesStatus = selectedStatus === 'all' || app.status === selectedStatus;
-    
-    return matchesSearch && matchesType && matchesStatus;
-  }).sort((a, b) => {
-    if (!timeSort) return 0;
-    const dateA = new Date(a.applyTime).getTime();
-    const dateB = new Date(b.applyTime).getTime();
-    return timeSort === 'asc' ? dateA - dateB : dateB - dateA;
-  });
-
-  // 审批处理
-  const handleApprove = async (applicationId: string, type: ApplicationType) => {
-    try {
-      const response = await fetch(`/admin/api/approvals/${applicationId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          status: 'approved',
-          type,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('审核失败');
-      }
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || '审核失败');
-      }
-
-      // 更新前端状态
-      const updatedApplications = applications.map((app) =>
-        app.id === applicationId ? { ...app, status: 'approved' as const } : app
-      );
-      setApplications(updatedApplications);
-    } catch (error: any) {
-      console.error('审核失败:', error);
-      alert(error.message || '审核失败');
-    }
-  };
-
-  const handleReject = async (applicationId: string, type: ApplicationType) => {
-    try {
-      const response = await fetch(`/admin/api/approvals/${applicationId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          status: 'rejected',
-          type,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('审核失败');
-      }
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || '审核失败');
-      }
-
-      // 更新前端状态
-      const updatedApplications = applications.map((app) =>
-        app.id === applicationId ? { ...app, status: 'rejected' as const } : app
-      );
-      setApplications(updatedApplications);
-    } catch (error: any) {
-      console.error('审核失败:', error);
-      alert(error.message || '审核失败');
-    }
-  };
-
-  // 切换标签选择
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    );
-  };
-
-  // 发送消息
-  const handleSendMessage = () => {
-    if (selectedTags.length === 0 || !messageContent.trim()) {
-      alert('请选择标签并填写消息内容');
-      return;
-    }
-
-    // 模拟发送消息
-    const memberCount = Math.floor(Math.random() * 20) + 5;
-    alert(`消息已发送给 ${memberCount} 位标签包含 ${selectedTags.join('、')} 的会员`);
-    
-    // 重置表单
-    setSelectedTags([]);
-    setMessageContent('');
-    setShowMessageDialog(false);
-  };
-
+export default function MessagesPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* 页面标题 */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-[20px] font-bold text-gray-900 mb-1">消息管理</h1>
-            <p className="text-[13px] text-[rgba(0,0,0,0.6)]">审批各类申请并群发消息</p>
-          </div>
-          <Button 
-            className="bg-blue-400 hover:bg-blue-500 text-white text-[13px]"
-            onClick={() => setShowMessageDialog(true)}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            发送消息
-          </Button>
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">消息管理</h2>
+          <p className="text-muted-foreground">管理审核任务和发送平台消息</p>
         </div>
 
-        <Tabs defaultValue="registered" className="space-y-4">
-          <TabsList className="bg-[rgba(0,0,0,0.05)] p-1">
-            <TabsTrigger value="registered" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
-              待审批 ({getPendingCount()})
+        <Tabs defaultValue="ai-circle" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="ai-circle">
+              <UserCheck className="w-4 h-4 mr-2" />
+              2026AI圈审核
             </TabsTrigger>
-            <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-blue-600">
-              全部申请
+            <TabsTrigger value="visit">
+              <MapPin className="w-4 h-4 mr-2" />
+              申请探访审核
+            </TabsTrigger>
+            <TabsTrigger value="platform">
+              <Send className="w-4 h-4 mr-2" />
+              平台消息发送
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="registered" className="space-y-4">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
-                <Input
-                  placeholder="搜索申请人或公司..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <button
-                onClick={() => setTimeSort(timeSort === 'desc' ? null : 'desc')}
-                className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
-                  timeSort === 'desc' 
-                    ? 'border-blue-400 bg-blue-50 text-blue-600' 
-                    : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                }`}
-                title="按时间降序"
-              >
-                <Clock className="w-4 h-4" />
-                <ArrowDown className="w-3 h-3" />
-                <span>最新</span>
-              </button>
-              <button
-                onClick={() => setTimeSort(timeSort === 'asc' ? null : 'asc')}
-                className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
-                  timeSort === 'asc' 
-                    ? 'border-blue-400 bg-blue-50 text-blue-600' 
-                    : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                }`}
-                title="按时间升序"
-              >
-                <Clock className="w-4 h-4" />
-                <ArrowUp className="w-3 h-3" />
-                <span>最早</span>
-              </button>
-            </div>
-            {renderApplicationList('pending')}
+          {/* 2026AI圈审核 */}
+          <TabsContent value="ai-circle" className="mt-6">
+            <AICircleApprovalTab />
           </TabsContent>
 
-          <TabsContent value="all" className="space-y-4">
-            <div className="space-y-4 mb-4">
-              {/* 搜索框 */}
-              <div className="flex items-center space-x-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[rgba(0,0,0,0.4)]" />
-                  <Input
-                    placeholder="搜索申请人或公司..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <button
-                  onClick={() => setTimeSort(timeSort === 'desc' ? null : 'desc')}
-                  className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
-                    timeSort === 'desc' 
-                      ? 'border-blue-400 bg-blue-50 text-blue-600' 
-                      : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                  }`}
-                  title="按时间降序"
-                >
-                  <Clock className="w-4 h-4" />
-                  <ArrowDown className="w-3 h-3" />
-                  <span>最新</span>
-                </button>
-                <button
-                  onClick={() => setTimeSort(timeSort === 'asc' ? null : 'asc')}
-                  className={`flex items-center space-x-2 px-3 py-2 border text-[13px] transition-colors ${
-                    timeSort === 'asc' 
-                      ? 'border-blue-400 bg-blue-50 text-blue-600' 
-                      : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                  }`}
-                  title="按时间升序"
-                >
-                  <Clock className="w-4 h-4" />
-                  <ArrowUp className="w-3 h-3" />
-                  <span>最早</span>
-                </button>
-              </div>
+          {/* 申请探访审核 */}
+          <TabsContent value="visit" className="mt-6">
+            <VisitApprovalTab />
+          </TabsContent>
 
-              {/* 类型标签筛选 */}
-              <div className="flex items-center space-x-3">
-                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">类型筛选：</span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedType('all')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'all'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    全部类型
-                  </button>
-                  <button
-                    onClick={() => setSelectedType('activity')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'activity'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    活动申请
-                  </button>
-                  <button
-                    onClick={() => setSelectedType('boardMember')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'boardMember'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    私董会案主
-                  </button>
-                  <button
-                    onClick={() => setSelectedType('visit')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'visit'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    探访项目
-                  </button>
-                  <button
-                    onClick={() => setSelectedType('visitTarget')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedType === 'visitTarget'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    被探访案主
-                  </button>
-                </div>
-              </div>
-
-              {/* 状态筛选 */}
-              <div className="flex items-center space-x-3">
-                <span className="text-[13px] text-[rgba(0,0,0,0.6)]">状态筛选：</span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setSelectedStatus('all')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedStatus === 'all'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    全部状态
-                  </button>
-                  <button
-                    onClick={() => setSelectedStatus('registered')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedStatus === 'registered'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    待审批
-                  </button>
-                  <button
-                    onClick={() => setSelectedStatus('approved')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedStatus === 'approved'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    已通过
-                  </button>
-                  <button
-                    onClick={() => setSelectedStatus('rejected')}
-                    className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                      selectedStatus === 'rejected'
-                        ? 'bg-blue-400 border-blue-400 text-white'
-                        : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                    }`}
-                  >
-                    已拒绝
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {renderApplicationList(selectedStatus)}
+          {/* 平台消息发送 */}
+          <TabsContent value="platform" className="mt-6">
+            <PlatformMessageTab />
           </TabsContent>
         </Tabs>
-
-        {/* 发送消息弹窗 */}
-        <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
-          <DialogContent className="w-[95%] max-w-[600px] max-h-[85vh] overflow-y-auto">
-            <VisuallyHidden>
-              <DialogTitle>发送消息</DialogTitle>
-            </VisuallyHidden>
-            
-            <div className="space-y-6">
-              {/* 标题 */}
-              <div className="flex items-center space-x-3 pb-4 border-b border-[rgba(0,0,0,0.1)]">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-semibold text-gray-900">发送群发消息</h3>
-                  <p className="text-[12px] text-[rgba(0,0,0,0.6)]">按标签向会员发送消息通知</p>
-                </div>
-              </div>
-
-              {/* 标签选择 */}
-              <div>
-                <label className="block text-[13px] font-medium text-gray-900 mb-3">
-                  选择接收会员标签
-                  <span className="text-[rgba(0,0,0,0.4)] font-normal ml-2">
-                    (已选 {selectedTags.length} 个)
-                  </span>
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {memberTags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => toggleTag(tag)}
-                      className={`px-3 py-1.5 text-[12px] border transition-colors ${
-                        selectedTags.includes(tag)
-                          ? 'bg-blue-400 border-blue-400 text-white'
-                          : 'border-[rgba(0,0,0,0.1)] text-[rgba(0,0,0,0.6)] hover:border-blue-400'
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 消息内容 */}
-              <div>
-                <label className="block text-[13px] font-medium text-gray-900 mb-3">
-                  消息内容
-                </label>
-                <Textarea
-                  placeholder="请输入要发送的消息内容..."
-                  value={messageContent}
-                  onChange={(e) => setMessageContent(e.target.value)}
-                  className="min-h-[150px] text-[13px]"
-                  maxLength={500}
-                />
-                <div className="flex justify-between mt-2">
-                  <span className="text-[12px] text-[rgba(0,0,0,0.4)]">
-                    消息将发送给标签匹配的会员
-                  </span>
-                  <span className="text-[12px] text-[rgba(0,0,0,0.4)]">
-                    {messageContent.length}/500
-                  </span>
-                </div>
-              </div>
-
-              {/* 按钮 */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-[rgba(0,0,0,0.1)]">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowMessageDialog(false)}
-                  className="border-[rgba(0,0,0,0.1)] text-[13px]"
-                >
-                  取消
-                </Button>
-                <Button
-                  className="bg-blue-400 hover:bg-blue-500 text-white text-[13px]"
-                  onClick={handleSendMessage}
-                  disabled={selectedTags.length === 0 || !messageContent.trim()}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  发送消息
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </AdminLayout>
   );
+}
 
-  function renderApplicationList(statusFilter: 'all' | 'registered' | 'approved' | 'rejected' | 'pending') {
-    let listToRender: Application[];
+// 2026AI圈审核组件
+function AICircleApprovalTab() {
+  const [approvals, setApprovals] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-    if (statusFilter === 'registered') {
-      // 待审批列表：筛选状态为registered，然后应用搜索和排序
-      listToRender = applications
-        .filter(app => app.status === 'registered')
-        .filter(app => {
-          const matchesSearch = app.applicantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                               (app.applicantCompany || '').toLowerCase().includes(searchTerm.toLowerCase());
-          return matchesSearch;
-        })
-        .sort((a, b) => {
-          if (!timeSort) return 0;
-          const dateA = new Date(a.applyTime).getTime();
-          const dateB = new Date(b.applyTime).getTime();
-          return timeSort === 'asc' ? dateA - dateB : dateB - dateA;
-        });
-    } else {
-      // 其他列表使用filteredApplications
-      listToRender = filteredApplications;
+  // 加载待审核的2026AI圈申请
+  const loadApprovals = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/admin/api/approvals?status=pending&type=ai-circle');
+      const data = await response.json();
+      
+      if (data.success) {
+        setApprovals(data.data || []);
+      }
+    } catch (error) {
+      console.error('加载AI圈审核列表失败:', error);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    if (listToRender.length === 0) {
-      return (
-        <div className="text-center py-12 bg-[rgba(0,0,0,0.02)] border border-dashed border-[rgba(0,0,0,0.1)]">
-          <MessageSquare className="w-12 h-12 text-[rgba(0,0,0,0.2)] mx-auto mb-3" />
-          <p className="text-[13px] text-[rgba(0,0,0,0.6)]">
-            暂无相关申请
-          </p>
-        </div>
-      );
+  // 处理审核
+  const handleApproval = async (id: string, action: 'approve' | 'reject') => {
+    try {
+      const response = await fetch(`/admin/api/approvals/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        // 重新加载列表
+        await loadApprovals();
+        alert(action === 'approve' ? '审核通过！已发送消息给用户' : '已拒绝该申请');
+      } else {
+        alert(data.message || '操作失败');
+      }
+    } catch (error) {
+      console.error('审核操作失败:', error);
+      alert('操作失败，请稍后重试');
     }
+  };
 
+  if (isLoading) {
     return (
-      <div className="space-y-3">
-        {listToRender.map((application) => {
-          const config = typeConfig[application.type];
-          const Icon = config.icon;
-          
-          return (
-            <div
-              key={application.id}
-              className="bg-white border border-[rgba(0,0,0,0.08)] p-4 space-y-3"
-            >
-              {/* 申请头部 */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3 flex-1">
-                  {/* 类型图标 */}
-                  <div className={`w-10 h-10 ${config.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>待审核的2026AI圈申请</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="py-8 text-center text-muted-foreground">加载中...</div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-                  {/* 申请信息 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-[13px] font-medium text-gray-900">
-                        {application.applicantName}
-                      </span>
-                      {application.applicantCompany && (
-                        <>
-                          <span className="text-[rgba(0,0,0,0.3)]">·</span>
-                          <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                            {application.applicantCompany}
-                          </span>
-                        </>
-                      )}
-                      {application.applicantPosition && (
-                        <>
-                          <span className="text-[rgba(0,0,0,0.3)]">·</span>
-                          <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                            {application.applicantPosition}
-                          </span>
-                        </>
-                      )}
-                    </div>
-
-                    {/* 申请类型和目标 */}
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Badge className={`text-[11px] font-normal ${config.color}`}>
-                        {config.label}
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>待审核的2026AI圈申请</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {approvals.length === 0 ? (
+          <div className="py-8 text-center text-muted-foreground">
+            暂无待审核的申请
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {approvals.map((approval) => (
+              <div
+                key={approval.id}
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-semibold text-foreground">
+                        {approval.userName || approval.userNickname || '未知用户'}
+                      </h3>
+                      <Badge variant="outline">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {new Date(approval.createdAt).toLocaleDateString('zh-CN')}
                       </Badge>
-                      {application.targetName && (
-                        <>
-                          <ChevronRight className="w-3 h-3 text-[rgba(0,0,0,0.3)]" />
-                          <span className="text-[13px] text-[rgba(0,0,0,0.6)]">
-                            {application.targetName}
-                          </span>
-                        </>
-                      )}
                     </div>
-
-                    {/* 申请理由 */}
-                    <p className="text-[13px] text-[rgba(0,0,0,0.6)] line-clamp-2">
-                      {application.reason}
+                    <p className="text-sm text-muted-foreground mb-3">
+                      申请加入2026AI圈
                     </p>
+                    {approval.reason && (
+                      <div className="bg-gray-50 rounded-md p-3 mb-3">
+                        <p className="text-sm text-muted-foreground">
+                          申请理由: {approval.reason}
+                        </p>
+                      </div>
+                    )}
+                    {approval.userInfo && (
+                      <div className="text-sm text-muted-foreground">
+                        <div>行业: {approval.userInfo.industry || '未填写'}</div>
+                        <div>公司: {approval.userInfo.company || '未填写'}</div>
+                      </div>
+                    )}
                   </div>
-                </div>
-
-                {/* 时间和状态 */}
-                <div className="text-right ml-4">
-                  <div className="flex items-center justify-end space-x-1 mb-2">
-                    <Clock className="w-3 h-3 text-[rgba(0,0,0,0.4)]" />
-                    <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                      {application.applyTime}
-                    </span>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleApproval(approval.id, 'reject')}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      拒绝
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleApproval(approval.id, 'approve')}
+                    >
+                      <Check className="w-4 h-4 mr-1" />
+                      通过
+                    </Button>
                   </div>
-                  <Badge
-                    className={`text-[11px] font-normal ${
-                      application.status === 'registered'
-                        ? 'bg-yellow-50 text-yellow-600'
-                        : application.status === 'approved'
-                        ? 'bg-green-50 text-green-600'
-                        : 'bg-red-50 text-red-600'
-                    }`}
-                  >
-                    {application.status === 'registered' && '待审批'}
-                    {application.status === 'approved' && '已通过'}
-                    {application.status === 'rejected' && '已拒绝'}
-                  </Badge>
                 </div>
               </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
-              {/* 操作按钮 */}
-              {application.status === 'registered' && (
-                <div className="flex items-center justify-end space-x-3 pt-3 border-t border-[rgba(0,0,0,0.05)]">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleReject(application.id, application.type)}
-                    className="border-red-400 text-red-600 hover:bg-red-50 text-[12px]"
-                  >
-                    <XCircle className="w-3 h-3 mr-1" />
-                    拒绝
-                  </Button>
-                  <Button
-                    className="bg-blue-400 hover:bg-blue-500 text-white text-[12px]"
-                    onClick={() => handleApprove(application.id, application.type)}
-                  >
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    通过
-                  </Button>
+// 申请探访审核组件
+function VisitApprovalTab() {
+  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 加载待审核的探访报名
+  const loadRegistrations = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/admin/api/visit-registrations?status=registered');
+      const data = await response.json();
+      
+      if (data.success) {
+        setRegistrations(data.data || []);
+      }
+    } catch (error) {
+      console.error('加载探访审核列表失败:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 处理审核
+  const handleApproval = async (id: string, action: 'approve' | 'reject') => {
+    try {
+      const response = await fetch(`/admin/api/visit-registrations/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        // 重新加载列表
+        await loadRegistrations();
+        alert(action === 'approve' ? '审核通过！已发送消息给用户' : '已拒绝该申请');
+      } else {
+        alert(data.message || '操作失败');
+      }
+    } catch (error) {
+      console.error('审核操作失败:', error);
+      alert('操作失败，请稍后重试');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>待审核的探访申请</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="py-8 text-center text-muted-foreground">加载中...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>待审核的探访申请</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {registrations.length === 0 ? (
+          <div className="py-8 text-center text-muted-foreground">
+            暂无待审核的申请
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {registrations.map((reg) => (
+              <div
+                key={reg.id}
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-semibold text-foreground">
+                        {reg.userName || '未知用户'}
+                      </h3>
+                      <Badge variant="outline">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {new Date(reg.createdAt).toLocaleDateString('zh-CN')}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      申请探访: {reg.visitInfo?.title || '未填写'}
+                    </p>
+                    {reg.note && (
+                      <div className="bg-gray-50 rounded-md p-3 mb-3">
+                        <p className="text-sm text-muted-foreground">
+                          备注信息: {reg.note}
+                        </p>
+                      </div>
+                    )}
+                    <div className="text-sm text-muted-foreground">
+                      <div>联系方式: {reg.userPhone || reg.userEmail || '未填写'}</div>
+                      {reg.visitInfo?.date && (
+                        <div>探访时间: {new Date(reg.visitInfo.date).toLocaleString('zh-CN')}</div>
+                      )}
+                      {reg.visitInfo?.location && (
+                        <div>探访地点: {reg.visitInfo.location}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleApproval(reg.id, 'reject')}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      拒绝
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleApproval(reg.id, 'approve')}
+                    >
+                      <Check className="w-4 h-4 mr-1" />
+                      通过
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// 平台消息发送组件
+function PlatformMessageTab() {
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [message, setMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 加载可选择的用户列表
+  const loadUsers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/admin/api/members/selectable');
+      const data = await response.json();
+      
+      if (data.success) {
+        setAvailableUsers(data.data || []);
+      }
+    } catch (error) {
+      console.error('加载用户列表失败:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 切换用户选择
+  const toggleUser = (userId: string) => {
+    setSelectedUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  // 全选/取消全选
+  const toggleSelectAll = () => {
+    if (selectedUsers.length === filteredUsers.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(filteredUsers.map((u) => u.id));
+    }
+  };
+
+  // 过滤后的用户列表
+  const filteredUsers = availableUsers.filter((user) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      user.name?.toLowerCase().includes(searchLower) ||
+      user.nickname?.toLowerCase().includes(searchLower) ||
+      user.email?.toLowerCase().includes(searchLower) ||
+      user.phone?.includes(searchTerm)
+    );
+  });
+
+  // 发送消息
+  const handleSend = async () => {
+    if (selectedUsers.length === 0) {
+      alert('请至少选择一个用户');
+      return;
+    }
+    
+    if (!message.trim()) {
+      alert('请输入消息内容');
+      return;
+    }
+
+    try {
+      setIsSending(true);
+      const response = await fetch('/admin/api/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userIds: selectedUsers,
+          content: message,
+        }),
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        alert(`成功发送消息给 ${selectedUsers.length} 位用户`);
+        setMessage('');
+        setSelectedUsers([]);
+      } else {
+        alert(data.message || '发送失败');
+      }
+    } catch (error) {
+      console.error('发送消息失败:', error);
+      alert('发送失败，请稍后重试');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>发送平台消息</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="py-8 text-center text-muted-foreground">加载中...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 用户选择 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>选择接收用户</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={toggleSelectAll}
+            >
+              {selectedUsers.length === filteredUsers.length && filteredUsers.length > 0
+                ? '取消全选'
+                : '全选'}
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* 搜索框 */}
+            <div>
+              <Label>搜索用户</Label>
+              <input
+                type="text"
+                placeholder="输入姓名、昵称、邮箱或手机号"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* 用户列表 */}
+            <div className="border rounded-md max-h-[400px] overflow-y-auto">
+              {filteredUsers.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground">
+                  没有找到匹配的用户
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {filteredUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => toggleUser(user.id)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.includes(user.id)}
+                        onChange={() => {}}
+                        className="w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-foreground">
+                          {user.nickname || user.name || '未命名'}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {user.email || user.phone || '无联系方式'}
+                        </div>
+                      </div>
+                      {selectedUsers.includes(user.id) && (
+                        <Check className="w-5 h-5 text-blue-500" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          );
-        })}
-      </div>
-    );
-  }
+
+            {/* 已选择数量 */}
+            <div className="text-sm text-muted-foreground">
+              已选择 {selectedUsers.length} 位用户
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 消息编辑 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>编写消息</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="message">消息内容</Label>
+              <Textarea
+                id="message"
+                placeholder="请输入要发送的消息内容..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={10}
+                className="mt-1 resize-none"
+              />
+              <div className="text-sm text-muted-foreground mt-1">
+                {message.length} / 500 字
+              </div>
+            </div>
+
+            <Button
+              onClick={handleSend}
+              disabled={isSending || selectedUsers.length === 0 || !message.trim()}
+              className="w-full"
+            >
+              {isSending ? (
+                <>
+                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                  发送中...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  发送消息 ({selectedUsers.length} 人)
+                </>
+              )}
+            </Button>
+
+            {selectedUsers.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                <div className="flex items-center gap-2 text-blue-800">
+                  <User className="w-4 h-4" />
+                  <span className="font-medium">
+                    即将发送给 {selectedUsers.length} 位用户
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

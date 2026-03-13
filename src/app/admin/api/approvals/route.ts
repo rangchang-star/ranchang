@@ -49,6 +49,13 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('获取审批列表失败:', error);
+    // 如果表不存在，返回空数据而不是错误
+    if (error && typeof error === 'object' && 'code' in error && (error as any).code === '42P01') {
+      return NextResponse.json({
+        success: true,
+        data: [],
+      });
+    }
     return NextResponse.json(
       { success: false, error: '获取审批列表失败' },
       { status: 500 }
