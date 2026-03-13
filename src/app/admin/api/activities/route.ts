@@ -56,3 +56,49 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+// POST - 创建活动（后台）
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // 验证必填字段
+    if (!body.title || !body.date) {
+      return NextResponse.json(
+        { success: false, error: '标题和日期为必填字段' },
+        { status: 400 }
+      );
+    }
+
+    const newActivity = await db
+      .insert(activities)
+      .values({
+        title: body.title,
+        description: body.description || '',
+        date: new Date(body.date),
+        startDate: new Date(body.startDate || body.date),
+        endDate: new Date(body.endDate || body.date),
+        startTime: body.startTime,
+        endTime: body.endTime,
+        location: body.location,
+        capacity: body.capacity ? parseInt(body.capacity) : 30,
+        type: body.type || 'salon',
+        coverImage: body.coverImage,
+        coverImageKey: body.coverImageKey,
+        status: body.status || 'draft',
+        createdBy: body.createdBy,
+      })
+      .returning();
+
+    return NextResponse.json({
+      success: true,
+      data: newActivity[0],
+    });
+  } catch (error) {
+    console.error('创建活动失败:', error);
+    return NextResponse.json(
+      { success: false, error: '创建活动失败' },
+      { status: 500 }
+    );
+  }
+}

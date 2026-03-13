@@ -34,7 +34,7 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { url: imageUrl } = useImageUrl(currentImageKey);
-  const { upload, uploading, progress } = useFileUpload('/api/upload/avatar');
+  const { upload, uploading, progress } = useFileUpload('/api/upload');
 
   const handleFileSelect = () => {
     if (!readonly) {
