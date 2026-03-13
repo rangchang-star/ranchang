@@ -34,8 +34,7 @@ export async function GET(request: NextRequest) {
       userId: notification.userId,
       type: notification.type,
       title: notification.title,
-      content: notification.content,
-      relatedId: notification.relatedId,
+      content: notification.message, // 数据库字段是 message
       isRead: notification.isRead,
       createdAt: notification.createdAt,
     }));
@@ -61,13 +60,13 @@ export async function POST(request: NextRequest) {
     const newNotification = await db
       .insert(notifications)
       .values({
-        id: crypto.randomUUID(),
         userId: body.userId,
         type: body.type,
         title: body.title,
-        content: body.content,
-        relatedId: body.relatedId,
+        message: body.content || body.message, // 接收 content 参数但映射到 message 字段
+        actionUrl: body.actionUrl,
         isRead: false,
+        // 不设置 id，使用数据库的 gen_random_uuid()
       })
       .returning();
 

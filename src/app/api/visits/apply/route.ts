@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, visitRegistrations, visits, appUsers } from '@/lib/db';
+import { db, approvals, visits, appUsers } from '@/lib/db';
 import { eq, sql } from 'drizzle-orm';
 
 // POST - 申请探访
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     // 检查探访是否存在
     const visitExists = await db
-      .select({ id: visits.id })
+      .select({ id: visits.id, title: visits.companyName, date: visits.date })
       .from(visits)
       .where(eq(visits.id, visitId))
       .limit(1);
@@ -30,51 +30,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 检查用户是否已经报名过
-    const existingRegistration = await db
-      .select({ id: visitRegistrations.id })
-      .from(visitRegistrations)
+    const visitInfo = visitExists[0];
+
+    // 检查用户是否已经有待审核或已通过的申请
+    const existingApproval = await db
+      .select({ id: approvals.id, status: approvals.status })
+      .from(approvals)
       .where(
-        sql`${visitRegistrations.visitId} = ${visitId} AND ${visitRegistrations.userId} = ${userId}`
+        sql`${approvals.type} = 'visit' AND ${approvals.userId} = ${userId} AND ${approvals.title} = ${visitInfo.title}`
       )
       .limit(1);
 
-    if (existingRegistration && existingRegistration.length > 0) {
-      return NextResponse.json(
-        { success: false, error: '您已经报名过此探访' },
-        { status: 400 }
-      );
+    if (existingApproval && existingApproval.length > 0) {
+      const status = existingApproval[0].status;
+      if (status === 'pending') {
+        return NextResponse.json(
+          { success: false, error: '您已提交申请，请等待审核' },
+          { status: 400 }
+        );
+      } else if (status === 'approved') {
+        return NextResponse.json(
+          { success: false, error: '您的申请已通过，无需重复申请' },
+          { status: 400 }
+        );
+      }
     }
 
-    // 创建报名记录
-    const newRegistration = await db
-      .insert(visitRegistrations)
+    // 创建审批记录（而不是直接创建visit_registrations）
+    const newApproval = await db
+      .insert(approvals)
       .values({
         id: crypto.randomUUID(),
-        visitId,
         userId,
-        status: 'registered',
-        note: `姓名: ${userName}, 电话: ${userPhone}, 微信: ${userWechat}`,
+        type: 'visit',
+        title: visitInfo.title || '探访申请',
+        description: `姓名: ${userName}, 电话: ${userPhone}, 微信: ${userWechat}${visitInfo.date ? `, 探访时间: ${visitInfo.date.toISOString().split('T')[0]}` : ''}`,
+        status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date(),
       })
       .returning();
 
-    // 更新探访的报名人数
-    await db
-      .update(visits)
-      .set({
-        registeredCount: sql`${visits.registeredCount} + 1`,
-      })
-      .where(eq(visits.id, visitId));
-
-    // 发送通知给管理员（可选）
-    // 这里可以添加管理员通知逻辑
-
     return NextResponse.json({
       success: true,
-      message: '申请提交成功',
-      data: newRegistration[0],
+      message: '申请提交成功，请等待管理员审核',
+      data: newApproval[0],
     });
   } catch (error) {
     console.error('申请探访失败:', error);
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false, 
-          error: '探访报名功能暂不可用，请联系管理员' 
+          error: '探访申请功能暂不可用，请联系管理员' 
         },
         { status: 500 }
       );

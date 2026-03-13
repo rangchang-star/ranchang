@@ -202,18 +202,18 @@ function AICircleApprovalTab() {
 
 // 申请探访审核组件
 function VisitApprovalTab() {
-  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [approvals, setApprovals] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 加载待审核的探访报名
-  const loadRegistrations = async () => {
+  // 加载待审核的探访申请
+  const loadApprovals = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/admin/api/visit-registrations?status=registered');
+      const response = await fetch('/admin/api/approvals?status=pending&type=visit');
       const data = await response.json();
       
       if (data.success) {
-        setRegistrations(data.data || []);
+        setApprovals(data.data || []);
       }
     } catch (error) {
       console.error('加载探访审核列表失败:', error);
@@ -225,7 +225,7 @@ function VisitApprovalTab() {
   // 处理审核
   const handleApproval = async (id: string, action: 'approve' | 'reject') => {
     try {
-      const response = await fetch(`/admin/api/visit-registrations/${id}`, {
+      const response = await fetch(`/admin/api/approvals/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
@@ -234,8 +234,8 @@ function VisitApprovalTab() {
       const data = await response.json();
       if (data.success) {
         // 重新加载列表
-        await loadRegistrations();
-        alert(action === 'approve' ? '审核通过！已发送消息给用户' : '已拒绝该申请');
+        await loadApprovals();
+        alert(action === 'approve' ? '审核通过！已创建报名记录并发送消息给用户' : '已拒绝该申请');
       } else {
         alert(data.message || '操作失败');
       }
@@ -264,60 +264,51 @@ function VisitApprovalTab() {
         <CardTitle>待审核的探访申请</CardTitle>
       </CardHeader>
       <CardContent>
-        {registrations.length === 0 ? (
+        {approvals.length === 0 ? (
           <div className="py-8 text-center text-muted-foreground">
             暂无待审核的申请
           </div>
         ) : (
           <div className="space-y-4">
-            {registrations.map((reg) => (
+            {approvals.map((approval) => (
               <div
-                key={reg.id}
+                key={approval.id}
                 className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-semibold text-foreground">
-                        {reg.userName || '未知用户'}
+                        {approval.userName || approval.userNickname || '未知用户'}
                       </h3>
                       <Badge variant="outline">
                         <Clock className="w-3 h-3 mr-1" />
-                        {new Date(reg.createdAt).toLocaleDateString('zh-CN')}
+                        {new Date(approval.createdAt).toLocaleDateString('zh-CN')}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
-                      申请探访: {reg.visitInfo?.title || '未填写'}
+                      申请探访: {approval.title || '未填写'}
                     </p>
-                    {reg.note && (
+                    {approval.description && (
                       <div className="bg-gray-50 rounded-md p-3 mb-3">
-                        <p className="text-sm text-muted-foreground">
-                          备注信息: {reg.note}
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          {approval.description}
                         </p>
                       </div>
                     )}
-                    <div className="text-sm text-muted-foreground">
-                      <div>联系方式: {reg.userPhone || reg.userEmail || '未填写'}</div>
-                      {reg.visitInfo?.date && (
-                        <div>探访时间: {new Date(reg.visitInfo.date).toLocaleString('zh-CN')}</div>
-                      )}
-                      {reg.visitInfo?.location && (
-                        <div>探访地点: {reg.visitInfo.location}</div>
-                      )}
-                    </div>
                   </div>
                   <div className="flex gap-2 ml-4">
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleApproval(reg.id, 'reject')}
+                      onClick={() => handleApproval(approval.id, 'reject')}
                     >
                       <X className="w-4 h-4 mr-1" />
                       拒绝
                     </Button>
                     <Button
                       size="sm"
-                      onClick={() => handleApproval(reg.id, 'approve')}
+                      onClick={() => handleApproval(approval.id, 'approve')}
                     >
                       <Check className="w-4 h-4 mr-1" />
                       通过

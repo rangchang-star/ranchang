@@ -10,7 +10,7 @@ export async function sendNotification({
   type,
   title,
   content,
-  relatedId,
+  relatedId, // 保留参数但不使用，因为 shared schema 中没有 relatedId 字段
 }: {
   userId: string;
   type: 'system' | 'activity' | 'registration' | 'visit' | 'approval';
@@ -20,14 +20,14 @@ export async function sendNotification({
 }) {
   try {
     await db.insert(notifications).values({
-      id: crypto.randomUUID(),
       userId,
       type,
       title,
-      content,
-      relatedId,
+      message: content, // 注意：数据库字段是 message，不是 content
       isRead: false,
-      createdAt: new Date(),
+      // 不设置 createdAt，使用数据库的 defaultNow()
+      // 不设置 id，使用数据库的 gen_random_uuid()
+      // 不设置 relatedId，因为 shared schema 中没有这个字段
     });
     
     return { success: true };
@@ -42,7 +42,7 @@ export async function sendNotificationToUsers({
   type,
   title,
   content,
-  relatedId,
+  relatedId, // 保留参数但不使用，因为 shared schema 中没有 relatedId 字段
 }: {
   userIds: string[];
   type: 'system' | 'activity' | 'registration' | 'visit' | 'approval';
@@ -52,14 +52,14 @@ export async function sendNotificationToUsers({
 }) {
   try {
     const notificationRecords = userIds.map((userId) => ({
-      id: crypto.randomUUID(),
       userId,
       type,
       title,
-      content,
-      relatedId,
+      message: content, // 注意：数据库字段是 message，不是 content
       isRead: false,
-      createdAt: new Date(),
+      // 不设置 createdAt，使用数据库的 defaultNow()
+      // 不设置 id，使用数据库的 gen_random_uuid()
+      // 不设置 relatedId，因为 shared schema 中没有这个字段
     }));
 
     await db.insert(notifications).values(notificationRecords);

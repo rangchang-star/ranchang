@@ -29,7 +29,7 @@ export default function AdminManagementPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletingAdminId, setDeletingAdminId] = useState<number | null>(null);
+  const [deletingAdminId, setDeletingAdminId] = useState<string | null>(null);
 
   // 加载管理员列表
   const loadAdmins = async () => {
@@ -85,7 +85,7 @@ export default function AdminManagementPage() {
   }, [searchQuery, admins]);
 
   // 删除管理员
-  const handleDeleteAdmin = async (adminId: number) => {
+  const handleDeleteAdmin = async (adminId: string) => {
     if (!confirm('确定要删除此管理员吗？该操作将把该管理员降级为普通用户。')) {
       return;
     }
