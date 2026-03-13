@@ -467,22 +467,22 @@ export function ProfileEditContent() {
 
     // 验证资源现货（如果填写了）
     if (declarationTheme || declarationDescription) {
-      // 验证主题
+      // 验证宣告主题
       if (!declarationTheme || declarationTheme.trim() === '') {
-        requiredErrors.push('主题');
+        requiredErrors.push('宣告主题');
       } else if (declarationTheme.trim().length < 8) {
-        requiredErrors.push('主题（不少于8字）');
+        requiredErrors.push('宣告主题（不少于8字）');
       } else if (declarationTheme.trim().length > 15) {
-        requiredErrors.push('主题（不超过15字）');
+        requiredErrors.push('宣告主题（不超过15字）');
       }
 
-      // 验证内容
+      // 验证宣告内容
       if (!declarationDescription || declarationDescription.trim() === '') {
-        requiredErrors.push('内容');
+        requiredErrors.push('宣告内容');
       } else if (declarationDescription.trim().length < 25) {
-        requiredErrors.push('内容（不少于25字）');
+        requiredErrors.push('宣告内容（不少于25字）');
       } else if (declarationDescription.trim().length > 60) {
-        requiredErrors.push('内容（不超过60字）');
+        requiredErrors.push('宣告内容（不超过60字）');
       }
     }
 
@@ -628,8 +628,8 @@ export function ProfileEditContent() {
               userId: user.id,
               type: declarationType, // 资源现货类型：ability(能力现货), connection(人脉现货), resource(资源现货)
               direction: 'confidence', // 默认方向为信心
-              text: declarationTheme, // 主题（简短，8-15字）
-              summary: declarationDescription, // 内容（详细，25-60字）
+              text: declarationTheme, // 宣告主题（简短，8-15字）
+              summary: declarationDescription, // 宣告内容（详细，25-60字）
               audioUrl: null,
               views: 0,
               isFeatured: true,
@@ -1049,14 +1049,14 @@ export function ProfileEditContent() {
             </div>
             <div>
               <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">
-                主题 <span className="text-red-400">*</span>
+                宣告主题 <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 value={declarationTheme}
                 onChange={(e) => setDeclarationTheme(e.target.value)}
                 className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] placeholder-[rgba(0,0,0,0.3)]"
-                placeholder="请输入主题（8-15字）"
+                placeholder="请输入宣告主题（8-15字）"
                 maxLength={15}
               />
               <p className="text-[10px] text-[rgba(0,0,0,0.4)]">
@@ -1065,14 +1065,14 @@ export function ProfileEditContent() {
             </div>
             <div>
               <label className="text-[11px] text-[rgba(0,0,0,0.4)] mb-1 block">
-                内容 <span className="text-red-400">*</span>
+                宣告内容 <span className="text-red-400">*</span>
               </label>
               <textarea
                 value={declarationDescription}
                 onChange={(e) => setDeclarationDescription(e.target.value)}
                 className="w-full px-3 py-2.5 text-[13px] bg-[rgba(0,0,0,0.02)] border border-[rgba(0,0,0,0.05)] resize-none placeholder-[rgba(0,0,0,0.3)]"
                 rows={3}
-                placeholder="请输入内容（25-60字）"
+                placeholder="请输入宣告内容（25-60字）"
                 minLength={25}
                 maxLength={60}
               />
