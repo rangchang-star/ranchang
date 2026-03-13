@@ -376,7 +376,7 @@ export function ProfileEditContent() {
       if (!user?.id) return;
 
       try {
-        const response = await fetch(`/api/declarations?userId=${user.id}`);
+        const response = await fetch(`/api/declarations?userId=${user.id}&type=resource`);
         const result = await response.json();
 
         if (result.success && result.data && result.data.length > 0) {

@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const featured = searchParams.get('featured');
     const userId = searchParams.get('userId');
+    const type = searchParams.get('type'); // 支持类型过滤：ability, connection, resource
 
     let query = db
       .select()
@@ -20,6 +21,9 @@ export async function GET(request: NextRequest) {
     }
     if (userId) {
       conditions.push(eq(declarations.userId, userId));
+    }
+    if (type && (type === 'ability' || type === 'connection' || type === 'resource')) {
+      conditions.push(eq(declarations.type, type as 'ability' | 'connection' | 'resource'));
     }
 
     if (conditions.length > 0) {
