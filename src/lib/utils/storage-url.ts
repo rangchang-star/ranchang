@@ -26,13 +26,44 @@ export async function getImageUrl(
     return null;
   }
 
-  // 直接返回本地文件路径
-  // fileKey 格式类似: images/1773310379484-的门.webp
-  // 转换为: /uploads/1773310379484-的门.webp
-  const filename = fileKey.replace('images/', '');
-  const localUrl = `/uploads/${filename}`;
+  // 检查缓存
+  if (!forceRefresh && urlCache[fileKey]) {
+    const cached = urlCache[fileKey];
+    // 检查是否过期（签名URL有效期1天，提前5分钟刷新）
+    const fiveMinutes = 5 * 60 * 1000;
+    const now = Date.now();
+    if (cached.expiresAt - now > fiveMinutes) {
+      return cached.url;
+    }
+  }
 
-  return localUrl;
+  try {
+    // 调用API生成签名URL
+    const response = await fetch(`/api/image-url?key=${encodeURIComponent(fileKey)}`);
+    
+    if (!response.ok) {
+      throw new Error('生成签名URL失败');
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success || !data.url) {
+      throw new Error('无效的响应');
+    }
+
+    const signedUrl = data.url;
+
+    // 缓存URL
+    urlCache[fileKey] = {
+      url: signedUrl,
+      expiresAt: Date.now() + 86400 * 1000,
+    };
+
+    return signedUrl;
+  } catch (error) {
+    console.error('生成签名URL失败:', error);
+    return null;
+  }
 }
 
 /**
