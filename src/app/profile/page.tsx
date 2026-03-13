@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AvatarDisplay } from '@/components/avatar-upload';
 import { useAuth } from '@/contexts/auth-context';
-import { Settings, BoxIconClosed, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut, ChevronDown, ChevronUp, Zap, Building2, Trophy } from 'lucide-react';
+import { Settings, Flame, TrendingUp, Briefcase, Award, ChevronRight, PlayCircle, Clock, Heart, Edit, Mic, Upload, RotateCcw, User, Bell, X, CheckCircle, AlertCircle, Info, Calendar, MapPin, Users, LogOut, ChevronDown, ChevronUp, Zap, Building2, Trophy } from 'lucide-react';
 
 // 量表维度类型
 interface AssessmentDimension {
@@ -1010,7 +1010,7 @@ export default function ProfilePage() {
             {/* 当前资源现货 */}
             <div className="mt-4 p-3 bg-gray-50 rounded-lg">
               <div className="flex items-start space-x-2">
-                <BoxIconClosed className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
+                <Flame className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   {/* 根据类型显示对应的标签 */}
                   <div className="flex items-center space-x-2 mb-1">
