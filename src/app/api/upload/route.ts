@@ -1,4 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { S3Storage } from 'coze-coding-dev-sdk';
+
+// 初始化存储客户端
+const storage = new S3Storage({
+  endpointUrl: process.env.COZE_BUCKET_ENDPOINT_URL,
+  accessKey: '',
+  secretKey: '',
+  bucketName: process.env.COZE_BUCKET_NAME,
+  region: 'cn-beijing',
+});
 
 // POST - 图片上传
 export async function POST(request: NextRequest) {
@@ -29,37 +39,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 转换文件为base64
+    // 转换文件为Buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString('base64');
 
-    // 生成唯一的fileKey
-    const fileKey = `images/${Date.now()}-${file.name}`;
+    // 生成文件名（使用原始文件名）
+    const fileName = file.name;
 
-    // 注意：这里只是示例，实际应该上传到对象存储服务
-    // 由于项目限制，这里返回一个模拟的永久CDN地址
-    const cdnUrl = `https://ranchang-cdn.example.com/${fileKey}`;
+    // 上传到对象存储
+    const fileKey = await storage.uploadFile({
+      fileContent: buffer,
+      fileName: `images/${fileName}`,
+      contentType: file.type,
+    });
 
-    // 保存到本地临时目录（仅用于演示）
-    // 在实际项目中，应该上传到对象存储服务
-    const fs = require('fs');
-    const path = require('path');
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    
-    const filePath = path.join(uploadDir, fileKey.replace('images/', ''));
-    fs.writeFileSync(filePath, buffer);
-
-    // 返回永久CDN地址
+    // 返回fileKey
     return NextResponse.json({
       success: true,
       data: {
         fileKey: fileKey,
-        url: cdnUrl,
         name: file.name,
         size: file.size,
         type: file.type,

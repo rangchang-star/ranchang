@@ -7,6 +7,8 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Save, Calendar, MapPin, Users, Check, Plus, X, Trash2 } from 'lucide-react';
+import { ImageUpload } from '@/components/image-upload';
+import { useImageUrl } from '@/hooks/use-image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -62,7 +64,7 @@ const fetchActivity = async (id: string) => {
         status: activity.status,
         teaFee: activity.teaFee || '', // 直接使用API返回的teaFee
         description: activity.description || '',
-        imageUrl: activity.coverImage || '',
+        coverImageKey: activity.coverImageKey || null,
         participants: [], // participants字段在API中不存在，使用guests
         guests: activity.guests || [], // 直接使用API返回的guests
       };
@@ -100,7 +102,8 @@ export default function AdminActivityEditPage() {
   const [customGuestAvatar, setCustomGuestAvatar] = useState('');
   
   const [description, setDescription] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [coverImageKey, setCoverImageKey] = useState<string | null>(null);
+  const { url: coverImageUrl } = useImageUrl(coverImageKey);
   const [loading, setLoading] = useState(true);
 
   // 加载会员数据
@@ -164,7 +167,7 @@ export default function AdminActivityEditPage() {
         }
 
         setDescription(activity.description);
-        setImageUrl(activity.imageUrl || '');
+        setCoverImageKey((activity as any).coverImageKey || null);
       }
       setLoading(false);
     }
@@ -226,7 +229,7 @@ export default function AdminActivityEditPage() {
           description,
           location,
           type,
-          coverImage: imageUrl,
+          coverImageKey: coverImageKey,
           date,
           startTime,
           endTime,
@@ -396,44 +399,16 @@ export default function AdminActivityEditPage() {
                   <label className="block text-[13px] font-medium text-gray-700 mb-2">
                     封面图片
                   </label>
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt="封面预览"
-                          className="w-32 h-20 rounded-lg object-cover border-2 border-[rgba(0,0,0,0.1)]"
-                        />
-                      ) : (
-                        <div className="w-32 h-20 rounded-lg bg-[rgba(0,0,0,0.05)] border-2 border-dashed border-[rgba(0,0,0,0.2)] flex items-center justify-center">
-                          <span className="text-[11px] text-[rgba(0,0,0,0.4)]">暂无封面</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const url = URL.createObjectURL(file);
-                            setImageUrl(url);
-                          }
-                        }}
-                        className="text-[13px]"
-                      />
-                      <Input
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="或输入封面图片URL"
-                        className="text-[13px]"
-                      />
-                      <p className="text-[11px] text-[rgba(0,0,0,0.4)]">
-                        支持上传图片或输入图片链接，留空将使用默认图片
-                      </p>
-                    </div>
-                  </div>
+                  <ImageUpload
+                    currentImageKey={coverImageKey}
+                    userId=""
+                    onUploadSuccess={setCoverImageKey}
+                    aspectRatio="16:9"
+                    className="max-w-md"
+                  />
+                  <p className="text-[11px] text-[rgba(0,0,0,0.4)] mt-2">
+                    推荐尺寸：16:9，支持 JPEG、PNG、GIF、WebP，最大5MB
+                  </p>
                 </div>
               </div>
             </div>
@@ -818,8 +793,8 @@ export default function AdminActivityEditPage() {
               <div className="border border-[rgba(0,0,0,0.1)] overflow-hidden bg-white">
                 {/* 封面图 */}
                 <div className="h-44 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-                  {imageUrl ? (
-                    <img src={imageUrl} alt={title || '活动封面'} className="w-full h-full object-cover" />
+                  {coverImageUrl ? (
+                    <img src={coverImageUrl} alt={title || '活动封面'} className="w-full h-full object-cover" />
                   ) : (
                     <div className="text-center">
                       <div className="text-4xl mb-2">🎯</div>
