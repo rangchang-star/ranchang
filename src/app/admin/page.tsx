@@ -46,13 +46,21 @@ export default function AdminDashboardPage() {
             weeklyActive: Math.floor(members.length * 0.2), // 假设20%活跃
           });
 
-          // 取最近的3个活动
           // 状态映射
           const statusMap: Record<string, string> = {
             draft: '草稿',
             published: '报名中',
             ended: '已结束',
             cancelled: '已取消',
+          };
+
+          // 类型映射
+          const typeMap: Record<string, string> = {
+            private: '私董会',
+            salon: '沙龙',
+            ai: 'AI实战',
+            workshop: '工作坊',
+            visit: '探访',
           };
 
           setRecentActivities(
@@ -70,6 +78,7 @@ export default function AdminDashboardPage() {
                   date: activity.date,
                   enrolled: activity.registeredCount || 0,
                   status: displayStatus,
+                  type: typeMap[activity.type] || activity.type || '未知',
                 };
               })
           );

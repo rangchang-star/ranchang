@@ -453,11 +453,20 @@ export default function DiscoveryPage() {
         }
 
         if (activitiesData.success) {
+          // 类型映射
+          const typeMap: Record<string, string> = {
+            private: '私董会',
+            salon: '沙龙',
+            ai: 'AI实战',
+            workshop: '工作坊',
+            visit: '探访',
+          };
+
           // 将活动数据转换为前端需要的格式
           const formattedActivities = activitiesData.data.map(
             (activity: any) => ({
               id: activity.id.toString(),
-              category: activity.type || "沙龙",
+              category: typeMap[activity.type] || activity.type || "沙龙",
               title: activity.title || "",
               subtitle: "",
               description: activity.description || "",
