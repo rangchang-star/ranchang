@@ -163,7 +163,7 @@ export default function ActivityDetailPage() {
             enrollments: [],
             enrolledCount: data.data.registeredCount || 0,
             maxEnrollments: data.data.capacity || 0,
-            participants: [],
+            participants: data.data.participants || [], // 使用API返回的真实参与者数据
             guests: data.data.guests || [],
             address: data.data.location || '',
             teaFee: data.data.teaFee || '免费',

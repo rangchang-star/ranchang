@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, activities, activityRegistrations } from '@/lib/db';
+import { db, activities, activityRegistrations, appUsers } from '@/lib/db';
 import { eq, sql, and } from 'drizzle-orm';
 
 // GET - 获取活动详情
@@ -37,6 +37,24 @@ export async function GET(
 
     const approvedCount = countResult[0]?.count || 0;
 
+    // 查询已报名的用户信息
+    const participants = await db
+      .select({
+        id: appUsers.id,
+        name: appUsers.name,
+        avatar: appUsers.avatar,
+        phone: appUsers.phone,
+      })
+      .from(activityRegistrations)
+      .innerJoin(appUsers, eq(activityRegistrations.userId, appUsers.id))
+      .where(
+        and(
+          eq(activityRegistrations.activityId, id),
+          eq(activityRegistrations.status, 'approved')
+        )
+      )
+      .limit(8);
+
     const data = {
       id: activity.id,
       title: activity.title,
@@ -57,6 +75,7 @@ export async function GET(
       teaFee: activity.teaFee,
       tags: activity.tags,
       guests: activity.guests,
+      participants: participants, // 添加已报名用户信息
     };
 
     return NextResponse.json({
