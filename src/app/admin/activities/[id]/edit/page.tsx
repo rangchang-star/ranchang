@@ -37,23 +37,34 @@ const fetchActivity = async (id: string) => {
     if (data.success) {
       const activity = data.data;
       // 转换为编辑页面需要的格式
+      // 日期转换：从timestamp格式(2026-03-31T00:00:00.000Z)转为date input格式(2026-03-31)
+      const formatDate = (dateStr: string) => {
+        if (!dateStr) return '';
+        try {
+          const date = new Date(dateStr);
+          return date.toISOString().split('T')[0]; // 只保留YYYY-MM-DD部分
+        } catch {
+          return '';
+        }
+      };
+
       return {
         id: activity.id.toString(),
         title: activity.title,
-        date: activity.date || '',
+        date: formatDate(activity.date || ''),
         startTime: activity.startTime || '14:00',
         endTime: activity.endTime || '17:00',
         location: activity.location || '',
         address: activity.location || '',
         type: activity.type || 'private',
         maxParticipants: activity.capacity || 12,
-        tags: [activity.type, activity.status === 'published' ? '报名中' : '已结束'],
+        tags: activity.tags || [], // 直接使用API返回的tags，不硬编码
         status: activity.status,
-        teaFee: activity.teaFee ? `茶水费${activity.teaFee}元` : '',
+        teaFee: activity.teaFee || '', // 直接使用API返回的teaFee
         description: activity.description || '',
         imageUrl: activity.coverImage || '',
-        participants: activity.participants?.map((p: any) => p.id.toString()) || [],
-        guests: activity.guests?.map((g: any) => g.id.toString()) || [],
+        participants: [], // participants字段在API中不存在，使用guests
+        guests: activity.guests || [], // 直接使用API返回的guests
       };
     }
     return null;
@@ -125,13 +136,33 @@ export default function AdminActivityEditPage() {
         setLocation(activity.location);
         setType(activity.type);
         setMaxParticipants(activity.maxParticipants.toString());
-        setTeaFee((activity as any).teaFee || '');
-        setSelectedTags(activity.tags);
-        setStatus((activity as any).status || 'draft');
-        // 去重：使用 Set 确保不会重复添加嘉宾
-        const participantsData = (activity as any).participants || [];
-        const uniqueParticipants = Array.from(new Set(participantsData as string[]));
-        setSelectedParticipants(uniqueParticipants);
+        setTeaFee(activity.teaFee || '');
+        setSelectedTags(activity.tags || []);
+        setStatus(activity.status || 'draft');
+
+        // 处理嘉宾数据
+        const guestsData = (activity as any).guests || [];
+        if (guestsData.length > 0) {
+          // 提取嘉宾ID列表
+          const guestIds = guestsData.map((g: any) => g.id);
+          setSelectedParticipants(guestIds);
+
+          // 将嘉宾数据添加到availableMembers中，以便显示
+          const newGuests = guestsData.map((g: any) => ({
+            id: g.id,
+            name: g.name,
+            avatar: g.avatar || '',
+            bio: g.bio || '',
+          }));
+
+          // 合并到availableMembers中（去重）
+          setAvailableMembers(prev => {
+            const existingIds = new Set(prev.map(m => m.id));
+            const filteredNewGuests = newGuests.filter((g: any) => !existingIds.has(g.id));
+            return [...prev, ...filteredNewGuests];
+          });
+        }
+
         setDescription(activity.description);
         setImageUrl(activity.imageUrl || '');
       }
