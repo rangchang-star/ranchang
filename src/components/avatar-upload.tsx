@@ -16,10 +16,10 @@ interface AvatarUploadProps {
 }
 
 const sizeClasses = {
-  sm: 'w-8 h-8',
-  md: 'w-12 h-12',
-  lg: 'w-24 h-24',
-  xl: 'w-32 h-32',
+  sm: 'w-8 h-8 rounded-full',
+  md: 'w-12 h-12 rounded-full',
+  lg: 'w-24 h-24 rounded-full',
+  xl: 'w-32 h-32 rounded-full',
 };
 
 export function AvatarUpload({
