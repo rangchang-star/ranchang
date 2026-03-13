@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         activityId,
         userId,
         note,
-        status: 'registered',
+        status: 'pending',
       })
       .returning();
 

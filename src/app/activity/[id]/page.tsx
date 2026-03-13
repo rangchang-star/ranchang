@@ -231,9 +231,7 @@ export default function ActivityDetailPage() {
         body: JSON.stringify({
           activityId: activity.id,
           userId: user.id,
-          userName: user.name || user.nickname,
-          userPhone: user.phone,
-          reason: '希望参加活动',
+          note: '希望参加活动',
         }),
       });
 

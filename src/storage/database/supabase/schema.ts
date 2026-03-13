@@ -19,7 +19,7 @@ import { sql } from 'drizzle-orm';
 
 export const userStatus = pgEnum('user_status', ['active', 'inactive', 'suspended']);
 export const activityStatus = pgEnum('activity_status', ['draft', 'published', 'cancelled', 'ended']);
-export const registrationStatus = pgEnum('registration_status', ['registered', 'approved', 'rejected', 'cancelled']);
+export const registrationStatus = pgEnum('registration_status', ['pending', 'registered', 'approved', 'rejected', 'cancelled']);
 export const visitStatus = pgEnum('visit_status', ['draft', 'upcoming', 'completed', 'cancelled']);
 export const notificationType = pgEnum('notification_type', ['system', 'activity', 'registration', 'visit', 'approval']);
 export const declarationType = pgEnum('declaration_type', ['ability', 'connection', 'resource']);
