@@ -479,6 +479,13 @@ export default function DiscoveryPage() {
         }
 
         if (declarationsFeaturedData.success) {
+          // 类型映射到中文
+          const typeLabelMap: Record<string, string> = {
+            'ability': '能力现货',
+            'connection': '人脉现货',
+            'resource': '资源现货',
+          };
+
           // 将资源现货数据转换为前端需要的格式
           const formattedDeclarations = declarationsFeaturedData.data.map(
             (declaration: any, index: number) => ({
@@ -487,7 +494,7 @@ export default function DiscoveryPage() {
               icon: declaration.user?.avatar || "/avatar-default.jpg",
               iconType: declaration.type || "resource",
               title: declaration.text || declaration.summary?.substring(0, 30) || "",
-              profile: declaration.type || "资源现货",
+              profile: typeLabelMap[declaration.type] || "资源现货", // 中文标签
               duration: "0:00", // 暂时显示为0:00，后续如果添加音频时长可以修改
               userId: declaration.userId,
               userName: declaration.user?.name || declaration.user?.nickname || "",
@@ -969,10 +976,14 @@ export default function DiscoveryPage() {
                       <h3 className="text-[17px] font-semibold text-gray-900 mb-1 line-clamp-2">
                         {item.title}
                       </h3>
-                      {/* 达人画像与资源标签（灰色字） */}
-                      <p className="text-[12px] text-[rgba(0,0,0,0.25)] flex items-center">
-                        {item.profile}
-                      </p>
+                      {/* 标签（灰色字）+ 蓝色色块 */}
+                      <div>
+                        <p className="text-[12px] text-[rgba(0,0,0,0.25)]">
+                          {item.profile}
+                        </p>
+                        {/* 蓝色色块 - 与个人中心一致 */}
+                        <div className="mt-1 h-1 w-8 bg-blue-400/40 border border-blue-400" />
+                      </div>
                     </div>
 
                     {/* 右侧播放按钮 - 圆形 */}
