@@ -202,58 +202,6 @@ const visitRecords = [
   },
 ];
 
-// 参与的活动
-const activities = [
-  {
-    id: '1',
-    title: 'CEO转型期私董会',
-    date: '2024年3月20日',
-    time: '14:00-17:00',
-    location: '上海·静安',
-    status: '待参加',
-    category: '私董会',
-    description: '针对35+职场转型人群，通过私董会形式深度探讨职业转型路径。我们将围绕"如何利用过往经验"、"如何降低试错成本"等话题展开讨论。',
-    participants: 12,
-    enrolled: 8,
-  },
-  {
-    id: '2',
-    title: 'AI加油圈2026期',
-    date: '2024年3月15日',
-    time: '19:00-21:00',
-    location: '北京·朝阳',
-    status: '待审核',
-    category: '沙龙',
-    description: '邀请不同领域的专家分享AI在各行业的应用实践，促进跨界交流与合作。适合对AI商业化感兴趣的朋友参与。',
-    participants: 30,
-    enrolled: 20,
-  },
-  {
-    id: '3',
-    title: '创业者心理建设工作坊',
-    date: '2024年3月22日',
-    time: '14:00-16:00',
-    location: '上海·徐汇',
-    status: '已参加',
-    category: '工作坊',
-    description: '帮助创业者建立强大的心理素质，应对创业过程中的各种挑战。通过专业指导和同伴支持，提升创业成功率。',
-    participants: 25,
-    enrolled: 20,
-  },
-  {
-    id: '4',
-    title: '商业认知提升沙龙',
-    date: '2024年4月5日',
-    time: '19:00-21:00',
-    location: '深圳·南山',
-    status: '已参加',
-    category: '沙龙',
-    description: '通过案例分析和小组讨论，提升商业洞察力和决策能力。分享实战经验，拓展商业视野。',
-    participants: 35,
-    enrolled: 30,
-  },
-];
-
 // 咨询话题
 // 咨询师信息
 const consultantInfo = {
@@ -402,9 +350,43 @@ export default function ProfilePage() {
   }, [user?.id]);
 
   const [showActivityDetail, setShowActivityDetail] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<typeof activities[0] | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [activitiesExpanded, setActivitiesExpanded] = useState(false);
-  
+
+  // 用户参与的活动列表
+  const [activities, setActivities] = useState<any[]>([]);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(false);
+
+  // 加载用户参与的活动
+  useEffect(() => {
+    const loadUserActivities = async () => {
+      if (!user?.id) {
+        setActivities([]);
+        return;
+      }
+
+      setIsLoadingActivities(true);
+      try {
+        const response = await fetch(`/api/user/activities?userId=${user.id}`);
+        const data = await response.json();
+
+        if (data.success) {
+          setActivities(data.data);
+        } else {
+          console.error('加载活动失败:', data.error);
+          setActivities([]);
+        }
+      } catch (error) {
+        console.error('加载活动失败:', error);
+        setActivities([]);
+      } finally {
+        setIsLoadingActivities(false);
+      }
+    };
+
+    loadUserActivities();
+  }, [user?.id]);
+
   // 量表展开状态 - 默认只展开"创业心理评估"
   const [expandedAssessments, setExpandedAssessments] = useState<Set<number>>(new Set([0]));
   
@@ -1278,43 +1260,53 @@ export default function ProfilePage() {
               </h2>
             </div>
             <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
-            <div className="space-y-3">
-              {activities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors flex items-center justify-between"
-                >
-                  <div className="flex-1 min-w-0">
-                    <h3 
-                      className="text-[18px] font-semibold text-gray-900 mb-1 line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors"
-                      onClick={() => {
-                        setSelectedActivity(activity);
-                        setShowActivityDetail(true);
-                      }}
-                    >
-                      {activity.title}
-                    </h3>
-                    <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.25)]">
-                      <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
-                        {activity.category}
-                      </Badge>
-                      <span>{activity.date}</span>
-                    </div>
-                  </div>
-                  <Badge
-                    className={`rounded-none font-normal text-[13px] ml-2 flex-shrink-0 ${
-                      activity.status === '待参加'
-                        ? 'bg-blue-400 text-white'
-                        : activity.status === '待审核'
-                        ? 'bg-yellow-400 text-white'
-                        : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)]'
-                    }`}
+            {isLoadingActivities ? (
+              <div className="py-8 text-center">
+                <p className="text-[13px] text-[rgba(0,0,0,0.6)]">加载中...</p>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无参与活动</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {activities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="p-3 bg-white hover:bg-[rgba(0,0,0,0.02)] transition-colors flex items-center justify-between"
                   >
-                    {activity.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
+                    <div className="flex-1 min-w-0">
+                      <h3
+                        className="text-[18px] font-semibold text-gray-900 mb-1 line-clamp-1 cursor-pointer hover:text-blue-600 transition-colors"
+                        onClick={() => {
+                          setSelectedActivity(activity);
+                          setShowActivityDetail(true);
+                        }}
+                      >
+                        {activity.title}
+                      </h3>
+                      <div className="flex items-center space-x-2 text-[13px] text-[rgba(0,0,0,0.25)]">
+                        <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)] font-normal text-[13px]">
+                          {activity.category}
+                        </Badge>
+                        <span>{activity.date}</span>
+                      </div>
+                    </div>
+                    <Badge
+                      className={`rounded-none font-normal text-[13px] ml-2 flex-shrink-0 ${
+                        activity.status === '待参加'
+                          ? 'bg-blue-400 text-white'
+                          : activity.status === '待审核'
+                          ? 'bg-yellow-400 text-white'
+                          : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.25)]'
+                      }`}
+                    >
+                      {activity.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 我要咨询 */}
