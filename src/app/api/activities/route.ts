@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, activities } from '@/lib/db';
-import { desc, eq, and } from 'drizzle-orm';
+import { db, activities, activityRegistrations } from '@/lib/db';
+import { desc, eq, and, sql } from 'drizzle-orm';
 
 // GET - 获取活动列表
 export async function GET(request: NextRequest) {
@@ -25,30 +25,47 @@ export async function GET(request: NextRequest) {
 
     const activityList = await query;
 
-    // 转换数据格式（snake_case → camelCase）
-    const data = activityList.map((activity: any) => ({
-      id: activity.id,
-      title: activity.title,
-      description: activity.description,
-      date: activity.date,
-      startTime: activity.startTime,
-      endTime: activity.endTime,
-      location: activity.location,
-      capacity: activity.capacity,
-      type: activity.type,
-      teaFee: activity.teaFee, // 茶水费
-      coverImage: activity.coverImage,
-      coverImageKey: activity.coverImageKey,
-      status: activity.status,
-      registeredCount: activity.registeredCount,
-      createdBy: activity.createdBy,
-      createdAt: activity.createdAt,
-      updatedAt: activity.updatedAt,
-    }));
+    // 为每个活动查询实时的报名人数
+    const activitiesWithCount = await Promise.all(
+      activityList.map(async (activity: any) => {
+        // 统计已通过的报名人数
+        const countResult = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(activityRegistrations)
+          .where(
+            and(
+              eq(activityRegistrations.activityId, activity.id),
+              eq(activityRegistrations.status, 'approved')
+            )
+          );
+
+        const approvedCount = countResult[0]?.count || 0;
+
+        return {
+          id: activity.id,
+          title: activity.title,
+          description: activity.description,
+          date: activity.date,
+          startTime: activity.startTime,
+          endTime: activity.endTime,
+          location: activity.location,
+          capacity: activity.capacity,
+          type: activity.type,
+          teaFee: activity.teaFee,
+          coverImage: activity.coverImage,
+          coverImageKey: activity.coverImageKey,
+          status: activity.status,
+          registeredCount: approvedCount, // 使用实时计算的已通过人数
+          createdBy: activity.createdBy,
+          createdAt: activity.createdAt,
+          updatedAt: activity.updatedAt,
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,
-      data,
+      data: activitiesWithCount,
     });
   } catch (error) {
     console.error('获取活动列表失败:', error);
