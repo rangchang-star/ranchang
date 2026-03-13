@@ -481,9 +481,9 @@ export default function DiscoveryPage() {
         if (declarationsFeaturedData.success) {
           // 将资源现货数据转换为前端需要的格式
           const formattedDeclarations = declarationsFeaturedData.data.map(
-            (declaration: any) => ({
+            (declaration: any, index: number) => ({
               id: declaration.id.toString(),
-              rank: 1, // 统一显示为排序1
+              rank: index + 1, // 排序号：1, 2, 3...
               icon: declaration.user?.avatar || "/avatar-default.jpg",
               iconType: declaration.type || "resource",
               title: declaration.text || declaration.summary?.substring(0, 30) || "",
@@ -958,13 +958,9 @@ export default function DiscoveryPage() {
                       {item.rank}
                     </div>
 
-                    {/* 左侧图标 - 纯方形 */}
+                    {/* 左侧头像 - 使用AvatarDisplay组件 */}
                     <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
-                      <img
-                        src={item.icon}
-                        alt={item.iconType}
-                        className="w-10 h-10 object-contain"
-                      />
+                      <AvatarDisplay avatarKey={item.icon} name={item.userName} size="md" />
                     </div>
 
                     {/* 中间文字 */}
