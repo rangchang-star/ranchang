@@ -1085,7 +1085,7 @@ export default function ProfilePage() {
                         <span className="text-[15px] font-medium text-gray-900">{exp.company}</span>
                         <span className="text-[13px] text-gray-500">{exp.duration}</span>
                       </div>
-                      <span className="text-[13px] text-gray-600">{exp.position}</span>
+                      <span className="text-[13px] text-gray-600">当时职位：{exp.position}</span>
                     </div>
                   ))}
                 </div>

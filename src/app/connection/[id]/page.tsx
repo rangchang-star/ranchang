@@ -273,7 +273,7 @@ export default async function ConnectionDetailPage({
                         <h4 className="text-[14px] font-semibold text-gray-900 mb-1">
                           {exp.company}
                         </h4>
-                        <p className="text-[12px] text-gray-600 mb-1">{exp.position}</p>
+                        <p className="text-[12px] text-gray-600 mb-1">当时职位：{exp.position}</p>
                       </div>
                       <div className="flex items-center text-[11px] text-gray-500">
                         <Calendar className="w-3 h-3 mr-1" />

@@ -294,7 +294,7 @@ export default function AdminMemberDetailPage({ params }: { params: Promise<{ id
                       <span className="text-[13px] font-medium text-gray-900">{exp.company}</span>
                       <span className="text-[11px] text-[rgba(0,0,0,0.6)]">{exp.duration}</span>
                     </div>
-                    <span className="text-[11px] text-gray-600">{exp.position}</span>
+                    <span className="text-[11px] text-gray-600">当时职位：{exp.position}</span>
                   </div>
                 ))}
               </div>

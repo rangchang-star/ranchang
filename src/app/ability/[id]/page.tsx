@@ -272,7 +272,7 @@ export default function AbilityDetailPage() {
                     </span>
                   </div>
                   <div className="text-sm text-[rgba(0,0,0,0.6)]">
-                    {exp.position}
+                    当时职位：{exp.position}
                   </div>
                 </div>
               ))}
