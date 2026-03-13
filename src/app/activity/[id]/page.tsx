@@ -239,7 +239,6 @@ export default function ActivityDetailPage() {
 
       if (data.success) {
         setEnrollmentStatus('pending');
-        alert('报名申请已提交，请等待审核');
       } else {
         throw new Error(data.error || '报名失败');
       }
