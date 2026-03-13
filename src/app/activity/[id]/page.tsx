@@ -105,8 +105,18 @@ export default function ActivityDetailPage() {
         const data = await response.json();
 
         if (data.success) {
-          // 处理图片URL - 直接使用coverImage
-          const imageUrl = data.data.coverImage || '';
+          // 处理图片URL - 优先使用coverImageKey
+          let imageUrl = '';
+          if (data.data.coverImageKey) {
+            // 使用storage API获取图片（通过查询参数，避免中文字符路径问题）
+            imageUrl = `/api/file?key=${encodeURIComponent(data.data.coverImageKey)}`;
+          } else if (data.data.coverImage) {
+            imageUrl = data.data.coverImage;
+          }
+
+          if (!imageUrl) {
+            imageUrl = ''; // 空字符串，让img标签不显示
+          }
 
           // 处理结束时间（用于倒计时）- 构建完整的ISO时间
           let endDateTime = '';
