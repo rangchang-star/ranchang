@@ -998,7 +998,7 @@ export default function DiscoveryPage() {
                     </div>
 
                     {/* 左侧头像 - 使用AvatarDisplay组件 */}
-                    <div className="w-14 h-14 flex-shrink-0 mr-4 overflow-hidden bg-[rgba(0,0,0,0.05)] flex items-center justify-center">
+                    <div className="flex-shrink-0 mr-4">
                       <AvatarDisplay avatarKey={item.icon} name={item.userName} size="md" />
                     </div>
 
