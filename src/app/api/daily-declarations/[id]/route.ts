@@ -46,12 +46,27 @@ export async function PUT(
     const idNum = parseInt(id);
     const body = await request.json();
 
+    // 只更新允许的字段，避免传递不需要的字段
+    const updateData: any = {
+      updatedAt: new Date(), // timestamp 类型需要 Date 对象
+    };
+
+    if (body.title !== undefined) updateData.title = body.title;
+    if (body.date !== undefined) updateData.date = body.date;
+    if (body.duration !== undefined) updateData.duration = body.duration;
+    if (body.image !== undefined) updateData.image = body.image;
+    if (body.audio !== undefined) updateData.audio = body.audio;
+    if (body.summary !== undefined) updateData.summary = body.summary;
+    if (body.text !== undefined) updateData.text = body.text;
+    if (body.iconType !== undefined) updateData.iconType = body.iconType;
+    if (body.rank !== undefined) updateData.rank = body.rank;
+    if (body.profile !== undefined) updateData.profile = body.profile;
+    if (body.views !== undefined) updateData.views = body.views;
+    if (body.isFeatured !== undefined) updateData.isFeatured = body.isFeatured;
+
     const [updatedDeclaration] = await db
       .update(dailyDeclarations)
-      .set({
-        ...body,
-        updatedAt: new Date().toISOString(),
-      })
+      .set(updateData)
       .where(eq(dailyDeclarations.id, idNum))
       .returning();
 
