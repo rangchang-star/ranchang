@@ -368,9 +368,9 @@ export default function SubscriptionPage() {
 
             {/* 探访点亮内容 */}
             <TabsContent value="training" className="space-y-4 mt-6">
-              {/* 探访点亮视频 */}
+              {/* 探访点亮视频 - 已隐藏，视频移至底部互动现场模块 */}
               {mediaConfig.visit.url && (
-                <div className="relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
+                <div className="hidden relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
                   <div className="aspect-video bg-gray-900 flex items-center justify-center relative">
                     {mediaConfig.visit.type === 'video' ? (
                       <video
