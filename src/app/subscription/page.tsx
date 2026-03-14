@@ -627,55 +627,6 @@ export default function SubscriptionPage() {
               </div>
             </TabsContent>
           </Tabs>
-
-          {/* 互动现场视频 */}
-          <div>
-            <div className="relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
-              {/* 视频播放器 */}
-              <div className="aspect-video bg-gray-900 flex items-center justify-center relative">
-                {mediaConfig.visit.type === 'video' ? (
-                  <video
-                    ref={visitVideoRef}
-                    src={mediaConfig.visit.url}
-                    className="w-full h-full object-cover"
-                    onClick={toggleVisitVideo}
-                    controls={false}
-                  />
-                ) : (
-                  <img
-                    src={mediaConfig.visit.url}
-                    alt="互动现场"
-                    className="w-full h-full object-cover opacity-80"
-                  />
-                )}
-                {mediaConfig.visit.type === 'video' && (
-                  <button
-                    onClick={toggleVisitVideo}
-                    className="absolute inset-0 flex items-center justify-center bg-black/20"
-                  >
-                    <div className={`w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors ${playingVisitVideo ? 'hidden' : ''}`}>
-                      <Play className="w-8 h-8 text-white fill-white ml-1" />
-                    </div>
-                    <div className={`w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors ${!playingVisitVideo ? 'hidden' : ''}`}>
-                      <PauseCircle className="w-8 h-8 text-white" />
-                    </div>
-                  </button>
-                )}
-                {!mediaConfig.visit.type || mediaConfig.visit.type === 'image' && (
-                  <button className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors">
-                      <Play className="w-8 h-8 text-white fill-white" />
-                    </div>
-                  </button>
-                )}
-              </div>
-              {/* 标题 */}
-              <div className="p-3">
-                <h5 className="text-[18px] font-semibold text-gray-900 mb-1">互动现场精彩瞬间</h5>
-                <p className="text-[14px] text-[rgba(0,0,0,0.25)]">AI加油圈2026期小组讨论现场实录</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
