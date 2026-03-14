@@ -682,13 +682,6 @@ export default function SubscriptionPage() {
                     </div>
                   </button>
                 )}
-                {((activeTab === 'training' && !mediaConfig.visit.type) || (activeTab === 'consultation' && !mediaConfig.aiCircle.type) || activeTab === 'consultation' && mediaConfig.aiCircle.type === 'image') && (
-                  <button className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors">
-                      <Play className="w-8 h-8 text-white fill-white" />
-                    </div>
-                  </button>
-                )}
               </div>
               {/* 标题 */}
               <div className="p-3">
