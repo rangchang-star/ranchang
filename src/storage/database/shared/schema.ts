@@ -197,8 +197,7 @@ export const dailyDeclarations = pgTable("daily_declarations", {
 
 export const settings = pgTable("settings", {
 	id: serial().primaryKey().notNull(),
-	config: jsonb().notNull().default("{}"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	settings: jsonb().notNull().default("{}"),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	index("settings_id_idx").using("btree", table.id.asc().nullsLast().op("int8_ops")),

@@ -37,17 +37,17 @@ export async function GET() {
     // 合并数据库设置和默认设置，确保所有字段都存在
     const mergedSettings = {
       ...defaultSettings,
-      ...dbSettings.config,
+      ...dbSettings.settings,
       ignition: {
         ...defaultSettings.ignition,
-        ...(dbSettings.config?.ignition || {}),
+        ...(dbSettings.settings?.ignition || {}),
         visitMedia: {
           ...defaultSettings.ignition.visitMedia,
-          ...(dbSettings.config?.ignition?.visitMedia || {}),
+          ...(dbSettings.settings?.ignition?.visitMedia || {}),
         },
         aiCircleMedia: {
           ...defaultSettings.ignition.aiCircleMedia,
-          ...(dbSettings.config?.ignition?.aiCircleMedia || {}),
+          ...(dbSettings.settings?.ignition?.aiCircleMedia || {}),
         },
       },
     };

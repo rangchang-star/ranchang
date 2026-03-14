@@ -37,6 +37,17 @@ export async function GET(
       status: user.status,
       level: user.level,
       hardcoreTags: user.hardcoreTags,
+      abilityTags: user.abilityTags,
+      resourceTags: user.resourceTags,
+      need: user.need,
+      bio: user.bio,
+      company: user.company,
+      companyScale: user.companyScale,
+      position: user.position,
+      gender: user.gender,
+      tagStamp: user.tagStamp,
+      experience: user.experience,
+      achievement: user.achievement,
       isFeatured: user.isFeatured,
       isTrusted: user.isTrusted,
       createdAt: user.createdAt,
@@ -76,14 +87,28 @@ export async function PUT(
     if (body.avatar !== undefined) updateData.avatar = body.avatar;
     if (body.age !== undefined) updateData.age = body.age;
     if (body.email !== undefined) updateData.email = body.email;
+    if (body.phone !== undefined) updateData.phone = body.phone;
     if (body.industry !== undefined) updateData.industry = body.industry;
+    if (body.need !== undefined) updateData.need = body.need;
+    if (body.bio !== undefined) updateData.bio = body.bio;
+    if (body.company !== undefined) updateData.company = body.company;
+    if (body.companyScale !== undefined) updateData.companyScale = body.companyScale;
+    if (body.position !== undefined) updateData.position = body.position;
+    if (body.gender !== undefined) updateData.gender = body.gender;
+    if (body.tagStamp !== undefined) updateData.tagStamp = body.tagStamp;
+
+    // JSON字段
+    if (body.abilityTags !== undefined) updateData.abilityTags = body.abilityTags;
+    if (body.resourceTags !== undefined) updateData.resourceTags = body.resourceTags;
+    if (body.hardcoreTags !== undefined) updateData.hardcoreTags = body.hardcoreTags;
+    if (body.experience !== undefined) updateData.experience = body.experience;
+    if (body.achievement !== undefined) updateData.achievement = body.achievement;
 
     // 新增的字段
     if (body.status !== undefined) updateData.status = body.status;
     if (body.level !== undefined) updateData.level = body.level;
-    if (body.hardcoreTags !== undefined) updateData.hardcore_tags = body.hardcoreTags;
-    if (body.isFeatured !== undefined) updateData.is_featured = body.isFeatured;
-    if (body.isTrusted !== undefined) updateData.is_trusted = body.isTrusted;
+    if (body.isFeatured !== undefined) updateData.isFeatured = body.isFeatured;
+    if (body.isTrusted !== undefined) updateData.isTrusted = body.isTrusted;
 
     const updatedUser = await db
       .update(appUsers)
