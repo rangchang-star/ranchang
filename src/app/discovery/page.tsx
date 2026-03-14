@@ -212,6 +212,12 @@ const getIcon = (iconType: string) => {
       return "📋";
     case "note":
       return "📝";
+    case "flame":
+      return "🔥";
+    case "lightbulb":
+      return "💡";
+    case "rocket":
+      return "🚀";
     default:
       return "📄";
   }
@@ -1481,13 +1487,13 @@ export default function DiscoveryPage() {
                     </div>
                   </div>
 
-                  {/* 描述 */}
+                  {/* 文档内容 */}
                   <div className="py-4">
                     <h3 className="text-[17px] font-semibold text-gray-900 mb-2">
-                      文档简介
+                      文档内容
                     </h3>
-                    <p className="text-[12px] text-[rgba(0,0,0,0.6)] leading-relaxed">
-                      {selectedDoc.description}
+                    <p className="text-[12px] text-[rgba(0,0,0,0.6)] leading-relaxed whitespace-pre-wrap">
+                      {selectedDoc.content || selectedDoc.description}
                     </p>
                   </div>
                 </div>
