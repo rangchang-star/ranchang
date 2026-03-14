@@ -31,11 +31,27 @@ export default function AdminDocumentCreatePage() {
   const [title, setTitle] = useState('');
   const [icon, setIcon] = useState('');
   const [coverKey, setCoverKey] = useState<string>('');
+  const [coverUrl, setCoverUrl] = useState<string>('');
   const [content, setContent] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
+  // 处理图片上传成功
+  const handleImageUploadSuccess = async (fileKey: string) => {
+    setCoverKey(fileKey);
+    // 获取 CDN 地址
+    try {
+      const response = await fetch(`/api/image-url?key=${encodeURIComponent(fileKey)}`);
+      const data = await response.json();
+      if (data.success && data.url) {
+        setCoverUrl(data.url);
+      }
+    } catch (error) {
+      console.error('获取图片URL失败:', error);
+    }
+  };
+
   // 保存
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title) {
       alert('请输入文件名');
       return;
@@ -55,12 +71,38 @@ export default function AdminDocumentCreatePage() {
 
     setIsUploading(true);
 
-    // 模拟保存 - 这里应该调用API保存数据
-    setTimeout(() => {
-      setIsUploading(false);
+    try {
+      // 调用 API 保存数据
+      const response = await fetch('/api/documents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          icon,
+          coverImageKey: coverKey,
+          coverImage: coverUrl,
+          content,
+          description: '',
+          category: '认知库',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '保存失败');
+      }
+
       alert('文档创建成功！');
       router.push('/admin/materials');
-    }, 1000);
+    } catch (error) {
+      console.error('保存失败:', error);
+      alert(`保存失败：${error instanceof Error ? error.message : '未知错误'}`);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // React Quill 工具栏配置
@@ -157,7 +199,7 @@ export default function AdminDocumentCreatePage() {
                   <ImageUpload
                     currentImageKey={coverKey}
                     userId=""
-                    onUploadSuccess={(fileKey) => setCoverKey(fileKey)}
+                    onUploadSuccess={handleImageUploadSuccess}
                   />
                   <div className="flex-1">
                     <p className="mt-2 text-xs text-gray-500">

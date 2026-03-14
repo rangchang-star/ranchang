@@ -247,30 +247,23 @@ export const dailyDeclarations = pgTable('daily_declarations', {
 // 8. 文档表（documents）
 // ============================================================
 export const documents = pgTable('documents', {
-  id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
+  id: serial('id').primaryKey(), // integer 类型
   title: varchar('title', { length: 200 }).notNull(),
-  type: varchar('type', { length: 50 }), // 资料类型
   description: text('description'),
   category: varchar('category', { length: 50 }),
   content: text('content'),
-  fileUrl: text('file_url'), // 文件CDN地址
-  fileKey: text('file_key'), // 对象存储fileKey
-  coverImage: text('cover_image'), // 封面CDN地址
-  coverImageKey: text('cover_image_key'), // 封面fileKey
-  icon: varchar('icon', { length: 100 }), // 图标
+  fileUrl: text('file_url'), // 对应数据库的 file_url 字段
+  coverImage: text('cover'), // 对应数据库的 cover 字段
+  icon: varchar('icon', { length: 100 }),
   fileSize: integer('file_size'),
   fileType: varchar('file_type', { length: 50 }),
-  downloads: integer('downloads').default(0),
-  downloadCount: integer('download_count').default(0), // 下载次数
-  likes: integer('likes').default(0),
-  authorId: varchar('author_id', { length: 36 }).references(() => appUsers.id, { onDelete: 'set null' }),
-  status: varchar('status', { length: 20 }).default('published'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  downloadCount: integer('download_count').default(0), // 对应数据库的 download_count 字段
+  createdBy: integer('created_by'), // 对应数据库的 created_by 字段
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => [
   index('documents_category_idx').on(table.category),
-  index('documents_author_id_idx').on(table.authorId),
-  index('documents_status_idx').on(table.status),
+  index('documents_created_by_idx').on(table.createdBy),
 ]);
 
 // ============================================================

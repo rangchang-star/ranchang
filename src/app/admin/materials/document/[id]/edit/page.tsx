@@ -34,21 +34,56 @@ export default function AdminDocumentEditPage() {
   const [title, setTitle] = useState('');
   const [icon, setIcon] = useState('');
   const [coverKey, setCoverKey] = useState<string>('');
+  const [coverUrl, setCoverUrl] = useState<string>('');
   const [content, setContent] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  // 模拟加载数据
+  // 处理图片上传成功
+  const handleImageUploadSuccess = async (fileKey: string) => {
+    setCoverKey(fileKey);
+    // 获取 CDN 地址
+    try {
+      const response = await fetch(`/api/image-url?key=${encodeURIComponent(fileKey)}`);
+      const data = await response.json();
+      if (data.success && data.url) {
+        setCoverUrl(data.url);
+      }
+    } catch (error) {
+      console.error('获取图片URL失败:', error);
+    }
+  };
+
+  // 加载数据
   useEffect(() => {
-    // 这里应该从API加载数据
-    // 模拟数据
-    setTitle('【新时代来了】用5条AI指令挽救一位创业者');
-    setIcon('robot');
-    setCoverKey('images/document-cover.jpg');
-    setContent('<p>在AI时代，传统创业者面临巨大挑战。本文将介绍5条实用的AI指令，帮助你重新定义业务模式，提高效率，实现转型升级。</p>');
-  }, [documentId]);
+    const fetchDocument = async () => {
+      try {
+        const response = await fetch(`/api/documents/${documentId}`);
+        const result = await response.json();
+
+        if (!result.success) {
+          alert('加载文档失败：' + result.error);
+          router.push('/admin/materials');
+          return;
+        }
+
+        const document = result.data;
+        setTitle(document.title || '');
+        setIcon(document.icon || '');
+        setCoverKey(document.coverImageKey || '');
+        setCoverUrl(document.coverImage || '');
+        setContent(document.content || '');
+      } catch (error) {
+        console.error('加载文档失败:', error);
+        alert('加载文档失败');
+        router.push('/admin/materials');
+      }
+    };
+
+    fetchDocument();
+  }, [documentId, router]);
 
   // 保存
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title) {
       alert('请输入文件名');
       return;
@@ -68,12 +103,38 @@ export default function AdminDocumentEditPage() {
 
     setIsUploading(true);
 
-    // 模拟保存 - 这里应该调用API保存数据
-    setTimeout(() => {
-      setIsUploading(false);
+    try {
+      // 调用 API 更新数据
+      const response = await fetch(`/api/documents/${documentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          icon,
+          coverImageKey: coverKey,
+          coverImage: coverUrl,
+          content,
+          description: '',
+          category: '认知库',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '保存失败');
+      }
+
       alert('文档更新成功！');
       router.push('/admin/materials');
-    }, 1000);
+    } catch (error) {
+      console.error('保存失败:', error);
+      alert(`保存失败：${error instanceof Error ? error.message : '未知错误'}`);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // React Quill 工具栏配置
@@ -170,7 +231,7 @@ export default function AdminDocumentEditPage() {
                   <ImageUpload
                     currentImageKey={coverKey}
                     userId=""
-                    onUploadSuccess={(fileKey) => setCoverKey(fileKey)}
+                    onUploadSuccess={handleImageUploadSuccess}
                   />
                   <div className="flex-1">
                     <p className="mt-2 text-xs text-gray-500">

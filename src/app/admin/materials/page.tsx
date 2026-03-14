@@ -23,6 +23,29 @@ const iconOptions = [
   { value: 'rocket', label: '🚀 火箭', icon: '🚀' },
 ];
 
+// 图标映射表（将值映射到 emoji）
+const iconMap: Record<string, string> = {
+  robot: '🤖',
+  loop: '🔄',
+  target: '🎯',
+  refresh: '♻️',
+  zap: '⚡',
+  box: '📦',
+  book: '📚',
+  table: '📋',
+  note: '📝',
+  flame: '🔥',
+  lightbulb: '💡',
+  rocket: '🚀',
+  pdf: '📚',
+  docx: '📝',
+  doc: '📝',
+  xlsx: '📋',
+  xls: '📋',
+  pptx: '📊',
+  ppt: '📊',
+};
+
 export default function AdminMaterialsPage() {
   const [activeTab, setActiveTab] = useState<'daily' | 'documents' | 'settings'>('documents');
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,22 +66,12 @@ export default function AdminMaterialsPage() {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          // 转换数据格式，添加必要的字段
-          const iconMap: Record<string, string> = {
-            pdf: '📚',
-            docx: '📝',
-            doc: '📝',
-            xlsx: '📋',
-            xls: '📋',
-            pptx: '📊',
-            ppt: '📊',
-          };
-
           const formattedDocuments = data.data.map((doc: any) => ({
             ...doc,
-            icon: iconMap[doc.fileType] || '📄',
+            // 优先使用 icon 字段映射到 emoji
+            icon: iconMap[doc.icon] || iconMap[doc.fileType] || '📄',
             views: doc.downloadCount || 0,
-            cover: doc.cover || '/default-document-cover.jpg',
+            cover: doc.coverImage || '/default-document-cover.jpg',
           }));
           setDocuments(formattedDocuments);
         }
