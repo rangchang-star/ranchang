@@ -518,9 +518,9 @@ export default function SubscriptionPage() {
 
             {/* AI加油圈内容 */}
             <TabsContent value="consultation" className="space-y-4 mt-6">
-              {/* AI加油圈视频 */}
+              {/* AI加油圈视频 - 已隐藏，视频移至底部互动现场模块 */}
               {mediaConfig.aiCircle.url && (
-                <div className="relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
+                <div className="hidden relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
                   <div className="aspect-video bg-gray-900 flex items-center justify-center relative">
                     {mediaConfig.aiCircle.type === 'video' ? (
                       <video
@@ -628,12 +628,12 @@ export default function SubscriptionPage() {
             </TabsContent>
           </Tabs>
 
-          {/* 互动现场视频 */}
+          {/* 互动现场视频 - 根据当前标签页显示对应视频 */}
           <div>
             <div className="relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
               {/* 视频播放器 */}
               <div className="aspect-video bg-gray-900 flex items-center justify-center relative">
-                {mediaConfig.visit.type === 'video' ? (
+                {activeTab === 'training' && mediaConfig.visit.type === 'video' ? (
                   <video
                     ref={visitVideoRef}
                     src={mediaConfig.visit.url}
@@ -641,14 +641,22 @@ export default function SubscriptionPage() {
                     onClick={toggleVisitVideo}
                     controls={false}
                   />
+                ) : activeTab === 'consultation' && mediaConfig.aiCircle.type === 'video' ? (
+                  <video
+                    ref={aiCircleVideoRef}
+                    src={mediaConfig.aiCircle.url}
+                    className="w-full h-full object-cover"
+                    onClick={toggleAiCircleVideo}
+                    controls={false}
+                  />
                 ) : (
                   <img
-                    src={mediaConfig.visit.url}
+                    src={activeTab === 'training' ? mediaConfig.visit.url : mediaConfig.aiCircle.url}
                     alt="互动现场"
                     className="w-full h-full object-cover opacity-80"
                   />
                 )}
-                {mediaConfig.visit.type === 'video' && (
+                {activeTab === 'training' && mediaConfig.visit.type === 'video' && (
                   <button
                     onClick={toggleVisitVideo}
                     className="absolute inset-0 flex items-center justify-center bg-black/20"
@@ -661,7 +669,20 @@ export default function SubscriptionPage() {
                     </div>
                   </button>
                 )}
-                {!mediaConfig.visit.type || mediaConfig.visit.type === 'image' && (
+                {activeTab === 'consultation' && mediaConfig.aiCircle.type === 'video' && (
+                  <button
+                    onClick={toggleAiCircleVideo}
+                    className="absolute inset-0 flex items-center justify-center bg-black/20"
+                  >
+                    <div className={`w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors ${playingAiCircleVideo ? 'hidden' : ''}`}>
+                      <Play className="w-8 h-8 text-white fill-white ml-1" />
+                    </div>
+                    <div className={`w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors ${!playingAiCircleVideo ? 'hidden' : ''}`}>
+                      <PauseCircle className="w-8 h-8 text-white" />
+                    </div>
+                  </button>
+                )}
+                {((activeTab === 'training' && !mediaConfig.visit.type) || (activeTab === 'consultation' && !mediaConfig.aiCircle.type) || activeTab === 'consultation' && mediaConfig.aiCircle.type === 'image') && (
                   <button className="absolute inset-0 flex items-center justify-center">
                     <div className="w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors">
                       <Play className="w-8 h-8 text-white fill-white" />
