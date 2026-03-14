@@ -52,7 +52,7 @@ export default function AdminDailyDeclarationsPage() {
         setDeclarations([
           {
             id: '1',
-            title: '每日现货资源：重塑自我，迎接新挑战',
+            title: '重塑自我，迎接新挑战',
             date: '2024-03-01',
             duration: '3:15',
             image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop',
@@ -62,7 +62,7 @@ export default function AdminDailyDeclarationsPage() {
           },
           {
             id: '2',
-            title: '每日现货资源：勇敢突破，创造无限可能',
+            title: '勇敢突破，创造无限可能',
             date: '2024-03-02',
             duration: '4:20',
             image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=200&h=200&fit=crop',
@@ -72,7 +72,7 @@ export default function AdminDailyDeclarationsPage() {
           },
           {
             id: '3',
-            title: '每日现货资源：坚持初心，砥砺前行',
+            title: '坚持初心，砥砺前行',
             date: '2024-03-03',
             duration: '2:45',
             image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=200&fit=crop',

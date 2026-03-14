@@ -223,7 +223,7 @@ export default function AdminMaterialsPage() {
                     />
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-sm font-medium text-gray-900">每日现货资源：重塑自我，迎接新挑战</h5>
+                    <h5 className="text-sm font-medium text-gray-900">重塑自我，迎接新挑战</h5>
                     <p className="text-xs text-gray-500">2024-03-01 · 3:15</p>
                   </div>
                   <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">已发布</span>

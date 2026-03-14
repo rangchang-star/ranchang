@@ -133,7 +133,7 @@ export default function AdminDailyDeclarationCreatePage() {
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="例如：每日现货资源：重塑自我，迎接新挑战"
+                placeholder="例如：重塑自我，迎接新挑战"
               />
             </div>
 

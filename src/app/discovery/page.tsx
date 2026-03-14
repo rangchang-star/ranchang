@@ -332,7 +332,7 @@ export default function DiscoveryPage() {
   const defaultDailyDeclaration = {
     image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop',
     date: new Date().toISOString().split('T')[0],
-    title: '每日现货资源：重塑自我，迎接新挑战',
+    title: '重塑自我，迎接新挑战',
     duration: '3:15',
     audio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
     id: 'default',
