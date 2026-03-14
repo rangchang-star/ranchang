@@ -86,14 +86,14 @@ export async function PUT(request: Request) {
       await db
         .update(settings)
         .set({
-          config: config,
+          settings: config,
           updatedAt: new Date().toISOString(),
         })
         .where(eq(settings.id, existingSettings[0].id));
     } else {
       // 创建新记录
       await db.insert(settings).values({
-        config: config,
+        settings: config,
       });
     }
 
