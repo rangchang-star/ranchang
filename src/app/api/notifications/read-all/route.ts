@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, notifications } from '@/lib/db';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export async function PUT(request: NextRequest) {
   try {
-    // 从 cookie 或 session 获取当前用户ID
     const userId = request.headers.get('x-user-id');
 
     if (!userId) {
@@ -14,14 +13,17 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // 标记全部为已读
-    await db
+    // 批量更新该用户的所有未读消息为已读
+    const updated = await db
       .update(notifications)
       .set({ isRead: true })
-      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+      .where(eq(notifications.userId, userId))
+      .returning();
 
     return NextResponse.json({
       success: true,
+      data: updated,
+      message: '已全部标记为已读',
     });
   } catch (error) {
     console.error('标记全部已读失败:', error);

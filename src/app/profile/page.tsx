@@ -634,15 +634,45 @@ export default function ProfilePage() {
   };
 
   // 标记通知为已读
-  const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => 
-      n.id === id ? { ...n, read: true } : n
-    ));
+  const markAsRead = async (id: string) => {
+    try {
+      // 调用API更新数据库
+      if (user?.id) {
+        await fetch(`/api/notifications/${id}/read`, {
+          method: 'PUT',
+          headers: {
+            'x-user-id': user.id,
+          },
+        });
+      }
+
+      // 更新本地状态
+      setNotifications(prev => prev.map(n =>
+        n.id === id ? { ...n, read: true } : n
+      ));
+    } catch (error) {
+      console.error('标记已读失败:', error);
+    }
   };
 
   // 标记所有通知为已读
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    try {
+      // 调用API更新数据库
+      if (user?.id) {
+        await fetch('/api/notifications/read-all', {
+          method: 'PUT',
+          headers: {
+            'x-user-id': user.id,
+          },
+        });
+      }
+
+      // 更新本地状态
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (error) {
+      console.error('标记全部已读失败:', error);
+    }
   };
 
   // 检查用户基础信息
