@@ -64,9 +64,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // 验证必填字段
-    if (!body.title || !body.date) {
+    if (!body.title || !body.date || !body.startTime || !body.endTime || !body.location || !body.capacity) {
       return NextResponse.json(
-        { success: false, error: '标题和日期为必填字段' },
+        { success: false, error: '请填写所有必填字段（标题、日期、时间、地点、人数）' },
         { status: 400 }
       );
     }

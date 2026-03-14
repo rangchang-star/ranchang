@@ -32,8 +32,8 @@ export default function AdminActivityCreatePage() {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('18:00');
   const [location, setLocation] = useState('');
   const [type, setType] = useState('private');
   const [maxParticipants, setMaxParticipants] = useState('');
