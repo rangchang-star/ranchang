@@ -1125,7 +1125,17 @@ export default function DiscoveryPage() {
                   </div>
 
                   {/* 播放按钮 - 缩小30% */}
-                  <button className="w-7 h-7 bg-blue-400 flex items-center justify-center flex-shrink-0 rounded">
+                  <button 
+                    className="w-7 h-7 bg-blue-400 flex items-center justify-center flex-shrink-0 rounded"
+                    onClick={() => {
+                      if (dailyDeclaration?.audio) {
+                        const audio = new Audio(dailyDeclaration.audio);
+                        audio.play();
+                      } else {
+                        alert('暂无音频');
+                      }
+                    }}
+                  >
                     <Play className="w-3 h-3 text-white fill-white ml-0.5" />
                   </button>
 
