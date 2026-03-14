@@ -279,7 +279,11 @@ export default function ProfilePage() {
       }
 
       try {
-        const response = await fetch(`/api/notifications?x-user-id=${user.id}`);
+        const response = await fetch(`/api/notifications`, {
+          headers: {
+            'x-user-id': user.id
+          }
+        });
         const data = await response.json();
 
         if (data.success && data.data) {

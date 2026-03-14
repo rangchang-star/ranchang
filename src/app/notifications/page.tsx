@@ -58,7 +58,11 @@ export default function NotificationsPage() {
         return;
       }
 
-      const response = await fetch(`/api/notifications?x-user-id=${userId}`);
+      const response = await fetch(`/api/notifications`, {
+        headers: {
+          'x-user-id': userId
+        }
+      });
       const data = await response.json();
 
       if (data.success) {
