@@ -23,25 +23,28 @@ export default function AdminDashboardPage() {
         setIsLoading(true);
 
         // 并行加载所有数据
-        const [membersRes, activitiesRes, visitsRes] = await Promise.all([
+        const [membersRes, activitiesRes, visitsRes, consultationsRes] = await Promise.all([
           fetch('/admin/api/members'),
           fetch('/admin/api/activities'),
           fetch('/admin/api/visits'),
+          fetch('/admin/api/consultations'),
         ]);
 
         const membersData = await membersRes.json();
         const activitiesData = await activitiesRes.json();
         const visitsData = await visitsRes.json();
+        const consultationsData = await consultationsRes.json();
 
         if (membersData.success && activitiesData.success && visitsData.success) {
           const members = membersData.data || [];
           const activities = activitiesData.data || [];
           const visits = visitsData.data || [];
+          const consultations = consultationsData.success ? (consultationsData.data || []) : [];
 
           setStats({
             totalMembers: members.length,
             totalActivities: activities.length,
-            totalConsultations: 89, // 暂时硬编码，等待咨询数据API
+            totalConsultations: consultations.length,
             totalVisits: visits.length,
             weeklyActive: Math.floor(members.length * 0.2), // 假设20%活跃
           });
@@ -71,7 +74,7 @@ export default function AdminDashboardPage() {
                 // 动态判断：如果活动日期已过，显示"已结束"
                 const isEnded = new Date(activity.date) < new Date();
                 const displayStatus = isEnded ? '已结束' : statusMap[activity.status] || '未知';
-                
+
                 return {
                   id: activity.id,
                   title: activity.title,
@@ -83,12 +86,16 @@ export default function AdminDashboardPage() {
               })
           );
 
-          // 暂时硬编码最近咨询，等待咨询数据API
-          setRecentConsultations([
-            { id: 1, title: '45岁转型困惑', type: '心理', date: '2024-03-15', status: '待处理' },
-            { id: 2, title: '传统制造业转型', type: '商业', date: '2024-03-14', status: '已回复' },
-            { id: 3, title: '股权分家问题', type: '商业', date: '2024-03-13', status: '待处理' },
-          ]);
+          // 从API获取最近咨询
+          setRecentConsultations(
+            consultations.slice(0, 3).map((consult: any) => ({
+              id: consult.id,
+              title: consult.title,
+              type: consult.type || '综合',
+              date: consult.date,
+              status: consult.status,
+            }))
+          );
         }
       } catch (error) {
         console.error('加载看板数据失败:', error);

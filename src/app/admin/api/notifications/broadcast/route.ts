@@ -41,16 +41,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 批量插入通知
-    const now = new Date().toISOString();
     const notificationsToInsert = targetUserIds.map((userId) => ({
-      id: randomUUID(),
       userId,
-      type: 'platform',
+      type: 'system',
       title,
       message,
-      actionUrl: actionUrl || null,
       isRead: false,
-      createdAt: now,
     }));
 
     await db.insert(notifications).values(notificationsToInsert);

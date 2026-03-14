@@ -79,14 +79,11 @@ export async function PUT(
     // 如果之前没有回复，现在有回复了，则创建通知
     if (!consultation.answer && body.answer && consultation.userId) {
       await db.insert(notifications).values({
-        id: randomUUID(),
         userId: consultation.userId,
-        type: 'message',
+        type: 'system',
         title: '咨询回复',
         message: `${consultation.topicName || '咨询'}已回复，点击查看详情`,
-        actionUrl: '/profile#consultations',
         isRead: false,
-        createdAt: new Date().toISOString(),
       });
     }
 

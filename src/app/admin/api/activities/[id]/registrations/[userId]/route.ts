@@ -84,12 +84,10 @@ export async function PUT(
     if (oldRegistration.status === 'pending' && status === 'approved') {
       await db.insert(notifications).values({
         userId,
-        type: 'activity_approved',
+        type: 'activity',
         title: '活动报名审核通过',
         message: `你报名的《${oldRegistration.activityTitle}》已审核通过，请准时参加。`,
-        actionUrl: `/activity/${id}`,
         isRead: false,
-        createdAt: new Date().toISOString(),
       });
     }
 
