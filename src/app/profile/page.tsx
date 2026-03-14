@@ -295,9 +295,9 @@ export default function ProfilePage() {
               : 'info',
             title: item.title,
             message: item.message,
-            time: item.created_at,
-            read: item.is_read,
-            actionUrl: item.action_url,
+            time: item.createdAt,
+            read: item.isRead,
+            actionUrl: item.actionUrl,
           }));
           setNotifications(convertedNotifications);
         } else {
