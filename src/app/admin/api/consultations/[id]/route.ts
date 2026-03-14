@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, consultations } from '@/lib/db';
+import { db, consultations, notifications } from '@/lib/db';
 import { eq } from 'drizzle-orm';
+import { randomUUID } from 'crypto';
 
 // GET - 获取咨询详情
 export async function GET(
@@ -44,6 +45,23 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
+    // 先查询咨询的当前状态
+    const current = await db
+      .select()
+      .from(consultations)
+      .where(eq(consultations.id, id))
+      .limit(1);
+
+    if (!current || current.length === 0) {
+      return NextResponse.json(
+        { success: false, error: '咨询不存在' },
+        { status: 404 }
+      );
+    }
+
+    const consultation = current[0];
+
+    // 更新咨询
     const updated = await db
       .update(consultations)
       .set({
@@ -57,6 +75,20 @@ export async function PUT(
       })
       .where(eq(consultations.id, id))
       .returning();
+
+    // 如果之前没有回复，现在有回复了，则创建通知
+    if (!consultation.answer && body.answer && consultation.userId) {
+      await db.insert(notifications).values({
+        id: randomUUID(),
+        userId: consultation.userId,
+        type: 'message',
+        title: '咨询回复',
+        message: `${consultation.topicName || '咨询'}已回复，点击查看详情`,
+        actionUrl: '/profile#consultations',
+        isRead: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
 
     if (!updated || updated.length === 0) {
       return NextResponse.json(

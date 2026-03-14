@@ -312,6 +312,14 @@ export default function ProfilePage() {
     loadUserNotifications();
   }, [user?.id]);
 
+  const [showActivityDetail, setShowActivityDetail] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<any>(null);
+  const [activitiesExpanded, setActivitiesExpanded] = useState(false);
+
+  // 用户咨询记录
+  const [userConsultations, setUserConsultations] = useState<any[]>([]);
+  const [isLoadingConsultations, setIsLoadingConsultations] = useState(false);
+
   // 加载用户咨询记录
   useEffect(() => {
     const loadUserConsultations = async () => {
@@ -344,14 +352,6 @@ export default function ProfilePage() {
 
     loadUserConsultations();
   }, [user?.id]);
-
-  const [showActivityDetail, setShowActivityDetail] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<any>(null);
-  const [activitiesExpanded, setActivitiesExpanded] = useState(false);
-
-  // 用户咨询记录
-  const [userConsultations, setUserConsultations] = useState<any[]>([]);
-  const [isLoadingConsultations, setIsLoadingConsultations] = useState(false);
 
   // 用户参与的活动列表
   const [activities, setActivities] = useState<any[]>([]);
