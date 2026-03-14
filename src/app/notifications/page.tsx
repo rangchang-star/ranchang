@@ -32,11 +32,14 @@ export default function NotificationsPage() {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
 
-  // 获取用户ID（这里暂时从localStorage获取，实际应该从认证信息中获取）
+  // 获取用户ID（从currentUser中获取）
   const getUserId = () => {
     if (typeof window === 'undefined') return null;
     try {
-      return localStorage.getItem('userId');
+      const currentUser = localStorage.getItem('currentUser');
+      if (!currentUser) return null;
+      const user = JSON.parse(currentUser);
+      return user.id;
     } catch {
       return null;
     }

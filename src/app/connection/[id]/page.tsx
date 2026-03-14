@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Heart, Share2, Briefcase, Award, Calendar } from 'lucide-react';
@@ -23,67 +26,96 @@ const directionMap: Record<string, string> = {
   environment: '环境',
 };
 
-// 从数据库获取用户数据
-async function getUserData(id: string) {
-  const connectionString = process.env.DATABASE_URL;
-
-  if (!connectionString) {
-    console.error('DATABASE_URL is not defined');
-    return null;
-  }
-
-  const sql = postgres(connectionString);
-
-  try {
-    const users = await sql`
-      SELECT * FROM public.app_users WHERE id = ${id}
-    `;
-
-    if (users.length === 0) {
-      console.log('用户不存在:', id);
-      return null;
-    }
-
-    console.log('获取到用户数据:', users[0]);
-    console.log('experience字段:', users[0].experience);
-    console.log('achievement字段:', users[0].achievement);
-
-    // 获取该用户的最新资源现货
-    const declarations = await sql`
-      SELECT * FROM public.declarations
-      WHERE user_id = ${id}
-      ORDER BY created_at DESC
-      LIMIT 1
-    `;
-
-    console.log('获取到资源现货数据:', declarations);
-
-    // 将资源现货数据附加到用户数据中
-    const userData = users[0];
-    if (declarations.length > 0) {
-      (userData as any).declaration = declarations[0];
-    }
-
-    return userData;
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    return null;
-  } finally {
-    await sql.end();
-  }
-}
-
-export default async function ConnectionDetailPage({
+export default function ConnectionDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // 在 Next.js 16 中，params 需要使用 await 来访问
-  const { id: userId } = await params;
+  const [userId, setUserId] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
-  console.log('User ID:', userId);
+  useEffect(() => {
+    async function init() {
+      try {
+        const { id } = await params;
+        setUserId(id);
 
-  const user = await getUserData(userId);
+        // 获取当前用户ID
+        const currentUserStr = localStorage.getItem('currentUser');
+        const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+
+        // 获取用户数据
+        const response = await fetch(`/api/users/${id}`);
+        const data = await response.json();
+
+        if (data.success) {
+          setUser(data.data);
+          
+          // 检查是否已喜欢（需要后端API支持，这里暂时只更新前端状态）
+          setLiked(false);
+          setLikeCount(0);
+        }
+      } catch (error) {
+        console.error('加载数据失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    init();
+  }, [params]);
+
+  const handleLike = async () => {
+    try {
+      if (!userId) return;
+
+      const currentUserStr = localStorage.getItem('currentUser');
+      const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
+
+      if (!currentUser) {
+        alert('请先登录');
+        return;
+      }
+
+      // TODO: 调用喜欢API
+      const response = await fetch(`/api/users/${userId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        setLiked(!liked);
+        setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+      }
+    } catch (error) {
+      console.error('喜欢失败:', error);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: user?.name,
+          text: user?.need,
+          url: window.location.href,
+        });
+      } else {
+        // 回退：复制链接到剪贴板
+        await navigator.clipboard.writeText(window.location.href);
+        alert('链接已复制到剪贴板');
+      }
+    } catch (error) {
+      console.error('分享失败:', error);
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen bg-white flex items-center justify-center">加载中...</div>;
+  }
 
   if (!user) {
     notFound();
@@ -106,7 +138,6 @@ export default async function ConnectionDetailPage({
     createdAt: user.created_at,
     experiences: user.experience || [],
     achievements: user.achievement || [],
-    declaration: (user as any).declaration || null,
   };
 
   const tagStamp = tagStampMap[formattedUser.tagStamp as keyof typeof tagStampMap];
@@ -170,11 +201,19 @@ export default async function ConnectionDetailPage({
 
           {/* 操作按钮 */}
           <div className="flex items-center space-x-3">
-            <Button variant="outline" className="flex-1 font-normal text-[13px] py-3 border-[rgba(0,0,0,0.2)] text-gray-700">
-              <Heart className="w-4 h-4 mr-2" />
-              喜欢
+            <Button 
+              variant="outline" 
+              className={`flex-1 font-normal text-[13px] py-3 border-[rgba(0,0,0,0.2)] ${liked ? 'bg-red-50 border-red-300 text-red-600' : 'text-gray-700'}`}
+              onClick={handleLike}
+            >
+              <Heart className={`w-4 h-4 mr-2 ${liked ? 'fill-red-500 text-red-500' : ''}`} />
+              喜欢 {likeCount > 0 ? `(${likeCount})` : ''}
             </Button>
-            <Button variant="outline" className="px-4 py-3 border-[rgba(0,0,0,0.2)]">
+            <Button 
+              variant="outline" 
+              className="px-4 py-3 border-[rgba(0,0,0,0.2)]"
+              onClick={handleShare}
+            >
               <Share2 className="w-4 h-4 text-gray-700" />
             </Button>
           </div>
@@ -218,45 +257,15 @@ export default async function ConnectionDetailPage({
           </div>
 
           {/* 资源现货 */}
-          {formattedUser.declaration ? (
-            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[15px] font-semibold text-gray-900">资源现货</h3>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="secondary" className="text-[11px] bg-white text-orange-600 border-orange-300">
-                    {directionMap[formattedUser.declaration.direction] || formattedUser.declaration.direction}
-                  </Badge>
-                  <Flame className="w-4 h-4 text-orange-500" />
-                </div>
-              </div>
-              <p className="text-[13px] text-gray-700 leading-relaxed mb-2">
-                {formattedUser.declaration.text}
-              </p>
-              {formattedUser.declaration.summary && (
-                <p className="text-[12px] text-gray-600 leading-relaxed mb-2">
-                  {formattedUser.declaration.summary}
-                </p>
-              )}
-              <div className="flex items-center justify-between mt-3">
-                <span className="text-[11px] text-gray-500">
-                  {new Date(formattedUser.declaration.created_at).toLocaleDateString('zh-CN')}
-                </span>
-                <div className="flex items-center space-x-1">
-                  <span className="text-[11px] text-gray-500">{formattedUser.declaration.views || 0}次播放</span>
-                </div>
-              </div>
+          <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[15px] font-semibold text-gray-900">资源现货</h3>
+              <Flame className="w-4 h-4 text-orange-500" />
             </div>
-          ) : (
-            <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-4 border border-orange-200">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[15px] font-semibold text-gray-900">资源现货</h3>
-                <Flame className="w-4 h-4 text-orange-500" />
-              </div>
-              <p className="text-[13px] text-gray-700 leading-relaxed">
-                该用户暂未发布资源现货
-              </p>
-            </div>
-          )}
+            <p className="text-[13px] text-gray-700 leading-relaxed">
+              该用户暂未发布资源现货
+            </p>
+          </div>
 
           {/* 硬核经历 */}
           {formattedUser.experiences && formattedUser.experiences.length > 0 && (
