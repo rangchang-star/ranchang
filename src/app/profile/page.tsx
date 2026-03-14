@@ -61,37 +61,6 @@ interface Notification {
   actionUrl?: string;
 }
 
-// 默认通知数据
-const defaultNotifications: Notification[] = [
-  {
-    id: '1',
-    type: 'success',
-    title: '报名审核通过',
-    message: '您报名的「转型期私董会」已通过审核，请按时参加',
-    time: '2024-03-02 10:30',
-    read: false,
-    actionUrl: '/activities',
-  },
-  {
-    id: '2',
-    type: 'info',
-    title: '新的探访邀请',
-    message: '张明邀请您参与「上海某制造业企业数字化转型探访」',
-    time: '2024-03-01 15:20',
-    read: false,
-    actionUrl: '/profile',
-  },
-  {
-    id: '3',
-    type: 'warning',
-    title: '活动即将开始',
-    message: '「CEO转型期私董会」将在2小时后开始',
-    time: '2024-03-01 08:00',
-    read: true,
-    actionUrl: '/activities',
-  },
-];
-
 // 资源现货方向选项
 const declarationDirections = [
   { id: 'confidence', name: '信心', icon: 'icon-confidence.jpg' },
@@ -301,49 +270,39 @@ export default function ProfilePage() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // 根据用户ID加载模拟通知数据
+  // 根据用户ID加载通知数据
   useEffect(() => {
-    const loadUserNotifications = () => {
+    const loadUserNotifications = async () => {
       if (!user?.id) {
-        setNotifications(defaultNotifications);
+        setNotifications([]);
         return;
       }
 
-      // 根据用户ID生成不同的模拟通知数据
-      const userId = user.id.toString();
-      
-      // 使用用户ID作为种子生成不同的通知
-      const userNotifications: Notification[] = [
-        {
-          id: `${userId}-1`,
-          type: 'success',
-          title: '报名审核通过',
-          message: `用户${userId}，您报名的「转型期私董会」已通过审核，请按时参加`,
-          time: '2024-03-02 10:30',
-          read: false,
-          actionUrl: '/activities',
-        },
-        {
-          id: `${userId}-2`,
-          type: 'info',
-          title: '新的探访邀请',
-          message: `张明邀请您参与「上海某制造业企业数字化转型探访」`,
-          time: '2024-03-01 15:20',
-          read: false,
-          actionUrl: '/profile',
-        },
-        {
-          id: `${userId}-3`,
-          type: 'warning',
-          title: '活动即将开始',
-          message: `「CEO转型期私董会」将在2小时后开始`,
-          time: '2024-03-01 08:00',
-          read: true,
-          actionUrl: '/activities',
-        },
-      ];
+      try {
+        const response = await fetch(`/api/notifications?x-user-id=${user.id}`);
+        const data = await response.json();
 
-      setNotifications(userNotifications);
+        if (data.success && data.data) {
+          // 转换数据格式以匹配前端接口
+          const convertedNotifications: Notification[] = data.data.map((item: any) => ({
+            id: item.id,
+            type: (item.type === 'info' || item.type === 'success' || item.type === 'warning' || item.type === 'error')
+              ? item.type
+              : 'info',
+            title: item.title,
+            message: item.message,
+            time: item.created_at,
+            read: item.is_read,
+            actionUrl: item.action_url,
+          }));
+          setNotifications(convertedNotifications);
+        } else {
+          setNotifications([]);
+        }
+      } catch (error) {
+        console.error('加载通知失败:', error);
+        setNotifications([]);
+      }
     };
 
     loadUserNotifications();
