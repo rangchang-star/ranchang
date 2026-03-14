@@ -342,6 +342,10 @@ export default function DiscoveryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 每日现货资源音频播放状态
+  const [isDailyAudioPlaying, setIsDailyAudioPlaying] = useState(false);
+  const dailyAudioRef = useRef<HTMLAudioElement | null>(null);
+
   // 从API加载页面设置
   useEffect(() => {
     const loadSettings = async () => {
@@ -1129,14 +1133,28 @@ export default function DiscoveryPage() {
                     className="w-7 h-7 bg-blue-400 flex items-center justify-center flex-shrink-0 rounded"
                     onClick={() => {
                       if (dailyDeclaration?.audio) {
-                        const audio = new Audio(dailyDeclaration.audio);
-                        audio.play();
+                        if (isDailyAudioPlaying) {
+                          // 暂停
+                          dailyAudioRef.current?.pause();
+                          setIsDailyAudioPlaying(false);
+                        } else {
+                          // 播放
+                          if (!dailyAudioRef.current) {
+                            dailyAudioRef.current = new Audio(dailyDeclaration.audio);
+                          }
+                          dailyAudioRef.current.play();
+                          setIsDailyAudioPlaying(true);
+                        }
                       } else {
                         alert('暂无音频');
                       }
                     }}
                   >
-                    <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                    {isDailyAudioPlaying ? (
+                      <Music2 className="w-3 h-3 text-white ml-0.5" />
+                    ) : (
+                      <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                    )}
                   </button>
 
                   {/* 查看详情按钮 - 醒目设计 */}
