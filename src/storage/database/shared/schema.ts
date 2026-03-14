@@ -248,7 +248,7 @@ export const adminUsers = pgTable("admin_users", {
 ]);
 
 export const activityRegistrations = pgTable("activity_registrations", {
-	id: serial().primaryKey().notNull(),
+	id: varchar({ length: 36 }).primaryKey().default(gen_random_uuid()),
 	activityId: text("activity_id").notNull(),
 	userId: text("user_id").notNull(),
 	status: varchar({ length: 50 }).default('registered'),
