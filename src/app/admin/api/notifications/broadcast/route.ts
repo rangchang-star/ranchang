@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       userId,
       type: 'system',
       title,
-      message,
+      content: message, // 从请求的message参数映射到数据库的content字段
       isRead: false,
     }));
 

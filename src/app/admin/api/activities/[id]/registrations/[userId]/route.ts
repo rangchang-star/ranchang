@@ -86,7 +86,7 @@ export async function PUT(
         userId,
         type: 'activity',
         title: '活动报名审核通过',
-        message: `你报名的《${oldRegistration.activityTitle}》已审核通过，请准时参加。`,
+        content: `你报名的《${oldRegistration.activityTitle}》已审核通过，请准时参加。`,
         isRead: false,
       });
     }

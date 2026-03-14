@@ -54,9 +54,29 @@ export default function ConnectionDetailPage({
         if (data.success) {
           setUser(data.data);
           
-          // 检查是否已喜欢（需要后端API支持，这里暂时只更新前端状态）
-          setLiked(false);
-          setLikeCount(0);
+          // 检查是否已喜欢
+          if (currentUser) {
+            try {
+              const likeResponse = await fetch(`/api/users/${id}/like?currentUserId=${currentUser.id}`);
+              const likeData = await likeResponse.json();
+              if (likeData.success) {
+                setLiked(likeData.data.isLiked);
+              }
+            } catch (error) {
+              console.error('获取点赞状态失败:', error);
+            }
+            
+            // 获取点赞数
+            try {
+              const countResponse = await fetch(`/api/users/${id}/likes-count`);
+              const countData = await countResponse.json();
+              if (countData.success) {
+                setLikeCount(countData.data.count || 0);
+              }
+            } catch (error) {
+              console.error('获取点赞数失败:', error);
+            }
+          }
         }
       } catch (error) {
         console.error('加载数据失败:', error);
@@ -80,18 +100,24 @@ export default function ConnectionDetailPage({
         return;
       }
 
-      // TODO: 调用喜欢API
+      const action = liked ? 'unlike' : 'like';
       const response = await fetch(`/api/users/${userId}/like`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentUserId: currentUser.id, action }),
       });
 
-      if (response.ok) {
-        setLiked(!liked);
-        setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+      const data = await response.json();
+      
+      if (data.success) {
+        setLiked(data.data.isLiked);
+        setLikeCount(data.data.likesCount);
+      } else {
+        alert(data.error || '操作失败');
       }
     } catch (error) {
       console.error('喜欢失败:', error);
+      alert('操作失败，请稍后重试');
     }
   };
 

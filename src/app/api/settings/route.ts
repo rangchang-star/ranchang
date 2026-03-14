@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db, settings } from '@/lib/db';
+import { eq } from 'drizzle-orm';
 
 // 默认设置
 const defaultSettings = {
@@ -36,17 +37,17 @@ export async function GET() {
     // 合并数据库设置和默认设置，确保所有字段都存在
     const mergedSettings = {
       ...defaultSettings,
-      ...dbSettings.settings,
+      ...dbSettings.config,
       ignition: {
         ...defaultSettings.ignition,
-        ...(dbSettings.settings?.ignition || {}),
+        ...(dbSettings.config?.ignition || {}),
         visitMedia: {
           ...defaultSettings.ignition.visitMedia,
-          ...(dbSettings.settings?.ignition?.visitMedia || {}),
+          ...(dbSettings.config?.ignition?.visitMedia || {}),
         },
         aiCircleMedia: {
           ...defaultSettings.ignition.aiCircleMedia,
-          ...(dbSettings.settings?.ignition?.aiCircleMedia || {}),
+          ...(dbSettings.config?.ignition?.aiCircleMedia || {}),
         },
       },
     };
@@ -85,14 +86,14 @@ export async function PUT(request: Request) {
       await db
         .update(settings)
         .set({
-          settings: config,
+          config: config,
           updatedAt: new Date().toISOString(),
         })
-        .where(require('drizzle-orm').eq(settings.id, existingSettings[0].id));
+        .where(eq(settings.id, existingSettings[0].id));
     } else {
       // 创建新记录
       await db.insert(settings).values({
-        settings: config,
+        config: config,
       });
     }
 

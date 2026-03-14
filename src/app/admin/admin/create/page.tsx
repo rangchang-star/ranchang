@@ -6,6 +6,7 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Shield, User, Phone, Lock, ArrowLeft, Save } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function CreateAdminPage() {
   const router = useRouter();
@@ -278,8 +279,4 @@ export default function CreateAdminPage() {
       </div>
     </AdminLayout>
   );
-}
-
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(' ');
 }

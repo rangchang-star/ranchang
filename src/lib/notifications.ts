@@ -23,7 +23,7 @@ export async function sendNotification({
       userId,
       type,
       title,
-      message: content, // 注意：数据库字段是 message，不是 content
+      content: content, // 数据库字段是 content
       isRead: false,
       // 不设置 createdAt，使用数据库的 defaultNow()
       // 不设置 id，使用数据库的 gen_random_uuid()
@@ -55,7 +55,7 @@ export async function sendNotificationToUsers({
       userId,
       type,
       title,
-      message: content, // 注意：数据库字段是 message，不是 content
+      content: content, // 数据库字段是 content
       isRead: false,
       // 不设置 createdAt，使用数据库的 defaultNow()
       // 不设置 id，使用数据库的 gen_random_uuid()

@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: notifications.id,
         title: notifications.title,
-        message: notifications.message,
+        content: notifications.content,
         type: notifications.type,
         actionUrl: notifications.actionUrl,
         isRead: notifications.isRead,

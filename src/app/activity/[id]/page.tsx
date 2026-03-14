@@ -212,6 +212,39 @@ export default function ActivityDetailPage() {
     loadEnrollmentStatus();
   }, [user, activity, isLoggedIn]);
 
+  // 加载点赞状态
+  useEffect(() => {
+    if (!user || !activity) return;
+
+    async function loadLikeStatus() {
+      try {
+        const response = await fetch(`/api/activities/${activity.id}/like?userId=${user?.id || ''}`);
+        const data = await response.json();
+        if (data.success) {
+          setIsLiked(data.data.isLiked);
+        }
+      } catch (err) {
+        console.error('加载点赞状态失败:', err);
+      }
+    }
+
+    // 加载点赞数
+    async function loadLikeCount() {
+      try {
+        const response = await fetch(`/api/activities/${activity.id}/likes-count`);
+        const data = await response.json();
+        if (data.success) {
+          setLikeCount(data.data.count || 0);
+        }
+      } catch (err) {
+        console.error('加载点赞数失败:', err);
+      }
+    }
+
+    loadLikeStatus();
+    loadLikeCount();
+  }, [user?.id, activity?.id]);
+
   const handleEnroll = async () => {
     // 登录验证
     if (!isLoggedIn || !user) {
@@ -282,12 +315,26 @@ export default function ActivityDetailPage() {
       return;
     }
 
-    // 切换喜欢状态
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+    try {
+      const action = isLiked ? 'unlike' : 'like';
+      const response = await fetch(`/api/activities/${activity.id}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, action }),
+      });
 
-    // TODO: 这里应该调用API来保存喜欢状态到数据库
-    // 目前只在本地切换状态
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsLiked(data.data.isLiked);
+        setLikeCount(data.data.likesCount);
+      } else {
+        alert(data.error || '操作失败');
+      }
+    } catch (error) {
+      console.error('喜欢失败:', error);
+      alert('操作失败，请稍后重试');
+    }
   };
 
   return (

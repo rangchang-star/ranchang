@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, adminUsers } from '@/lib/db';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 // GET - 获取管理员列表
 export async function GET(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const existingAdmin = await db
       .select()
       .from(adminUsers)
-      .where(require('drizzle-orm').eq(adminUsers.username, body.phone));
+      .where(eq(adminUsers.username, body.phone));
 
     if (existingAdmin && existingAdmin.length > 0) {
       return NextResponse.json(

@@ -82,7 +82,7 @@ export async function PUT(
         userId: consultation.userId,
         type: 'system',
         title: '咨询回复',
-        message: `${consultation.topicName || '咨询'}已回复，点击查看详情`,
+        content: `${consultation.topicName || '咨询'}已回复，点击查看详情`,
         isRead: false,
       });
     }

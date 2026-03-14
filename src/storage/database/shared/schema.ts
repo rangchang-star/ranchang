@@ -98,7 +98,7 @@ export const notifications = pgTable("notifications", {
 	userId: varchar("user_id", { length: 36 }).notNull(),
 	type: varchar({ length: 20 }).notNull(),
 	title: varchar({ length: 255 }).notNull(),
-	message: text().notNull(),
+	content: text().notNull(),
 	actionUrl: text("action_url"),
 	isRead: boolean("is_read").default(false),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -195,6 +195,32 @@ export const dailyDeclarations = pgTable("daily_declarations", {
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
 });
 
+export const settings = pgTable("settings", {
+	id: serial().primaryKey().notNull(),
+	config: jsonb().notNull().default("{}"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("settings_id_idx").using("btree", table.id.asc().nullsLast().op("int8_ops")),
+]);
+
+export const adminUsers = pgTable("admin_users", {
+	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
+	username: varchar({ length: 128 }).notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	password: varchar({ length: 255 }).notNull(),
+	role: varchar({ length: 50 }).notNull().default('admin'),
+	status: varchar({ length: 20 }).notNull().default('active'),
+	avatar: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("admin_users_username_idx").using("btree", table.username.asc().nullsLast().op("text_ops")),
+	index("admin_users_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+	index("admin_users_role_idx").using("btree", table.role.asc().nullsLast().op("text_ops")),
+	index("admin_users_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+]);
+
 export const appUsers = pgTable("app_users", {
 	id: varchar({ length: 36 }),
 	name: varchar({ length: 128 }),
@@ -230,22 +256,6 @@ export const appUsers = pgTable("app_users", {
 	isTrusted: boolean("is_trusted").default(false),
 	tags: jsonb(),
 });
-
-export const adminUsers = pgTable("admin_users", {
-	id: varchar({ length: 36 }).default(gen_random_uuid()).primaryKey().notNull(),
-	username: varchar({ length: 100 }).notNull(),
-	email: varchar({ length: 255 }),
-	password: text().notNull(),
-	role: varchar({ length: 50 }).default('admin'),
-	status: varchar({ length: 20 }).default('active'),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("admin_users_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
-	index("admin_users_username_idx").using("btree", table.username.asc().nullsLast().op("text_ops")),
-	unique("admin_users_username_unique").on(table.username),
-	unique("admin_users_email_unique").on(table.email),
-]);
 
 export const activityRegistrations = pgTable("activity_registrations", {
 	id: varchar({ length: 36 }).primaryKey().default(gen_random_uuid()),
@@ -300,12 +310,6 @@ export const digitalAssets = pgTable("digital_assets", {
 	index("digital_assets_type_idx").using("btree", table.type.asc().nullsLast().op("text_ops")),
 	index("digital_assets_user_id_idx").using("btree", table.userId.asc().nullsLast().op("text_ops")),
 ]);
-
-export const settings = pgTable("settings", {
-	id: serial().primaryKey().notNull(),
-	settings: jsonb().default({}).notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow(),
-});
 
 export const documents = pgTable("documents", {
 	id: serial().primaryKey().notNull(),
