@@ -82,7 +82,7 @@ export default function AdminDailyDeclarationCreatePage() {
       const data = await response.json();
 
       if (data.success) {
-        alert('每日宣告创建成功！');
+        alert('每日现货资源创建成功！');
         router.push('/admin/materials/daily');
       } else {
         alert(data.error || '创建失败');
@@ -108,8 +108,8 @@ export default function AdminDailyDeclarationCreatePage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">添加每日宣告</h1>
-              <p className="text-gray-500 text-sm">创建新的每日宣告</p>
+              <h1 className="text-2xl font-bold text-gray-900">添加每日现货资源</h1>
+              <p className="text-gray-500 text-sm">创建新的每日现货资源</p>
             </div>
           </div>
           <Button
@@ -128,12 +128,12 @@ export default function AdminDailyDeclarationCreatePage() {
             {/* 标题 */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                宣告标题 <span className="text-red-500">*</span>
+                资源现货标题 <span className="text-red-500">*</span>
               </label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="例如：每日宣告：重塑自我，迎接新挑战"
+                placeholder="例如：每日现货资源：重塑自我，迎接新挑战"
               />
             </div>
 

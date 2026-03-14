@@ -52,7 +52,7 @@ export default function AdminDailyDeclarationsPage() {
         setDeclarations([
           {
             id: '1',
-            title: '每日宣告：重塑自我，迎接新挑战',
+            title: '每日现货资源：重塑自我，迎接新挑战',
             date: '2024-03-01',
             duration: '3:15',
             image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop',
@@ -62,7 +62,7 @@ export default function AdminDailyDeclarationsPage() {
           },
           {
             id: '2',
-            title: '每日宣告：勇敢突破，创造无限可能',
+            title: '每日现货资源：勇敢突破，创造无限可能',
             date: '2024-03-02',
             duration: '4:20',
             image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=200&h=200&fit=crop',
@@ -72,7 +72,7 @@ export default function AdminDailyDeclarationsPage() {
           },
           {
             id: '3',
-            title: '每日宣告：坚持初心，砥砺前行',
+            title: '每日现货资源：坚持初心，砥砺前行',
             date: '2024-03-03',
             duration: '2:45',
             image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=200&fit=crop',
@@ -83,12 +83,12 @@ export default function AdminDailyDeclarationsPage() {
         ]);
       }
     } catch (error) {
-      console.error('加载每日宣告失败:', error);
+      console.error('加载每日现货资源失败:', error);
       // 使用模拟数据
       setDeclarations([
         {
           id: '1',
-          title: '每日宣告：重塑自我，迎接新挑战',
+          title: '每日现货资源：重塑自我，迎接新挑战',
           date: '2024-03-01',
           duration: '3:15',
           image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop',
@@ -132,7 +132,7 @@ export default function AdminDailyDeclarationsPage() {
 
   // 删除宣告
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个每日宣告吗？')) return;
+    if (!confirm('确定要删除这个每日现货资源吗？')) return;
     try {
       const response = await fetch(`/api/daily-declarations/${id}`, {
         method: 'DELETE',
@@ -140,7 +140,7 @@ export default function AdminDailyDeclarationsPage() {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          alert('每日宣告已删除');
+          alert('每日现货资源已删除');
           loadDeclarations();
         } else {
           alert(data.error || '删除失败');
@@ -194,14 +194,14 @@ export default function AdminDailyDeclarationsPage() {
               </Button>
             </Link>
             <div>
-              <h2 className="text-[15px] font-bold text-gray-900 mb-1">每日宣告管理</h2>
+              <h2 className="text-[15px] font-bold text-gray-900 mb-1">每日现货资源管理</h2>
               <p className="text-[13px] text-[rgba(0,0,0,0.6)]">管理每日资源现货内容</p>
             </div>
           </div>
           <Link href="/admin/materials/daily/create">
             <Button>
               <Plus className="w-4 h-4 mr-2" />
-              添加每日宣告
+              添加每日现货资源
             </Button>
           </Link>
         </div>
@@ -212,7 +212,7 @@ export default function AdminDailyDeclarationsPage() {
             <div className="flex items-center space-x-2">
               <Search className="w-4 h-4 text-[rgba(0,0,0,0.4)]" />
               <Input
-                placeholder="搜索每日宣告..."
+                placeholder="搜索每日现货资源..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64 h-8 text-[13px] border-[rgba(0,0,0,0.1)]"
@@ -228,7 +228,7 @@ export default function AdminDailyDeclarationsPage() {
               </div>
             ) : filteredDeclarations.length === 0 ? (
               <div className="p-12 text-center">
-                <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无每日宣告</p>
+                <p className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无每日现货资源</p>
               </div>
             ) : (
               filteredDeclarations.map((declaration) => (

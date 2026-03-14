@@ -112,7 +112,7 @@ export default function AdminMaterialsPage() {
         {/* 页面标题 */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">资料管理</h1>
-          <p className="text-gray-500">管理每日宣告和大鱼认知库内容</p>
+          <p className="text-gray-500">管理每日现货资源和大鱼认知库内容</p>
         </div>
 
         {/* Tab 导航 */}
@@ -126,7 +126,7 @@ export default function AdminMaterialsPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              每日宣告
+              每日现货资源
             </button>
             <button
               onClick={() => setActiveTab('documents')}
@@ -157,12 +157,12 @@ export default function AdminMaterialsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-2">管理每日资源现货内容</p>
-                <p className="text-xs text-gray-500">包括添加、编辑、删除和发布每日宣告</p>
+                <p className="text-xs text-gray-500">包括添加、编辑、删除和发布每日资源现货</p>
               </div>
               <Link href="/admin/materials/daily/create">
                 <Button className="bg-blue-400 hover:bg-blue-500 text-white">
                   <Plus className="w-4 h-4 mr-2" />
-                  添加每日宣告
+                  添加每日现货资源
                 </Button>
               </Link>
             </div>
@@ -176,8 +176,8 @@ export default function AdminMaterialsPage() {
                       <FileText className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-900">宣告列表</h3>
-                      <p className="text-xs text-gray-500">查看和管理所有每日宣告</p>
+                      <h3 className="text-sm font-medium text-gray-900">资源现货列表</h3>
+                      <p className="text-xs text-gray-500">查看和管理所有每日资源现货</p>
                     </div>
                   </div>
                 </div>
@@ -190,8 +190,8 @@ export default function AdminMaterialsPage() {
                       <Plus className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-900">创建宣告</h3>
-                      <p className="text-xs text-gray-500">添加新的每日宣告</p>
+                      <h3 className="text-sm font-medium text-gray-900">创建资源现货</h3>
+                      <p className="text-xs text-gray-500">添加新的每日资源现货</p>
                     </div>
                   </div>
                 </div>
@@ -212,7 +212,7 @@ export default function AdminMaterialsPage() {
 
             {/* 示例数据展示 */}
             <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">最近添加的宣告</h4>
+              <h4 className="text-sm font-medium text-gray-900 mb-3">最近添加的资源现货</h4>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 p-3 bg-white rounded-lg">
                   <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden">
@@ -223,7 +223,7 @@ export default function AdminMaterialsPage() {
                     />
                   </div>
                   <div className="flex-1">
-                    <h5 className="text-sm font-medium text-gray-900">每日宣告：重塑自我，迎接新挑战</h5>
+                    <h5 className="text-sm font-medium text-gray-900">每日现货资源：重塑自我，迎接新挑战</h5>
                     <p className="text-xs text-gray-500">2024-03-01 · 3:15</p>
                   </div>
                   <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">已发布</span>

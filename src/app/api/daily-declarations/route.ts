@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, dailyDeclarations } from '@/lib/db';
 import { desc, eq } from 'drizzle-orm';
 
-// GET - 获取每日宣告列表
+// GET - 获取每日现货资源列表
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
       data,
     });
   } catch (error) {
-    console.error('获取每日宣告列表失败:', error);
+    console.error('获取每日现货资源列表失败:', error);
     return NextResponse.json(
-      { success: false, error: '获取每日宣告列表失败' },
+      { success: false, error: '获取每日现货资源列表失败' },
       { status: 500 }
     );
   }

@@ -545,11 +545,11 @@ export default function DiscoveryPage() {
           setDocumentItems(formattedDocuments);
         }
 
-        // 加载每日宣告数据（获取最新的已发布宣告）
+        // 加载每日现货资源数据（获取最新的已发布资源现货）
         if (dailyRes.ok) {
           const dailyData = await dailyRes.json();
           if (dailyData.success && dailyData.data && dailyData.data.length > 0) {
-            // 过滤出 active 的宣告，如果没有 isActive 字段则使用 isFeatured
+            // 过滤出 active 的资源现货，如果没有 isActive 字段则使用 isFeatured
             const activeDeclarations = dailyData.data.filter((d: any) =>
               d.isActive !== false && d.isActive !== undefined ? d.isActive : d.isFeatured
             );
@@ -729,7 +729,7 @@ export default function DiscoveryPage() {
             </div>
           </div>
 
-          {/* 内容区 - 增加栏目间距，增加底部padding避免被固定的每日宣告遮挡 */}
+          {/* 内容区 - 增加栏目间距，增加底部padding避免被固定的每日现货资源遮挡 */}
           <div className="px-5 pt-3 space-y-8 pb-64">
             {/* 能力连接 */}
             <section>
@@ -1079,7 +1079,7 @@ export default function DiscoveryPage() {
           </div>
         </div>
 
-        {/* 每日宣告 - 固定在底部导航栏上方 */}
+        {/* 每日现货资源 - 固定在底部导航栏上方 */}
         {dailyDeclaration && (
           <div className="fixed bottom-[56px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 pb-4 bg-white z-40">
             <section>
