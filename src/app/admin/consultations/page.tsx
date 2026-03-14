@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Edit, Clock, ChevronUp, ChevronDown, User, X, Briefcase, Users, Tag, Activity } from 'lucide-react';
+import { Search, Edit, Clock, ChevronUp, ChevronDown, User, X, Briefcase, Users, Tag, Activity, MessageSquare } from 'lucide-react';
 
 // 咨询话题配置
 const consultationTopics = [
@@ -118,6 +118,7 @@ interface Consultation {
   topicId: string;
   topicName: string;
   question: string;
+  answer: string;
   submitDate: string;
   status: ConsultationStatus;
 }
@@ -145,6 +146,10 @@ export default function AdminConsultationsPage() {
   const [consultantAvatar, setConsultantAvatar] = useState(consultantInfo.avatar);
   const [consultantTags, setConsultantTags] = useState(consultantInfo.tags);
   const [newTag, setNewTag] = useState('');
+  const [showReplyDialog, setShowReplyDialog] = useState(false);
+  const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   // 加载咨询数据
   useEffect(() => {
@@ -169,6 +174,7 @@ export default function AdminConsultationsPage() {
             topicId: item.topicId,
             topicName: item.topicName || '未知话题',
             question: item.question,
+            answer: item.answer || '',
             submitDate: item.createdAt,
             status: item.status as ConsultationStatus,
           }));
@@ -336,6 +342,65 @@ export default function AdminConsultationsPage() {
   const showUserDetail = (userId: string) => {
     setSelectedUserId(userId);
     setShowUserDetailDialog(true);
+  };
+
+  // 打开回复弹窗
+  const openReplyDialog = (consult: Consultation) => {
+    setSelectedConsultation(consult);
+    setReplyContent(consult.answer || '');
+    setShowReplyDialog(true);
+  };
+
+  // 保存回复
+  const handleSaveReply = async () => {
+    if (!selectedConsultation) return;
+
+    setIsSubmittingReply(true);
+    try {
+      const response = await fetch(`/admin/api/consultations/${selectedConsultation.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: selectedConsultation.question,
+          answer: replyContent,
+          status: replyContent ? 'completed' : 'pending',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '保存回复失败');
+      }
+
+      // 更新前端状态
+      setConsultations(prev =>
+        prev.map(consult =>
+          consult.id === selectedConsultation.id
+            ? { ...consult, answer: replyContent, status: replyContent ? 'completed' : 'pending' }
+            : consult
+        )
+      );
+
+      setShowReplyDialog(false);
+      setSelectedConsultation(null);
+      setReplyContent('');
+      alert('回复保存成功！');
+    } catch (error: any) {
+      console.error('保存回复失败:', error);
+      alert(error.message || '保存回复失败');
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
+
+  // 取消回复
+  const cancelReply = () => {
+    setShowReplyDialog(false);
+    setSelectedConsultation(null);
+    setReplyContent('');
   };
 
   return (
@@ -737,25 +802,35 @@ export default function AdminConsultationsPage() {
                       </p>
 
                       {/* 状态切换按钮 */}
-                      <div className="flex items-center space-x-2">
-                        <span className="text-[12px] text-[rgba(0,0,0,0.5)]">状态：</span>
-                        {(['pending', 'processing', 'completed'] as ConsultationStatus[]).map((status) => (
-                          <button
-                            key={status}
-                            onClick={() => handleStatusChange(consult.id, status)}
-                            className={`px-2 py-1 text-[11px] font-normal transition-colors ${
-                              consult.status === status
-                                ? status === 'pending'
-                                  ? 'bg-yellow-400 text-white'
-                                  : status === 'processing'
-                                  ? 'bg-blue-400 text-white'
-                                  : 'bg-green-400 text-white'
-                                : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
-                            }`}
-                          >
-                            {status === 'pending' ? '待处理' : status === 'processing' ? '处理中' : '已处理'}
-                          </button>
-                        ))}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[12px] text-[rgba(0,0,0,0.5)]">状态：</span>
+                          {(['pending', 'processing', 'completed'] as ConsultationStatus[]).map((status) => (
+                            <button
+                              key={status}
+                              onClick={() => handleStatusChange(consult.id, status)}
+                              className={`px-2 py-1 text-[11px] font-normal transition-colors ${
+                                consult.status === status
+                                  ? status === 'pending'
+                                    ? 'bg-yellow-400 text-white'
+                                    : status === 'processing'
+                                    ? 'bg-blue-400 text-white'
+                                    : 'bg-green-400 text-white'
+                                  : 'bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] hover:bg-[rgba(0,0,0,0.08)]'
+                              }`}
+                            >
+                              {status === 'pending' ? '待处理' : status === 'processing' ? '处理中' : '已处理'}
+                            </button>
+                          ))}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openReplyDialog(consult)}
+                          className="text-[11px]"
+                        >
+                          {consult.answer ? '编辑回复' : '回复'}
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1011,6 +1086,93 @@ export default function AdminConsultationsPage() {
                 </Button>
                 <Button className="flex-1 bg-[rgba(59,130,246,0.4)] hover:bg-[rgba(59,130,246,0.5)]">
                   查看完整资料
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 回复弹窗 */}
+      {showReplyDialog && selectedConsultation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* 头部 */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <MessageSquare className="w-5 h-5 text-blue-400" />
+                <h3 className="text-base font-semibold text-gray-900">
+                  {selectedConsultation.answer ? '编辑回复' : '回复咨询'}
+                </h3>
+              </div>
+              <button
+                onClick={cancelReply}
+                className="p-1 hover:bg-gray-100 rounded-none"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* 内容 */}
+            <div className="p-6 space-y-6">
+              {/* 用户信息 */}
+              <div className="flex items-center space-x-3 pb-4 border-b border-gray-200">
+                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                  <img
+                    src={selectedConsultation.userAvatar}
+                    alt={selectedConsultation.userName}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900">{selectedConsultation.userName}</h4>
+                  <Badge className="rounded-none bg-[rgba(0,0,0,0.05)] text-[rgba(0,0,0,0.6)] font-normal text-[10px]">
+                    {selectedConsultation.topicName}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* 问题内容 */}
+              <div>
+                <h5 className="text-sm font-semibold text-gray-900 mb-3">咨询问题</h5>
+                <div className="bg-[rgba(0,0,0,0.03)] p-4 rounded-none">
+                  <p className="text-[13px] text-gray-700 leading-relaxed">
+                    {selectedConsultation.question}
+                  </p>
+                </div>
+              </div>
+
+              {/* 回复内容 */}
+              <div>
+                <h5 className="text-sm font-semibold text-gray-900 mb-3">
+                  回复内容 {selectedConsultation.answer && '(已有回复)'}
+                </h5>
+                <textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder="请输入您的回复..."
+                  className="w-full px-3 py-2 text-[13px] placeholder:text-[rgba(0,0,0,0.3)] border border-gray-300 rounded-none focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[200px] resize-none"
+                />
+              </div>
+            </div>
+
+            {/* 底部按钮 */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={cancelReply}
+                  disabled={isSubmittingReply}
+                  className="flex-1"
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={handleSaveReply}
+                  disabled={isSubmittingReply}
+                  className="flex-1 bg-[rgba(59,130,246,0.4)] hover:bg-[rgba(59,130,246,0.5)]"
+                >
+                  {isSubmittingReply ? '保存中...' : '保存回复'}
                 </Button>
               </div>
             </div>
