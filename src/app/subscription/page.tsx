@@ -340,6 +340,30 @@ export default function SubscriptionPage() {
             </p>
           </div>
 
+          {/* 互动现场视频 */}
+          <div>
+            <div className="relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
+              {/* 视频播放器 */}
+              <div className="aspect-video bg-gray-900 flex items-center justify-center relative">
+                {/* 播放按钮 */}
+                <button className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors">
+                    <Play className="w-8 h-8 text-white fill-white" />
+                  </div>
+                </button>
+                {/* 时长标签 */}
+                <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-[13px] px-2 py-1 rounded-none">
+                  0:10
+                </div>
+              </div>
+              {/* 标题 */}
+              <div className="p-3">
+                <h5 className="text-[18px] font-semibold text-gray-900 mb-1">互动现场精彩瞬间</h5>
+                <p className="text-[14px] text-[rgba(0,0,0,0.25)]">AI加油圈2026期小组讨论现场实录</p>
+              </div>
+            </div>
+          </div>
+
           {/* 选项卡 */}
           <Tabs defaultValue="training" value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="rounded-none grid w-full grid-cols-2 bg-[rgba(0,0,0,0.05)] p-1">
@@ -627,35 +651,6 @@ export default function SubscriptionPage() {
               </div>
             </TabsContent>
           </Tabs>
-
-          {/* 互动现场视频 */}
-          <div>
-            <div className="relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
-              {/* 视频播放器 */}
-              <div className="aspect-video bg-gray-900 flex items-center justify-center relative">
-                <img
-                  src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&h=340&fit=crop"
-                  alt="互动现场"
-                  className="w-full h-full object-cover opacity-80"
-                />
-                {/* 播放按钮 */}
-                <button className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors">
-                    <Play className="w-8 h-8 text-white fill-white" />
-                  </div>
-                </button>
-                {/* 时长标签 */}
-                <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-[13px] px-2 py-1 rounded-none">
-                  0:10
-                </div>
-              </div>
-              {/* 标题 */}
-              <div className="p-3">
-                <h5 className="text-[18px] font-semibold text-gray-900 mb-1">互动现场精彩瞬间</h5>
-                <p className="text-[14px] text-[rgba(0,0,0,0.25)]">AI加油圈2026期小组讨论现场实录</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
