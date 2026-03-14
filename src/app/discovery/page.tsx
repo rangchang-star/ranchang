@@ -20,11 +20,6 @@ import {
   Zap,
   RefreshCw,
   Lightbulb,
-  Settings,
-  Save,
-  Upload,
-  Image as ImageIcon,
-  Music as MusicIcon,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AvatarDisplay } from "@/components/avatar-upload";
@@ -322,8 +317,7 @@ export default function DiscoveryPage() {
   );
 
   const [showAssetsModal, setShowAssetsModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-
+  
   // 技能气泡点击状态
   const [clickedBubbleId, setClickedBubbleId] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
@@ -342,16 +336,13 @@ export default function DiscoveryPage() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const response = await fetch("/api/page-settings");
+        const response = await fetch("/api/settings");
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.data) {
             setPageSettings(data.data);
             if (data.data.discovery?.music) {
               setAudioUrl(data.data.discovery.music);
-            }
-            if (data.data.discovery?.backgroundImage) {
-              setDiscoveryBg(data.data.discovery.backgroundImage);
             }
           }
         }
@@ -693,43 +684,34 @@ export default function DiscoveryPage() {
           <div className="sticky top-0 bg-white z-50 pt-[6px]">
             <div className="flex items-center justify-between px-5 -mb-6">
               <h1 className="text-[31px] font-light text-gray-900">发现光亮</h1>
-              <div className="flex items-center space-x-2">
-                {/* Logo + 音乐符号 - 点击播放音乐 */}
-                <button
-                  onClick={toggleMusic}
-                  className="relative w-[126px] h-[126px] flex items-center justify-center transition-colors"
-                >
-                  <img
-                    src={pageSettings.discovery?.logo || "/logo-ranchang.png"}
-                    alt="燃场Logo"
-                    className="w-[90px] h-[90px] object-contain"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/logo-ranchang.png";
-                    }}
-                  />
-                  {/* 音乐符号在logo内部 */}
-                  <Music2
-                    className={`absolute w-6 h-6 transition-colors ${
-                      isPlaying
-                        ? "text-[rgba(0,0,0,0.7)]"
-                        : "text-[rgba(0,0,0,0.3)]"
-                    }`}
-                    style={{
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                    }}
-                  />
-                </button>
-                {/* 设置按钮 */}
-                <button
-                  onClick={() => setShowSettingsModal(true)}
-                  className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[rgba(0,0,0,0.05)] transition-colors text-[rgba(0,0,0,0.4)]"
-                >
-                  <Settings className="w-5 h-5" />
-                </button>
-              </div>
+              {/* Logo + 音乐符号 - 点击播放音乐 */}
+              <button
+                onClick={toggleMusic}
+                className="relative w-[126px] h-[126px] flex items-center justify-center transition-colors"
+              >
+                <img
+                  src={pageSettings.discovery?.logo || "/logo-ranchang.png"}
+                  alt="燃场Logo"
+                  className="w-[90px] h-[90px] object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/logo-ranchang.png";
+                  }}
+                />
+                {/* 音乐符号在logo内部 */}
+                <Music2
+                  className={`absolute w-6 h-6 transition-colors ${
+                    isPlaying
+                      ? "text-[rgba(0,0,0,0.7)]"
+                      : "text-[rgba(0,0,0,0.3)]"
+                  }`}
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                />
+              </button>
             </div>
 
             {/* 搜索框 */}
@@ -1169,184 +1151,6 @@ export default function DiscoveryPage() {
                 onClick={() => setTrustDialogOpen(false)}
               >
                 我知道了
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* 页面设置模态框 */}
-        <Dialog open={showSettingsModal} onOpenChange={setShowSettingsModal}>
-          <DialogContent className="w-[95%] max-w-[480px] max-h-[85vh] overflow-y-auto p-5 sm:p-6">
-            <DialogHeader>
-              <DialogTitle className="text-base sm:text-lg font-semibold">页面设置</DialogTitle>
-              <DialogDescription>配置发现页的Logo、背景音乐和背景图</DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-6 mt-4">
-              {/* Logo设置 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  <div className="flex items-center">
-                    <ImageIcon className="w-4 h-4 mr-2" />
-                    Logo图片
-                  </div>
-                </label>
-                <div className="space-y-3">
-                  <img
-                    src={pageSettings.discovery?.logo || "/logo-ranchang.png"}
-                    alt="当前Logo"
-                    className="w-20 h-20 object-contain border border-gray-200 rounded-lg"
-                  />
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={pageSettings.discovery?.logo || ""}
-                      onChange={(e) => setPageSettings({
-                        ...pageSettings,
-                        discovery: {
-                          ...pageSettings.discovery,
-                          logo: e.target.value
-                        }
-                      })}
-                      placeholder="输入Logo图片URL"
-                      className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400"
-                    />
-                    <label className="px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-100">
-                      <Upload className="w-4 h-4" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            // TODO: 上传文件到服务器，获取URL
-                            const url = URL.createObjectURL(file);
-                            setPageSettings({
-                              ...pageSettings,
-                              discovery: {
-                                ...pageSettings.discovery,
-                                logo: url
-                              }
-                            });
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* 背景音乐设置 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  <div className="flex items-center">
-                    <MusicIcon className="w-4 h-4 mr-2" />
-                    背景音乐
-                  </div>
-                </label>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    value={pageSettings.discovery?.music || ""}
-                    onChange={(e) => setPageSettings({
-                      ...pageSettings,
-                      discovery: {
-                        ...pageSettings.discovery,
-                        music: e.target.value
-                      }
-                    })}
-                    placeholder="输入音乐文件URL"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400"
-                  />
-                  {isPlaying && (
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                      <span>正在播放</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 背景图片设置 */}
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  <div className="flex items-center">
-                    <ImageIcon className="w-4 h-4 mr-2" />
-                    背景图片
-                  </div>
-                </label>
-                <div className="space-y-3">
-                  <img
-                    src={discoveryBg}
-                    alt="当前背景"
-                    className="w-full h-32 object-cover border border-gray-200 rounded-lg"
-                  />
-                  <div className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={discoveryBg}
-                      onChange={(e) => setDiscoveryBg(e.target.value)}
-                      placeholder="输入背景图片URL"
-                      className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-400"
-                    />
-                    <label className="px-3 py-2 text-sm bg-blue-50 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-100">
-                      <Upload className="w-4 h-4" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            // TODO: 上传文件到服务器，获取URL
-                            const url = URL.createObjectURL(file);
-                            setDiscoveryBg(url);
-                          }
-                        }}
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <Button
-                variant="ghost"
-                onClick={() => setShowSettingsModal(false)}
-                className="text-sm"
-              >
-                取消
-              </Button>
-              <Button
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/page-settings', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ pageSettings, discoveryBg }),
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                      alert('设置保存成功！');
-                      setShowSettingsModal(false);
-                    } else {
-                      alert('设置保存失败：' + data.error);
-                    }
-                  } catch (error) {
-                    console.error('保存设置失败:', error);
-                    alert('保存设置失败，请稍后重试');
-                  }
-                }}
-                className="text-sm"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                保存
               </Button>
             </div>
           </DialogContent>
