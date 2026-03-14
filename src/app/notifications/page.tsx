@@ -18,82 +18,6 @@ interface Notification {
   actionUrl?: string;
 }
 
-// 模拟数据（作为备用）
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    type: 'activity',
-    title: '活动提醒',
-    message: '您报名的"AI时代创业者论坛"将于明天14:00开始',
-    createdAt: '10分钟前',
-    isRead: false,
-    actionUrl: '/activity/1',
-  },
-  {
-    id: '2',
-    type: 'follow',
-    title: '新关注',
-    message: '张总关注了您',
-    createdAt: '30分钟前',
-    isRead: false,
-    actionUrl: '/connection/zhang-zong',
-  },
-  {
-    id: '3',
-    type: 'comment',
-    title: '新评论',
-    message: '王姐评论了您的宣告："非常受启发，期待更多分享"',
-    createdAt: '1小时前',
-    isRead: false,
-    actionUrl: '/declaration/1',
-  },
-  {
-    id: '4',
-    type: 'like',
-    title: '新的喜欢',
-    message: '李总喜欢了您的宣告"用AI重塑传统制造业"',
-    createdAt: '2小时前',
-    isRead: true,
-    actionUrl: '/declaration/1',
-  },
-  {
-    id: '5',
-    type: 'system',
-    title: '系统通知',
-    message: '您的创业心理评估报告已生成，点击查看详细结果',
-    createdAt: '3小时前',
-    isRead: true,
-    actionUrl: '/assessment/entrepreneurial-psychology/result',
-  },
-  {
-    id: '6',
-    type: 'message',
-    title: '新消息',
-    message: '陈总给您发送了消息："想请教一下供应链管理的问题"',
-    createdAt: '昨天',
-    isRead: true,
-    actionUrl: '/messages/chen-zong',
-  },
-  {
-    id: '7',
-    type: 'activity',
-    title: '活动结束',
-    message: '您参加的"35+创业者闭门会"已圆满结束',
-    createdAt: '2天前',
-    isRead: true,
-    actionUrl: '/activity/2',
-  },
-  {
-    id: '8',
-    type: 'promotion',
-    title: '限时优惠',
-    message: '燃场VIP会员限时8折，仅剩3天！',
-    createdAt: '3天前',
-    isRead: true,
-    actionUrl: '/membership',
-  },
-];
-
 const filterOptions = [
   { id: 'all', name: '全部' },
   { id: 'unread', name: '未读' },
@@ -127,30 +51,27 @@ export default function NotificationsPage() {
     try {
       setIsLoading(true);
       const userId = getUserId();
-      
+
       if (!userId) {
-        // 如果没有用户ID，使用mock数据
-        setNotifications(mockNotifications);
-        setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
+        setNotifications([]);
+        setUnreadCount(0);
         return;
       }
 
       const response = await fetch(`/api/notifications?x-user-id=${userId}`);
       const data = await response.json();
-      
+
       if (data.success) {
         setNotifications(data.data || []);
         setUnreadCount(data.unreadCount || 0);
       } else {
-        // 如果请求失败，使用mock数据
-        setNotifications(mockNotifications);
-        setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
+        setNotifications([]);
+        setUnreadCount(0);
       }
     } catch (error) {
       console.error('加载通知列表失败:', error);
-      // 如果请求失败，使用mock数据
-      setNotifications(mockNotifications);
-      setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
+      setNotifications([]);
+      setUnreadCount(0);
     } finally {
       setIsLoading(false);
     }
