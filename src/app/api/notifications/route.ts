@@ -1,83 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, notifications } from '@/lib/db';
-import { desc, eq } from 'drizzle-orm';
+import { eq, and, desc, count } from 'drizzle-orm';
 
-// GET - 获取通知列表
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const userId = searchParams.get('userId');
-    const isRead = searchParams.get('isRead');
+    // 从 cookie 或 session 获取当前用户ID
+    // 这里暂时使用硬编码的方式，实际应该从认证信息中获取
+    const userId = request.headers.get('x-user-id');
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: 'userId参数必填' },
-        { status: 400 }
+        { success: false, error: '未登录' },
+        { status: 401 }
       );
     }
 
-    let query = db
-      .select()
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = (page - 1) * limit;
+
+    // 获取总数量和未读数量
+    const [totalCountResult, unreadCountResult] = await Promise.all([
+      db.select({ count: count() }).from(notifications).where(eq(notifications.userId, userId)),
+      db.select({ count: count() }).from(notifications)
+        .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)))
+    ]);
+
+    const total = totalCountResult[0].count;
+    const unreadCount = unreadCountResult[0].count;
+    const totalPages = Math.ceil(total / limit);
+
+    // 获取消息列表
+    const list = await db
+      .select({
+        id: notifications.id,
+        title: notifications.title,
+        message: notifications.message,
+        type: notifications.type,
+        actionUrl: notifications.actionUrl,
+        isRead: notifications.isRead,
+        createdAt: notifications.createdAt,
+      })
       .from(notifications)
       .where(eq(notifications.userId, userId))
-      .orderBy(desc(notifications.createdAt));
-
-    if (isRead !== undefined) {
-      query = (query as any).where(eq(notifications.isRead, isRead === 'true'));
-    }
-
-    const notificationList = await query;
-
-    // 转换数据格式
-    const data = notificationList.map((notification: any) => ({
-      id: notification.id,
-      userId: notification.userId,
-      type: notification.type,
-      title: notification.title,
-      content: notification.message, // 数据库字段是 message
-      isRead: notification.isRead,
-      createdAt: notification.createdAt,
-    }));
+      .orderBy(desc(notifications.createdAt))
+      .limit(limit)
+      .offset(offset);
 
     return NextResponse.json({
       success: true,
-      data,
+      data: list,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+      unreadCount,
     });
   } catch (error) {
-    console.error('获取通知列表失败:', error);
+    console.error('获取消息列表失败:', error);
     return NextResponse.json(
-      { success: false, error: '获取通知列表失败' },
-      { status: 500 }
-    );
-  }
-}
-
-// POST - 创建通知
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-
-    const newNotification = await db
-      .insert(notifications)
-      .values({
-        userId: body.userId,
-        type: body.type,
-        title: body.title,
-        message: body.content || body.message, // 接收 content 参数但映射到 message 字段
-        actionUrl: body.actionUrl,
-        isRead: false,
-        // 不设置 id，使用数据库的 gen_random_uuid()
-      })
-      .returning();
-
-    return NextResponse.json({
-      success: true,
-      data: newNotification[0],
-    });
-  } catch (error) {
-    console.error('创建通知失败:', error);
-    return NextResponse.json(
-      { success: false, error: '创建通知失败' },
+      { success: false, error: '获取消息列表失败' },
       { status: 500 }
     );
   }

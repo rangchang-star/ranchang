@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, CheckCheck, Trash2, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,24 +10,13 @@ import { Badge } from '@/components/ui/badge';
 // 通知类型定义
 interface Notification {
   id: string;
-  type: 'activity' | 'follow' | 'comment' | 'like' | 'system' | 'message' | 'promotion' | 'info' | 'success' | 'warning' | 'error';
+  type: 'activity' | 'follow' | 'comment' | 'like' | 'system' | 'message' | 'promotion' | 'info' | 'success' | 'warning' | 'error' | 'platform' | 'activity_approved';
   title: string;
-  content: string;
-  time: string;
-  read: boolean;
+  message: string;
+  createdAt: string;
+  isRead: boolean;
   actionUrl?: string;
 }
-
-// 从localStorage加载通知或使用默认数据
-const loadNotifications = (): Notification[] => {
-  if (typeof window === 'undefined') return mockNotifications;
-  try {
-    const stored = localStorage.getItem('notifications');
-    return stored ? JSON.parse(stored) : mockNotifications;
-  } catch {
-    return mockNotifications;
-  }
-};
 
 // 模拟数据（作为备用）
 const mockNotifications: Notification[] = [
@@ -35,72 +24,72 @@ const mockNotifications: Notification[] = [
     id: '1',
     type: 'activity',
     title: '活动提醒',
-    content: '您报名的"AI时代创业者论坛"将于明天14:00开始',
-    time: '10分钟前',
-    read: false,
+    message: '您报名的"AI时代创业者论坛"将于明天14:00开始',
+    createdAt: '10分钟前',
+    isRead: false,
     actionUrl: '/activity/1',
   },
   {
     id: '2',
     type: 'follow',
     title: '新关注',
-    content: '张总关注了您',
-    time: '30分钟前',
-    read: false,
+    message: '张总关注了您',
+    createdAt: '30分钟前',
+    isRead: false,
     actionUrl: '/connection/zhang-zong',
   },
   {
     id: '3',
     type: 'comment',
     title: '新评论',
-    content: '王姐评论了您的宣告："非常受启发，期待更多分享"',
-    time: '1小时前',
-    read: false,
+    message: '王姐评论了您的宣告："非常受启发，期待更多分享"',
+    createdAt: '1小时前',
+    isRead: false,
     actionUrl: '/declaration/1',
   },
   {
     id: '4',
     type: 'like',
     title: '新的喜欢',
-    content: '李总喜欢了您的宣告"用AI重塑传统制造业"',
-    time: '2小时前',
-    read: true,
+    message: '李总喜欢了您的宣告"用AI重塑传统制造业"',
+    createdAt: '2小时前',
+    isRead: true,
     actionUrl: '/declaration/1',
   },
   {
     id: '5',
     type: 'system',
     title: '系统通知',
-    content: '您的创业心理评估报告已生成，点击查看详细结果',
-    time: '3小时前',
-    read: true,
+    message: '您的创业心理评估报告已生成，点击查看详细结果',
+    createdAt: '3小时前',
+    isRead: true,
     actionUrl: '/assessment/entrepreneurial-psychology/result',
   },
   {
     id: '6',
     type: 'message',
     title: '新消息',
-    content: '陈总给您发送了消息："想请教一下供应链管理的问题"',
-    time: '昨天',
-    read: true,
+    message: '陈总给您发送了消息："想请教一下供应链管理的问题"',
+    createdAt: '昨天',
+    isRead: true,
     actionUrl: '/messages/chen-zong',
   },
   {
     id: '7',
     type: 'activity',
     title: '活动结束',
-    content: '您参加的"35+创业者闭门会"已圆满结束',
-    time: '2天前',
-    read: true,
+    message: '您参加的"35+创业者闭门会"已圆满结束',
+    createdAt: '2天前',
+    isRead: true,
     actionUrl: '/activity/2',
   },
   {
     id: '8',
     type: 'promotion',
     title: '限时优惠',
-    content: '燃场VIP会员限时8折，仅剩3天！',
-    time: '3天前',
-    read: true,
+    message: '燃场VIP会员限时8折，仅剩3天！',
+    createdAt: '3天前',
+    isRead: true,
     actionUrl: '/membership',
   },
 ];
@@ -114,34 +103,109 @@ const filterOptions = [
 ];
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>(loadNotifications());
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 更新通知状态并保存到localStorage
-  const updateNotificationState = (updatedNotifications: Notification[]) => {
-    setNotifications(updatedNotifications);
+  // 获取用户ID（这里暂时从localStorage获取，实际应该从认证信息中获取）
+  const getUserId = () => {
+    if (typeof window === 'undefined') return null;
     try {
-      localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
-    } catch (error) {
-      console.error('保存通知失败:', error);
+      return localStorage.getItem('userId');
+    } catch {
+      return null;
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // 加载通知列表
+  useEffect(() => {
+    loadNotifications();
+  }, []);
 
-  const handleMarkAsRead = (id: string) => {
-    const updated = notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
-    updateNotificationState(updated);
+  const loadNotifications = async () => {
+    try {
+      setIsLoading(true);
+      const userId = getUserId();
+      
+      if (!userId) {
+        // 如果没有用户ID，使用mock数据
+        setNotifications(mockNotifications);
+        setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
+        return;
+      }
+
+      const response = await fetch(`/api/notifications?x-user-id=${userId}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setNotifications(data.data || []);
+        setUnreadCount(data.unreadCount || 0);
+      } else {
+        // 如果请求失败，使用mock数据
+        setNotifications(mockNotifications);
+        setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
+      }
+    } catch (error) {
+      console.error('加载通知列表失败:', error);
+      // 如果请求失败，使用mock数据
+      setNotifications(mockNotifications);
+      setUnreadCount(mockNotifications.filter(n => !n.isRead).length);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleMarkAllAsRead = () => {
-    const updated = notifications.map((n) => ({ ...n, read: true }));
-    updateNotificationState(updated);
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      const userId = getUserId();
+      
+      if (!userId) return;
+
+      await fetch(`/api/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': userId,
+        },
+      });
+
+      // 更新本地状态
+      const updated = notifications.map((n) => 
+        n.id === id ? { ...n, isRead: true } : n
+      );
+      setNotifications(updated);
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('标记已读失败:', error);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    const updated = notifications.filter((n) => n.id !== id);
-    updateNotificationState(updated);
+  const handleMarkAllAsRead = async () => {
+    try {
+      const userId = getUserId();
+      
+      if (!userId) return;
+
+      await fetch('/api/notifications/read-all', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': userId,
+        },
+      });
+
+      // 更新本地状态
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('标记全部已读失败:', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    // 用户要求不做消息批量管理功能，这里暂时不实现
+    alert('消息删除功能暂未实现');
   };
 
   const getFilteredNotifications = () => {
@@ -149,12 +213,34 @@ export default function NotificationsPage() {
       return notifications;
     }
     if (selectedFilter === 'unread') {
-      return notifications.filter((n) => !n.read);
+      return notifications.filter((n) => !n.isRead);
     }
     return notifications.filter((n) => n.type === selectedFilter);
   };
 
   const filteredNotifications = getFilteredNotifications();
+
+  // 格式化时间
+  const formatTime = (createdAt: string) => {
+    try {
+      const date = new Date(createdAt);
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 1) return '刚刚';
+      if (minutes < 60) return `${minutes}分钟前`;
+      if (hours < 24) return `${hours}小时前`;
+      if (days < 7) return `${days}天前`;
+      
+      return date.toLocaleDateString('zh-CN');
+    } catch {
+      return createdAt;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -181,6 +267,7 @@ export default function NotificationsPage() {
                 onClick={handleMarkAllAsRead}
                 className="p-2"
                 title="全部已读"
+                disabled={unreadCount === 0}
               >
                 <CheckCheck className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
               </Button>
@@ -209,17 +296,26 @@ export default function NotificationsPage() {
 
         {/* 通知列表 */}
         <div className="px-5">
-          {filteredNotifications.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-16">
+              <p className="text-[13px] text-[rgba(0,0,0,0.4)]">加载中...</p>
+            </div>
+          ) : filteredNotifications.length > 0 ? (
             <div className="divide-y divide-[rgba(0,0,0,0.05)]">
               {filteredNotifications.map((notification) => (
                 <Link
                   key={notification.id}
                   href={notification.actionUrl || '#'}
                   className="block p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
+                  onClick={() => {
+                    if (!notification.isRead) {
+                      handleMarkAsRead(notification.id);
+                    }
+                  }}
                 >
                   <div className="flex items-start space-x-3">
                     {/* 未读指示器 */}
-                    {!notification.read && (
+                    {!notification.isRead && (
                       <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0" />
                     )}
 
@@ -231,21 +327,21 @@ export default function NotificationsPage() {
                             <h3 className="text-[13px] font-semibold text-gray-900">
                               {notification.title}
                             </h3>
-                            {!notification.read && (
+                            {!notification.isRead && (
                               <span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
                             )}
                           </div>
                           <p className="text-[11px] text-[rgba(0,0,0,0.6)] line-clamp-2">
-                            {notification.content}
+                            {notification.message}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-[10px] text-[rgba(0,0,0,0.3)]">
-                          {notification.time}
+                          {formatTime(notification.createdAt)}
                         </span>
                         <div className="flex items-center space-x-2">
-                          {!notification.read && (
+                          {!notification.isRead && (
                             <Button
                               variant="ghost"
                               onClick={(e) => {
@@ -258,17 +354,6 @@ export default function NotificationsPage() {
                               <Check className="w-3.5 h-3.5 text-[rgba(0,0,0,0.4)]" />
                             </Button>
                           )}
-                          <Button
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleDelete(notification.id);
-                            }}
-                            className="p-1"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-[rgba(0,0,0,0.3)] hover:text-red-400" />
-                          </Button>
                         </div>
                       </div>
                     </div>
