@@ -63,7 +63,7 @@ export default function RegisterPage() {
     }, 1000);
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!phone || !code || !password || !confirmPassword) {
       alert('请填写完整信息');
       return;
@@ -76,8 +76,27 @@ export default function RegisterPage() {
       alert('密码长度不能少于6位');
       return;
     }
-    // 这里应该调用注册API
-    router.push('/login');
+
+    try {
+      // 调用注册API
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password, name: phone }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('注册成功！即将跳转到登录页面');
+        router.push('/login');
+      } else {
+        alert(data.error || '注册失败，请稍后重试');
+      }
+    } catch (error) {
+      console.error('注册失败:', error);
+      alert('注册失败，请稍后重试');
+    }
   };
 
   return (
