@@ -291,20 +291,6 @@ const ActivityStatusBadge = ({
   return null;
 };
 
-// 资源现货类型颜色映射
-const getTypeColorClass = (type: string) => {
-  switch (type) {
-    case 'ability': // 能力现货
-      return 'text-purple-600';
-    case 'connection': // 人脉现货
-      return 'text-green-600';
-    case 'resource': // 资源现货
-      return 'text-orange-600';
-    default:
-      return 'text-[rgba(0,0,0,0.25)]';
-  }
-};
-
 export default function DiscoveryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
@@ -1022,9 +1008,9 @@ export default function DiscoveryPage() {
                       <h3 className="text-[17px] font-semibold text-gray-900 mb-1 truncate">
                         {item.title}
                       </h3>
-                      {/* 标签（根据类型显示不同颜色）+ 蓝色色块 */}
+                      {/* 标签（灰色字）+ 蓝色色块 */}
                       <div>
-                        <p className={`text-[12px] ${getTypeColorClass(item.iconType)}`}>
+                        <p className="text-[12px] text-[rgba(0,0,0,0.25)]">
                           {item.profile}
                         </p>
                         {/* 蓝色色块 - 与个人中心一致 */}
