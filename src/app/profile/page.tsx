@@ -648,19 +648,30 @@ export default function ProfilePage() {
 
     setIsSubmittingConsultation(true);
     try {
-      // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       const topic = consultationTopics.find(t => t.id === selectedTopic);
-      console.log('提交咨询:', {
-        topic: topic?.name,
-        question: consultationQuestion,
-        userId: userInfo.id,
+
+      const response = await fetch('/api/consultations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic: topic?.name,
+          topicId: selectedTopic,
+          question: consultationQuestion,
+          userId: user?.id,
+        }),
       });
 
-      alert('咨询提交成功！我们会尽快回复您。');
-      // 只清空问题，保持当前话题
-      setConsultationQuestion('');
+      const result = await response.json();
+
+      if (result.success) {
+        alert('咨询提交成功！我们会尽快回复您。');
+        // 只清空问题，保持当前话题
+        setConsultationQuestion('');
+      } else {
+        throw new Error(result.error || '提交失败');
+      }
     } catch (error) {
       console.error('提交咨询失败:', error);
       alert('提交咨询失败，请重试');

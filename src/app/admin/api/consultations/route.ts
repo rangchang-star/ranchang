@@ -19,14 +19,14 @@ export async function GET(request: NextRequest) {
     const data = consultationList.map((item: any) => ({
       id: item.consultations.id,
       userId: item.consultations.userId,
-      userName: item.app_users?.name || item.app_users?.nickname,
-      consultantId: item.consultations.consultantId,
-      topic: item.consultations.topic,
-      description: item.consultations.description,
+      userName: item.app_users?.name || item.app_users?.nickname || '未知用户',
+      userAvatar: item.app_users?.avatar || '/avatar-default.jpg',
+      topicId: item.consultations.topicId,
+      topicName: item.consultations.topicName,
+      question: item.consultations.question,
+      answer: item.consultations.answer,
       status: item.consultations.status,
-      scheduledAt: item.consultations.scheduledAt,
-      duration: item.consultations.duration,
-      notes: item.consultations.notes,
+      consultantName: item.consultations.consultantName,
       createdAt: item.consultations.createdAt,
       updatedAt: item.consultations.updatedAt,
     }));
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - 创建咨询
+// POST - 创建咨询（管理员手动创建）
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -53,12 +53,11 @@ export async function POST(request: NextRequest) {
       .insert(consultations)
       .values({
         userId: body.userId,
-        consultantId: body.consultantId,
-        topic: body.topic,
-        description: body.description,
+        topicId: body.topicId,
+        topicName: body.topicName,
+        question: body.question,
         status: body.status || 'pending',
-        scheduledAt: body.scheduledAt,
-        duration: body.duration,
+        consultantName: body.consultantName || '大鱼老师',
       })
       .returning();
 

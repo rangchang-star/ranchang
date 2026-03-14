@@ -301,23 +301,17 @@ export const notifications = pgTable('notifications', {
 export const consultations = pgTable('consultations', {
   id: varchar('id', { length: 36 }).primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar('user_id', { length: 36 }).notNull().references(() => appUsers.id, { onDelete: 'cascade' }),
-  consultantId: varchar('consultant_id', { length: 36 }).references(() => appUsers.id, { onDelete: 'set null' }),
-  topic: varchar('topic', { length: 200 }).notNull(),
-  description: text('description'),
+  topicId: varchar('topic_id', { length: 50 }),
+  topicName: varchar('topic_name', { length: 200 }),
+  question: text('question').notNull(),
+  answer: text('answer'),
   status: varchar('status', { length: 20 }).default('pending'),
-  scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
-  duration: integer('duration'), // 咨询时长（分钟）
-  recordingUrl: text('recording_url'), // 录音CDN地址
-  recordingKey: text('recording_key'), // 录音fileKey
-  notes: text('notes'),
-  rating: integer('rating'), // 评分
+  consultantName: varchar('consultant_name', { length: 100 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }),
 }, (table) => [
   index('consultations_user_id_idx').on(table.userId),
-  index('consultations_consultant_id_idx').on(table.consultantId),
   index('consultations_status_idx').on(table.status),
-  index('consultations_scheduled_at_idx').on(table.scheduledAt),
 ]);
 
 // ============================================================

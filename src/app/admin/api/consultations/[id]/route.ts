@@ -47,12 +47,12 @@ export async function PUT(
     const updated = await db
       .update(consultations)
       .set({
-        topic: body.topic,
-        description: body.description,
+        topicId: body.topicId,
+        topicName: body.topicName,
+        question: body.question,
+        answer: body.answer,
         status: body.status,
-        scheduledAt: body.scheduledAt,
-        duration: body.duration,
-        notes: body.notes,
+        consultantName: body.consultantName,
         updatedAt: new Date(),
       })
       .where(eq(consultations.id, id))
