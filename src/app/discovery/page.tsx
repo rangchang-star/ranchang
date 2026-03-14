@@ -555,18 +555,16 @@ export default function DiscoveryPage() {
           setDocumentItems(formattedDocuments);
         }
 
-        // 加载每日现货资源数据（获取最新的已发布资源现货）
+        // 加载每日现货资源数据（只获取勾选显示的资源）
         if (dailyRes.ok) {
           const dailyData = await dailyRes.json();
           if (dailyData.success && dailyData.data && dailyData.data.length > 0) {
-            // 过滤出 active 的资源现货，如果没有 isActive 字段则使用 isFeatured
-            const activeDeclarations = dailyData.data.filter((d: any) =>
-              d.isActive !== false && d.isActive !== undefined ? d.isActive : d.isFeatured
-            );
+            // 只取 isFeatured=true 的资源
+            const featuredDeclarations = dailyData.data.filter((d: any) => d.isFeatured);
 
-            if (activeDeclarations.length > 0) {
-              // 按创建时间倒序，取最新的
-              const sorted = activeDeclarations.sort((a: any, b: any) =>
+            if (featuredDeclarations.length > 0) {
+              // 如果有多条勾选的，按创建时间倒序取最新的
+              const sorted = featuredDeclarations.sort((a: any, b: any) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
               );
               const latest = sorted[0];
@@ -575,10 +573,15 @@ export default function DiscoveryPage() {
                 date: latest.date || latest.createdAt?.split('T')[0] || '',
                 title: latest.title || latest.summary || '',
                 duration: latest.duration || '',
-                audio: latest.audio || latest.audioUrl || '',
+                audio: latest.audio || '',
                 id: latest.id,
               });
+            } else {
+              // 如果没有勾选的，设置为null（不显示）
+              setDailyDeclaration(null);
             }
+          } else {
+            setDailyDeclaration(null);
           }
         }
       } catch (err) {

@@ -25,9 +25,7 @@ export async function GET(request: NextRequest) {
       title: declaration.title,
       date: declaration.date,
       image: declaration.image,
-      imageKey: declaration.imageKey,
       audio: declaration.audio,
-      audioKey: declaration.audioKey,
       summary: declaration.summary,
       text: declaration.text,
       iconType: declaration.iconType,
@@ -35,7 +33,6 @@ export async function GET(request: NextRequest) {
       profile: declaration.profile,
       duration: declaration.duration,
       views: declaration.views,
-      isActive: declaration.isActive,
       isFeatured: declaration.isFeatured,
       createdAt: declaration.createdAt,
       updatedAt: declaration.updatedAt,
@@ -58,7 +55,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, date, duration, image, audio, isActive = true, isFeatured = false } = body;
+    const { title, date, duration, image, audio, isFeatured = false } = body;
 
     if (!title || !date) {
       return NextResponse.json(
@@ -75,7 +72,6 @@ export async function POST(request: NextRequest) {
         duration,
         image,
         audio,
-        isActive,
         isFeatured,
       })
       .returning();

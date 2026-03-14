@@ -226,10 +226,7 @@ export const dailyDeclarations = pgTable('daily_declarations', {
   title: varchar('title', { length: 200 }).notNull(),
   date: date('date').notNull(),
   image: text('image'), // 永久CDN地址
-  imageKey: text('image_key'), // 对象存储fileKey
   audio: text('audio'), // 音频CDN地址
-  audioUrl: varchar('audio_url', { length: 500 }), // 音频URL
-  audioKey: text('audio_key'), // 音频fileKey
   summary: text('summary'),
   text: text('text'),
   iconType: varchar('icon_type', { length: 50 }), // 图标类型
@@ -237,8 +234,7 @@ export const dailyDeclarations = pgTable('daily_declarations', {
   profile: text('profile'),
   duration: varchar('duration', { length: 50 }),
   views: integer('views').default(0),
-  isActive: boolean('is_active').default(true), // 是否激活显示
-  isFeatured: boolean('is_featured').default(false),
+  isFeatured: boolean('is_featured').default(false), // 是否在前台显示（勾选框）
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [

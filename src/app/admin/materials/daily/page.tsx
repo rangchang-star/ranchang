@@ -3,12 +3,13 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Edit, Trash2, Search, Volume2, Play, ArrowLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, Edit, Trash2, Search, Volume2, Play, ArrowLeft, Check } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-// 每日宣告数据类型
+// 每日现货资源数据类型
 interface DailyDeclaration {
   id: string;
   title: string;
@@ -17,7 +18,7 @@ interface DailyDeclaration {
   image: string;
   audio: string;
   createdAt: string;
-  isActive: boolean;
+  isFeatured: boolean;
 }
 
 export default function AdminDailyDeclarationsPage() {
@@ -58,7 +59,7 @@ export default function AdminDailyDeclarationsPage() {
             image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop',
             audio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
             createdAt: '2024-03-01T00:00:00Z',
-            isActive: true,
+            isFeatured: true,
           },
           {
             id: '2',
@@ -68,7 +69,7 @@ export default function AdminDailyDeclarationsPage() {
             image: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=200&h=200&fit=crop',
             audio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
             createdAt: '2024-03-02T00:00:00Z',
-            isActive: true,
+            isFeatured: true,
           },
           {
             id: '3',
@@ -78,7 +79,7 @@ export default function AdminDailyDeclarationsPage() {
             image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=200&h=200&fit=crop',
             audio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
             createdAt: '2024-03-03T00:00:00Z',
-            isActive: false,
+            isFeatured: false,
           },
         ]);
       }
@@ -88,13 +89,13 @@ export default function AdminDailyDeclarationsPage() {
       setDeclarations([
         {
           id: '1',
-          title: '每日现货资源：重塑自我，迎接新挑战',
+          title: '重塑自我，迎接新挑战',
           date: '2024-03-01',
           duration: '3:15',
           image: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop',
           audio: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
           createdAt: '2024-03-01T00:00:00Z',
-          isActive: true,
+          isFeatured: true,
         },
       ]);
     } finally {
@@ -154,21 +155,35 @@ export default function AdminDailyDeclarationsPage() {
     }
   };
 
-  // 切换状态
-  const handleToggleStatus = async (id: string, isActive: boolean) => {
+  // 切换勾选状态（一次只允许勾选一条）
+  const handleToggleFeatured = async (id: string, isFeatured: boolean) => {
+    // 如果要勾选，先取消其他所有勾选
+    if (!isFeatured) {
+      const uncheckPromises = declarations
+        .filter(decl => decl.id !== id && decl.isFeatured)
+        .map(decl => 
+          fetch(`/api/daily-declarations/${decl.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isFeatured: false }),
+          })
+        );
+      await Promise.all(uncheckPromises);
+    }
+
     try {
       const response = await fetch(`/api/daily-declarations/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ isActive: !isActive }),
+        body: JSON.stringify({ isFeatured: !isFeatured }),
       });
       if (response.ok) {
         loadDeclarations();
       }
     } catch (error) {
-      console.error('更新状态失败:', error);
+      console.error('更新勾选状态失败:', error);
     }
   };
 
@@ -237,6 +252,15 @@ export default function AdminDailyDeclarationsPage() {
                   className="flex items-center justify-between p-4 hover:bg-[rgba(0,0,0,0.02)] transition-colors"
                 >
                   <div className="flex items-center space-x-4 flex-1">
+                    {/* 勾选框 */}
+                    <div className="flex-shrink-0">
+                      <Checkbox
+                        checked={declaration.isFeatured}
+                        onCheckedChange={(checked) => handleToggleFeatured(declaration.id, declaration.isFeatured)}
+                        className="w-5 h-5 border-2 data-[state=checked]:bg-blue-400 data-[state=checked]:border-blue-400"
+                      />
+                    </div>
+
                     {/* 方形图片 */}
                     <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-[rgba(0,0,0,0.05)]">
                       <Image
@@ -254,9 +278,9 @@ export default function AdminDailyDeclarationsPage() {
                         <h3 className="text-[15px] font-semibold text-gray-900 truncate">
                           {declaration.title}
                         </h3>
-                        {declaration.isActive && (
-                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[11px] font-medium">
-                            已发布
+                        {declaration.isFeatured && (
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[11px] font-medium">
+                            ✓ 前台显示
                           </span>
                         )}
                       </div>
@@ -300,14 +324,6 @@ export default function AdminDailyDeclarationsPage() {
                   </div>
 
                   <div className="flex items-center space-x-2 flex-shrink-0">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToggleStatus(declaration.id, declaration.isActive)}
-                      className="text-[13px]"
-                    >
-                      {declaration.isActive ? '下线' : '发布'}
-                    </Button>
                     <Link href={`/admin/materials/daily/${declaration.id}/edit`}>
                       <Button variant="outline" size="sm">
                         <Edit className="w-4 h-4 mr-2" />
