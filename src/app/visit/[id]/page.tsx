@@ -408,7 +408,7 @@ export default function VisitDetailPage() {
           {/* 封面主图 */}
           <div className="relative w-full h-64 overflow-hidden">
             <img
-              src="https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&h=340&fit=crop"
+              src={visit.image}
               alt={visit.title}
               className="w-full h-full object-cover"
             />
