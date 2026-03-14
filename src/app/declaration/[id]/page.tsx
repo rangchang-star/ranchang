@@ -62,6 +62,17 @@ export default function DeclarationDetailPage() {
         if (data.success) {
           setDeclaration(data.data);
           setLikesCount(data.data.likes || 0);
+
+          // 如果用户已登录，检查是否已经喜欢过
+          if (isLoggedIn && user) {
+            const likeResponse = await fetch(`/api/declarations/${id}/like/status?userId=${user.id}`);
+            if (likeResponse.ok) {
+              const likeData = await likeResponse.json();
+              if (likeData.success) {
+                setIsLiked(likeData.data.isLiked);
+              }
+            }
+          }
         } else {
           throw new Error(data.error || '加载资源现货信息失败');
         }
@@ -74,7 +85,7 @@ export default function DeclarationDetailPage() {
     }
 
     loadDeclaration();
-  }, [params.id]);
+  }, [params.id, isLoggedIn, user]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -185,12 +196,36 @@ export default function DeclarationDetailPage() {
 
   // 点赞功能
   const handleLike = async () => {
+    // 登录验证
+    if (!isLoggedIn || !user) {
+      setShowLoginDialog(true);
+      return;
+    }
+
     try {
-      // TODO: 调用点赞API
-      setIsLiked(!isLiked);
-      setLikesCount(isLiked ? likesCount - 1 : likesCount + 1);
+      const action = isLiked ? 'unlike' : 'like';
+      const response = await fetch(`/api/declarations/${declaration.id}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          action,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsLiked(data.data.isLiked);
+        setLikesCount(data.data.likesCount);
+      } else {
+        throw new Error(data.error || '操作失败');
+      }
     } catch (error) {
       console.error('点赞失败:', error);
+      alert('操作失败，请稍后重试');
     }
   };
 
@@ -414,7 +449,7 @@ export default function DeclarationDetailPage() {
 
         {/* 登录提示弹窗 */}
         <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="w-[80%] max-w-[80%]">
             <DialogHeader>
               <DialogTitle>登录提示</DialogTitle>
               <DialogDescription>
@@ -444,7 +479,7 @@ export default function DeclarationDetailPage() {
 
         {/* 功能提示弹窗 */}
         <Dialog open={showFeatureDialog} onOpenChange={setShowFeatureDialog}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="w-[80%] max-w-[80%]">
             <DialogHeader>
               <DialogTitle>功能提示</DialogTitle>
               <DialogDescription>

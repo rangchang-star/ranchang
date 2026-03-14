@@ -87,6 +87,8 @@ export default function ActivityDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [enrollmentStatus, setEnrollmentStatus] = useState<'pending' | 'approved' | 'rejected' | 'completed' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
   // 从 API 加载活动数据
   useEffect(() => {
@@ -250,14 +252,42 @@ export default function ActivityDetailPage() {
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (navigator.share) {
-      navigator.share({
-        title: activity.title,
-        text: activity.description,
-        url: window.location.href,
-      });
+      try {
+        await navigator.share({
+          title: activity.title,
+          text: activity.description,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error('分享失败:', error);
+      }
+    } else {
+      // 降级方案：复制链接到剪贴板
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('链接已复制到剪贴板');
+      } catch (error) {
+        console.error('复制链接失败:', error);
+        alert('复制链接失败，请手动复制浏览器地址');
+      }
     }
+  };
+
+  const handleLike = async () => {
+    // 登录验证
+    if (!isLoggedIn || !user) {
+      showLoginModal();
+      return;
+    }
+
+    // 切换喜欢状态
+    setIsLiked(!isLiked);
+    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+
+    // TODO: 这里应该调用API来保存喜欢状态到数据库
+    // 目前只在本地切换状态
   };
 
   return (
@@ -272,9 +302,26 @@ export default function ActivityDetailPage() {
               </Button>
             </Link>
             <h1 className="text-[15px] font-semibold text-gray-900">活动详情</h1>
-            <Button variant="ghost" onClick={handleShare} className="p-2">
-              <Share2 className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              {/* 喜欢按钮 */}
+              <Button
+                variant="ghost"
+                onClick={handleLike}
+                className="p-2"
+              >
+                <Heart
+                  className={`w-5 h-5 ${isLiked ? 'text-red-500 fill-red-500' : 'text-[rgba(0,0,0,0.6)]'}`}
+                />
+              </Button>
+              {/* 转发按钮 */}
+              <Button
+                variant="ghost"
+                onClick={handleShare}
+                className="p-2"
+              >
+                <Share2 className="w-5 h-5 text-[rgba(0,0,0,0.6)]" />
+              </Button>
+            </div>
           </div>
         </div>
 

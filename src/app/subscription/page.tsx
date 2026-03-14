@@ -16,6 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Clock, Play, PlayCircle, TrendingUp, Heart, Mic, Users, X, PauseCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { useLoginModal } from '@/contexts/login-modal-context-v2';
 
 // 商业咨询行业标签
 const industryTypes = [
@@ -81,6 +83,8 @@ const salon = {
 };
 
 export default function SubscriptionPage() {
+  const { user, isLoggedIn } = useAuth();
+  const { showLoginModal } = useLoginModal();
   const [activeTab, setActiveTab] = useState<'training' | 'consultation'>('training');
 
   // Tab描述文字（从后台API加载）
@@ -284,16 +288,13 @@ export default function SubscriptionPage() {
       return;
     }
 
+    // 登录验证
+    if (!isLoggedIn || !user) {
+      showLoginModal();
+      return;
+    }
+
     try {
-      // 从 localStorage 获取当前用户信息
-      const storedUser = localStorage.getItem('currentUser');
-      const currentUser = storedUser ? JSON.parse(storedUser) : null;
-
-      if (!currentUser || !currentUser.id) {
-        alert('请先登录');
-        return;
-      }
-
       // 调用 API 提交申请
       const response = await fetch('/api/ai-circle/apply', {
         method: 'POST',
@@ -301,7 +302,7 @@ export default function SubscriptionPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: currentUser.id,
+          userId: user.id,
           userName: formData.name,
           userPhone: formData.phone,
           userWechat: formData.wechat,
@@ -565,7 +566,14 @@ export default function SubscriptionPage() {
                   </div>
                   {/* 圆形蓝色按钮 */}
                   <button
-                    onClick={() => setJoinDialogOpen(true)}
+                    onClick={() => {
+                      // 登录验证
+                      if (!isLoggedIn || !user) {
+                        showLoginModal();
+                        return;
+                      }
+                      setJoinDialogOpen(true);
+                    }}
                     className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 text-white text-[16px] font-normal flex items-center justify-center hover:scale-110 hover:-translate-y-1 hover:shadow-xl hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg transition-all duration-200"
                   >
                     加入

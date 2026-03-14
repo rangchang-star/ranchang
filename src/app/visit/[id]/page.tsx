@@ -180,20 +180,24 @@ export default function VisitDetailPage() {
     return dateStr.split('T')[0];
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: visit.title,
-        text: `${visit.title} - ${visit.record}`,
-        url: window.location.href,
-      });
-    } else {
-      // 降级方案：复制链接
-      navigator.clipboard.writeText(window.location.href).then(() => {
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: visit.title,
+          text: `${visit.title} - ${visit.record}`,
+          url: window.location.href,
+        });
+      } else {
+        // 降级方案：复制链接
+        await navigator.clipboard.writeText(window.location.href);
         alert('链接已复制到剪贴板！');
-      }).catch(() => {
-        alert('复制失败，请手动复制浏览器地址栏的链接');
-      });
+      }
+    } catch (error) {
+      console.error('分享失败:', error);
+      if ((error as any).name !== 'AbortError') {
+        alert('分享失败，请稍后重试');
+      }
     }
   };
 
@@ -650,7 +654,7 @@ export default function VisitDetailPage() {
         </div>
 
         {/* 固定在底部的音频播放器 */}
-        {visit.feedbackAudio && (
+        {visit.feedbackAudio && audioUrl && (
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[rgba(0,0,0,0.05)] shadow-lg z-50">
             <div className="w-full max-w-md mx-auto px-5 py-3">
               <div className="flex items-center space-x-3">
@@ -684,8 +688,12 @@ export default function VisitDetailPage() {
               </div>
               <audio
                 ref={audioRef}
-                src={audioUrl || visit.feedbackAudio}
+                src={audioUrl}
                 onEnded={handleEnded}
+                onError={(e) => {
+                  console.error('音频加载失败:', e);
+                  console.error('音频URL:', audioUrl);
+                }}
                 preload="metadata"
                 className="hidden"
               />

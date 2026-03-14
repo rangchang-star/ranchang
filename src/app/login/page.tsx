@@ -76,7 +76,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">登录/注册</h1>
           <p className="text-sm text-[rgba(0,0,0,0.6)]">
-            完善信息后使用微信登录
+            完善信息后使用账号登录
           </p>
         </div>
 
@@ -115,12 +115,12 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* 微信登录按钮 */}
+          {/* 登录按钮 */}
           <Button
             onClick={handleWeChatLogin}
-            className="w-full bg-green-500 hover:bg-green-600 text-white"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white"
           >
-            微信登录
+            账号登录
           </Button>
 
           {/* 说明 */}
