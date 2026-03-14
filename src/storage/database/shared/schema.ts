@@ -190,6 +190,7 @@ export const dailyDeclarations = pgTable("daily_declarations", {
 	profile: text(),
 	duration: varchar({ length: 50 }),
 	views: integer().default(0),
+	isActive: boolean("is_active").default(true),
 	isFeatured: boolean("is_featured").default(false),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),

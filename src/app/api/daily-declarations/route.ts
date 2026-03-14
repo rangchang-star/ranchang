@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
       profile: declaration.profile,
       duration: declaration.duration,
       views: declaration.views,
+      isActive: declaration.isActive,
       isFeatured: declaration.isFeatured,
       createdAt: declaration.createdAt,
       updatedAt: declaration.updatedAt,
@@ -48,6 +49,45 @@ export async function GET(request: NextRequest) {
     console.error('获取每日现货资源列表失败:', error);
     return NextResponse.json(
       { success: false, error: '获取每日现货资源列表失败' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - 创建每日现货资源
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { title, date, duration, image, audio, isActive = true, isFeatured = false } = body;
+
+    if (!title || !date) {
+      return NextResponse.json(
+        { success: false, error: '标题和日期为必填项' },
+        { status: 400 }
+      );
+    }
+
+    const [newDeclaration] = await db
+      .insert(dailyDeclarations)
+      .values({
+        title,
+        date,
+        duration,
+        image,
+        audio,
+        isActive,
+        isFeatured,
+      })
+      .returning();
+
+    return NextResponse.json({
+      success: true,
+      data: newDeclaration,
+    });
+  } catch (error) {
+    console.error('创建每日现货资源失败:', error);
+    return NextResponse.json(
+      { success: false, error: '创建每日现货资源失败' },
       { status: 500 }
     );
   }
