@@ -151,7 +151,7 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
 
                 <Button 
                   type="submit"
-                  className="w-full" 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
                   disabled={isLoading}
                 >
                   {isLoading ? '登录中...' : '登录'}
@@ -194,7 +194,7 @@ export function LoginModalProvider({ children }: { children: ReactNode }) {
 
                 <Button 
                   type="submit"
-                  className="w-full" 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
                   disabled={isLoading}
                 >
                   {isLoading ? '注册中...' : '注册'}
