@@ -312,9 +312,46 @@ export default function ProfilePage() {
     loadUserNotifications();
   }, [user?.id]);
 
+  // 加载用户咨询记录
+  useEffect(() => {
+    const loadUserConsultations = async () => {
+      if (!user?.id) {
+        setUserConsultations([]);
+        return;
+      }
+
+      setIsLoadingConsultations(true);
+      try {
+        const response = await fetch('/api/user/consultations', {
+          headers: {
+            'x-user-id': user.id
+          }
+        });
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          setUserConsultations(data.data);
+        } else {
+          setUserConsultations([]);
+        }
+      } catch (error) {
+        console.error('加载咨询记录失败:', error);
+        setUserConsultations([]);
+      } finally {
+        setIsLoadingConsultations(false);
+      }
+    };
+
+    loadUserConsultations();
+  }, [user?.id]);
+
   const [showActivityDetail, setShowActivityDetail] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [activitiesExpanded, setActivitiesExpanded] = useState(false);
+
+  // 用户咨询记录
+  const [userConsultations, setUserConsultations] = useState<any[]>([]);
+  const [isLoadingConsultations, setIsLoadingConsultations] = useState(false);
 
   // 用户参与的活动列表
   const [activities, setActivities] = useState<any[]>([]);
@@ -1277,6 +1314,72 @@ export default function ProfilePage() {
                     >
                       {activity.status}
                     </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 我的咨询记录 */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-[26px] font-bold">
+                <span className="text-[rgba(96,165,250,0.6)]">我的</span>
+                <span className="text-blue-400">咨询</span>
+              </h2>
+            </div>
+            <div className="h-[1px] bg-[rgba(0,0,0,0.05)] mb-4" />
+
+            {isLoadingConsultations ? (
+              <div className="p-8 text-center">
+                <div className="text-[13px] text-[rgba(0,0,0,0.6)]">加载中...</div>
+              </div>
+            ) : userConsultations.length === 0 ? (
+              <div className="p-8 text-center">
+                <div className="text-[13px] text-[rgba(0,0,0,0.6)]">暂无咨询记录</div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {userConsultations.map((consult) => (
+                  <div key={consult.id} className="border border-[rgba(0,0,0,0.1)] p-4">
+                    {/* 标题行 */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-[13px] font-semibold text-gray-900">{consult.topic_name}</span>
+                        <span className={`px-2 py-0.5 text-[10px] rounded-full ${
+                          consult.status === 'completed'
+                            ? 'bg-green-100 text-green-600'
+                            : consult.status === 'processing'
+                            ? 'bg-blue-100 text-blue-600'
+                            : 'bg-yellow-100 text-yellow-600'
+                        }`}>
+                          {consult.status === 'completed' ? '已回复' : consult.status === 'processing' ? '处理中' : '待处理'}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-[rgba(0,0,0,0.4)]">
+                        {new Date(consult.created_at).toLocaleString('zh-CN')}
+                      </span>
+                    </div>
+
+                    {/* 问题内容 */}
+                    <div className="mb-3">
+                      <div className="text-[12px] text-[rgba(0,0,0,0.5)] mb-1">我的问题：</div>
+                      <div className="text-[13px] text-gray-700 leading-relaxed bg-[rgba(0,0,0,0.02)] p-3">
+                        {consult.question}
+                      </div>
+                    </div>
+
+                    {/* 回复内容 */}
+                    {consult.answer && (
+                      <div>
+                        <div className="text-[12px] text-[rgba(0,0,0,0.5)] mb-1">
+                          <span className="text-blue-500">{consult.consultant_name || '咨询师'}</span> 的回复：
+                        </div>
+                        <div className="text-[13px] text-gray-700 leading-relaxed bg-blue-50 p-3 border-l-2 border-blue-400">
+                          {consult.answer}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
