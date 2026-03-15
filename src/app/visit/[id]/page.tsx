@@ -37,14 +37,12 @@ export default function VisitDetailPage() {
   // 申请对话框状态
   const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
     wechat: '',
+    companyDescription: '',
   });
   const [errors, setErrors] = useState({
-    name: '',
-    phone: '',
     wechat: '',
+    companyDescription: '',
   });
 
   // 收藏状态
@@ -88,8 +86,14 @@ export default function VisitDetailPage() {
 
           // 获取音频 URL
           if (visitData.feedbackAudio) {
-            const url = await getImageUrl(visitData.feedbackAudio);
-            setAudioUrl(url);
+            // feedbackAudio 已经是完整的签名URL，直接使用
+            if (visitData.feedbackAudio.startsWith('http')) {
+              setAudioUrl(visitData.feedbackAudio);
+            } else {
+              // 如果是 fileKey，则通过 getImageUrl 获取签名URL
+              const url = await getImageUrl(visitData.feedbackAudio);
+              setAudioUrl(url);
+            }
           }
 
           // 检查用户是否已收藏该项目
@@ -283,29 +287,29 @@ export default function VisitDetailPage() {
 
   const validateForm = (): boolean => {
     const newErrors = {
-      name: '',
-      phone: '',
       wechat: '',
+      companyDescription: '',
     };
 
     let isValid = true;
 
-    if (!formData.name.trim()) {
-      newErrors.name = '请输入姓名';
-      isValid = false;
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = '请输入电话号码';
-      isValid = false;
-    } else if (!validatePhone(formData.phone)) {
-      newErrors.phone = '请输入正确的11位手机号码';
-      isValid = false;
-    }
-
     if (!formData.wechat.trim()) {
       newErrors.wechat = '请输入微信号';
       isValid = false;
+    }
+
+    if (!formData.companyDescription.trim()) {
+      newErrors.companyDescription = '请输入公司简述';
+      isValid = false;
+    } else {
+      const descLength = formData.companyDescription.trim().length;
+      if (descLength < 30) {
+        newErrors.companyDescription = '公司简述至少需要30个字';
+        isValid = false;
+      } else if (descLength > 80) {
+        newErrors.companyDescription = '公司简述最多80个字';
+        isValid = false;
+      }
     }
 
     setErrors(newErrors);
@@ -339,11 +343,9 @@ export default function VisitDetailPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            visitId: visit.id,
             userId: user?.id,
-            userName: formData.name,
-            userPhone: formData.phone,
             userWechat: formData.wechat,
+            companyDescription: formData.companyDescription,
           }),
         });
 
@@ -353,8 +355,8 @@ export default function VisitDetailPage() {
           console.log('提交申请:', formData);
           alert('申请提交成功！我们将尽快与您联系');
           setJoinDialogOpen(false);
-          setFormData({ name: '', phone: '', wechat: '' });
-          setErrors({ name: '', phone: '', wechat: '' });
+          setFormData({ wechat: '', companyDescription: '' });
+          setErrors({ wechat: '', companyDescription: '' });
         } else {
           throw new Error(data.error || '提交申请失败');
         }
@@ -714,28 +716,6 @@ export default function VisitDetailPage() {
           <div className="space-y-4 py-4">
             <div>
               <Input
-                placeholder="姓名"
-                value={formData.name}
-                onChange={handleInputChange('name')}
-                className={errors.name ? 'border-red-500' : ''}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-              )}
-            </div>
-            <div>
-              <Input
-                placeholder="电话号码"
-                value={formData.phone}
-                onChange={handleInputChange('phone')}
-                className={errors.phone ? 'border-red-500' : ''}
-              />
-              {errors.phone && (
-                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-              )}
-            </div>
-            <div>
-              <Input
                 placeholder="微信号"
                 value={formData.wechat}
                 onChange={handleInputChange('wechat')}
@@ -744,6 +724,20 @@ export default function VisitDetailPage() {
               {errors.wechat && (
                 <p className="text-red-500 text-sm mt-1">{errors.wechat}</p>
               )}
+            </div>
+            <div>
+              <textarea
+                placeholder="公司简述（30-80字）"
+                value={formData.companyDescription}
+                onChange={(e) => handleInputChange('companyDescription')(e as any)}
+                className={`w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none ${errors.companyDescription ? 'border-red-500' : ''}`}
+                rows={3}
+                maxLength={80}
+              />
+              {errors.companyDescription && (
+                <p className="text-red-500 text-sm mt-1">{errors.companyDescription}</p>
+              )}
+              <p className="text-xs text-gray-400 mt-1">{formData.companyDescription.length}/80字</p>
             </div>
           </div>
           <div className="flex justify-end space-x-2">

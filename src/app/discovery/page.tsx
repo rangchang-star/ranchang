@@ -753,7 +753,7 @@ export default function DiscoveryPage() {
           </div>
 
           {/* 内容区 - 增加栏目间距，增加底部padding避免被固定的每日现货资源遮挡 */}
-          <div className="px-5 pt-3 space-y-8 pb-64">
+          <div className="px-5 pt-3 space-y-8 pb-10">
             {/* 能力连接 */}
             <section>
               <div className="flex items-center justify-between mb-4">
