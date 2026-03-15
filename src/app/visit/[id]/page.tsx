@@ -212,25 +212,14 @@ export default function VisitDetailPage() {
       return;
     }
 
-    // 自动填充用户信息
-    setFormData({
-      name: user.name || user.nickname || '',
-      phone: user.phone || '',
-      wechat: '',
-    });
-
+    // 打开申请对话框
     setJoinDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setJoinDialogOpen(false);
-    setFormData({ name: '', phone: '', wechat: '' });
-    setErrors({ name: '', phone: '', wechat: '' });
-  };
-
-  const validatePhone = (phone: string): boolean => {
-    const phoneRegex = /^1[3-9]\d{9}$/;
-    return phoneRegex.test(phone);
+    setFormData({ wechat: '', companyDescription: '' });
+    setErrors({ wechat: '', companyDescription: '' });
   };
 
   // 检查收藏状态
