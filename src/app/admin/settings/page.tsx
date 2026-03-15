@@ -13,7 +13,6 @@ import { useFileUpload, useImageUrl } from '@/hooks/use-image';
 
 // 默认设置数据
 const defaultSettings = {
-  logo: null as string | null,
   ignition: {
     visitSlogan: '每次探访都是商业思维的激烈碰撞，更是一场关于财务收入与使命践行的重新审视....',
     visitMedia: {
@@ -25,6 +24,12 @@ const defaultSettings = {
       type: 'image' as 'image' | 'video' | null,
       url: '',
     },
+  },
+  discovery: {
+    slogan: '发现光亮，点亮事业',
+    logo: null as string | null,
+    music: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    backgroundImage: '/discovery-bg.jpg',
   },
 };
 
@@ -41,7 +46,7 @@ export default function AdminSettingsPage() {
   const aiCircleVideoRef = useRef<HTMLVideoElement>(null);
 
   // Logo相关
-  const { url: logoUrl } = useImageUrl(settings.logo);
+  const { url: logoUrl } = useImageUrl(settings.discovery?.logo);
   const { upload: uploadLogo, uploading: uploadingLogo } = useFileUpload();
 
   // 加载设置
@@ -208,17 +213,17 @@ export default function AdminSettingsPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // 验证文件类型
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    // 验证文件类型（只允许最兼容的格式）
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     if (!allowedTypes.includes(file.type)) {
-      alert('只支持 JPEG、PNG、GIF、WebP 格式的图片');
+      alert('为了保证最佳兼容性，只支持 JPEG、PNG 格式的图片');
       return;
     }
 
-    // 验证文件大小（5MB）
-    const maxSize = 5 * 1024 * 1024;
+    // 验证文件大小（2MB）
+    const maxSize = 2 * 1024 * 1024;
     if (file.size > maxSize) {
-      alert('图片大小不能超过 5MB');
+      alert('图片大小不能超过 2MB');
       return;
     }
 
@@ -227,7 +232,10 @@ export default function AdminSettingsPage() {
       if (result.fileKey) {
         setSettings(prev => ({
           ...prev,
-          logo: result.fileKey,
+          discovery: {
+            ...prev.discovery,
+            logo: result.fileKey,
+          },
         }));
         setHasChanged(true);
         // 清除file input，允许重复选择同一文件
@@ -262,9 +270,9 @@ export default function AdminSettingsPage() {
         {/* Logo设置 */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-[15px] font-semibold">Logo设置</CardTitle>
+            <CardTitle className="text-[15px] font-semibold">发现页 Logo 设置</CardTitle>
             <CardDescription className="text-[12px]">
-              上传网站Logo，显示在前台页面
+              上传网站 Logo，显示在发现页右上角
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -285,7 +293,7 @@ export default function AdminSettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-[11px] text-[rgba(0,0,0,0.6)]">
-                  支持 JPG、PNG、GIF、WebP 格式，最大 5MB
+                  支持 JPEG、PNG 格式，最大 2MB
                 </p>
                 <input
                   type="file"

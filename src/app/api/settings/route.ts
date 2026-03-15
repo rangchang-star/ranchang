@@ -16,6 +16,12 @@ const defaultSettings = {
       url: '',
     },
   },
+  discovery: {
+    slogan: '发现光亮，点亮事业',
+    logo: '/logo-ranchang.png',
+    music: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    backgroundImage: '/discovery-bg.jpg',
+  },
 };
 
 // GET - 获取系统设置
@@ -56,6 +62,10 @@ export async function GET() {
           ...(config.ignition?.aiCircleMedia || {}),
         },
       },
+      discovery: {
+        ...defaultSettings.discovery,
+        ...(config.discovery || {}),
+      },
     };
 
     return NextResponse.json({
@@ -95,11 +105,11 @@ export async function PUT(request: Request) {
       updatedAt: new Date(),
     });
 
-    // 如果有 logo，保存 logo 设置
-    if (config.logo !== undefined) {
+    // 保存 discovery 设置
+    if (config.discovery) {
       await db.insert(settings).values({
-        key: 'logo',
-        value: config.logo,
+        key: 'discovery',
+        value: config.discovery,
         updatedAt: new Date(),
       });
     }
