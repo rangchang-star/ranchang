@@ -77,7 +77,7 @@ function AICircleApprovalTab() {
       setIsLoading(true);
       const response = await fetch('/admin/api/approvals?status=pending&type=ai-circle');
       const data = await response.json();
-      
+
       if (data.success) {
         setApprovals(data.data || []);
       }
@@ -87,6 +87,11 @@ function AICircleApprovalTab() {
       setIsLoading(false);
     }
   };
+
+  // 组件加载时自动加载数据
+  useEffect(() => {
+    loadApprovals();
+  }, []);
 
   // 处理审核
   const handleApproval = async (id: string, action: 'approve' | 'reject') => {
@@ -206,7 +211,7 @@ function VisitApprovalTab() {
       setIsLoading(true);
       const response = await fetch('/admin/api/approvals?status=pending&type=visit');
       const data = await response.json();
-      
+
       if (data.success) {
         setApprovals(data.data || []);
       }
@@ -216,6 +221,11 @@ function VisitApprovalTab() {
       setIsLoading(false);
     }
   };
+
+  // 组件加载时自动加载数据
+  useEffect(() => {
+    loadApprovals();
+  }, []);
 
   // 处理审核
   const handleApproval = async (id: string, action: 'approve' | 'reject') => {
