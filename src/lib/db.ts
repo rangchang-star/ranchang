@@ -14,6 +14,7 @@ export { db };
 
 // 导出所有 schema 表
 export {
+  settings,
   appUsers,
   activities,
   activityRegistrations,
@@ -34,8 +35,8 @@ export {
   userFavorites,
 } from '@/storage/database/supabase/schema';
 
-// 从 shared schema 导入 settings, adminUsers 和 notifications 表（因为实际数据库使用的是 shared schema 中的定义）
-export { settings, adminUsers, notifications } from '@/storage/database/shared/schema';
+// 从 shared schema 导出 adminUsers 和 notifications 表（因为实际数据库使用的是 shared schema 中的定义）
+export { adminUsers, notifications } from '@/storage/database/shared/schema';
 
 // 导出 schema 命名空间（方便批量导入）
 export * from '@/storage/database/supabase/schema';

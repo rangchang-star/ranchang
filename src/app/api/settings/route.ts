@@ -21,7 +21,10 @@ const defaultSettings = {
 // GET - 获取系统设置
 export async function GET() {
   try {
-    const settingList = await db.select().from(settings);
+    // 使用 key-value 结构获取设置
+    const settingList = await db
+      .select()
+      .from(settings);
 
     // 如果数据库中没有设置，返回默认设置
     if (!settingList || settingList.length === 0) {
@@ -31,23 +34,26 @@ export async function GET() {
       });
     }
 
-    // 获取第一条记录
-    const dbSettings = settingList[0] as any;
+    // 将 key-value 结构转换为对象
+    const config: any = {};
+    settingList.forEach((setting: any) => {
+      config[setting.key] = setting.value;
+    });
 
-    // 合并数据库设置和默认设置，确保所有字段都存在
+    // 合并默认设置和数据库设置
     const mergedSettings = {
       ...defaultSettings,
-      ...dbSettings.settings,
+      ...config,
       ignition: {
         ...defaultSettings.ignition,
-        ...(dbSettings.settings?.ignition || {}),
+        ...(config.ignition || {}),
         visitMedia: {
           ...defaultSettings.ignition.visitMedia,
-          ...(dbSettings.settings?.ignition?.visitMedia || {}),
+          ...(config.ignition?.visitMedia || {}),
         },
         aiCircleMedia: {
           ...defaultSettings.ignition.aiCircleMedia,
-          ...(dbSettings.settings?.ignition?.aiCircleMedia || {}),
+          ...(config.ignition?.aiCircleMedia || {}),
         },
       },
     };
@@ -78,22 +84,23 @@ export async function PUT(request: Request) {
       );
     }
 
-    // 检查是否已有设置记录
-    const existingSettings = await db.select().from(settings);
+    // 使用 key-value 结构保存设置
+    // 先删除所有现有设置
+    await db.delete(settings);
 
-    if (existingSettings && existingSettings.length > 0) {
-      // 更新现有记录
-      await db
-        .update(settings)
-        .set({
-          settings: config,
-          updatedAt: new Date().toISOString(),
-        })
-        .where(eq(settings.id, existingSettings[0].id));
-    } else {
-      // 创建新记录
+    // 保存 ignition 设置
+    await db.insert(settings).values({
+      key: 'ignition',
+      value: config.ignition || defaultSettings.ignition,
+      updatedAt: new Date(),
+    });
+
+    // 如果有 logo，保存 logo 设置
+    if (config.logo !== undefined) {
       await db.insert(settings).values({
-        settings: config,
+        key: 'logo',
+        value: config.logo,
+        updatedAt: new Date(),
       });
     }
 
