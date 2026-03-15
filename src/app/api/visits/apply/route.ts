@@ -1,43 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db, approvals, visits, appUsers } from '@/lib/db';
-import { eq, sql } from 'drizzle-orm';
+import { db, approvals } from '@/lib/db';
+import { sql } from 'drizzle-orm';
 
-// POST - 申请探访
+// POST - 申请成为被访者
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { visitId, userId, userName, userPhone, userWechat } = body;
+    const { userId, userWechat, companyDescription } = body;
 
     // 验证必填参数
-    if (!visitId || !userId || !userName || !userPhone || !userWechat) {
+    if (!userId || !userWechat || !companyDescription) {
       return NextResponse.json(
         { success: false, error: '缺少必要参数' },
         { status: 400 }
       );
     }
 
-    // 检查探访是否存在
-    const visitExists = await db
-      .select({ id: visits.id, title: visits.companyName, date: visits.date })
-      .from(visits)
-      .where(eq(visits.id, visitId))
-      .limit(1);
-
-    if (!visitExists || visitExists.length === 0) {
-      return NextResponse.json(
-        { success: false, error: '探访不存在' },
-        { status: 404 }
-      );
-    }
-
-    const visitInfo = visitExists[0];
-
     // 检查用户是否已经有待审核或已通过的申请
     const existingApproval = await db
       .select({ id: approvals.id, status: approvals.status })
       .from(approvals)
       .where(
-        sql`${approvals.type} = 'visit' AND ${approvals.userId} = ${userId} AND ${approvals.title} = ${visitInfo.title}`
+        sql`${approvals.type} = 'visit' AND ${approvals.userId} = ${userId}`
       )
       .limit(1);
 
@@ -63,8 +47,8 @@ export async function POST(request: NextRequest) {
         id: crypto.randomUUID(),
         userId,
         type: 'visit',
-        title: visitInfo.title || '探访申请',
-        description: `姓名: ${userName}, 电话: ${userPhone}, 微信: ${userWechat}${visitInfo.date ? `, 探访时间: ${visitInfo.date.toISOString().split('T')[0]}` : ''}`,
+        title: '申请成为被访者',
+        description: `用户ID: ${userId}, 微信: ${userWechat}, 企业简介: ${companyDescription}`,
         status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date(),
