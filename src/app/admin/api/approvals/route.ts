@@ -1,13 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, approvals, appUsers } from '@/lib/db';
-import { desc, eq, like } from 'drizzle-orm';
+import { desc, eq, like, and } from 'drizzle-orm';
 
 // GET - 获取审批列表
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status') || '';
+    const type = searchParams.get('type') || '';
     const search = searchParams.get('search') || '';
+
+    // 构建查询条件
+    const conditions = [];
+
+    if (type) {
+      conditions.push(eq(approvals.type, type));
+    }
+
+    if (status) {
+      conditions.push(eq(approvals.status, status));
+    }
 
     let query = db
       .select()
@@ -15,16 +27,18 @@ export async function GET(request: NextRequest) {
       .leftJoin(appUsers, eq(approvals.userId, appUsers.id))
       .orderBy(desc(approvals.createdAt));
 
-    // 状态筛选
-    if (status) {
-      query = (query as any).where(eq(approvals.status, status));
+    // 应用查询条件
+    if (conditions.length > 0) {
+      query = (query as any).where(and(...conditions));
     }
 
-    // 搜索筛选
+    // 搜索筛选（如果有搜索词）
     if (search) {
-      query = (query as any).where(
-        like(approvals.title, `%${search}%`)
-      );
+      if (conditions.length > 0) {
+        query = (query as any).where(like(approvals.title, `%${search}%`));
+      } else {
+        query = (query as any).where(like(approvals.title, `%${search}%`));
+      }
     }
 
     const approvalList = await query;

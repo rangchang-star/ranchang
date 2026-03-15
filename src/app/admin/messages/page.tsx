@@ -155,17 +155,16 @@ function AICircleApprovalTab() {
                     <p className="text-sm text-muted-foreground mb-3">
                       申请加入2026AI圈
                     </p>
-                    {approval.reason && (
+                    {approval.description && (
                       <div className="bg-gray-50 rounded-md p-3 mb-3">
-                        <p className="text-sm text-muted-foreground">
-                          申请理由: {approval.reason}
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                          {approval.description}
                         </p>
                       </div>
                     )}
-                    {approval.userInfo && (
+                    {approval.userName && (
                       <div className="text-sm text-muted-foreground">
-                        <div>行业: {approval.userInfo.industry || '未填写'}</div>
-                        <div>公司: {approval.userInfo.company || '未填写'}</div>
+                        <div>申请人: {approval.userName}</div>
                       </div>
                     )}
                   </div>
