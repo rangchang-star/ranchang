@@ -128,6 +128,8 @@ export default function SubscriptionPage() {
   // 视频播放控制状态
   const [playingVisitVideo, setPlayingVisitVideo] = useState(false);
   const [playingAiCircleVideo, setPlayingAiCircleVideo] = useState(false);
+  const [visitVideoError, setVisitVideoError] = useState(false);
+  const [aiCircleVideoError, setAiCircleVideoError] = useState(false);
 
   // 视频refs
   const visitVideoRef = useRef<HTMLVideoElement>(null);
@@ -202,10 +204,14 @@ export default function SubscriptionPage() {
     if (visitVideoRef.current) {
       if (playingVisitVideo) {
         visitVideoRef.current.pause();
+        setPlayingVisitVideo(false);
       } else {
-        visitVideoRef.current.play();
+        visitVideoRef.current.play().catch((error) => {
+          console.error('视频播放失败:', error);
+          setVisitVideoError(true);
+        });
+        setPlayingVisitVideo(true);
       }
-      setPlayingVisitVideo(!playingVisitVideo);
     }
   };
 
@@ -214,10 +220,14 @@ export default function SubscriptionPage() {
     if (aiCircleVideoRef.current) {
       if (playingAiCircleVideo) {
         aiCircleVideoRef.current.pause();
+        setPlayingAiCircleVideo(false);
       } else {
-        aiCircleVideoRef.current.play();
+        aiCircleVideoRef.current.play().catch((error) => {
+          console.error('视频播放失败:', error);
+          setAiCircleVideoError(true);
+        });
+        setPlayingAiCircleVideo(true);
       }
-      setPlayingAiCircleVideo(!playingAiCircleVideo);
     }
   };
 
@@ -641,21 +651,25 @@ export default function SubscriptionPage() {
             <div className="relative overflow-hidden bg-[rgba(0,0,0,0.02)] rounded-none">
               {/* 视频播放器 */}
               <div className="aspect-video bg-gray-900 flex items-center justify-center relative">
-                {activeTab === 'training' && mediaConfig.visit.type === 'video' ? (
+                {activeTab === 'training' && mediaConfig.visit.type === 'video' && !visitVideoError ? (
                   <video
                     ref={visitVideoRef}
                     src={mediaConfig.visit.url}
                     className="w-full h-full object-cover"
                     onClick={toggleVisitVideo}
                     controls={false}
+                    onError={() => setVisitVideoError(true)}
+                    preload="metadata"
                   />
-                ) : activeTab === 'consultation' && mediaConfig.aiCircle.type === 'video' ? (
+                ) : activeTab === 'consultation' && mediaConfig.aiCircle.type === 'video' && !aiCircleVideoError ? (
                   <video
                     ref={aiCircleVideoRef}
                     src={mediaConfig.aiCircle.url}
                     className="w-full h-full object-cover"
                     onClick={toggleAiCircleVideo}
                     controls={false}
+                    onError={() => setAiCircleVideoError(true)}
+                    preload="metadata"
                   />
                 ) : (
                   <img
@@ -664,9 +678,12 @@ export default function SubscriptionPage() {
                     className="w-full h-full object-cover opacity-80"
                   />
                 )}
-                {activeTab === 'training' && mediaConfig.visit.type === 'video' && (
+                {activeTab === 'training' && mediaConfig.visit.type === 'video' && !visitVideoError && (
                   <button
-                    onClick={toggleVisitVideo}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleVisitVideo();
+                    }}
                     className="absolute inset-0 flex items-center justify-center bg-black/20"
                   >
                     <div className={`w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors ${playingVisitVideo ? 'hidden' : ''}`}>
@@ -677,9 +694,12 @@ export default function SubscriptionPage() {
                     </div>
                   </button>
                 )}
-                {activeTab === 'consultation' && mediaConfig.aiCircle.type === 'video' && (
+                {activeTab === 'consultation' && mediaConfig.aiCircle.type === 'video' && !aiCircleVideoError && (
                   <button
-                    onClick={toggleAiCircleVideo}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleAiCircleVideo();
+                    }}
                     className="absolute inset-0 flex items-center justify-center bg-black/20"
                   >
                     <div className={`w-16 h-16 rounded-full bg-blue-400 bg-opacity-90 flex items-center justify-center hover:bg-blue-500 transition-colors ${playingAiCircleVideo ? 'hidden' : ''}`}>
@@ -694,7 +714,9 @@ export default function SubscriptionPage() {
               {/* 标题 */}
               <div className="p-3">
                 <h5 className="text-[18px] font-semibold text-gray-900 mb-1">互动现场精彩瞬间</h5>
-                <p className="text-[14px] text-[rgba(0,0,0,0.25)]">AI加油圈2026期小组讨论现场实录</p>
+                <p className="text-[14px] text-[rgba(0,0,0,0.25)]">
+                  {activeTab === 'training' ? '探访点亮现场实录' : 'AI加油圈2026期小组讨论现场实录'}
+                </p>
               </div>
             </div>
           </div>
